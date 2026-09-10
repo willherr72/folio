@@ -35,7 +35,7 @@ function pruneRenderCache() {
   }
 }
 
-function usePageImage(adapter: FolioAdapter, page: PagePlan, pixelWidth: number) {
+function usePageImage(adapter: FolioAdapter, page: PagePlan, pixelWidth: number, releaseOnUnmount = false) {
   const key = `${adapter.kind}:${page.sourceId}:${page.pageIndex}:${Math.round(pixelWidth)}`;
   const [state, setState] = useState<{ key: string; url?: string; error?: string }>({ key });
   useEffect(() => {
@@ -60,10 +60,10 @@ function usePageImage(adapter: FolioAdapter, page: PagePlan, pixelWidth: number)
     return () => {
       active = false;
       entry.references = Math.max(0, entry.references - 1);
-      if (entry.disposalRequested) releaseEntry(key, entry);
+      if ((entry.disposalRequested || releaseOnUnmount) && entry.references === 0) releaseEntry(key, entry);
       else pruneRenderCache();
     };
-  }, [adapter, key, page.pageIndex, page.sourceId, pixelWidth]);
+  }, [adapter, key, page.pageIndex, page.sourceId, pixelWidth, releaseOnUnmount]);
   return state.key === key ? state : { key };
 }
 
@@ -100,9 +100,14 @@ interface PageViewProps {
   page: PagePlan;
   pageNumber: number;
   zoom: number;
-  tool: "select" | "text" | "signature";
+  tool: "select" | "text" | "signature" | "draw";
   selectedOverlayId: string | null;
   pendingSignature: InkPoint[][] | null;
+  onDraw?(path: InkPoint[]): void;
+  drawColor?: string;
+  drawWidth?: number;
+  onActivate?(): void;
+  interactionDisabled?: boolean;
   onSelectOverlay(id: string | null): void;
   onAddText(point: InkPoint): void;
   onPlaceSignature(point: InkPoint): void;
@@ -114,25 +119,55 @@ export function PageView(props: PageViewProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const dragRef = useRef<{ id: string; pointer: number; offset: InkPoint } | null>(null);
   const dimensions = displayDimensions(page.width, page.height, page.rotation);
+  const strokeRef = useRef<{ pointer: number; path: InkPoint[] } | null>(null);
+  const [draft, setDraft] = useState<InkPoint[]>([]);
   const cssWidth = dimensions.width * zoom / 100;
-  const rendered = usePageImage(adapter, page, Math.min(2400, Math.max(600, Math.round(cssWidth * devicePixelRatio))));
-  const cursor = pendingSignature ? "crosshair" : tool === "text" ? "text" : "default";
+  const rendered = usePageImage(adapter, page, Math.min(2400, Math.max(600, Math.round(cssWidth * devicePixelRatio))), true);
+  const cursor = pendingSignature || tool === "draw" ? "crosshair" : tool === "text" ? "text" : "default";
 
   const originalPoint = (event: React.PointerEvent) => {
     const rect = svgRef.current!.getBoundingClientRect();
     return clientPointToPage(event.clientX, event.clientY, rect, page.width, page.height, page.rotation);
   };
 
+  const releasePointer = (pointer: number) => {
+    // Capture may already have been released by the browser on cancellation.
+    try { svgRef.current?.releasePointerCapture(pointer); } catch { /* Already released. */ }
+  };
+
+  useEffect(() => {
+    const stroke = strokeRef.current;
+    if (stroke) releasePointer(stroke.pointer);
+    strokeRef.current = null;
+    setDraft([]);
+    const drag = dragRef.current;
+    if (drag) {
+      dragRef.current = null;
+      releasePointer(drag.pointer);
+      props.onMoveOverlay(drag.id, 0, 0, "end");
+    }
+  }, [page.id, page.rotation, tool, props.interactionDisabled]);
+
   const handleBackground = (event: React.PointerEvent<SVGSVGElement>) => {
-    if (event.target !== event.currentTarget && (event.target as Element).closest("[data-overlay]")) return;
+    if (props.interactionDisabled || event.button !== 0 || strokeRef.current || dragRef.current) return;
+    if (tool !== "draw" && event.target !== event.currentTarget && (event.target as Element).closest("[data-overlay]")) return;
+    props.onActivate?.();
     const point = originalPoint(event);
-    if (pendingSignature) props.onPlaceSignature(point);
+    if (tool === "draw") {
+      event.preventDefault();
+      strokeRef.current = { pointer: event.pointerId, path: [point] };
+      setDraft([point]);
+      svgRef.current?.setPointerCapture(event.pointerId);
+    } else if (pendingSignature) props.onPlaceSignature(point);
     else if (tool === "text") props.onAddText(point);
     else props.onSelectOverlay(null);
   };
 
   const startDrag = (event: React.PointerEvent, overlay: Overlay) => {
+    if (tool === "draw") return;
     event.stopPropagation();
+    if (props.interactionDisabled || event.button !== 0 || dragRef.current) return;
+    props.onActivate?.();
     props.onSelectOverlay(overlay.id);
     if (tool !== "select") return;
     const value = originalPoint(event);
@@ -142,26 +177,51 @@ export function PageView(props: PageViewProps) {
     props.onMoveOverlay(overlay.id, box.x, box.y, "start");
   };
 
+  const appendPoint = (point: InkPoint) => {
+    const stroke = strokeRef.current;
+    if (!stroke) return;
+    const last = stroke.path[stroke.path.length - 1];
+    if (point.x !== last.x || point.y !== last.y) stroke.path.push(point);
+  };
+
   const moveDrag = (event: React.PointerEvent<SVGSVGElement>) => {
+    if (props.interactionDisabled) return;
+    const stroke = strokeRef.current;
+    if (stroke?.pointer === event.pointerId) {
+      const samples = event.nativeEvent.getCoalescedEvents?.() ?? [];
+      for (const sample of samples) appendPoint(originalPoint(sample as unknown as React.PointerEvent));
+      appendPoint(originalPoint(event));
+      setDraft([...stroke.path]);
+      return;
+    }
     const drag = dragRef.current;
     if (!drag || drag.pointer !== event.pointerId) return;
     const value = originalPoint(event);
     props.onMoveOverlay(drag.id, value.x - drag.offset.x, value.y - drag.offset.y, "move");
   };
 
-  const endDrag = (event: React.PointerEvent<SVGSVGElement>) => {
+  const finishPointer = (event: React.PointerEvent<SVGSVGElement>, cancelled = false) => {
+    const stroke = strokeRef.current;
+    if (stroke?.pointer === event.pointerId) {
+      if (!cancelled && !props.interactionDisabled) appendPoint(originalPoint(event));
+      strokeRef.current = null;
+      setDraft([]);
+      releasePointer(event.pointerId);
+      if (!cancelled && !props.interactionDisabled && stroke.path.length > 1) props.onDraw?.(stroke.path);
+    }
     const drag = dragRef.current;
     if (!drag || drag.pointer !== event.pointerId) return;
     dragRef.current = null;
+    releasePointer(event.pointerId);
     props.onMoveOverlay(drag.id, 0, 0, "end");
   };
-
   return (
     <div className="page-stage" aria-label={`Page ${pageNumber}`} style={{ width: cssWidth }}>
       <svg ref={svgRef} className="page-canvas" viewBox={`0 0 ${dimensions.width} ${dimensions.height}`} style={{ cursor }}
-        onPointerDown={handleBackground} onPointerMove={moveDrag} onPointerUp={endDrag} onPointerCancel={endDrag}>
+        onPointerDown={handleBackground} onPointerMove={moveDrag} onPointerUp={(event) => finishPointer(event)} onPointerCancel={(event) => finishPointer(event, true)} onLostPointerCapture={(event) => finishPointer(event, true)}>
         <g transform={pageTransform(page.width, page.height, page.rotation) || undefined}>
           {rendered.url ? <image href={rendered.url} width={page.width} height={page.height} preserveAspectRatio="none" /> : <rect width={page.width} height={page.height} fill="#fff" />}
+          {draft.length > 0 && <polyline className="draft-ink" points={draft.map((point) => `${point.x},${point.y}`).join(" ")} fill="none" stroke={props.drawColor ?? "#2D2A26"} strokeWidth={props.drawWidth ?? 2} strokeLinecap="round" strokeLinejoin="round" pointerEvents="none" />}
           {page.overlays.map((overlay) => {
             const selected = overlay.id === selectedOverlayId;
             const box = bounds(overlay);
