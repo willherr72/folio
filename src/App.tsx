@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type SetStateAction } from "react";
+import { useCallback, useEffect, useRef, useState, type SetStateAction } from "react";
 import {
   ArrowDown, ArrowUp, ChevronLeft, ChevronRight, Copy, Download, FilePlus2, FolderOpen,
-  GripVertical, Search, Printer, Minus, MousePointer2, PenLine, Pencil, Plus, Redo2, RotateCw, Settings, Trash2, Type, Undo2, X,
+  GripVertical, Highlighter, MessageSquare, Search, Printer, Minus, MousePointer2, PenLine, Pencil, Plus, Redo2, RotateCw, Settings, Trash2, Type, Undo2, X,
 } from "lucide-react";
 import { createDemoAdapter, documentToPages, nativeAdapter, type FolioAdapter } from "./editor/adapter";
 import { displayDimensions, placeInkPaths } from "./editor/geometry";
@@ -10,7 +10,7 @@ import {
   rotatePage, undo, uniqueId, updateOverlay, type EditorDocument, type History, type Overlay,
 } from "./editor/model";
 import { addSession, createSession, emptyWorkspace, removeSession, updateSession, type DocumentSession, type ScrollPosition } from "./editor/workspace";
-import type { InkPoint } from "./editor/types";
+import type { AnnotationRect, InkPoint } from "./editor/types";
 import { usePreferences } from "./editor/preferences";
 import { clearRenderCache, Thumbnail } from "./components/PageView";
 import { DocumentViewport } from "./components/DocumentViewport";
@@ -25,9 +25,11 @@ import {RecoveryDialog} from "./components/RecoveryDialog";
 import {printPdf,type PrintOptions} from "./editor/printing";
 import type {PagePlan} from "./editor/types";
 import "./styles.css";
+import { OverlayProperties } from "./components/OverlayProperties";
+import { ReviewList } from "./components/ReviewList";
 
 interface AppProps { initialDemo?: boolean }
-type Tool = "select" | "text" | "signature" | "draw";
+type Tool = "select" | "text" | "signature" | "draw" | "highlight" | "comment";
 type Confirmation = { title: string; description: string; confirmLabel: string };
 function errorMessage(error: unknown) { return error instanceof Error ? error.message : String(error); }
 
@@ -256,6 +258,25 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
     setNewTextId(id);
     setTool("select");
   };
+  const addHighlight = (pageId: string, rects: AnnotationRect[]) => {
+    if (!rects.length) return;
+    const id = uniqueId("highlight");
+    edit(document => ({...document, selectedPageId:pageId, selectedOverlayId:id,
+      pages:document.pages.map(page=>page.id===pageId ? {...page,overlays:[...page.overlays,{type:"highlight",id,rects,color:"#FFE066"}]} : page)}));
+    setNotice("Highlight added");
+  };
+  const addComment = (pageId: string, point: InkPoint) => {
+    const id = uniqueId("comment");
+    edit(document => ({...document, selectedPageId:pageId, selectedOverlayId:id,
+      pages:document.pages.map(page=>page.id===pageId ? {...page,overlays:[...page.overlays,{type:"comment",id,x:Math.min(point.x,Math.max(0,page.width-24)),y:Math.min(point.y,Math.max(0,page.height-24)),text:"",color:"#FFE066"}]} : page)}));
+    setNewTextId(id); setTool("select");
+  };
+  const navigateToAnnotation = (pageId: string, overlay: Overlay) => {
+    if (blocked) return;
+    setTool("select"); setPendingSignature(null); selectOverlay(pageId,overlay.id);
+    const rect = overlay.type === "highlight" ? overlay.rects[0] : overlay.type === "comment" ? {x:overlay.x,y:overlay.y,width:24,height:24} : undefined;
+    setNavigationRequest(request=>({pageId,rect,revision:(request?.revision??0)+1}));
+  };
   const addDrawing = (pageId: string, path: InkPoint[]) => {
     if (path.length < 2) return;
     const id = uniqueId("drawing");
@@ -290,9 +311,9 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
     const dx = x - start.x, dy = y - start.y;
     const sourceOverlay = start.document.pages.find((page) => page.id === pageId)?.overlays.find((overlay) => overlay.id === id);
     if (!sourceOverlay) return;
-    setHistory((value) => value ? { ...value, present: updateOverlay(value.present, pageId, id, () => sourceOverlay.type === "text"
+    setHistory((value) => value ? { ...value, present: updateOverlay(value.present, pageId, id, () => (sourceOverlay.type === "text" || sourceOverlay.type === "comment")
       ? { ...sourceOverlay, x: sourceOverlay.x + dx, y: sourceOverlay.y + dy }
-      : { ...sourceOverlay, paths: sourceOverlay.paths.map((path) => path.map((point) => ({ x: point.x + dx, y: point.y + dy }))) }) } : value);
+      : sourceOverlay.type === "highlight" ? sourceOverlay : { ...sourceOverlay, paths: sourceOverlay.paths.map((path) => path.map((point) => ({ x: point.x + dx, y: point.y + dy }))) }) } : value);
   };
 
   const chooseTool = (next: Tool) => {
@@ -443,6 +464,8 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
         <button className={`tool-button ${tool === "text" ? "active" : ""}`} disabled={blocked} onClick={() => chooseTool("text")}><Type size={17}/><span>Text</span></button>
         <button className={`tool-button ${tool === "draw" ? "active" : ""}`} disabled={blocked} onClick={() => chooseTool("draw")}><Pencil size={17}/><span>Draw</span></button>
         <button className={`tool-button ${tool === "signature" ? "active" : ""}`} disabled={!!busy} onClick={() => chooseTool("signature")}><PenLine size={17}/><span>Signature</span></button>
+        <button className={`tool-button ${tool === "highlight" ? "active" : ""}`} disabled={blocked} onClick={() => chooseTool("highlight")}><Highlighter size={17}/><span>Highlight</span></button>
+        <button className={`tool-button ${tool === "comment" ? "active" : ""}`} disabled={blocked} onClick={() => chooseTool("comment")}><MessageSquare size={17}/><span>Comment</span></button>
       </div>
       <div className="separator"/>
       <div className="tool-group"><button className="icon-button" aria-label="Undo" disabled={blocked || !history?.past.length} onClick={() => changeHistory("undo")}><Undo2 size={18}/></button><button className="icon-button" aria-label="Redo" disabled={blocked || !history?.future.length} onClick={() => changeHistory("redo")}><Redo2 size={18}/></button></div>
@@ -468,11 +491,13 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
       <div className="document-area">
         {recovery.warning&&<div className="recovery-warning" role="status">{recovery.warning}</div>}
         {searchState.open&&<SearchBar key={"search-"+activeTab!.id} query={searchState.query} onQueryChange={query=>updateSearch({query,index:0})} index={searchState.index} total={search.matches.length} searching={search.searching} error={search.error} hasText={search.hasText} onNext={()=>moveSearch(1)} onPrevious={()=>moveSearch(-1)} onClose={()=>updateSearch({open:false})}/>}
+        {tool === "highlight" && <div className="placement-banner"><Highlighter size={16}/> Drag across selectable text to highlight it. Scanned pages need a text layer.</div>}
+        {tool === "comment" && <div className="placement-banner"><MessageSquare size={16}/> Click a page to add a comment.</div>}
         {pendingSignature && <div className="placement-banner"><PenLine size={16}/> Click a page to place your signature <button aria-label="Cancel signature placement" onClick={() => { setPendingSignature(null); setTool("select"); }}><X size={15}/></button></div>}
         <DocumentViewport key={activeTab!.id} initialScrollPosition={scrollPositions.current.get(activeTab!.id)} onScrollPositionChange={position => { scrollPositions.current.set(activeTab!.id, position); recovery.schedule(); }} adapter={adapter} pages={current.pages} selectedPageId={selectedPage?.id ?? null} selectedOverlayId={current.selectedOverlayId}
           zoom={zoom} onZoomChange={setZoom} viewMode={preferences.viewMode} tool={tool} penColor={preferences.penColor} penWidth={preferences.penWidth}
           pendingSignature={pendingSignature} interactionDisabled={blocked} navigationRequest={navigationRequest} searchMatches={searchState.open?search.matches:[]} activeSearchMatchId={searchMatch?.id}
-          onSelectPage={selectPage} onSelectOverlay={selectOverlay} onAddText={addText} onPlaceSignature={placeSignature} onMoveOverlay={moveOverlay} onDraw={addDrawing}/>
+          onSelectPage={selectPage} onSelectOverlay={selectOverlay} onAddText={addText} onPlaceSignature={placeSignature} onMoveOverlay={moveOverlay} onDraw={addDrawing} onHighlight={addHighlight} onAddComment={addComment}/>
         <div className="page-nav"><button aria-label="Previous page" disabled={blocked || selectedIndex <= 0} onClick={() => navigateToPage(current.pages[selectedIndex - 1].id)}><ChevronLeft size={16}/></button><span>Page {selectedIndex + 1} of {current.pages.length}</span><button aria-label="Next page" disabled={blocked || selectedIndex >= current.pages.length - 1} onClick={() => navigateToPage(current.pages[selectedIndex + 1].id)}><ChevronRight size={16}/></button></div>
       </div>
       <aside className="properties">
@@ -481,29 +506,15 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
           <label className="field-label">Pen color<span className="color-input"><input aria-label="Pen color" type="color" value={preferences.penColor} onChange={(event) => setPreferences({ ...preferences, penColor: event.target.value.toUpperCase() })}/><code>{preferences.penColor}</code></span></label>
           <label className="field-label">Pen width · {preferences.penWidth} pt<input aria-label="Pen width" type="range" min="0.5" max="20" step="0.5" value={preferences.penWidth} onChange={(event) => setPreferences({ ...preferences, penWidth: Number(event.target.value) })}/></label>
           <p>Draw directly on any page. Each stroke can be undone. Switch to Select to move or delete a stroke.</p>
-        </section> : selectedOverlay && selectedPage ? <OverlayProperties autoEdit={selectedOverlay.id === newTextId} onAutoEdited={() => setNewTextId(null)} overlay={selectedOverlay} onChange={(update) => edit((document) => updateOverlay(document, selectedPage.id, selectedOverlay.id, update))} onDelete={() => edit((document) => removeOverlay(document, selectedPage.id, selectedOverlay.id))}/> : selectedPage && <>
+        </section> : selectedOverlay && selectedPage ? <OverlayProperties pageWidth={selectedPage.width} pageHeight={selectedPage.height} autoEdit={selectedOverlay.id === newTextId} onAutoEdited={() => setNewTextId(null)} overlay={selectedOverlay} onChange={(update) => edit((document) => updateOverlay(document, selectedPage.id, selectedOverlay.id, update))} onDelete={() => edit((document) => removeOverlay(document, selectedPage.id, selectedOverlay.id))}/> : selectedPage && <>
           <section className="property-section"><h3>Page</h3><div className="page-summary"><div className="mini-page" style={{ aspectRatio: `${displaySize!.width}/${displaySize!.height}` }}/><div><strong>Page {selectedIndex + 1}</strong><span>{Math.round(selectedPage.width)} × {Math.round(selectedPage.height)} pt</span><small>{selectedPage.rotation ? `${selectedPage.rotation}° clockwise` : "Original orientation"}</small></div></div></section>
           <section className="property-section"><h3>Arrange</h3><div className="property-grid"><button disabled={blocked || selectedIndex <= 0} onClick={() => edit((document) => movePage(document, selectedPage.id, selectedIndex - 1))}><ArrowUp size={16}/>Move up</button><button disabled={blocked || selectedIndex >= current.pages.length - 1} onClick={() => edit((document) => movePage(document, selectedPage.id, selectedIndex + 1))}><ArrowDown size={16}/>Move down</button><button disabled={blocked} onClick={() => edit((document) => rotatePage(document, selectedPage.id))}><RotateCw size={16}/>Rotate</button><button disabled={blocked} onClick={() => { const id = uniqueId("page"); edit((document) => duplicatePage(document, selectedPage.id, id)); setNavigationRequest((request) => ({ pageId: id, revision: (request?.revision ?? 0) + 1 })); }}><Copy size={16}/>Duplicate</button></div></section>
           <section className="property-section"><h3>Page actions</h3><button className="danger-action" disabled={blocked || current.pages.length <= 1} onClick={() => edit((document) => deletePage(document, selectedPage.id))}><Trash2 size={16}/>Delete page</button><p>Source files are never changed.</p></section>
         </>}
+        <ReviewList pages={current.pages} selectedPageId={selectedPage?.id??null} selectedOverlayId={current.selectedOverlayId} disabled={blocked} onSelect={navigateToAnnotation}/>
       </aside>
     </div>
     <footer className="statusbar"><span>{busy ?? notice ?? (dirty ? "Unsaved edits" : "All changes exported")}</span>{failure && <span className="status-error" role="alert">{failure}</span>}<span className="status-spacer"/><span>{selectedPage ? `${Math.round(selectedPage.width)} × ${Math.round(selectedPage.height)} pt` : ""}</span><span>Local only</span></footer>
     {dialogs}
   </div>;
-}
-
-function OverlayProperties({ overlay, onChange, onDelete, autoEdit, onAutoEdited }: { overlay: Overlay; onChange(update: (value: Overlay) => Overlay): void; onDelete(): void; autoEdit: boolean; onAutoEdited(): void }) {
-  const contentRef = useRef<HTMLTextAreaElement>(null);
-  useLayoutEffect(() => {
-    if (autoEdit && contentRef.current) { contentRef.current.focus(); contentRef.current.select(); onAutoEdited(); }
-  }, [autoEdit, overlay.id, onAutoEdited]);
-  return <>
-    <section className="property-section"><h3>{overlay.type === "text" ? "Text" : "Ink"}</h3>{overlay.type === "text" ? <>
-      <label className="field-label">Content<textarea ref={contentRef} value={overlay.text} rows={4} onChange={(event) => onChange((value) => value.type === "text" ? { ...value, text: event.target.value } : value)}/></label>
-      <div className="field-row"><label className="field-label">Size<input type="number" min="6" max="96" value={overlay.fontSize} onChange={(event) => onChange((value) => value.type === "text" ? { ...value, fontSize: Math.max(6, Math.min(96, Number(event.target.value))) } : value)}/></label><label className="field-label">Color<span className="color-input"><input type="color" value={overlay.color} onChange={(event) => onChange((value) => ({ ...value, color: event.target.value.toUpperCase() }))}/><code>{overlay.color}</code></span></label></div>
-      <p>Helvetica · {overlay.text.split("\n").length} {overlay.text.includes("\n") ? "lines" : "line"}</p>
-    </> : <><label className="field-label">Ink color<span className="color-input"><input type="color" value={overlay.color} onChange={(event) => onChange((value) => ({ ...value, color: event.target.value.toUpperCase() }))}/><code>{overlay.color}</code></span></label><label className="field-label">Stroke width · {overlay.strokeWidth} pt<input type="range" min="0.5" max="20" step="0.5" value={overlay.strokeWidth} onChange={(event) => onChange((value) => value.type === "ink" ? { ...value, strokeWidth: Number(event.target.value) } : value)}/></label></>}</section>
-    <section className="property-section"><h3>Position</h3><p>Drag this item directly on the page to move it.</p><button className="danger-action" onClick={onDelete}><Trash2 size={16}/>Delete {overlay.type === "text" ? "text" : "ink"}</button></section>
-  </>;
 }

@@ -1,0 +1,9 @@
+.review-list h3 {display:flex;justify-content:space-between;gap:8px}
+.review-list h3 > span {color:var(--muted);font-weight:normal}
+.review-entry {display:flex;width:100%;gap:9px;text-align:left;padding:10px;margin:5px 0;border:1px solid var(--line);border-radius:7px;background:var(--panel);color:var(--ink)}
+.review-entry:hover,.review-entry.active {border-color:var(--accent);background:var(--control)}
+.review-entry > svg {flex-shrink:0;margin-top:3px}
+.review-entry > span {min-width:0;display:grid;gap:4px}
+.review-entry small {color:var(--muted);font-size:10px}
+.review-entry > span > span {overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;font-size:12px;line-height:1.4}
+.toolbar {overflow-x:auto;flex-shrink:0}

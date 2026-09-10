@@ -20,7 +20,24 @@ export interface InkOverlay {
   strokeWidth: number;
 }
 
-export type Overlay = TextOverlay | InkOverlay;
+export interface AnnotationRect { x: number; y: number; width: number; height: number }
+export interface HighlightOverlay {
+  type: "highlight";
+  id: string;
+  rects: AnnotationRect[];
+  color: string;
+  opacity?: number;
+  text?: string;
+}
+export interface CommentOverlay {
+  type: "comment";
+  id: string;
+  x: number;
+  y: number;
+  text: string;
+  color: string;
+}
+export type Overlay = TextOverlay | InkOverlay | HighlightOverlay | CommentOverlay;
 
 export interface PagePlan {
   id: string;
@@ -35,7 +52,7 @@ export interface PagePlan {
 export interface DocumentInfo {
   id: string;
   name: string;
-  pages: Array<{ width: number; height: number }>;
+  pages: Array<{ width: number; height: number; overlays?: Overlay[] }>;
 }
 
 export interface EditorDocument {

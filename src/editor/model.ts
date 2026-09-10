@@ -32,10 +32,10 @@ export function redo<T>(history: History<T>): History<T> {
   };
 }
 
-function cloneOverlay(overlay: Overlay): Overlay {
-  return overlay.type === "text"
-    ? { ...overlay }
-    : { ...overlay, paths: overlay.paths.map((path) => path.map((point) => ({ ...point }))) };
+export function cloneOverlay(overlay: Overlay): Overlay {
+  if (overlay.type === "ink") return {...overlay, paths: overlay.paths.map(path => path.map(point => ({...point})))};
+  if (overlay.type === "highlight") return {...overlay, rects: overlay.rects.map(rect => ({...rect}))};
+  return {...overlay};
 }
 
 export function duplicatePage(document: EditorDocument, pageId: string, newId: string): EditorDocument {

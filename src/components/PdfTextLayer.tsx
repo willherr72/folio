@@ -1,7 +1,9 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { FolioAdapter } from "../editor/adapter";
-import type { PagePlan, PageText } from "../editor/types";
+import type { AnnotationRect, PagePlan, PageText } from "../editor/types";
 import "./page-interactions.css";
+import "./annotations.css";
+import { registerHighlightLayer } from "../editor/annotation-selection";
 
 import { clearSearchTextCache, readSearchPageText } from "../editor/search";
 export const clearPageTextCache = clearSearchTextCache;
@@ -23,13 +25,21 @@ function usePageText(adapter: FolioAdapter, page: PagePlan) {
   return state.key === key ? state.text : undefined;
 }
 
-export function PdfTextLayer({ adapter, page, pageNumber, selectable }: {
-  adapter: FolioAdapter; page: PagePlan; pageNumber: number; selectable: boolean;
+export function PdfTextLayer({ adapter, page, pageNumber, selectable, highlighting = false, onHighlight }: {
+  adapter: FolioAdapter; page: PagePlan; pageNumber: number; selectable: boolean; highlighting?: boolean; onHighlight?(rects: AnnotationRect[]): void;
 }) {
   const text = usePageText(adapter, page);
   const intrinsicRotation = text?.intrinsicRotation ?? 0;
   const sideways = intrinsicRotation === 90 || intrinsicRotation === 270;
   const layerRef = useRef<HTMLDivElement>(null);
+  const highlightCallback = useRef(onHighlight);
+  highlightCallback.current = onHighlight;
+  useLayoutEffect(() => {
+    if (!highlighting || !selectable || !text) return;
+    const layer = layerRef.current;
+    if (!layer) return;
+    return registerHighlightLayer(layer, { characters: text.characters, rotation: intrinsicRotation, onHighlight: rects => highlightCallback.current?.(rects) });
+  }, [highlighting, selectable, text, intrinsicRotation]);
   useLayoutEffect(() => {
     const spans = layerRef.current?.querySelectorAll<HTMLElement>("[data-pdf-character]");
     // Finish all layout reads before writing transforms: interleaving these
@@ -74,15 +84,16 @@ export function PdfTextLayer({ adapter, page, pageNumber, selectable }: {
   }, [selectable]);
 
   return <foreignObject className="pdf-text-host" width={page.width} height={page.height} pointerEvents={selectable ? "auto" : "none"}>
-    <div ref={layerRef} className="pdf-text-layer" role="document" aria-label={`Page ${pageNumber} text`} data-selectable={selectable}>
+    <div ref={layerRef} className="pdf-text-layer" role="document" aria-label={`Page ${pageNumber} text`} data-selectable={selectable} data-highlighting={highlighting && selectable}>
       {text?.characters.map((character, index) => {
         // Bounds already include source rotation. Restore the glyph's local axes
         // within that rectangle so browser carets face the same way as the PDF.
         const left = character.x + (intrinsicRotation === 90 || intrinsicRotation === 180 ? character.width : 0);
         const top = character.y + (intrinsicRotation === 180 || intrinsicRotation === 270 ? character.height : 0);
         const height = Math.max(1, sideways ? character.width : character.height);
-        return <span key={index} data-pdf-character="" style={{ left, top, fontSize: height, height }}>{character.text}</span>;
+        return <span key={index} data-pdf-character={index} style={{ left, top, fontSize: height, height }}>{character.text}</span>;
       })}
+      {highlighting && ((!adapter.getPageText) || (text && !text.characters.some(character => character.text.trim()))) && <div className="annotation-empty-cue">No embedded text to highlight on this page. Use a comment instead.</div>}
     </div>
   </foreignObject>;
 }

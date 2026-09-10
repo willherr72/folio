@@ -3,7 +3,8 @@ import type { FolioAdapter } from "../editor/adapter";
 import { clientPointToPage, displayDimensions, pageTransform, placeInkPaths } from "../editor/geometry";
 import type { SearchMatch } from "../editor/search";
 import "./search.css";
-import type { InkPoint, Overlay, PagePlan } from "../editor/types";
+import { CommentIcon, HighlightMarks } from "./AnnotationPresentation";
+import type { AnnotationRect, InkPoint, Overlay, PagePlan } from "../editor/types";
 
 import { PdfTextLayer, clearPageTextCache } from "./PdfTextLayer";
 
@@ -101,6 +102,12 @@ function bounds(overlay: Overlay) {
     const lines = overlay.text.split("\n");
     return { x: overlay.x - 4, y: overlay.y - 3, width: Math.max(36, ...lines.map((line) => line.length * overlay.fontSize * .56)) + 8, height: Math.max(overlay.fontSize * 1.2, lines.length * overlay.fontSize * 1.2) + 5 };
   }
+  if (overlay.type === "comment") return { x: overlay.x, y: overlay.y, width: 20, height: 20 };
+  if (overlay.type === "highlight") {
+    if (!overlay.rects.length) return { x: 0, y: 0, width: 0, height: 0 };
+    const x = Math.min(...overlay.rects.map(rect => rect.x)), y = Math.min(...overlay.rects.map(rect => rect.y));
+    return { x, y, width: Math.max(...overlay.rects.map(rect => rect.x + rect.width)) - x, height: Math.max(...overlay.rects.map(rect => rect.y + rect.height)) - y };
+  }
   const points = overlay.paths.flat();
   if (!points.length) return { x: 0, y: 0, width: 0, height: 0 };
   const xs = points.map((point) => point.x);
@@ -116,10 +123,12 @@ interface PageViewProps {
   page: PagePlan;
   pageNumber: number;
   zoom: number;
-  tool: "select" | "text" | "signature" | "draw";
+  tool: "select" | "text" | "signature" | "draw" | "highlight" | "comment";
   selectedOverlayId: string | null;
   pendingSignature: InkPoint[][] | null;
   onDraw?(path: InkPoint[]): void;
+  onHighlight?(rects: AnnotationRect[]): void;
+  onAddComment?(point: InkPoint): void;
   drawColor?: string;
   drawWidth?: number;
   onActivate?(): void;
@@ -143,7 +152,7 @@ export function PageView(props: PageViewProps) {
   const previewPaths = previewEnabled && signaturePoint ? placeInkPaths(pendingSignature!, signaturePoint, page.width, page.height) : [];
   const cssWidth = dimensions.width * zoom / 100;
   const rendered = usePageImage(adapter, page, Math.min(2400, Math.max(600, Math.round(cssWidth * devicePixelRatio))));
-  const cursor = pendingSignature || tool === "draw" ? "crosshair" : tool === "text" ? "text" : "default";
+  const cursor = pendingSignature || tool === "draw" || tool === "comment" ? "crosshair" : tool === "text" || tool === "highlight" ? "text" : "default";
 
   const originalPoint = (event: React.PointerEvent) => {
     const rect = svgRef.current!.getBoundingClientRect();
@@ -194,7 +203,11 @@ export function PageView(props: PageViewProps) {
       svgRef.current?.setPointerCapture(event.pointerId);
     } else if (previewEnabled) { setSignaturePoint(null); props.onPlaceSignature(point); }
     else if (tool === "text") { event.preventDefault(); props.onAddText(point); }
-    else props.onSelectOverlay(null);
+    else if (tool === "comment") { event.preventDefault(); props.onAddComment?.(point); }
+    else {
+      const highlight = tool === "select" ? [...page.overlays].reverse().find(overlay => overlay.type === "highlight" && overlay.rects.some(rect => point.x >= rect.x && point.x <= rect.x + rect.width && point.y >= rect.y && point.y <= rect.y + rect.height)) : undefined;
+      props.onSelectOverlay(highlight?.id ?? null);
+    }
   };
 
   const startDrag = (event: React.PointerEvent, overlay: Overlay) => {
@@ -203,7 +216,7 @@ export function PageView(props: PageViewProps) {
     if (props.interactionDisabled || event.button !== 0 || dragRef.current) return;
     props.onActivate?.();
     props.onSelectOverlay(overlay.id);
-    if (tool !== "select") return;
+    if (tool !== "select" || overlay.type === "highlight") return;
     const value = originalPoint(event);
     const box = bounds(overlay);
     dragRef.current = { id: overlay.id, pointer: event.pointerId, offset: { x: value.x - box.x, y: value.y - box.y } };
@@ -256,20 +269,22 @@ export function PageView(props: PageViewProps) {
         onPointerLeave={() => setSignaturePoint(null)} onPointerDown={handleBackground} onPointerMove={moveDrag} onPointerUp={(event) => finishPointer(event)} onPointerCancel={(event) => finishPointer(event, true)} onLostPointerCapture={(event) => finishPointer(event, true)}>
         <g transform={pageTransform(page.width, page.height, page.rotation) || undefined}>
           {rendered.url ? <image href={rendered.url} width={page.width} height={page.height} preserveAspectRatio="none" /> : <rect width={page.width} height={page.height} fill="#fff" />}
+          {page.overlays.map(overlay => overlay.type === "highlight" ? <HighlightMarks key={overlay.id} overlay={overlay} selected={overlay.id === selectedOverlayId} /> : null)}
           {!!props.searchMatches?.length && <g className="search-highlights" aria-hidden="true">{props.searchMatches.map((match) => match.rects.map((rect, index) =>
             <rect key={`${match.id}:${index}`} {...rect} className={`search-highlight${match.id === props.activeSearchMatchId ? " active" : ""}`} />))}</g>}
-          <PdfTextLayer adapter={adapter} page={page} pageNumber={pageNumber} selectable={tool === "select" && !pendingSignature && !props.interactionDisabled} />
+          <PdfTextLayer adapter={adapter} page={page} pageNumber={pageNumber} selectable={(tool === "select" || tool === "highlight") && !pendingSignature && !props.interactionDisabled} highlighting={tool === "highlight"} onHighlight={props.onHighlight} />
           {previewPaths.length > 0 && <g className="signature-preview" aria-hidden="true">{previewPaths.map((path, index) => <polyline key={index} points={path.map((point) => `${point.x},${point.y}`).join(" ")} fill="none" stroke={props.drawColor ?? "#2D2A26"} strokeWidth={props.drawWidth ?? 2} strokeLinecap="round" strokeLinejoin="round" />)}</g>}
           {draft.length > 0 && <polyline className="draft-ink" points={draft.map((point) => `${point.x},${point.y}`).join(" ")} fill="none" stroke={props.drawColor ?? "#2D2A26"} strokeWidth={props.drawWidth ?? 2} strokeLinecap="round" strokeLinejoin="round" pointerEvents="none" />}
           {page.overlays.map((overlay) => {
+            if (overlay.type === "highlight") return null;
             const selected = overlay.id === selectedOverlayId;
             const box = bounds(overlay);
-            return <g key={overlay.id} data-overlay={overlay.id} className={`overlay ${selected ? "selected" : ""}`} onPointerDown={(event) => startDrag(event, overlay)}>
+            return <g key={overlay.id} data-overlay={overlay.id} className={`overlay ${selected ? "selected" : ""}`} role="button" tabIndex={props.interactionDisabled ? -1 : 0} aria-label={overlay.type === "comment" ? `Comment: ${overlay.text || "Empty comment"}` : overlay.type === "text" ? `Text: ${overlay.text}` : "Ink annotation"} onKeyDown={(event) => { if (!props.interactionDisabled && (event.key === "Enter" || event.key === " ")) { event.preventDefault(); props.onActivate?.(); props.onSelectOverlay(overlay.id); } }} onPointerDown={(event) => startDrag(event, overlay)}>
               {overlay.type === "text" ? (
                 <text x={overlay.x} y={overlay.y + overlay.fontSize} fill={overlay.color} xmlSpace="preserve" style={{ whiteSpace: "pre" }} fontFamily="Arial, Helvetica, sans-serif" fontSize={overlay.fontSize}>
                   {overlay.text.split("\n").map((line, index) => <tspan key={index} x={overlay.x} dy={index === 0 ? 0 : overlay.fontSize * 1.2}>{line || " "}</tspan>)}
                 </text>
-              ) : overlay.paths.map((path, index) => <polyline key={index} points={path.map((point) => `${point.x},${point.y}`).join(" ")} fill="none" stroke={overlay.color} strokeWidth={overlay.strokeWidth} strokeLinecap="round" strokeLinejoin="round" />)}
+              ) : overlay.type === "comment" ? <CommentIcon overlay={overlay} /> : overlay.paths.map((path, index) => <polyline key={index} points={path.map((point) => `${point.x},${point.y}`).join(" ")} fill="none" stroke={overlay.color} strokeWidth={overlay.strokeWidth} strokeLinecap="round" strokeLinejoin="round" />)}
               {selected && <rect className="selection-box" x={box.x} y={box.y} width={box.width} height={box.height} />}
             </g>;
           })}
@@ -299,6 +314,8 @@ function ThumbnailImage({ adapter, page }: { adapter: FolioAdapter; page: PagePl
       {rendered.url ? <image href={rendered.url} width={page.width} height={page.height} /> : <rect width={page.width} height={page.height} fill="#fff" />}
       {page.overlays.map((overlay) => overlay.type === "text"
         ? <text key={overlay.id} x={overlay.x} y={overlay.y + overlay.fontSize} fontSize={overlay.fontSize} fontFamily="Arial, Helvetica, sans-serif" fill={overlay.color} xmlSpace="preserve" style={{ whiteSpace: "pre" }}>{overlay.text.split("\n")[0]}</text>
+        : overlay.type === "highlight" ? <HighlightMarks key={overlay.id} overlay={overlay} />
+        : overlay.type === "comment" ? <CommentIcon key={overlay.id} overlay={overlay} />
         : <g key={overlay.id}>{overlay.paths.map((path, i) => <polyline key={i} points={path.map((point) => `${point.x},${point.y}`).join(" ")} fill="none" stroke={overlay.color} strokeWidth={overlay.strokeWidth} />)}</g>)}
     </g>
   </svg>;

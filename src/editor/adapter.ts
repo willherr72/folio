@@ -1,3 +1,4 @@
+import { cloneOverlay } from "./model";
 import { invoke } from "@tauri-apps/api/core";
 import type { DocumentInfo, PagePlan, PageText } from "./types";
 
@@ -126,6 +127,6 @@ export function documentToPages(info: DocumentInfo): PagePlan[] {
     width: page.width,
     height: page.height,
     rotation: 0,
-    overlays: [],
+    overlays: (page.overlays ?? []).map(cloneOverlay),
   }));
 }

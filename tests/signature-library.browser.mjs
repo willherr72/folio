@@ -1,0 +1,40 @@
+import {chromium,expect} from "@playwright/test";
+import {mkdirSync} from "node:fs";
+const origin=process.env.FOLIO_SIGNATURE_TEST_ORIGIN??"http://127.0.0.1:1426";
+const browser=await chromium.launch({headless:true});
+try{
+ const page=await browser.newPage({viewport:{width:1050,height:800}});
+ const errors=[];page.on("pageerror",error=>errors.push(error.message));
+ await page.goto(`${origin}/tests/fixtures/signature-library.html`);
+ await page.getByRole("button",{name:"Open signature library"}).click();
+ expect((await page.getByRole("dialog").boundingBox()).width).toBeGreaterThan(600);
+ const canvas=page.getByLabel("Signature drawing area");const box=await canvas.boundingBox();
+ await page.mouse.move(box.x+20,box.y+80);await page.mouse.down();
+ for(const [x,y] of [[65,25],[95,90],[140,35],[190,75],[250,45]])await page.mouse.move(box.x+x,box.y+y,{steps:4});
+ await page.mouse.up();
+ await page.getByLabel("Signature name").fill("Everyday");
+ await page.getByRole("button",{name:"Save to library"}).click();
+ await expect(page.getByRole("button",{name:"Select signature Everyday"})).toBeVisible();
+ mkdirSync("artifacts/signature-library",{recursive:true});
+ await page.screenshot({path:"artifacts/signature-library/saved.png"});
+ await page.getByRole("button",{name:"Use signature"}).click();
+ const accepted=await page.locator("output").textContent();expect(JSON.parse(accepted)[0].length).toBeGreaterThan(5);
+ await page.reload();await page.getByRole("button",{name:"Open signature library"}).click();
+ await page.getByRole("button",{name:"Select signature Everyday"}).click();
+ await page.getByRole("button",{name:"Use signature"}).click();
+ await expect(page.locator("output")).toHaveText(accepted);
+ await page.getByRole("button",{name:"Open signature library"}).click();
+ await page.getByRole("button",{name:"Select signature Everyday"}).click();
+ await page.getByLabel("Signature name").fill("Full signature");await page.getByRole("button",{name:"Rename",exact:true}).click();
+ await expect(page.getByRole("button",{name:"Select signature Full signature"})).toBeVisible();
+ await page.setViewportSize({width:480,height:740});
+ await page.screenshot({path:"artifacts/signature-library/narrow.png"});
+ await expect(page.getByRole("button",{name:"Use signature"})).toBeVisible();
+ await page.getByRole("button",{name:"Delete saved signature"}).click();
+ await expect(page.getByRole("button",{name:"Use signature"})).toBeDisabled();
+ await page.reload();await page.getByRole("button",{name:"Open signature library"}).click();
+ await expect(page.getByRole("button",{name:/Select signature/})).toHaveCount(0);
+ expect(errors).toEqual([]);
+ console.log("Signature draw/save, reload/reuse, rename/delete and narrow layout passed; no browser errors.");
+}finally{await browser.close();}
+

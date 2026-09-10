@@ -6,7 +6,7 @@ try{
  const page=await browser.newPage({viewport:{width:1440,height:1050}});
  const cdp=await page.context().newCDPSession(page);
  await cdp.send('Performance.enable');
- await page.goto("http://127.0.0.1:1423/tests/fixtures/tab-performance.html?characters="+characters);
+ await page.goto((process.env.FOLIO_PERF_ORIGIN || "http://127.0.0.1:1423")+"/tests/fixtures/tab-performance.html?characters="+characters);
  await page.getByRole('button',{name:'Open a PDF',exact:true}).click();
  await expect(page.locator('[data-pdf-character]')).toHaveCount(characters);
  await page.getByRole('button',{name:'Open',exact:true}).click();

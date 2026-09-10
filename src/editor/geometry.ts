@@ -1,4 +1,4 @@
-import type { Rotation } from "./types";
+import type { InkOverlay, Rotation } from "./types";
 
 export interface Point { x: number; y: number }
 
@@ -79,4 +79,17 @@ export function clientPointToPage(
     x: Math.max(0, Math.min(width, original.x)),
     y: Math.max(0, Math.min(height, original.y)),
   };
+}
+/** Proportional resize around the ink origin, constrained to the source page. */
+export function resizeInk(ink: InkOverlay, requestedWidth: number, pageWidth: number, pageHeight: number): InkOverlay {
+  if (!Number.isFinite(requestedWidth) || requestedWidth <= 0) return ink;
+  const points = ink.paths.flat();
+  if (!points.length) return ink;
+  const box = points.reduce((b,p) => ({left: Math.min(b.left,p.x),top: Math.min(b.top,p.y),right: Math.max(b.right,p.x),bottom: Math.max(b.bottom,p.y)}), {left:Infinity,top:Infinity,right:-Infinity,bottom:-Infinity});
+  const width = box.right-box.left, height = box.bottom-box.top;
+  if (width <= 0 || box.left >= pageWidth || box.top >= pageHeight) return ink;
+  const originX = Math.max(0, box.left), originY = Math.max(0, box.top);
+  const scale = Math.min(requestedWidth/width, (pageWidth-originX)/width, height>0 ? (pageHeight-originY)/height : Infinity);
+  if (!Number.isFinite(scale) || scale<=0 || (scale===1 && originX===box.left && originY===box.top)) return ink;
+  return {...ink, paths:ink.paths.map(path=>path.map(point=>({x:originX+(point.x-box.left)*scale,y:originY+(point.y-box.top)*scale})))};
 }

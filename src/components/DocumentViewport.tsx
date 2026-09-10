@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { FolioAdapter } from "../editor/adapter";
 import { displayDimensions, toDisplayPoint } from "../editor/geometry";
-import type { InkPoint, PagePlan } from "../editor/types";
+import type { AnnotationRect, InkPoint, PagePlan } from "../editor/types";
 import type { SearchMatch, SearchRect } from "../editor/search";
 import { PageView } from "./PageView";
 
@@ -17,7 +17,7 @@ export interface DocumentViewportProps {
   zoom: number;
   onZoomChange(zoom: number): void;
   viewMode: "continuous" | "single";
-  tool: "select" | "text" | "signature" | "draw";
+  tool: "select" | "text" | "signature" | "draw" | "highlight" | "comment";
   penColor: string;
   penWidth: number;
   pendingSignature: InkPoint[][] | null;
@@ -29,6 +29,8 @@ export interface DocumentViewportProps {
   onPlaceSignature(pageId: string, point: InkPoint): void;
   onMoveOverlay(pageId: string, id: string, x: number, y: number, phase: "start" | "move" | "end"): void;
   onDraw(pageId: string, path: InkPoint[]): void;
+  onHighlight?(pageId: string, rects: AnnotationRect[]): void;
+  onAddComment?(pageId: string, point: InkPoint): void;
 }
 
 interface ZoomAnchor { pageId: string; x: number; y: number; clientX: number; clientY: number }
@@ -49,6 +51,7 @@ export function DocumentViewport(props: DocumentViewportProps) {
   latest.current = props;
   const [nearby, setNearby] = useState<Set<string>>(() => new Set([props.selectedPageId ?? props.pages[0]?.id]));
   const [activePage, setActivePage] = useState<string | null>(null);
+  const textGesture = useRef(false);
   const zoomAnchor = useRef<ZoomAnchor | null>(null);
   const renderedPages = props.viewMode === "single"
     ? props.pages.filter((page) => page.id === (props.selectedPageId ?? props.pages[0]?.id))
@@ -67,7 +70,12 @@ export function DocumentViewport(props: DocumentViewportProps) {
       const visible = Math.max(0, Math.min(rect.bottom, viewport.bottom) - Math.max(rect.top, viewport.top));
       if (visible > bestVisible) { bestVisible = visible; bestPage = id; }
     }
-    setNearby((previous) => previous.size === next.size && [...next].every((id) => previous.has(id)) ? previous : next);
+    setNearby((previous) => {
+      // Native ranges depend on their text nodes, including pages traversed
+      // while scrolling. Release the retained pages after pointerup is consumed.
+      if (textGesture.current) for (const id of previous) next.add(id);
+      return previous.size === next.size && [...next].every((id) => previous.has(id)) ? previous : next;
+    });
     const current = latest.current;
     if (selectPage && !current.interactionDisabled && current.viewMode === "continuous" && bestPage && bestPage !== current.selectedPageId) current.onSelectPage(bestPage);
   }, []);
@@ -86,6 +94,19 @@ export function DocumentViewport(props: DocumentViewportProps) {
     }
     measure();
   }, [props.zoom, props.pages, props.viewMode, measure]);
+
+  useEffect(() => {
+    let releaseTimer: ReturnType<typeof setTimeout> | undefined;
+    const release = () => {
+      clearTimeout(releaseTimer);
+      // Native document listeners finish gathering selected glyphs first.
+      releaseTimer = setTimeout(() => { textGesture.current = false; setActivePage(null); measure(); }, 0);
+    };
+    document.addEventListener("pointerup", release);
+    document.addEventListener("pointercancel", release);
+    return () => { clearTimeout(releaseTimer); document.removeEventListener("pointerup", release); document.removeEventListener("pointercancel", release); };
+  }, [measure]);
+  useEffect(() => { textGesture.current = false; measure(); }, [props.tool, props.viewMode, props.interactionDisabled, measure]);
 
   const lastNavigation = useRef<string | null>(props.initialScrollPosition && props.navigationRequest ? props.navigationRequest.pageId + ":" + props.navigationRequest.revision : null);
   useLayoutEffect(() => {
@@ -153,10 +174,11 @@ export function DocumentViewport(props: DocumentViewportProps) {
   return <main ref={hostRef} className="viewport document-viewport" aria-label="Document" onScroll={(event) => { props.onScrollPositionChange?.({top:event.currentTarget.scrollTop,left:event.currentTarget.scrollLeft}); measure(true); }}
     onPointerDownCapture={(event) => {
       if (props.interactionDisabled) return;
+      textGesture.current = !!(event.target as Element).closest('[data-selectable="true"]');
       const page = (event.target as Element).closest<HTMLElement>("[data-page-id]");
       if (page) setActivePage(page.dataset.pageId ?? null);
     }}
-    onPointerUpCapture={() => setActivePage(null)} onPointerCancelCapture={() => setActivePage(null)} onLostPointerCapture={() => setActivePage(null)}>
+    onPointerUpCapture={() => { if (!textGesture.current) setActivePage(null); }} onPointerCancelCapture={() => { if (!textGesture.current) setActivePage(null); }} onLostPointerCapture={() => { if (!textGesture.current) setActivePage(null); }}>
     <div className="document-pages">
       {renderedPages.map((page) => {
         const dimensions = displayDimensions(page.width, page.height, page.rotation);
@@ -174,6 +196,8 @@ export function DocumentViewport(props: DocumentViewportProps) {
             onAddText={(point) => props.onAddText(page.id, point)}
             onPlaceSignature={(point) => props.onPlaceSignature(page.id, point)}
             onMoveOverlay={(id, x, y, phase) => props.onMoveOverlay(page.id, id, x, y, phase)}
+            onHighlight={(rects) => props.onHighlight?.(page.id, rects)}
+            onAddComment={(point) => props.onAddComment?.(page.id, point)}
             onDraw={(path) => props.onDraw(page.id, path)} />
             : <div className="page-placeholder" aria-label={`Page ${pageNumber} preview`} />}
         </div>;
