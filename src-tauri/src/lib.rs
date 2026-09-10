@@ -9,3 +9,7 @@ pub use types::{
 };
 
 pub use app::run;
+
+mod recovery;
+pub use recovery::RecoveryStore;
+pub mod printing;

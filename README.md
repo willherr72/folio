@@ -12,8 +12,8 @@ Extract it and open **Folio.exe**. Keep the resources folder beside the executab
 Microsoft Edge WebView2 Runtime is required.
 
 In this development checkout, double-click **Launch Folio.cmd** after building.
-Version 0.3.1 lives in **artifacts/Folio-v0.3.1/Folio.exe**.
-The ZIP is **artifacts/Folio-v0.3.1-windows-x64.zip**.
+Version 0.4.0 lives in **artifacts/Folio-v0.4.0/Folio.exe**.
+The ZIP is **artifacts/Folio-v0.4.0-windows-x64.zip**.
 
 ## Everyday editing
 
@@ -35,6 +35,14 @@ The ZIP is **artifacts/Folio-v0.3.1-windows-x64.zip**.
   to zoom around the pointer.
 - **Settings:** choose Light, Dark or System theme, continuous or single-page
   view, default zoom, pen color and pen width. Preferences are remembered.
+- **Search:** Ctrl+F finds words or phrases in embedded PDF text and your added text.
+  Enter/Shift+Enter move through highlighted results; Escape closes search. Each tab remembers its search.
+- **Print:** Ctrl+P prints the current edits. Choose all pages, the current page, or
+  a range, then fit/actual size and orientation. The Windows dialog selects the printer,
+  paper and copies. Printing does not mark your edits saved.
+- **Recovery:** local checkpoints preserve native tabs, edits, page arrangement,
+  zoom and scroll after an unexpected exit. On restart, restore or discard the workspace.
+  Source snapshots allow recovery even if the original PDFs moved. Undo history starts fresh.
 - **Save a copy:** export a new PDF while preserving source vector content.
 
 Start with **examples/Welcome to Folio.pdf**. Ctrl+Z/Ctrl+Shift+Z undo and redo;
@@ -55,7 +63,29 @@ Dark mode changes the interface; PDF pages retain their original colors.
   produce an export error instead of silently disappearing.
 - Search, printing, OCR, redaction, form editing and password-protected PDFs are
   not implemented.
+- Printing uses bounded raster images (up to 2400 pixels wide), so it does not preserve
+  selectable/vector text in virtual-printer output. Save a copy preserves source vectors.
+- Opened PDFs are held as immutable source bytes, with a 512 MiB per-file limit.
 - Windows x64 is the tested target. Foxit performance parity has not been established.
+
+## Local recovery data
+
+Folio checkpoints after one second of inactivity, or within five seconds during continuous
+editing. A crash can lose changes since the last successful checkpoint. Confirmed normal
+closing discards recovery data; cancelling a close keeps your work. Source files are never
+automatically overwritten. Recovery is separate from saving a PDF with editable handles.
+
+Data lives under the application local-data folder (normally
+%LOCALAPPDATA%/com.folio.desktop/recovery). Set **FOLIO_DATA_DIR** to choose a different
+local data directory. A second instance using the same directory can continue with
+recovery disabled; it cannot overwrite the first instance's checkpoints. Failed checkpoints
+show a visible warning. Checkpoints are limited to 32 MiB of edit/view metadata.
+
+## Roadmap
+
+[GitHub Issues](https://github.com/willherr72/folio/issues) is the central backlog.
+Milestones group v0.4 recovery/search/printing, v0.5 reusable signatures/highlights,
+v0.6 editable persistence/extensive testing, and v0.7 existing-word editing.
 
 ## Build from source
 

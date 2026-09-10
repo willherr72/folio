@@ -9,7 +9,7 @@ export interface DocumentSession {
   history: History<EditorDocument>;
   savedDigest: string;
   zoom: number;
-  navigationRequest: {pageId: string; revision: number} | null;
+  navigationRequest: {pageId: string; revision: number; rect?:{x:number;y:number;width:number;height:number}} | null;
 }
 export interface Workspace { tabs: DocumentSession[]; activeId: string | null }
 export function emptyWorkspace(): Workspace { return { tabs: [], activeId: null }; }

@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { FolioAdapter } from "../editor/adapter";
 import { clientPointToPage, displayDimensions, pageTransform, placeInkPaths } from "../editor/geometry";
+import type { SearchMatch } from "../editor/search";
+import "./search.css";
 import type { InkPoint, Overlay, PagePlan } from "../editor/types";
 
 import { PdfTextLayer, clearPageTextCache } from "./PdfTextLayer";
@@ -108,6 +110,8 @@ function bounds(overlay: Overlay) {
 }
 
 interface PageViewProps {
+  searchMatches?: SearchMatch[];
+  activeSearchMatchId?: string | null;
   adapter: FolioAdapter;
   page: PagePlan;
   pageNumber: number;
@@ -252,6 +256,8 @@ export function PageView(props: PageViewProps) {
         onPointerLeave={() => setSignaturePoint(null)} onPointerDown={handleBackground} onPointerMove={moveDrag} onPointerUp={(event) => finishPointer(event)} onPointerCancel={(event) => finishPointer(event, true)} onLostPointerCapture={(event) => finishPointer(event, true)}>
         <g transform={pageTransform(page.width, page.height, page.rotation) || undefined}>
           {rendered.url ? <image href={rendered.url} width={page.width} height={page.height} preserveAspectRatio="none" /> : <rect width={page.width} height={page.height} fill="#fff" />}
+          {!!props.searchMatches?.length && <g className="search-highlights" aria-hidden="true">{props.searchMatches.map((match) => match.rects.map((rect, index) =>
+            <rect key={`${match.id}:${index}`} {...rect} className={`search-highlight${match.id === props.activeSearchMatchId ? " active" : ""}`} />))}</g>}
           <PdfTextLayer adapter={adapter} page={page} pageNumber={pageNumber} selectable={tool === "select" && !pendingSignature && !props.interactionDisabled} />
           {previewPaths.length > 0 && <g className="signature-preview" aria-hidden="true">{previewPaths.map((path, index) => <polyline key={index} points={path.map((point) => `${point.x},${point.y}`).join(" ")} fill="none" stroke={props.drawColor ?? "#2D2A26"} strokeWidth={props.drawWidth ?? 2} strokeLinecap="round" strokeLinejoin="round" />)}</g>}
           {draft.length > 0 && <polyline className="draft-ink" points={draft.map((point) => `${point.x},${point.y}`).join(" ")} fill="none" stroke={props.drawColor ?? "#2D2A26"} strokeWidth={props.drawWidth ?? 2} strokeLinecap="round" strokeLinejoin="round" pointerEvents="none" />}

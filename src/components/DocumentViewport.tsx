@@ -1,10 +1,13 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { FolioAdapter } from "../editor/adapter";
-import { displayDimensions } from "../editor/geometry";
+import { displayDimensions, toDisplayPoint } from "../editor/geometry";
 import type { InkPoint, PagePlan } from "../editor/types";
+import type { SearchMatch, SearchRect } from "../editor/search";
 import { PageView } from "./PageView";
 
 export interface DocumentViewportProps {
+  searchMatches?: SearchMatch[];
+  activeSearchMatchId?: string | null;
   initialScrollPosition?: { top: number; left: number };
   onScrollPositionChange?(position: { top: number; left: number }): void;
   adapter: FolioAdapter;
@@ -19,7 +22,7 @@ export interface DocumentViewportProps {
   penWidth: number;
   pendingSignature: InkPoint[][] | null;
   interactionDisabled: boolean;
-  navigationRequest: { pageId: string; revision: number } | null;
+  navigationRequest: { pageId: string; revision: number; rect?: SearchRect } | null;
   onSelectPage(id: string): void;
   onSelectOverlay(pageId: string, id: string | null): void;
   onAddText(pageId: string, point: InkPoint): void;
@@ -31,6 +34,15 @@ export interface DocumentViewportProps {
 interface ZoomAnchor { pageId: string; x: number; y: number; clientX: number; clientY: number }
 
 export function DocumentViewport(props: DocumentViewportProps) {
+  const searchByPage = useMemo(() => {
+    const grouped = new Map<string, SearchMatch[]>();
+    for (const match of props.searchMatches ?? []) {
+      const matches = grouped.get(match.pageId) ?? [];
+      matches.push(match);
+      grouped.set(match.pageId, matches);
+    }
+    return grouped;
+  }, [props.searchMatches]);
   const hostRef = useRef<HTMLElement>(null);
   const slots = useRef(new Map<string, HTMLDivElement>());
   const latest = useRef(props);
@@ -98,7 +110,16 @@ export function DocumentViewport(props: DocumentViewportProps) {
     lastNavigation.current = token;
     const rect = target.getBoundingClientRect();
     const viewport = host.getBoundingClientRect();
-    host.scrollTop += rect.top - viewport.top - 38;
+    const page = props.pages.find((item) => item.id === targetId);
+    const matchRect = !modeChanged ? request?.rect : undefined;
+    if (page && matchRect) {
+      const start = toDisplayPoint({ x: matchRect.x, y: matchRect.y }, page.width, page.height, page.rotation);
+      const end = toDisplayPoint({ x: matchRect.x + matchRect.width, y: matchRect.y + matchRect.height }, page.width, page.height, page.rotation);
+      const scale = props.zoom / 100;
+      const width = Math.abs(end.x - start.x) * scale, height = Math.abs(end.y - start.y) * scale;
+      host.scrollLeft = Math.max(0, host.scrollLeft + rect.left - viewport.left + Math.min(start.x, end.x) * scale - Math.max(24, (viewport.width - width) / 2));
+      host.scrollTop = Math.max(0, host.scrollTop + rect.top - viewport.top + Math.min(start.y, end.y) * scale - Math.max(24, (viewport.height - height) / 2));
+    } else host.scrollTop += rect.top - viewport.top - 38;
     measure();
   }, [props.navigationRequest, props.selectedPageId, props.pages, props.viewMode, measure]);
 
@@ -145,6 +166,7 @@ export function DocumentViewport(props: DocumentViewportProps) {
           ref={(element) => { if (element) slots.current.set(page.id, element); else slots.current.delete(page.id); }}
           style={{ width: dimensions.width * props.zoom / 100, height: dimensions.height * props.zoom / 100 }}>
           {mounted ? <PageView adapter={props.adapter} page={page} pageNumber={pageNumber} zoom={props.zoom} tool={props.tool}
+            searchMatches={searchByPage.get(page.id)} activeSearchMatchId={props.activeSearchMatchId}
             selectedOverlayId={page.id === props.selectedPageId ? props.selectedOverlayId : null}
             pendingSignature={props.pendingSignature} drawColor={props.penColor} drawWidth={props.penWidth} interactionDisabled={props.interactionDisabled}
             onActivate={() => props.onSelectPage(page.id)}

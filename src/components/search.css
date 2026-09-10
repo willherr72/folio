@@ -1,0 +1,11 @@
+.search-bar { flex: 0 0 auto; padding: 8px 12px; background: var(--toolbar); border-bottom: 1px solid var(--line); color: var(--ink); z-index: 4; }
+.search-controls { display: flex; align-items: center; gap: 6px; }
+.search-controls > svg { flex-shrink: 0; color: var(--muted); }
+.search-controls input { min-width: 80px; width: 210px; flex: 1; height: 32px; padding: 5px 9px; border: 1px solid var(--line); border-radius: 6px; color: var(--ink); background: var(--control); font-size: 12px; }
+.search-count { color: var(--muted); font-size: 11px; white-space: nowrap; min-width: 52px; text-align: center; padding-inline: 5px; }
+.search-controls .icon-button { flex-shrink: 0; width: 28px; }
+.search-error { color: var(--error); font-size: 11px; margin: 7px 0 0; max-height: 48px; overflow: auto; }
+.search-highlights { pointer-events: none; }
+.search-highlight { fill: #f3d33b; fill-opacity: .34; }
+.search-highlight.active { fill: #ed8533; fill-opacity: .48; stroke: #bc5518; stroke-width: 1.2; vector-effect: non-scaling-stroke; }
+@media (max-width: 700px) { .search-controls { flex-wrap: wrap; } .search-controls input { flex-basis: 110px; } .search-count { font-size: 10px; } }

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type SetStateAction } from "react";
 import {
   ArrowDown, ArrowUp, ChevronLeft, ChevronRight, Copy, Download, FilePlus2, FolderOpen,
-  GripVertical, Minus, MousePointer2, PenLine, Pencil, Plus, Redo2, RotateCw, Settings, Trash2, Type, Undo2, X,
+  GripVertical, Search, Printer, Minus, MousePointer2, PenLine, Pencil, Plus, Redo2, RotateCw, Settings, Trash2, Type, Undo2, X,
 } from "lucide-react";
 import { createDemoAdapter, documentToPages, nativeAdapter, type FolioAdapter } from "./editor/adapter";
 import { displayDimensions, placeInkPaths } from "./editor/geometry";
@@ -17,6 +17,13 @@ import { DocumentViewport } from "./components/DocumentViewport";
 import { SignaturePad } from "./components/SignaturePad";
 import { ConfirmDialog } from "./components/ConfirmDialog";
 import { SettingsDialog } from "./components/SettingsDialog";
+import {useWorkspaceRecovery} from "./editor/useWorkspaceRecovery";
+import {useDocumentSearch} from "./editor/search";
+import {SearchBar} from "./components/SearchBar";
+import {PrintDialog} from "./components/PrintDialog";
+import {RecoveryDialog} from "./components/RecoveryDialog";
+import {printPdf,type PrintOptions} from "./editor/printing";
+import type {PagePlan} from "./editor/types";
 import "./styles.css";
 
 interface AppProps { initialDemo?: boolean }
@@ -34,6 +41,18 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
   const zoom = activeTab?.zoom ?? preferences.defaultZoom;
   const navigationRequest = activeTab?.navigationRequest ?? null;
   const scrollPositions = useRef(new Map<string, ScrollPosition>());
+  const isDesktop = "__TAURI_INTERNALS__" in window;
+  const recovery = useWorkspaceRecovery(isDesktop,workspace,setWorkspace,scrollPositions);
+  const recoveryCurrent = useRef(recovery); recoveryCurrent.current = recovery;
+  const [printOpen,setPrintOpen] = useState(false);
+  const [searchTabs,setSearchTabs] = useState<Record<string,{open:boolean;query:string;index:number}>>({});
+  const searchState = searchTabs[workspace.activeId??""]??{open:false,query:"",index:0};
+  const search = useDocumentSearch(adapter,history?.present.pages??[],searchState.query,searchState.open);
+  const searchMatch = search.matches[Math.min(searchState.index,search.matches.length-1)];
+  const updateSearch = useCallback((patch:Partial<typeof searchState>)=>{
+    if(!workspace.activeId)return;
+    setSearchTabs(value=>({...value,[workspace.activeId!]:{...(value[workspace.activeId!]??{open:false,query:"",index:0}),...patch}}));
+  },[workspace.activeId]);
   const [newTextId, setNewTextId] = useState<string | null>(null);
   const setHistory = useCallback((action: SetStateAction<History<EditorDocument> | null>) => {
     setWorkspace(value => updateSession(value, workspace.activeId, tab => {
@@ -64,13 +83,11 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
   const dirty = current ? planDigest(current) !== savedDigest : false;
   const selectedPage = current?.pages.find((page) => page.id === current.selectedPageId) ?? current?.pages[0] ?? null;
   const selectedOverlay = selectedPage?.overlays.find((overlay) => overlay.id === current?.selectedOverlayId) ?? null;
-  const modalOpen = signatureOpen || settingsOpen || !!confirmation;
+  const modalOpen = signatureOpen || settingsOpen || printOpen || !!confirmation || !recovery.ready;
   const blocked = modalOpen || !!busy;
   const dirtyTabs = workspace.tabs.filter(tab => planDigest(tab.history.present) !== tab.savedDigest);
   const closeState = useRef({ dirty:dirtyTabs.length > 0, blocked, dirtyCount:dirtyTabs.length });
   closeState.current = { dirty:dirtyTabs.length > 0, blocked, dirtyCount:dirtyTabs.length };
-  const isDesktop = "__TAURI_INTERNALS__" in window;
-
   useEffect(() => setZoom(preferences.defaultZoom), [preferences.defaultZoom]);
 
   const settleDecision = useCallback((accepted: boolean) => {
@@ -92,6 +109,30 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
   }, []);
   useEffect(() => () => { decision.current?.(false); decision.current = null; }, []);
 
+  useEffect(()=>{
+    if(searchState.open&&searchMatch){
+      setHistory(value=>value?{...value,present:{...value.present,selectedPageId:searchMatch.pageId,selectedOverlayId:null}}:value);
+      setNavigationRequest(request=>({pageId:searchMatch.pageId,rect:searchMatch.rects[0],revision:(request?.revision??0)+1}));
+    }
+  },[searchState.open,searchMatch?.id,workspace.activeId]);
+  const openSearch=useCallback(()=>{
+    if(blocked||!current)return;
+    updateSearch({open:true});setTool("select");setPendingSignature(null);
+    document.querySelector<HTMLInputElement>('[aria-label="Find in document"]')?.select();
+  },[blocked,current,updateSearch]);
+  const moveSearch=(direction:number)=>{if(search.matches.length)updateSearch({index:(Math.min(searchState.index,search.matches.length-1)+direction+search.matches.length)%search.matches.length});};
+  const openPrint=useCallback(()=>{
+    if(blocked||!current)return;
+    if(adapter.kind!=="native"||!isDesktop){setFailure("Printing is available for PDFs in the Windows desktop app.");return;}
+    setPrintOpen(true);
+  },[blocked,current,adapter.kind,isDesktop]);
+  const startPrint=async(pages:PagePlan[],options:PrintOptions)=>{
+    if(operation.current)return;
+    operation.current=true;setPrintOpen(false);setBusy("Preparing print job…");setFailure(null);
+    try{const printed=await printPdf(pages,options);setNotice(printed?"Document sent to printer":"Printing cancelled");}
+    catch(error){setFailure("Couldn’t print: "+errorMessage(error));}
+    finally{operation.current=false;setBusy(null);}
+  };
   const releaseSession = useCallback(async (tab: DocumentSession) => {
     clearRenderCache(tab.sourceIds);
     await Promise.allSettled(tab.sourceIds.map(sourceId => tab.adapter.closeDocument(sourceId)));
@@ -121,11 +162,15 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
     try {
       if (planDigest(tab.history.present) !== tab.savedDigest && !await askDiscard("tab", tab.history.present.name)) return;
       setBusy("Closing document…");
+      const remaining=removeSession(workspace,id);
+      await recovery.checkpoint(remaining);
+      setWorkspace(remaining);
       await releaseSession(tab);
-      setWorkspace(value => removeSession(value, id));
+      setSearchTabs(value=>{const next={...value};delete next[id];return next;});
       if (id === workspace.activeId) { dragOverlay.current = null; clearTransient(); }
-    } finally { operation.current = false; setBusy(null); }
-  }, [askDiscard, blocked, clearTransient, releaseSession, workspace]);
+    } catch(error){setFailure("Couldn’t close document: "+errorMessage(error));}
+    finally { operation.current = false; setBusy(null); }
+  }, [askDiscard, blocked, clearTransient, releaseSession, workspace,recovery.checkpoint]);
 
   const navigateToPage = useCallback((pageId: string) => {
     setHistory((value) => value ? { ...value, present: { ...value.present, selectedPageId: pageId, selectedOverlayId: null } } : value);
@@ -273,6 +318,8 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
         switchTab(workspace.tabs[(index + (event.shiftKey ? -1 : 1) + workspace.tabs.length) % workspace.tabs.length].id);
       }
       else if (command && key === "o") { event.preventDefault(); void openPdf(); }
+      else if (command && key === "f") { event.preventDefault(); openSearch(); }
+      else if (command && key === "p") { event.preventDefault(); openPrint(); }
       else if (command && key === "s") { event.preventDefault(); void exportPdf(); }
       else if (command && !typing && key === "z") { event.preventDefault(); changeHistory(event.shiftKey ? "redo" : "undo"); }
       else if (command && !typing && key === "y") { event.preventDefault(); changeHistory("redo"); }
@@ -285,7 +332,7 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [blocked, changeHistory, closeTab, edit, exportPdf, openPdf, selectOverlay, selectedOverlay, selectedPage, switchTab, workspace]);
+  }, [blocked, changeHistory, closeTab, edit, exportPdf, openPdf, openSearch, openPrint, selectOverlay, selectedOverlay, selectedPage, switchTab, workspace]);
 
   useEffect(() => {
     if (!isDesktop) {
@@ -299,9 +346,11 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
     let cancelled = false;
     import("@tauri-apps/api/window").then(({ getCurrentWindow }) => getCurrentWindow().onCloseRequested(async (event) => {
       if (operation.current || closeState.current.blocked) { event.preventDefault(); return; }
-      if (!closeState.current.dirty) return;
       operation.current = true;
-      try { if (!await askDiscard("close")) event.preventDefault(); }
+      try {
+        if (closeState.current.dirty && !await askDiscard("close")) {event.preventDefault();return;}
+        await recoveryCurrent.current.finishClose();
+      } catch(error) {event.preventDefault();setFailure("Couldn’t clear recovery before closing: "+errorMessage(error));}
       finally { operation.current = false; }
     })).then((dispose) => { if (cancelled) dispose(); else unlisten = dispose; }).catch((error) => {
       setFailure(`Couldn’t enable close confirmation: ${errorMessage(error)}`);
@@ -343,6 +392,8 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
   const selectedIndex = selectedPage ? current?.pages.findIndex((page) => page.id === selectedPage.id) ?? -1 : -1;
   const displaySize = selectedPage ? displayDimensions(selectedPage.width, selectedPage.height, selectedPage.rotation) : null;
   const dialogs = <>
+    {(recovery.pending||recovery.error)&&<RecoveryDialog count={recovery.pending?.tabs.length??0} error={recovery.error} busy={recovery.working} onRestore={()=>void recovery.restore()} onDiscard={()=>void recovery.discard()} onSkip={recovery.skip}/>}
+    {printOpen&&current&&<PrintDialog pages={current.pages} currentPageId={selectedPage?.id??null} onClose={()=>setPrintOpen(false)} onPrint={(pages,options)=>void startPrint(pages,options)}/>}
     {signatureOpen && <SignaturePad onCancel={() => { setSignatureOpen(false); setTool("select"); }} onAccept={(paths) => { setSignatureOpen(false); setPendingSignature(paths); setNotice("Click a page to place your signature"); }}/>}
     {settingsOpen && <SettingsDialog preferences={preferences} onChange={setPreferences} onReset={resetPreferences} onClose={() => setSettingsOpen(false)}/>}
     {confirmation && <ConfirmDialog {...confirmation} onConfirm={() => settleDecision(true)} onCancel={() => settleDecision(false)}/>}
@@ -350,14 +401,14 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
 
   if (!current) return <main className="empty-shell">
     <div className="empty-brand"><span className="folio-mark">F</span><span>Folio</span></div>
-    <button className="icon-button empty-settings" aria-label="Settings" onClick={() => setSettingsOpen(true)}><Settings size={20}/></button>
+    <button className="icon-button empty-settings" disabled={blocked} aria-label="Settings" onClick={() => setSettingsOpen(true)}><Settings size={20}/></button>
     <section className="empty-card">
       <div className="empty-illustration" aria-hidden="true"><div className="sheet sheet-back"/><div className="sheet sheet-front"><span/><span/><i/></div></div>
       <p className="eyebrow">A PRIVATE PDF WORKSPACE</p>
       <h1>Make PDFs feel finished.</h1>
       <p className="empty-copy">Arrange pages, add text, draw, and place your signature. Your documents stay on this device.</p>
-      <div className="empty-actions"><button className="button primary large" disabled={!!busy} onClick={openPdf}><FolderOpen size={18}/> Open a PDF</button><button className="button large" disabled={blocked} onClick={openDemo}>Explore demo</button></div>
-      {busy && <p className="busy-note">{busy}</p>}{failure && <p className="error-note" role="alert">{failure}</p>}
+      <div className="empty-actions"><button className="button primary large" disabled={blocked} onClick={openPdf}><FolderOpen size={18}/> Open a PDF</button><button className="button large" disabled={blocked} onClick={openDemo}>Explore demo</button></div>
+      {recovery.warning&&<p className="error-note" role="status">{recovery.warning}</p>}{!recovery.ready&&!recovery.pending&&!recovery.error&&<p className="busy-note">Checking for recovered work…</p>}{busy && <p className="busy-note">{busy}</p>}{failure && <p className="error-note" role="alert">{failure}</p>}
       <p className="privacy-note"><span>●</span> Local editing · Source files remain untouched</p>
     </section>{dialogs}
   </main>;
@@ -380,7 +431,7 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
           </button>
           <button className="tab-close" aria-label={"Close " + tab.history.present.name} title="Close tab (Ctrl+W)" disabled={!!busy} onClick={() => void closeTab(tab.id)}><X size={13}/></button>
         </div>)}
-        <button className="icon-button new-document" aria-label="Open PDF in new tab" title="Open PDF in new tab (Ctrl+O)" disabled={!!busy} onClick={openPdf}><Plus size={16}/></button>
+        <button className="icon-button new-document" aria-label="Open PDF in new tab" title="Open PDF in new tab (Ctrl+O)" disabled={blocked} onClick={openPdf}><Plus size={16}/></button>
       </div>
       <div className="titlebar-actions"><button className="icon-button" aria-label="Settings" title="Settings" disabled={!!busy} onClick={() => setSettingsOpen(true)}><Settings size={18}/></button></div>
     </header>
@@ -397,6 +448,8 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
       <div className="tool-group"><button className="icon-button" aria-label="Undo" disabled={blocked || !history?.past.length} onClick={() => changeHistory("undo")}><Undo2 size={18}/></button><button className="icon-button" aria-label="Redo" disabled={blocked || !history?.future.length} onClick={() => changeHistory("redo")}><Redo2 size={18}/></button></div>
       <div className="toolbar-spacer"/>
       <div className="zoom-control"><button aria-label="Zoom out" disabled={blocked} onClick={() => setZoom((value) => Math.max(50, value - 10))}><Minus size={15}/></button><button className="zoom-value" title="Reset zoom to 100% (Ctrl+scroll to zoom)" disabled={blocked} onClick={() => setZoom(100)}>{zoom}%</button><button aria-label="Zoom in" disabled={blocked} onClick={() => setZoom((value) => Math.min(200, value + 10))}><Plus size={15}/></button></div>
+      <button className="icon-button" aria-label="Find" title="Find (Ctrl+F)" disabled={blocked} onClick={openSearch}><Search size={18}/></button>
+      <button className="icon-button" aria-label="Print" title="Print (Ctrl+P)" disabled={blocked||adapter.kind==="demo"} onClick={openPrint}><Printer size={18}/></button>
       <button className="button primary export" onClick={exportPdf} disabled={blocked}><Download size={17}/>{adapter.kind === "demo" ? "Export demo plan" : "Save a copy"}</button>
     </div>
     <div className="workspace" role="tabpanel" aria-labelledby={"tab-" + activeTab!.id}>
@@ -413,10 +466,12 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
         <button className="add-pages" onClick={addPdf} disabled={blocked || adapter.kind === "demo"}><Plus size={16}/> Add pages</button>
       </aside>
       <div className="document-area">
+        {recovery.warning&&<div className="recovery-warning" role="status">{recovery.warning}</div>}
+        {searchState.open&&<SearchBar key={"search-"+activeTab!.id} query={searchState.query} onQueryChange={query=>updateSearch({query,index:0})} index={searchState.index} total={search.matches.length} searching={search.searching} error={search.error} hasText={search.hasText} onNext={()=>moveSearch(1)} onPrevious={()=>moveSearch(-1)} onClose={()=>updateSearch({open:false})}/>}
         {pendingSignature && <div className="placement-banner"><PenLine size={16}/> Click a page to place your signature <button aria-label="Cancel signature placement" onClick={() => { setPendingSignature(null); setTool("select"); }}><X size={15}/></button></div>}
-        <DocumentViewport key={activeTab!.id} initialScrollPosition={scrollPositions.current.get(activeTab!.id)} onScrollPositionChange={position => { scrollPositions.current.set(activeTab!.id, position); }} adapter={adapter} pages={current.pages} selectedPageId={selectedPage?.id ?? null} selectedOverlayId={current.selectedOverlayId}
+        <DocumentViewport key={activeTab!.id} initialScrollPosition={scrollPositions.current.get(activeTab!.id)} onScrollPositionChange={position => { scrollPositions.current.set(activeTab!.id, position); recovery.schedule(); }} adapter={adapter} pages={current.pages} selectedPageId={selectedPage?.id ?? null} selectedOverlayId={current.selectedOverlayId}
           zoom={zoom} onZoomChange={setZoom} viewMode={preferences.viewMode} tool={tool} penColor={preferences.penColor} penWidth={preferences.penWidth}
-          pendingSignature={pendingSignature} interactionDisabled={blocked} navigationRequest={navigationRequest}
+          pendingSignature={pendingSignature} interactionDisabled={blocked} navigationRequest={navigationRequest} searchMatches={searchState.open?search.matches:[]} activeSearchMatchId={searchMatch?.id}
           onSelectPage={selectPage} onSelectOverlay={selectOverlay} onAddText={addText} onPlaceSignature={placeSignature} onMoveOverlay={moveOverlay} onDraw={addDrawing}/>
         <div className="page-nav"><button aria-label="Previous page" disabled={blocked || selectedIndex <= 0} onClick={() => navigateToPage(current.pages[selectedIndex - 1].id)}><ChevronLeft size={16}/></button><span>Page {selectedIndex + 1} of {current.pages.length}</span><button aria-label="Next page" disabled={blocked || selectedIndex >= current.pages.length - 1} onClick={() => navigateToPage(current.pages[selectedIndex + 1].id)}><ChevronRight size={16}/></button></div>
       </div>

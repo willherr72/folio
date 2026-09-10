@@ -1,11 +1,12 @@
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
+import {recoveryApi} from "../src/editor/recovery";
 import { App } from "../src/App";
 import { nativeAdapter } from "../src/editor/adapter";
 const nativeWindow = vi.hoisted(()=>({listen:vi.fn(),unlisten:vi.fn()}));
 vi.mock("@tauri-apps/api/window",()=>({getCurrentWindow:()=>({onCloseRequested:nativeWindow.listen})}));
 beforeEach(()=>{
-  localStorage.clear();
+  localStorage.clear(); vi.spyOn(recoveryApi,"load").mockResolvedValue(null); vi.spyOn(recoveryApi,"save").mockResolvedValue(); vi.spyOn(recoveryApi,"clear").mockResolvedValue();
   nativeWindow.listen.mockReset().mockResolvedValue(nativeWindow.unlisten);
   Object.defineProperty(window,"__TAURI_INTERNALS__",{configurable:true,value:{}});
 });
@@ -15,6 +16,7 @@ it("protects unsaved edits in an inactive tab when the native window closes",asy
   vi.spyOn(nativeAdapter,"renderPage").mockResolvedValue("data:image/png;base64,");
   vi.spyOn(nativeAdapter as Required<typeof nativeAdapter>,"getPageText").mockResolvedValue({characters:[]});
   render(<App initialDemo={false}/>);
+  await waitFor(()=>expect(screen.getByRole("button",{name:"Open a PDF"})).toBeEnabled());
   fireEvent.click(screen.getByRole("button",{name:"Open a PDF"}));
   await screen.findByRole("tab",{name:"One.pdf"});
   fireEvent.click(screen.getByRole("button",{name:"Rotate"}));

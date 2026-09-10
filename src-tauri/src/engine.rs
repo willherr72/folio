@@ -2,12 +2,13 @@ use crate::types::*;
 use image::ImageFormat;
 use pdfium_render::prelude::*;
 use std::collections::{HashMap, HashSet};
-use std::io::Cursor;
+use std::io::{Cursor, Read};
 use std::path::{Path, PathBuf};
 use std::sync::{mpsc, Arc, OnceLock};
 use uuid::Uuid;
 
 pub type EngineResult<T> = Result<T, EngineError>;
+pub(crate) const MAX_SOURCE_BYTES: u64 = 512 * 1024 * 1024;
 
 #[derive(Debug, thiserror::Error)]
 pub enum EngineError {
@@ -53,6 +54,22 @@ impl PdfEngine {
         let (reply, receive) = mpsc::channel();
         self.send(WorkerRequest::Open {
             path: path.as_ref().to_path_buf(),
+            original_path: None,
+            reply,
+        })?;
+        receive.recv().map_err(|_| EngineError::WorkerStopped)?
+    }
+
+    /// Read only the private snapshot; retain the original path as an export guard.
+    pub(crate) fn open_recovery_document(
+        &self,
+        snapshot: impl AsRef<Path>,
+        original_path: impl AsRef<Path>,
+    ) -> EngineResult<DocumentInfo> {
+        let (reply, receive) = mpsc::channel();
+        self.send(WorkerRequest::Open {
+            path: snapshot.as_ref().to_path_buf(),
+            original_path: Some(original_path.as_ref().to_path_buf()),
             reply,
         })?;
         receive.recv().map_err(|_| EngineError::WorkerStopped)?
@@ -91,6 +108,25 @@ impl PdfEngine {
     pub fn close_document(&self, source_id: &str) -> EngineResult<()> {
         let (reply, receive) = mpsc::channel();
         self.send(WorkerRequest::Close {
+            source_id: source_id.to_owned(),
+            reply,
+        })?;
+        receive.recv().map_err(|_| EngineError::WorkerStopped)?
+    }
+
+    /// Immutable bytes captured when this source was opened, before editor overlays.
+    pub fn source_bytes(&self, source_id: &str) -> EngineResult<Arc<[u8]>> {
+        let (reply, receive) = mpsc::channel();
+        self.send(WorkerRequest::SourceBytes {
+            source_id: source_id.to_owned(),
+            reply,
+        })?;
+        receive.recv().map_err(|_| EngineError::WorkerStopped)?
+    }
+
+    pub(crate) fn source_original_path(&self, source_id: &str) -> EngineResult<PathBuf> {
+        let (reply, receive) = mpsc::channel();
+        self.send(WorkerRequest::SourceOriginalPath {
             source_id: source_id.to_owned(),
             reply,
         })?;
@@ -160,6 +196,7 @@ fn start_worker(engine_path: PathBuf) -> Result<PdfEngine, String> {
 enum WorkerRequest {
     Open {
         path: PathBuf,
+        original_path: Option<PathBuf>,
         reply: mpsc::Sender<EngineResult<DocumentInfo>>,
     },
     Render {
@@ -176,6 +213,14 @@ enum WorkerRequest {
     Close {
         source_id: String,
         reply: mpsc::Sender<EngineResult<()>>,
+    },
+    SourceBytes {
+        source_id: String,
+        reply: mpsc::Sender<EngineResult<Arc<[u8]>>>,
+    },
+    SourceOriginalPath {
+        source_id: String,
+        reply: mpsc::Sender<EngineResult<PathBuf>>,
     },
     ExtractText {
         source_id: String,
@@ -194,7 +239,9 @@ enum WorkerRequest {
 
 struct OpenDocument {
     path: PathBuf,
+    original_path: PathBuf,
     document: PdfDocument<'static>,
+    source_bytes: Arc<[u8]>,
 }
 
 struct WorkerRuntime {
@@ -282,8 +329,12 @@ impl WorkerRuntime {
     fn run(&mut self, receiver: mpsc::Receiver<WorkerRequest>) {
         while let Ok(request) = receiver.recv() {
             match request {
-                WorkerRequest::Open { path, reply } => {
-                    let _ = reply.send(self.open_document(path));
+                WorkerRequest::Open {
+                    path,
+                    original_path,
+                    reply,
+                } => {
+                    let _ = reply.send(self.open_document(path, original_path));
                 }
                 WorkerRequest::Render {
                     source_id,
@@ -302,6 +353,18 @@ impl WorkerRuntime {
                 }
                 WorkerRequest::Close { source_id, reply } => {
                     let _ = reply.send(self.close_document(&source_id));
+                }
+                WorkerRequest::SourceBytes { source_id, reply } => {
+                    let _ = reply.send(
+                        self.document(&source_id)
+                            .map(|source| source.source_bytes.clone()),
+                    );
+                }
+                WorkerRequest::SourceOriginalPath { source_id, reply } => {
+                    let _ = reply.send(
+                        self.document(&source_id)
+                            .map(|source| source.original_path.clone()),
+                    );
                 }
                 WorkerRequest::ExtractText {
                     source_id,
@@ -324,13 +387,52 @@ impl WorkerRuntime {
         }
     }
 
-    fn open_document(&mut self, path: PathBuf) -> EngineResult<DocumentInfo> {
+    fn open_document(
+        &mut self,
+        path: PathBuf,
+        original_path: Option<PathBuf>,
+    ) -> EngineResult<DocumentInfo> {
         let canonical = std::fs::canonicalize(&path)
             .map_err(|error| EngineError::Io(format!("{}: {error}", path.display())))?;
-        if !canonical.is_file() {
+        let metadata = canonical
+            .metadata()
+            .map_err(|error| EngineError::Io(error.to_string()))?;
+        if !metadata.is_file() {
             return Err(EngineError::InvalidRequest("source is not a file".into()));
         }
-        let document = self.pdfium.load_pdf_from_file(&canonical, None)?;
+        if metadata.len() > MAX_SOURCE_BYTES {
+            return Err(EngineError::InvalidRequest(
+                "source PDF exceeds the 512 MiB limit".into(),
+            ));
+        }
+        let original_path = original_path.unwrap_or_else(|| canonical.clone());
+        if !original_path.is_absolute()
+            || original_path
+                .components()
+                .any(|component| matches!(component, std::path::Component::ParentDir))
+        {
+            return Err(EngineError::InvalidRequest(
+                "original source path is invalid".into(),
+            ));
+        }
+        // PDFium reads lazily: retain immutable bytes so edits to the original path
+        // cannot change an open document or the source copied into recovery.
+        let file = std::fs::File::open(&canonical)
+            .map_err(|error| EngineError::Io(format!("{}: {error}", canonical.display())))?;
+        let mut bytes = Vec::new();
+        // A growing file must not bypass the metadata check or allocate without bound.
+        file.take(MAX_SOURCE_BYTES + 1)
+            .read_to_end(&mut bytes)
+            .map_err(|error| EngineError::Io(format!("{}: {error}", canonical.display())))?;
+        if bytes.len() as u64 > MAX_SOURCE_BYTES {
+            return Err(EngineError::InvalidRequest(
+                "source PDF exceeds the 512 MiB limit".into(),
+            ));
+        }
+        let source_bytes: Arc<[u8]> = bytes.into();
+        let document = self
+            .pdfium
+            .load_pdf_from_reader(Cursor::new(source_bytes.clone()), None)?;
         let mut pages = Vec::with_capacity(document.pages().len() as usize);
         for index in 0..document.pages().len() {
             let page = document.pages().get(index)?;
@@ -351,7 +453,9 @@ impl WorkerRuntime {
             id,
             OpenDocument {
                 path: canonical,
+                original_path,
                 document,
+                source_bytes,
             },
         );
         Ok(info)
@@ -540,9 +644,13 @@ impl WorkerRuntime {
             normalize_path(&resolved)
         };
         if self.documents.values().any(|document| {
-            normalize_path(&document.path) == normalized
-                || (resolved.exists()
-                    && same_file::is_same_file(&document.path, &resolved).unwrap_or(false))
+            [&document.path, &document.original_path]
+                .into_iter()
+                .any(|source_path| {
+                    normalize_path(source_path) == normalized
+                        || (resolved.exists()
+                            && same_file::is_same_file(source_path, &resolved).unwrap_or(false))
+                })
         }) {
             return Err(EngineError::InvalidRequest(
                 "export destination cannot overwrite an open source PDF".into(),

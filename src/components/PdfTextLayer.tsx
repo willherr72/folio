@@ -3,13 +3,8 @@ import type { FolioAdapter } from "../editor/adapter";
 import type { PagePlan, PageText } from "../editor/types";
 import "./page-interactions.css";
 
-const textCache = new Map<string, { sourceId: string; request: Promise<PageText> }>();
-const MAX_TEXT_CACHE = 60;
-
-export function clearPageTextCache(sourceIds: string[]) {
-  const targets = new Set(sourceIds);
-  for (const [key, entry] of textCache) if (targets.has(entry.sourceId)) textCache.delete(key);
-}
+import { clearSearchTextCache, readSearchPageText } from "../editor/search";
+export const clearPageTextCache = clearSearchTextCache;
 
 function usePageText(adapter: FolioAdapter, page: PagePlan) {
   const key = `${adapter.kind}:${page.sourceId}:${page.pageIndex}`;
@@ -18,17 +13,9 @@ function usePageText(adapter: FolioAdapter, page: PagePlan) {
     let active = true;
     setState({ key });
     if (!adapter.getPageText) return;
-    let entry = textCache.get(key);
-    if (!entry) {
-      entry = { sourceId: page.sourceId, request: adapter.getPageText(page.sourceId, page.pageIndex) };
-      textCache.set(key, entry);
-    } else {
-      textCache.delete(key);
-      textCache.set(key, entry);
-    }
-    while (textCache.size > MAX_TEXT_CACHE) textCache.delete(textCache.keys().next().value!);
-    entry.request.then((text) => { if (active) setState({ key, text }); }).catch(() => {
-      if (textCache.get(key) === entry) textCache.delete(key);
+    readSearchPageText(adapter, page.sourceId, page.pageIndex).then((text) => {
+      if (active) setState({ key, text });
+    }).catch(() => {
       // A scanned page or an unavailable text API must not interrupt viewing.
     });
     return () => { active = false; };
