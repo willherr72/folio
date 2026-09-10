@@ -214,7 +214,9 @@ impl PreparedPrint {
         engine
             .export_pdf(request, &path)
             .map_err(|e| e.to_string())?;
-        let document = engine.open_document(&path).map_err(|e| e.to_string())?;
+        let document = engine
+            .open_document_for_printing(&path)
+            .map_err(|e| e.to_string())?;
         Ok(Self {
             engine,
             document,

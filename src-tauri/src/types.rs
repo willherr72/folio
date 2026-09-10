@@ -5,6 +5,8 @@ use serde::{Deserialize, Serialize};
 pub struct PageInfo {
     pub width: f32,
     pub height: f32,
+    #[serde(default)]
+    pub overlays: Vec<Overlay>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -33,14 +35,16 @@ pub struct PagePlan {
     pub overlays: Vec<Overlay>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "camelCase")]
 pub enum Overlay {
     Text(TextOverlay),
     Ink(InkOverlay),
+    Highlight(HighlightOverlay),
+    Comment(CommentOverlay),
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TextOverlay {
     pub id: String,
@@ -51,7 +55,7 @@ pub struct TextOverlay {
     pub color: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct InkOverlay {
     pub id: String,
@@ -60,10 +64,38 @@ pub struct InkOverlay {
     pub stroke_width: f32,
 }
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub struct Point {
     pub x: f32,
     pub y: f32,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct AnnotationRect {
+    pub x: f32,
+    pub y: f32,
+    pub width: f32,
+    pub height: f32,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct HighlightOverlay {
+    pub id: String,
+    pub rects: Vec<AnnotationRect>,
+    pub color: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub text: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub opacity: Option<f32>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct CommentOverlay {
+    pub id: String,
+    pub x: f32,
+    pub y: f32,
+    pub text: String,
+    pub color: String,
 }
 
 /// Embedded text in PDFium reading order, in displayed page points before editor rotation.

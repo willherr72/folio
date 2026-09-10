@@ -110,6 +110,86 @@ fn empty_print_request_is_rejected_before_native_dialog() {
     assert!(PreparedPrint::new(engine(), ExportRequest { pages: vec![] }).is_err());
 }
 
+#[test]
+fn prepared_job_raster_contains_standard_highlights_and_comment_icons() {
+    let temp = tempfile::tempdir().unwrap();
+    let source_path = temp.path().join("annotations.pdf");
+    fixture(&source_path);
+    let engine = engine();
+    let source = engine.open_document(&source_path).unwrap();
+    let request: ExportRequest = serde_json::from_value(serde_json::json!({"pages":[{
+        "id":"page","sourceId":source.id,"pageIndex":0,"width":200,"height":300,"rotation":0,
+        "overlays":[
+            {"type":"highlight","id":"highlight","rects":[{"x":20,"y":30,"width":80,"height":20}],"color":"#ffff00"},
+            {"type":"comment","id":"comment","x":30,"y":90,"text":"Printed note","color":"#ff8000"}
+        ]
+    }]})).unwrap();
+    let prepared = PreparedPrint::new(engine.clone(), request).unwrap();
+    let image =
+        image::load_from_memory(&engine.render_page(&prepared.document.id, 0, 400).unwrap())
+            .unwrap()
+            .into_rgb8();
+    let highlight = image.get_pixel(80, 80);
+    assert!(
+        highlight[0] > 200 && highlight[1] > 180 && highlight[2] < 220,
+        "highlight missing from print raster: {highlight:?}"
+    );
+    assert!(
+        (180..220).any(|y| (60..100).any(|x| {
+            let p = image.get_pixel(x, y);
+            p[0] > 150 && p[1] < 200 && p[2] < 100
+        })),
+        "comment icon missing from print raster"
+    );
+}
+
+#[test]
+fn print_raster_honors_print_only_and_screen_only_annotation_flags() {
+    use lopdf::{dictionary, Object};
+    let temp = tempfile::tempdir().unwrap();
+    let path = temp.path().join("flags.pdf");
+    fixture(&path);
+    let mut pdf = lopdf::Document::load(&path).unwrap();
+    let print_only=pdf.add_object(dictionary!{"Type"=>"Annot","Subtype"=>"Text","Rect"=>vec![20.into(),246.into(),44.into(),270.into()],"F"=>36,"C"=>vec![1.into(),Object::Real(0.5),0.into()],"Contents"=>Object::string_literal("Print only")});
+    let screen_only=pdf.add_object(dictionary!{"Type"=>"Annot","Subtype"=>"Text","Rect"=>vec![20.into(),196.into(),44.into(),220.into()],"F"=>0,"C"=>vec![1.into(),0.into(),0.into()],"Contents"=>Object::string_literal("Screen only")});
+    pdf.get_dictionary_mut((3, 0)).unwrap().set(
+        "Annots",
+        vec![
+            Object::Reference(print_only),
+            Object::Reference(screen_only),
+        ],
+    );
+    pdf.save(&path).unwrap();
+    let engine = engine();
+    let source = engine.open_document(&path).unwrap();
+    assert!(
+        source.pages[0].overlays.is_empty(),
+        "annotations with unrepresented visibility flags must stay native"
+    );
+    let request=serde_json::from_value(serde_json::json!({"pages":[{"id":"page","sourceId":source.id,"pageIndex":0,"width":200,"height":300,"rotation":0,"overlays":[]}]})).unwrap();
+    let prepared = PreparedPrint::new(engine.clone(), request).unwrap();
+    let image =
+        image::load_from_memory(&engine.render_page(&prepared.document.id, 0, 400).unwrap())
+            .unwrap()
+            .into_rgb8();
+    let colored = |top: u32| {
+        (top..top + 48).any(|y| {
+            (40..88).any(|x| {
+                let p = image.get_pixel(x, y);
+                p[0] > 150 && p[1] < 220 && p[2] < 120
+            })
+        })
+    };
+    assert!(
+        colored(60),
+        "print-only annotation must reach the print raster"
+    );
+    assert!(
+        !colored(160),
+        "screen-only annotation must not reach the print raster"
+    );
+}
+
 #[cfg(windows)]
 #[test]
 #[ignore = "spools only to Microsoft Print to PDF; run explicitly for virtual-printer verification"]

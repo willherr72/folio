@@ -55,6 +55,7 @@ impl PdfEngine {
         self.send(WorkerRequest::Open {
             path: path.as_ref().to_path_buf(),
             original_path: None,
+            editable_annotations: true,
             reply,
         })?;
         receive.recv().map_err(|_| EngineError::WorkerStopped)?
@@ -70,6 +71,22 @@ impl PdfEngine {
         self.send(WorkerRequest::Open {
             path: snapshot.as_ref().to_path_buf(),
             original_path: Some(original_path.as_ref().to_path_buf()),
+            editable_annotations: true,
+            reply,
+        })?;
+        receive.recv().map_err(|_| EngineError::WorkerStopped)?
+    }
+
+    /// Print/export previews retain standard annotation appearances in the PDF raster.
+    pub(crate) fn open_document_for_printing(
+        &self,
+        path: impl AsRef<Path>,
+    ) -> EngineResult<DocumentInfo> {
+        let (reply, receive) = mpsc::channel();
+        self.send(WorkerRequest::Open {
+            path: path.as_ref().to_path_buf(),
+            original_path: None,
+            editable_annotations: false,
             reply,
         })?;
         receive.recv().map_err(|_| EngineError::WorkerStopped)?
@@ -197,6 +214,7 @@ enum WorkerRequest {
     Open {
         path: PathBuf,
         original_path: Option<PathBuf>,
+        editable_annotations: bool,
         reply: mpsc::Sender<EngineResult<DocumentInfo>>,
     },
     Render {
@@ -242,6 +260,7 @@ struct OpenDocument {
     original_path: PathBuf,
     document: PdfDocument<'static>,
     source_bytes: Arc<[u8]>,
+    for_printing: bool,
 }
 
 struct WorkerRuntime {
@@ -273,11 +292,13 @@ impl PageGeometry {
             PageInfo {
                 width: self.raw_height(),
                 height: self.raw_width(),
+                overlays: Vec::new(),
             }
         } else {
             PageInfo {
                 width: self.raw_width(),
                 height: self.raw_height(),
+                overlays: Vec::new(),
             }
         }
     }
@@ -332,9 +353,11 @@ impl WorkerRuntime {
                 WorkerRequest::Open {
                     path,
                     original_path,
+                    editable_annotations,
                     reply,
                 } => {
-                    let _ = reply.send(self.open_document(path, original_path));
+                    let _ =
+                        reply.send(self.open_document(path, original_path, editable_annotations));
                 }
                 WorkerRequest::Render {
                     source_id,
@@ -391,6 +414,7 @@ impl WorkerRuntime {
         &mut self,
         path: PathBuf,
         original_path: Option<PathBuf>,
+        editable_annotations: bool,
     ) -> EngineResult<DocumentInfo> {
         let canonical = std::fs::canonicalize(&path)
             .map_err(|error| EngineError::Io(format!("{}: {error}", path.display())))?;
@@ -434,9 +458,21 @@ impl WorkerRuntime {
             .pdfium
             .load_pdf_from_reader(Cursor::new(source_bytes.clone()), None)?;
         let mut pages = Vec::with_capacity(document.pages().len() as usize);
+        let mut annotation_metadata = None;
         for index in 0..document.pages().len() {
-            let page = document.pages().get(index)?;
-            pages.push(page_geometry(&page)?.displayed_size());
+            let mut page = document.pages().get(index)?;
+            let geometry = page_geometry(&page)?;
+            let mut info = geometry.displayed_size();
+            if editable_annotations {
+                info.overlays = import_annotations(
+                    &mut page,
+                    geometry,
+                    index as usize,
+                    &source_bytes,
+                    &mut annotation_metadata,
+                )?;
+            }
+            pages.push(info);
         }
         let id = Uuid::new_v4().to_string();
         let name = canonical
@@ -456,6 +492,7 @@ impl WorkerRuntime {
                 original_path,
                 document,
                 source_bytes,
+                for_printing: !editable_annotations,
             },
         );
         Ok(info)
@@ -468,6 +505,7 @@ impl WorkerRuntime {
         let bitmap = page.render_with_config(
             &PdfRenderConfig::new()
                 .set_target_width(target_width)
+                .use_print_quality(document.for_printing)
                 .render_form_data(true),
         )?;
         let image = bitmap.as_image()?;
@@ -583,6 +621,12 @@ impl WorkerRuntime {
                     Overlay::Ink(ink) => {
                         add_ink_overlay(&mut page, geometry, ink)?;
                     }
+                    Overlay::Highlight(highlight) => {
+                        add_highlight_annotation(&mut page, geometry, highlight)?
+                    }
+                    Overlay::Comment(comment) => {
+                        add_comment_annotation(&mut page, geometry, comment)?
+                    }
                 }
             }
             page.set_rotation(rotation_from_degrees(
@@ -601,6 +645,13 @@ impl WorkerRuntime {
             .map_err(|error| EngineError::Io(format!("creating export temp file: {error}")))?;
         let temporary = temporary.into_temp_path();
         output.save_to_file(&temporary)?;
+        if request.pages.iter().any(|page| {
+            page.overlays
+                .iter()
+                .any(|overlay| matches!(overlay, Overlay::Highlight(_) | Overlay::Comment(_)))
+        }) {
+            normalize_annotation_references(&temporary)?;
+        }
         std::fs::OpenOptions::new()
             .write(true)
             .open(&temporary)
@@ -708,6 +759,8 @@ impl WorkerRuntime {
                 let id = match overlay {
                     Overlay::Text(text) => &text.id,
                     Overlay::Ink(ink) => &ink.id,
+                    Overlay::Highlight(highlight) => &highlight.id,
+                    Overlay::Comment(comment) => &comment.id,
                 };
                 validate_id("overlay id", id)?;
                 if !overlay_ids.insert(id.as_str()) {
@@ -718,6 +771,8 @@ impl WorkerRuntime {
                 match overlay {
                     Overlay::Text(text) => validate_text(text, size.width, size.height)?,
                     Overlay::Ink(ink) => validate_ink(ink, size.width, size.height)?,
+                    Overlay::Highlight(highlight) => validate_highlight(highlight)?,
+                    Overlay::Comment(comment) => validate_comment(comment)?,
                 }
             }
         }
@@ -734,6 +789,478 @@ fn page_geometry(page: &PdfPage<'_>) -> EngineResult<PageGeometry> {
         top: bounds.top().value,
         rotation: page.rotation()?.as_degrees() as u16,
     })
+}
+
+fn normalize_annotation_references(path: &Path) -> EngineResult<()> {
+    // PDFium creates direct annotation dictionaries. Several conforming readers
+    // require individual object identities for annotation APIs and popup editing.
+    let file = std::fs::File::open(path).map_err(|error| EngineError::Io(error.to_string()))?;
+    if file
+        .metadata()
+        .map_err(|error| EngineError::Io(error.to_string()))?
+        .len()
+        > MAX_SOURCE_BYTES
+    {
+        return Err(EngineError::InvalidRequest(
+            "annotated export exceeds the 512 MiB limit".into(),
+        ));
+    }
+    let error =
+        |error: lopdf::Error| EngineError::Io(format!("normalizing PDF annotations: {error}"));
+    let options = lopdf::LoadOptions {
+        strict: true,
+        max_decompressed_size: Some(64 * 1024 * 1024),
+        ..Default::default()
+    };
+    let mut document =
+        lopdf::Document::load_from_with_options(file.take(MAX_SOURCE_BYTES + 1), options)
+            .map_err(error)?;
+    for page_id in document.get_pages().into_values() {
+        let Some(annotations) = document
+            .get_dictionary(page_id)
+            .map_err(error)?
+            .get(b"Annots")
+            .ok()
+            .cloned()
+        else {
+            continue;
+        };
+        let mut annotations = document
+            .dereference(&annotations)
+            .map_err(error)?
+            .1
+            .as_array()
+            .map_err(error)?
+            .clone();
+        for annotation in &mut annotations {
+            if let lopdf::Object::Dictionary(dictionary) = annotation {
+                let mut dictionary = dictionary.clone();
+                dictionary.set("P", lopdf::Object::Reference(page_id));
+                *annotation = lopdf::Object::Reference(document.add_object(dictionary));
+            }
+        }
+        document
+            .get_dictionary_mut(page_id)
+            .map_err(error)?
+            .set("Annots", annotations);
+    }
+    document
+        .save(path)
+        .map_err(|error| EngineError::Io(format!("saving normalized annotations: {error}")))?;
+    Ok(())
+}
+
+#[derive(Clone)]
+struct AnnotationMetadata {
+    id: Option<lopdf::ObjectId>,
+    parent: Option<lopdf::ObjectId>,
+    popup: Option<lopdf::ObjectId>,
+    subtype: Vec<u8>,
+    color: Option<String>,
+    opacity: Option<f32>,
+}
+
+type SourceAnnotationMetadata = HashMap<usize, Vec<AnnotationMetadata>>;
+
+fn parse_annotation_metadata(bytes: &[u8]) -> Result<SourceAnnotationMetadata, lopdf::Error> {
+    let document = lopdf::Document::load_mem_with_options(
+        bytes,
+        lopdf::LoadOptions::with_max_decompressed_size(64 * 1024 * 1024),
+    )?;
+    let mut pages = HashMap::new();
+    for (number, page_id) in document.get_pages() {
+        let page = document.get_dictionary(page_id)?;
+        let Ok(annotations) = page.get(b"Annots") else {
+            continue;
+        };
+        let mut metadata = Vec::new();
+        for annotation in document.dereference(annotations)?.1.as_array()? {
+            let (id, annotation) = document.dereference(annotation)?;
+            let dictionary = annotation.as_dict()?;
+            let subtype = dictionary.get(b"Subtype")?.as_name()?.to_vec();
+            let color = match dictionary.get(b"C") {
+                Ok(color) => color
+                    .as_array()
+                    .ok()
+                    .and_then(|values| {
+                        values
+                            .iter()
+                            .map(|value| value.as_float().ok())
+                            .collect::<Option<Vec<_>>>()
+                    })
+                    .and_then(|values| {
+                        if values
+                            .iter()
+                            .any(|value| !value.is_finite() || !(0.0..=1.0).contains(value))
+                        {
+                            return None;
+                        }
+                        let rgb = match values.as_slice() {
+                            [gray] => [*gray, *gray, *gray],
+                            [r, g, b] => [*r, *g, *b],
+                            [c, m, y, k] => [
+                                (1.0 - c) * (1.0 - k),
+                                (1.0 - m) * (1.0 - k),
+                                (1.0 - y) * (1.0 - k),
+                            ],
+                            _ => return None,
+                        };
+                        Some(format!(
+                            "#{:02x}{:02x}{:02x}",
+                            (rgb[0] * 255.0).round() as u8,
+                            (rgb[1] * 255.0).round() as u8,
+                            (rgb[2] * 255.0).round() as u8
+                        ))
+                    }),
+                Err(_) => Some(
+                    if subtype == b"Text" {
+                        "#ffcc00"
+                    } else {
+                        "#ffff00"
+                    }
+                    .to_owned(),
+                ),
+            };
+            let opacity = match dictionary.get(b"CA") {
+                Ok(value) => value
+                    .as_float()
+                    .ok()
+                    .filter(|value| value.is_finite() && (0.0..=1.0).contains(value)),
+                Err(_) => Some(1.0),
+            };
+            metadata.push(AnnotationMetadata {
+                id,
+                subtype,
+                color,
+                opacity,
+                parent: dictionary
+                    .get(b"Parent")
+                    .ok()
+                    .and_then(|value| value.as_reference().ok()),
+                popup: dictionary
+                    .get(b"Popup")
+                    .ok()
+                    .and_then(|value| value.as_reference().ok()),
+            });
+        }
+        pages.insert((number - 1) as usize, metadata);
+    }
+    Ok(pages)
+}
+
+fn editable_annotation(annotation: &PdfPageAnnotation<'_>) -> bool {
+    matches!(
+        annotation.annotation_type(),
+        PdfPageAnnotationType::Highlight | PdfPageAnnotationType::Text
+    ) && !annotation.is_hidden()
+        && !annotation.is_printable_but_not_viewable()
+        && annotation.is_printed()
+        && annotation.is_zoomable()
+        && annotation.is_rotatable()
+        && !annotation.is_read_only()
+        && !annotation.is_locked()
+        && annotation.is_editable()
+}
+
+fn import_annotations(
+    page: &mut PdfPage<'static>,
+    geometry: PageGeometry,
+    page_index: usize,
+    bytes: &[u8],
+    metadata: &mut Option<Result<SourceAnnotationMetadata, ()>>,
+) -> EngineResult<Vec<Overlay>> {
+    let mut imported = Vec::new();
+    let annotations = page.annotations_mut();
+    if !annotations
+        .iter()
+        .any(|annotation| editable_annotation(&annotation))
+    {
+        return Ok(imported);
+    }
+    // Parse source dictionaries only when editable annotation candidates exist.
+    // If metadata cannot be read safely, leave originals native and visually intact.
+    let Ok(metadata) =
+        metadata.get_or_insert_with(|| parse_annotation_metadata(bytes).map_err(|_| ()))
+    else {
+        return Ok(imported);
+    };
+    let Some(metadata) = metadata
+        .get(&page_index)
+        .filter(|metadata| metadata.len() == annotations.len() as usize)
+    else {
+        return Ok(imported);
+    };
+    let mut deleted = HashSet::new();
+    for index in 0..annotations.len() {
+        let annotation = annotations.get(index)?;
+        if !editable_annotation(&annotation) {
+            continue;
+        }
+        let metadata_item = &metadata[index as usize];
+        let Some(color) = &metadata_item.color else {
+            continue;
+        };
+        let overlay = match annotation.annotation_type() {
+            PdfPageAnnotationType::Highlight => {
+                if metadata_item.subtype != b"Highlight" || metadata_item.opacity.is_none() {
+                    continue;
+                }
+                let points = annotation.attachment_points();
+                if points.is_empty() || points.len() > 10_000 {
+                    continue;
+                }
+                let mut rects = Vec::new();
+                let mut representable = true;
+                for index in 0..points.len() {
+                    let points = points.get(index)?;
+                    let corners = [
+                        geometry.pdf_to_displayed(points.x1().value, points.y1().value),
+                        geometry.pdf_to_displayed(points.x2().value, points.y2().value),
+                        geometry.pdf_to_displayed(points.x3().value, points.y3().value),
+                        geometry.pdf_to_displayed(points.x4().value, points.y4().value),
+                    ];
+                    let left = corners.iter().map(|p| p.x).fold(f32::INFINITY, f32::min);
+                    let top = corners.iter().map(|p| p.y).fold(f32::INFINITY, f32::min);
+                    let right = corners
+                        .iter()
+                        .map(|p| p.x)
+                        .fold(f32::NEG_INFINITY, f32::max);
+                    let bottom = corners
+                        .iter()
+                        .map(|p| p.y)
+                        .fold(f32::NEG_INFINITY, f32::max);
+                    // A skewed quadrilateral cannot be represented by editor rectangles.
+                    if corners.iter().any(|p| {
+                        ((p.x - left).abs() > 0.25 && (p.x - right).abs() > 0.25)
+                            || ((p.y - top).abs() > 0.25 && (p.y - bottom).abs() > 0.25)
+                    }) {
+                        representable = false;
+                        break;
+                    }
+                    rects.push(AnnotationRect {
+                        x: left,
+                        y: top,
+                        width: right - left,
+                        height: bottom - top,
+                    });
+                }
+                let highlight = HighlightOverlay {
+                    id: Uuid::new_v4().to_string(),
+                    rects,
+                    color: color.clone(),
+                    text: annotation.contents(),
+                    opacity: metadata_item.opacity,
+                };
+                if !representable || validate_highlight(&highlight).is_err() {
+                    continue;
+                }
+                Overlay::Highlight(highlight)
+            }
+            PdfPageAnnotationType::Text => {
+                if metadata_item.subtype != b"Text" || metadata_item.opacity != Some(1.0) {
+                    continue;
+                }
+                let bounds = annotation.bounds()?;
+                let a = geometry.pdf_to_displayed(bounds.left().value, bounds.bottom().value);
+                let b = geometry.pdf_to_displayed(bounds.right().value, bounds.top().value);
+                let comment = CommentOverlay {
+                    id: Uuid::new_v4().to_string(),
+                    x: a.x.min(b.x),
+                    y: a.y.min(b.y),
+                    text: annotation.contents().unwrap_or_default(),
+                    color: color.clone(),
+                };
+                if validate_comment(&comment).is_err() {
+                    continue;
+                }
+                Overlay::Comment(comment)
+            }
+            _ => continue,
+        };
+        deleted.insert(index);
+        for (popup_index, popup) in metadata.iter().enumerate() {
+            if popup.subtype == b"Popup"
+                && ((metadata_item.id.is_some() && popup.parent == metadata_item.id)
+                    || (metadata_item.popup.is_some() && popup.id == metadata_item.popup))
+            {
+                deleted.insert(popup_index);
+            }
+        }
+        imported.push(overlay);
+    }
+    // Remove parents and associated popups together, from the highest index down.
+    let mut deleted: Vec<_> = deleted.into_iter().collect();
+    deleted.sort_unstable();
+    for index in deleted.into_iter().rev() {
+        let annotation = annotations.get(index)?;
+        annotations.delete_annotation(annotation)?;
+    }
+    Ok(imported)
+}
+
+fn annotation_bounds(geometry: PageGeometry, rect: &AnnotationRect) -> PdfRect {
+    let a = geometry.displayed_to_pdf(Point {
+        x: rect.x,
+        y: rect.y,
+    });
+    let b = geometry.displayed_to_pdf(Point {
+        x: rect.x + rect.width,
+        y: rect.y + rect.height,
+    });
+    PdfRect::new(
+        PdfPoints::new(a.1.value.min(b.1.value)),
+        PdfPoints::new(a.0.value.min(b.0.value)),
+        PdfPoints::new(a.1.value.max(b.1.value)),
+        PdfPoints::new(a.0.value.max(b.0.value)),
+    )
+}
+
+fn add_highlight_annotation(
+    page: &mut PdfPage<'static>,
+    geometry: PageGeometry,
+    highlight: &HighlightOverlay,
+) -> EngineResult<()> {
+    let mut annotation = page.annotations_mut().create_highlight_annotation()?;
+    let color = parse_color(&highlight.color)?;
+    let alpha = (highlight.opacity.unwrap_or(96.0 / 255.0) * 255.0).round() as u8;
+    annotation.set_stroke_color(PdfColor::new(
+        color.red(),
+        color.green(),
+        color.blue(),
+        alpha,
+    ))?;
+    annotation.set_is_printed(true)?;
+    annotation.set_creator("Folio")?;
+    if let Some(text) = &highlight.text {
+        annotation.set_contents(text)?;
+    }
+    let left = highlight
+        .rects
+        .iter()
+        .map(|r| r.x)
+        .fold(f32::INFINITY, f32::min);
+    let top = highlight
+        .rects
+        .iter()
+        .map(|r| r.y)
+        .fold(f32::INFINITY, f32::min);
+    let right = highlight
+        .rects
+        .iter()
+        .map(|r| r.x + r.width)
+        .fold(f32::NEG_INFINITY, f32::max);
+    let bottom = highlight
+        .rects
+        .iter()
+        .map(|r| r.y + r.height)
+        .fold(f32::NEG_INFINITY, f32::max);
+    annotation.set_bounds(annotation_bounds(
+        geometry,
+        &AnnotationRect {
+            x: left,
+            y: top,
+            width: right - left,
+            height: bottom - top,
+        },
+    ))?;
+    for rect in &highlight.rects {
+        let tl = geometry.displayed_to_pdf(Point {
+            x: rect.x,
+            y: rect.y,
+        });
+        let tr = geometry.displayed_to_pdf(Point {
+            x: rect.x + rect.width,
+            y: rect.y,
+        });
+        let bl = geometry.displayed_to_pdf(Point {
+            x: rect.x,
+            y: rect.y + rect.height,
+        });
+        let br = geometry.displayed_to_pdf(Point {
+            x: rect.x + rect.width,
+            y: rect.y + rect.height,
+        });
+        annotation
+            .attachment_points_mut()
+            .create_attachment_point_at_end(PdfQuadPoints::new(
+                tl.0, tl.1, tr.0, tr.1, bl.0, bl.1, br.0, br.1,
+            ))?;
+    }
+    Ok(())
+}
+
+fn add_comment_annotation(
+    page: &mut PdfPage<'static>,
+    geometry: PageGeometry,
+    comment: &CommentOverlay,
+) -> EngineResult<()> {
+    let mut annotation = page
+        .annotations_mut()
+        .create_text_annotation(&comment.text)?;
+    annotation.set_bounds(annotation_bounds(
+        geometry,
+        &AnnotationRect {
+            x: comment.x,
+            y: comment.y,
+            width: 24.0,
+            height: 24.0,
+        },
+    ))?;
+    annotation.set_stroke_color(parse_color(&comment.color)?)?;
+    annotation.set_is_printed(true)?;
+    annotation.set_is_zoomable(true)?;
+    annotation.set_is_rotatable(true)?;
+    annotation.set_creator("Folio")?;
+    Ok(())
+}
+
+pub(crate) fn validate_highlight(highlight: &HighlightOverlay) -> EngineResult<()> {
+    validate_color(&highlight.color)?;
+    if highlight
+        .opacity
+        .is_some_and(|value| !value.is_finite() || !(0.0..=1.0).contains(&value))
+    {
+        return Err(EngineError::InvalidRequest(
+            "highlight opacity must be between 0 and 1".into(),
+        ));
+    }
+    if highlight.rects.is_empty() || highlight.rects.len() > 10_000 {
+        return Err(EngineError::InvalidRequest(
+            "highlight requires between 1 and 10000 rectangles".into(),
+        ));
+    }
+    for rect in &highlight.rects {
+        validate_point(rect.x, rect.y, 0.0, 0.0)?;
+        if !finite_positive(rect.width)
+            || !finite_positive(rect.height)
+            || rect.width > 10_000_000.0
+            || rect.height > 10_000_000.0
+        {
+            return Err(EngineError::InvalidRequest(
+                "invalid highlight rectangle".into(),
+            ));
+        }
+        validate_point(rect.x + rect.width, rect.y + rect.height, 0.0, 0.0)?;
+    }
+    if let Some(text) = &highlight.text {
+        validate_annotation_text(text)?;
+    }
+    Ok(())
+}
+
+pub(crate) fn validate_comment(comment: &CommentOverlay) -> EngineResult<()> {
+    validate_color(&comment.color)?;
+    validate_point(comment.x, comment.y, 0.0, 0.0)?;
+    validate_annotation_text(&comment.text)
+}
+
+fn validate_annotation_text(text: &str) -> EngineResult<()> {
+    if text.len() > 1_000_000 || text.contains('\0') {
+        return Err(EngineError::InvalidRequest(
+            "annotation text exceeds 1000000 bytes or contains a null character".into(),
+        ));
+    }
+    Ok(())
 }
 
 fn add_text_overlay(

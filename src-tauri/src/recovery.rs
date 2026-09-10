@@ -35,6 +35,8 @@ struct SourceSnapshot {
 #[serde(deny_unknown_fields)]
 struct Manifest {
     version: u32,
+    #[serde(default, rename = "annotationImportVersion")]
+    annotation_import_version: u32,
     workspace: Value,
     sources: BTreeMap<String, SourceSnapshot>,
 }
@@ -109,6 +111,7 @@ impl RecoveryStore {
         }
         let manifest = Manifest {
             version: 1,
+            annotation_import_version: 1,
             workspace,
             sources,
         };
@@ -205,7 +208,7 @@ impl RecoveryStore {
             .map_err(|error| format!("Recovery checkpoint is unreadable: {error}"))?;
         let manifest: Manifest = serde_json::from_slice(&bytes)
             .map_err(|error| format!("Recovery checkpoint is corrupt: {error}"))?;
-        if manifest.version != 1 {
+        if manifest.version != 1 || manifest.annotation_import_version > 1 {
             return Err("Recovery checkpoint version is unsupported".into());
         }
         let referenced = validate_workspace(&manifest.workspace)?;
@@ -304,6 +307,18 @@ impl RecoveryStore {
                         return Err("Recovery page dimensions do not match its source".into());
                     }
                     page["sourceId"] = json!(source.id);
+                    if manifest.annotation_import_version == 0 {
+                        // v0.4 kept source annotations inside the raster. Import them
+                        // once into the recovered page before writing a v0.5 checkpoint.
+                        let overlays = page["overlays"]
+                            .as_array_mut()
+                            .ok_or("Invalid recovery overlays")?;
+                        for overlay in &size.overlays {
+                            overlays.push(
+                                serde_json::to_value(overlay).map_err(|error| error.to_string())?,
+                            );
+                        }
+                    }
                 }
             }
             Ok(())
@@ -450,6 +465,16 @@ fn validate_workspace(workspace: &Value) -> Result<BTreeSet<String>, String> {
                             return Err("Invalid recovery ink overlay".into());
                         }
                         (&ink.id, &ink.color)
+                    }
+                    Overlay::Highlight(highlight) => {
+                        crate::engine::validate_highlight(highlight)
+                            .map_err(|error| error.to_string())?;
+                        (&highlight.id, &highlight.color)
+                    }
+                    Overlay::Comment(comment) => {
+                        crate::engine::validate_comment(comment)
+                            .map_err(|error| error.to_string())?;
+                        (&comment.id, &comment.color)
                     }
                 };
                 if id.is_empty()
