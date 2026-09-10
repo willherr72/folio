@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.5.0
+
+- Named local signature library with previews, reuse, rename and deletion.
+- Proportional width controls for placed signatures and other ink.
+- Embedded text highlights across lines, rotation and zoom.
+- Anchored comments with immediate editing and a document-wide review list.
+- Standard PDF Highlight/Text annotation export and editable reopen, including notes.
+- Annotation undo/redo, per-tab isolation and recovery compatibility.
+
 ## 0.4.0
 
 - Local crash recovery restores editable tabs, source snapshots, page organization, zoom and scroll.

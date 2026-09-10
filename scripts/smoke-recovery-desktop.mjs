@@ -41,6 +41,9 @@ try{
  await page.getByRole('button',{name:'Text',exact:true}).click();
  await page.locator('.page-canvas').first().click({position:{x:100,y:285}});
  await page.getByRole('textbox',{name:'Content'}).fill('Recovery marker');
+ await page.getByRole('button',{name:'Comment',exact:true}).click();
+ await page.locator('.page-canvas').first().click({position:{x:140,y:240}});
+ await page.getByRole('textbox',{name:'Comment',exact:true}).fill('Recovery review note');
  await page.getByRole('button',{name:'Select',exact:true}).click();
  await page.getByRole('button',{name:'Zoom in',exact:true}).click();await page.getByRole('button',{name:'Zoom in',exact:true}).click();
  await page.getByRole('button',{name:'Rotate',exact:true}).click();
@@ -61,6 +64,15 @@ try{
  await expect(page.getByRole('button',{name:'110%',exact:true})).toBeVisible();
  await expect(page.locator('.document-page')).toHaveCount(4);
  await expect(page.locator('.page-canvas [data-overlay] tspan').first()).toHaveText('Recovery marker');
+ await expect(page.getByRole('button',{name:'Page 1: Recovery review note',exact:true})).toBeVisible();
+ await expect(page.getByRole('button',{name:'Page 2: Recovery review note',exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'Page 1: Recovery review note',exact:true}).click();
+ await expect(page.getByRole('textbox',{name:'Comment',exact:true})).toHaveValue('Recovery review note');
+ if(process.env.FOLIO_EXPECT_SIGNATURE){
+  await page.getByRole('button',{name:'Signature',exact:true}).click();
+  await expect(page.getByRole('button',{name:'Select signature '+process.env.FOLIO_EXPECT_SIGNATURE,exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'Cancel',exact:true}).click();
+ }
  await page.keyboard.press('Control+f');await page.getByRole('searchbox',{name:'Find in document'}).fill('Recovery marker');
  await expect(page.locator('.search-count')).toHaveText('1 of 2');await page.keyboard.press('Enter');await expect(page.locator('.search-count')).toHaveText('2 of 2');
  await expect(page.locator('.search-highlight.active').first()).toBeVisible();
@@ -72,6 +84,6 @@ try{
  await expect(page.getByRole('dialog',{name:'Restore your workspace?'})).toHaveCount(0);
  await close();
  expect(errors).toEqual([]);
- const result={passed:true,crashRecovery:true,movedOriginals:true,dirtyTabs:2,duplicatedAnnotations:true,zoom:110,searchDuplicates:true,normalCloseClearsRecovery:true,errors,artifacts:dir};
+ const result={passed:true,crashRecovery:true,movedOriginals:true,dirtyTabs:2,duplicatedAnnotations:true,commentsRestored:true,signaturePersisted:!!process.env.FOLIO_EXPECT_SIGNATURE,zoom:110,searchDuplicates:true,normalCloseClearsRecovery:true,errors,artifacts:dir};
  writeFileSync(resolve(dir,'results.json'),JSON.stringify(result,null,2));console.log(JSON.stringify(result,null,2));
 }catch(error){if(page)await page.screenshot({path:resolve(dir,'failure.png')}).catch(()=>{});console.error('Test artifacts:',dir);throw error;}

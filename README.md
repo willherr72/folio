@@ -12,8 +12,8 @@ Extract it and open **Folio.exe**. Keep the resources folder beside the executab
 Microsoft Edge WebView2 Runtime is required.
 
 In this development checkout, double-click **Launch Folio.cmd** after building.
-Version 0.4.0 lives in **artifacts/Folio-v0.4.0/Folio.exe**.
-The ZIP is **artifacts/Folio-v0.4.0-windows-x64.zip**.
+Version 0.5.0 lives in **artifacts/Folio-v0.5.0/Folio.exe**.
+The ZIP is **artifacts/Folio-v0.5.0-windows-x64.zip**.
 
 ## Everyday editing
 
@@ -26,8 +26,19 @@ The ZIP is **artifacts/Folio-v0.4.0-windows-x64.zip**.
   embedded text require OCR, which is not included.
 - **Draw:** write or sketch directly on any page. Choose pen color and width in
   Properties. Each stroke is one undo step; Select lets you move or delete it.
-- **Signature:** draw in the signature pad, then move over a page to preview its
-  actual placement. Click to place it, or press **Escape** to cancel.
+- **Signature:** draw or choose a saved signature. Give drawings a name to keep them in
+  the local library, with rename and delete controls. Move over a page to preview,
+  click to place, or press **Escape** to cancel. Properties adjusts the placed ink's
+  width while keeping its proportions.
+- **Highlight:** choose Highlight and drag across embedded text, including multiple
+  lines. Select highlights on the page or in Review to change their color or note.
+- **Comment:** click a page to place a note and start typing. Review lists highlights
+  and comments throughout the document; select one to jump to its anchor. Notes can
+  be edited, moved or deleted. These edits support undo/redo in each tab.
+- **Review persistence:** highlights and comments save as standard PDF annotations
+  and reopen with editing controls. Supported annotations from other readers are
+  imported too. Unsupported types, locked notes, and notes with special zoom/rotation
+  or visibility flags remain in the source content with their original appearance.
 - **Pages:** drag thumbnails by their handles to reorder. A line shows the drop
   position. Page properties also provide move, rotate, duplicate and delete.
   **Add PDF** appends pages from another PDF to the active document.
@@ -57,7 +68,8 @@ Dark mode changes the interface; PDF pages retain their original colors.
 
 - Existing words in a PDF are not editable.
 - Drawn signatures are visual marks, not certificate-based digital signatures.
-- Exported additions become page content; reopening does not restore their editing handles.
+- Added text and ink become page content on export; reopening does not restore their
+  editing handles yet. Highlights and comments remain editable annotations.
 - Added text uses Helvetica with a verified Latin character set and common punctuation.
   Unsupported characters, including CJK, emoji, nonbreaking spaces and soft hyphens,
   produce an export error instead of silently disappearing.
@@ -66,6 +78,13 @@ Dark mode changes the interface; PDF pages retain their original colors.
   selectable/vector text in virtual-printer output. Save a copy preserves source vectors.
 - Opened PDFs are held as immutable source bytes, with a 512 MiB per-file limit.
 - Windows x64 is the tested target. Foxit performance parity has not been established.
+
+## Local signature library
+
+Named signatures are stored in this application's local WebView profile. There is no
+account or upload. The library holds up to 30 signatures and reports storage errors.
+Deleting a library entry does not remove signatures already placed in a document.
+Visual signatures do not provide certificate verification.
 
 ## Local recovery data
 
@@ -128,7 +147,7 @@ Its launcher uses an isolated test profile. See [verification notes](docs/verifi
 React keeps an undoable edit plan. Rust owns source documents and serializes
 PDFium work on a dedicated thread. Nearby pages use cached native renders and
 embedded text geometry.
-Export copies PDF pages and adds text and vector ink.
+Export copies PDF pages and adds text, vector ink and standard review annotations.
 
 MIT for Folio's original code. Dependencies retain their own licenses; see
 [third-party notices](THIRD_PARTY_NOTICES.md). Portable releases include PDFium
