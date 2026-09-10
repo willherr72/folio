@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { FolioAdapter } from "../editor/adapter";
-import { clientPointToPage, displayDimensions, pageTransform } from "../editor/geometry";
+import { clientPointToPage, displayDimensions, pageTransform, placeInkPaths } from "../editor/geometry";
 import type { InkPoint, Overlay, PagePlan } from "../editor/types";
+
+import { PdfTextLayer, clearPageTextCache } from "./PdfTextLayer";
 
 interface RenderEntry {
   sourceId: string;
@@ -19,6 +21,7 @@ function releaseEntry(key: string, entry: RenderEntry) {
 }
 
 export function clearRenderCache(sourceIds: string[]) {
+  clearPageTextCache(sourceIds);
   const targets = new Set(sourceIds);
   for (const [key, entry] of renderCache) {
     if (!targets.has(entry.sourceId)) continue;
@@ -121,6 +124,10 @@ export function PageView(props: PageViewProps) {
   const dimensions = displayDimensions(page.width, page.height, page.rotation);
   const strokeRef = useRef<{ pointer: number; path: InkPoint[] } | null>(null);
   const [draft, setDraft] = useState<InkPoint[]>([]);
+  const [signaturePoint, setSignaturePoint] = useState<InkPoint | null>(null);
+  const [signatureCancelled, setSignatureCancelled] = useState(false);
+  const previewEnabled = !!pendingSignature && tool === "signature" && !props.interactionDisabled && !signatureCancelled;
+  const previewPaths = previewEnabled && signaturePoint ? placeInkPaths(pendingSignature!, signaturePoint, page.width, page.height) : [];
   const cssWidth = dimensions.width * zoom / 100;
   const rendered = usePageImage(adapter, page, Math.min(2400, Math.max(600, Math.round(cssWidth * devicePixelRatio))), true);
   const cursor = pendingSignature || tool === "draw" ? "crosshair" : tool === "text" ? "text" : "default";
@@ -148,6 +155,20 @@ export function PageView(props: PageViewProps) {
     }
   }, [page.id, page.rotation, tool, props.interactionDisabled]);
 
+  useEffect(() => {
+    setSignaturePoint(null);
+    setSignatureCancelled(false);
+  }, [page.id, page.rotation, tool, pendingSignature, props.interactionDisabled]);
+
+  useEffect(() => {
+    if (!pendingSignature) return;
+    const cancel = (event: KeyboardEvent) => {
+      if (event.key === "Escape") { setSignaturePoint(null); setSignatureCancelled(true); }
+    };
+    window.addEventListener("keydown", cancel);
+    return () => window.removeEventListener("keydown", cancel);
+  }, [pendingSignature]);
+
   const handleBackground = (event: React.PointerEvent<SVGSVGElement>) => {
     if (props.interactionDisabled || event.button !== 0 || strokeRef.current || dragRef.current) return;
     if (tool !== "draw" && event.target !== event.currentTarget && (event.target as Element).closest("[data-overlay]")) return;
@@ -158,7 +179,7 @@ export function PageView(props: PageViewProps) {
       strokeRef.current = { pointer: event.pointerId, path: [point] };
       setDraft([point]);
       svgRef.current?.setPointerCapture(event.pointerId);
-    } else if (pendingSignature) props.onPlaceSignature(point);
+    } else if (previewEnabled) { setSignaturePoint(null); props.onPlaceSignature(point); }
     else if (tool === "text") props.onAddText(point);
     else props.onSelectOverlay(null);
   };
@@ -186,6 +207,7 @@ export function PageView(props: PageViewProps) {
 
   const moveDrag = (event: React.PointerEvent<SVGSVGElement>) => {
     if (props.interactionDisabled) return;
+    if (previewEnabled) setSignaturePoint(originalPoint(event));
     const stroke = strokeRef.current;
     if (stroke?.pointer === event.pointerId) {
       const samples = event.nativeEvent.getCoalescedEvents?.() ?? [];
@@ -218,9 +240,11 @@ export function PageView(props: PageViewProps) {
   return (
     <div className="page-stage" aria-label={`Page ${pageNumber}`} style={{ width: cssWidth }}>
       <svg ref={svgRef} className="page-canvas" viewBox={`0 0 ${dimensions.width} ${dimensions.height}`} style={{ cursor }}
-        onPointerDown={handleBackground} onPointerMove={moveDrag} onPointerUp={(event) => finishPointer(event)} onPointerCancel={(event) => finishPointer(event, true)} onLostPointerCapture={(event) => finishPointer(event, true)}>
+        onPointerLeave={() => setSignaturePoint(null)} onPointerDown={handleBackground} onPointerMove={moveDrag} onPointerUp={(event) => finishPointer(event)} onPointerCancel={(event) => finishPointer(event, true)} onLostPointerCapture={(event) => finishPointer(event, true)}>
         <g transform={pageTransform(page.width, page.height, page.rotation) || undefined}>
           {rendered.url ? <image href={rendered.url} width={page.width} height={page.height} preserveAspectRatio="none" /> : <rect width={page.width} height={page.height} fill="#fff" />}
+          <PdfTextLayer adapter={adapter} page={page} pageNumber={pageNumber} selectable={tool === "select" && !pendingSignature && !props.interactionDisabled} />
+          {previewPaths.length > 0 && <g className="signature-preview" aria-hidden="true">{previewPaths.map((path, index) => <polyline key={index} points={path.map((point) => `${point.x},${point.y}`).join(" ")} fill="none" stroke={props.drawColor ?? "#2D2A26"} strokeWidth={props.drawWidth ?? 2} strokeLinecap="round" strokeLinejoin="round" />)}</g>}
           {draft.length > 0 && <polyline className="draft-ink" points={draft.map((point) => `${point.x},${point.y}`).join(" ")} fill="none" stroke={props.drawColor ?? "#2D2A26"} strokeWidth={props.drawWidth ?? 2} strokeLinecap="round" strokeLinejoin="round" pointerEvents="none" />}
           {page.overlays.map((overlay) => {
             const selected = overlay.id === selectedOverlayId;
@@ -236,6 +260,7 @@ export function PageView(props: PageViewProps) {
           })}
         </g>
       </svg>
+      {previewPaths.length > 0 && <div className="signature-placement-cue">Click to place · Esc to cancel</div>}
       {!rendered.url && !rendered.error && <div className="page-loading"><span /> Rendering page…</div>}
       {rendered.error && <div className="page-error">Couldn’t render this page<br/><small>{rendered.error}</small></div>}
     </div>
