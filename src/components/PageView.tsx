@@ -180,7 +180,7 @@ export function PageView(props: PageViewProps) {
       setDraft([point]);
       svgRef.current?.setPointerCapture(event.pointerId);
     } else if (previewEnabled) { setSignaturePoint(null); props.onPlaceSignature(point); }
-    else if (tool === "text") props.onAddText(point);
+    else if (tool === "text") { event.preventDefault(); props.onAddText(point); }
     else props.onSelectOverlay(null);
   };
 

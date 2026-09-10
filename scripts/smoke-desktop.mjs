@@ -3,6 +3,7 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { mkdirSync, readFileSync, writeFileSync, existsSync, copyFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { createHash } from 'node:crypto';
 
 const execFileAsync = promisify(execFile);
 const artifacts = resolve('artifacts/desktop-smoke');
@@ -22,13 +23,52 @@ mkdirSync(outputDirectory, { recursive: true });
 const source = resolve(outputDirectory, 'Welcome to Folio.pdf');
 copyFileSync(sample, source);
 const output = resolve(outputDirectory, 'Folio edited.pdf');
+const secondSource = resolve(outputDirectory, 'Second document.pdf');
+// A cropped, intrinsically upside-down PDF exercises native caret orientation.
+const stream='BT /F1 20 Tf 60 300 Td (Hello PDF) Tj 0 -30 Td (Second line) Tj ET';
+const objects=[
+  '<< /Type /Catalog /Pages 2 0 R >>',
+  '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
+  '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 300 400] /CropBox [40 50 240 350] /Rotate 180 /Resources << /Font << /F1 5 0 R >> >> /Contents 4 0 R >>',
+  '<< /Length '+Buffer.byteLength(stream)+' >>\nstream\n'+stream+'\nendstream',
+  '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>',
+];
+let fixture='%PDF-1.7\n';
+const offsets=[0];
+for(let i=0;i<objects.length;i++){offsets.push(Buffer.byteLength(fixture));fixture+=(i+1)+' 0 obj\n'+objects[i]+'\nendobj\n';}
+const xref=Buffer.byteLength(fixture);
+fixture+='xref\n0 6\n0000000000 65535 f \n'+offsets.slice(1).map(n=>String(n).padStart(10,'0')+' 00000 n \n').join('');
+fixture+='trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n'+xref+'\n%%EOF\n';
+writeFileSync(secondSource,fixture);
 async function fileDialog(action, path) {
   const result = await execFileAsync('pwsh', [
     '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', resolve('scripts/set-native-dialog.ps1'),
     '-AppProcessId', appProcessId, '-FilePath', path, '-Action', action,
-  ], { timeout: 30000, windowsHide: true });
+  ], { timeout: 60000, windowsHide: true });
   console.log(result.stdout.trim());
 }
+async function copyPdfText(canvas,phrase,rotation=0) {
+  const glyphs=canvas.locator('[data-pdf-character]');
+  await expect.poll(async()=>(await glyphs.allTextContents()).join('')).toContain(phrase);
+  const chars=await glyphs.allTextContents();
+  const offset=chars.join('').indexOf(phrase);
+  let cursor=0,startIndex=-1,endIndex=-1;
+  for(let i=0;i<chars.length;i++){
+    if(cursor===offset)startIndex=i;
+    cursor+=chars[i].length;
+    if(cursor===offset+phrase.length){endIndex=i;break;}
+  }
+  const first=await glyphs.nth(startIndex).boundingBox(),last=await glyphs.nth(endIndex).boundingBox();
+  const startX=rotation===180?first.x+first.width-.2:first.x+.2;
+  const endX=rotation===180?last.x+.2:last.x+last.width-.2;
+  await page.mouse.move(startX,first.y+first.height/2);
+  await page.mouse.down();
+  await page.mouse.move(endX,last.y+last.height/2,{steps:15});
+  await page.mouse.up();
+  await page.keyboard.press('Control+c');
+  expect(await page.evaluate(()=>window.__folioCopied)).toBe(phrase);
+}
+
 try {
   const before = Date.now();
   await page.getByRole('button', { name: 'Open a PDF', exact: true }).click();
@@ -44,10 +84,15 @@ try {
   await page.getByRole('button',{name:'Done',exact:true}).click();
   await expect(page.locator('html')).toHaveAttribute('data-theme','dark');
   await page.screenshot({ path: resolve(artifacts, '01-native-open.png'), fullPage: true });
+  await page.evaluate(()=>{window.addEventListener('copy',event=>{window.__folioCopied=event.clipboardData.getData('text/plain');});});
+  await copyPdfText(canvas,'Make it yours.');
+
 
   await page.getByRole('button', { name: 'Text', exact: true }).click();
   await canvas.click({ position: { x: 100, y: 285 } });
-  await page.getByRole('textbox', { name: 'Content' }).fill('Built while you slept.');
+  await expect(page.getByRole('textbox', { name: 'Content' })).toBeFocused();
+  await page.keyboard.type('Built while you slept.');
+  await expect(page.getByRole('textbox', { name: 'Content' })).toHaveValue('Built while you slept.');
   await page.getByRole('button', { name: 'Signature', exact: true }).click();
   const pad = page.getByLabel('Signature drawing area');
   const box = await pad.boundingBox();
@@ -59,7 +104,13 @@ try {
   }
   await page.mouse.up();
   await page.getByRole('button', { name: 'Use signature' }).click();
-  await canvas.click({ position: { x: 100, y: 455 } });
+  const placementBox=await canvas.boundingBox();
+  await page.mouse.move(placementBox.x+100,placementBox.y+455);
+  await expect(canvas.locator('.signature-preview')).toBeVisible();
+  const previewPoints=await canvas.locator('.signature-preview polyline').first().getAttribute('points');
+  await page.mouse.click(placementBox.x+100,placementBox.y+455);
+  await expect(canvas.locator('.signature-preview')).toHaveCount(0);
+  expect(await canvas.locator('[data-overlay] polyline').first().getAttribute('points')).toBe(previewPoints);
   await expect(canvas.locator('[data-overlay]')).toHaveCount(2);
   await page.getByRole('button',{name:'Draw',exact:true}).click();
   const drawingBox = await canvas.boundingBox();
@@ -69,13 +120,33 @@ try {
   await page.mouse.up();
   await expect(canvas.locator('[data-overlay]')).toHaveCount(3);
   await page.getByRole('button',{name:'Select',exact:true}).click();
-  await page.getByRole('button',{name:'Open',exact:true}).click();
-  await expect(page.getByRole('dialog',{name:'Discard unsaved changes?'})).toBeVisible();
+  await page.getByRole('button',{name:'Close Welcome to Folio.pdf',exact:true}).click();
+  await expect(page.getByRole('dialog',{name:'Close document?'})).toBeVisible();
   await page.getByRole('button',{name:'Keep editing'}).click();
   await expect(canvas.locator('[data-overlay]')).toHaveCount(3);
+  const firstZoom=await page.locator('.zoom-value').innerText();
+  await page.getByLabel('Page 2 of 3',{exact:true}).click();
+  const viewport=page.getByRole('main',{name:'Document',exact:true});
+  const firstScroll=await viewport.evaluate(el=>el.scrollTop);
+  await page.getByRole('button',{name:'Open',exact:true}).click();
+  await fileDialog('Open',secondSource);
+  await expect(page.getByRole('tab',{name:'Second document.pdf',exact:true})).toHaveAttribute('aria-selected','true');
+  await expect(page.getByRole('tab')).toHaveCount(2);
+  await copyPdfText(canvas,'Hello PDF\r\nSecond line',180);
+  await expect(canvas.locator('[data-overlay]')).toHaveCount(0);
+  await page.getByRole('button',{name:'Zoom in',exact:true}).click();
+  await expect(page.locator('.zoom-value')).not.toHaveText(firstZoom);
+  await page.screenshot({path:resolve(artifacts,'02-document-tabs.png'),fullPage:true});
   await execFileAsync('powershell',['-NoProfile','-ExecutionPolicy','Bypass','-File',resolve('scripts/request-native-close.ps1'),'-AppProcessId',appProcessId],{windowsHide:true});
-  await expect(page.getByRole('dialog',{name:'Close Folio?'})).toBeVisible();
+  await expect(page.getByRole('dialog',{name:'Close Folio?'})).toContainText('unsaved changes in 1 document');
   await page.getByRole('button',{name:'Keep editing'}).click();
+  await page.getByRole('tab',{name:'Welcome to Folio.pdf',exact:true}).click();
+  await expect(page.locator('.zoom-value')).toHaveText(firstZoom);
+  await expect.poll(()=>viewport.evaluate(el=>el.scrollTop)).toBeCloseTo(firstScroll,0);
+  await page.getByRole('button',{name:'Close Second document.pdf',exact:true}).click();
+  await expect(page.getByRole('tab')).toHaveCount(1);
+  await page.getByLabel('Page 1 of 3',{exact:true}).click();
+  await expect(canvas.locator('[data-overlay]')).toHaveCount(3);
   // Verify real Windows HTML drag handling, then undo back to the sample order.
   const firstThumb=page.getByLabel('Page 1 of 3',{exact:true});
   const lastThumb=page.getByLabel('Page 3 of 3',{exact:true});
@@ -124,12 +195,15 @@ try {
   await page.screenshot({ path: resolve(artifacts, '03-native-reopened.png'), fullPage: true });
   await page.getByRole('button',{name:'Text',exact:true}).click();
   await canvas.click({position:{x:60,y:60}});
+  await page.getByRole('tab',{name:'Welcome to Folio.pdf',exact:true}).click();
   await execFileAsync('powershell',['-NoProfile','-ExecutionPolicy','Bypass','-File',resolve('scripts/request-native-close.ps1'),'-AppProcessId',appProcessId],{windowsHide:true});
   await expect(page.getByRole('dialog',{name:'Close Folio?'})).toBeVisible();
   const closed = page.waitForEvent('close');
   await page.getByRole('button',{name:'Discard and close'}).click();
   await closed;
-  const report = { passed: true, source, output, openAndRenderMsIncludingDialogAutomation: openAndRenderMs, checks: ['native open dialog', 'native PDF render', 'text', 'drawn signature', 'freehand drawing', 'real thumbnail drag and undo', 'dark settings', 'custom open modal', 'native close cancelled and confirmed', 'duplicate annotated page', 'merge through native dialog', 'unsupported text rejected without creating output', 'native save dialog', 'saved PDF file', 'native reopen of seven-page output'], consoleErrors: errors };
+  const testedBinary=JSON.parse(readFileSync(resolve('artifacts/desktop-process.json'),'utf8').trim()).binary;
+  const binarySha256=createHash('sha256').update(readFileSync(testedBinary)).digest('hex');
+  const report = { passed: true, binarySha256, source, output, openAndRenderMsIncludingDialogAutomation: openAndRenderMs, checks: ['native open dialog', 'native PDF render', 'text', 'drawn signature', 'freehand drawing', 'real thumbnail drag and undo', 'dark settings', 'custom tab close modal', 'independent tabs and restored zoom/scroll', 'inactive dirty tab close protection', 'immediate text typing', 'signature ghost matches placed geometry', 'native PDF text mouse selection and copy including intrinsic180 crop', 'native close cancelled and confirmed', 'duplicate annotated page', 'merge through native dialog', 'unsupported text rejected without creating output', 'native save dialog', 'saved PDF file', 'native reopen of seven-page output'], consoleErrors: errors };
   writeFileSync(resolve(artifacts, 'results.json'), JSON.stringify(report, null, 2));
   console.log(JSON.stringify(report, null, 2));
 } catch (error) {

@@ -23,7 +23,7 @@ async function stroke(target, points) {
   await page.mouse.up();
 }
 try {
-  await page.goto('http://127.0.0.1:1420/?demo=1');
+  await page.goto(process.env.FOLIO_UI_URL || 'http://127.0.0.1:1420/?demo=1');
   await expect(page.getByText('Folio welcome.pdf', {exact:true})).toBeVisible();
   await expect(page.locator('[data-page-id]')).toHaveCount(3);
   await expect(canvas(0).locator('image')).toHaveCount(1);
@@ -55,8 +55,8 @@ try {
   await page.mouse.move(textBox.x+5,textBox.y+textBox.height/2);
   await page.mouse.down();
   await page.mouse.move(textBox.x+65,textBox.y+textBox.height/2,{steps:6});
-  await page.keyboard.press('Control+o');
-  const confirm = page.getByRole('dialog',{name:'Discard unsaved changes?'});
+  await page.keyboard.press('Control+w');
+  const confirm = page.getByRole('dialog',{name:'Close document?'});
   await expect(confirm).toBeVisible();
   await page.mouse.up();
   await expect(page.getByRole('button',{name:'Keep editing'})).toBeFocused();

@@ -11,10 +11,10 @@ PDFium supplies characters and their bounds in the same top-left normalized page
 ## Contract
 TypeScript:
 interface PdfTextCharacter { text: string; x: number; y: number; width: number; height: number }
-interface PageText { characters: PdfTextCharacter[] }
+interface PageText { intrinsicRotation?: 0 | 90 | 180 | 270; characters: PdfTextCharacter[] }
 FolioAdapter.getPageText?(sourceId: string, pageIndex: number): Promise<PageText>
 Native command: page_text(sourceId, pageIndex) -> PageText.
-Geometry is normalized before user-applied PagePlan.rotation. New source IDs are owned by exactly one tab, including appended sources; closing a tab releases only that ownership.
+Geometry is normalized before user-applied PagePlan.rotation. intrinsicRotation preserves the source glyph axes for browser caret direction; absent values mean zero. New source IDs are owned by exactly one tab, including appended sources; closing a tab releases only that ownership.
 
 ## Validation and delivery
 Meaningful tests cover immediate typing, signature preview/placement/cancel, native character geometry under crop/intrinsic rotation, text copying, independent tab history and selection/zoom, picker cancellation, tab close and all-tab dirty close. Run frontend/typecheck/native checks, actual browser interaction, and packaged native PDF edit/save/reopen. Preserve the existing release and publish a verified versioned update to the established GitHub repo.

@@ -61,7 +61,7 @@ public static class FolioDialogAutomation {
     }
 }
 "@
-$deadline = [DateTime]::UtcNow.AddSeconds(20)
+$deadline = [DateTime]::UtcNow.AddSeconds(45)
 do {
     $dialogHandle = [FolioDialogAutomation]::Find($AppProcessId, $Action)
     if ($dialogHandle -ne [IntPtr]::Zero) {

@@ -13,7 +13,7 @@ afterEach(()=>{cleanup(); delete (window as unknown as Record<string,unknown>)._
 it("protects unsaved edits in an inactive tab when the native window closes",async()=>{
   vi.spyOn(nativeAdapter,"openPdf").mockResolvedValueOnce({id:"one",name:"One.pdf",pages:[{width:300,height:400}]}).mockResolvedValueOnce({id:"two",name:"Two.pdf",pages:[{width:300,height:400}]});
   vi.spyOn(nativeAdapter,"renderPage").mockResolvedValue("data:image/png;base64,");
-  vi.spyOn(nativeAdapter,"getPageText").mockResolvedValue({characters:[]});
+  vi.spyOn(nativeAdapter as Required<typeof nativeAdapter>,"getPageText").mockResolvedValue({characters:[]});
   render(<App initialDemo={false}/>);
   fireEvent.click(screen.getByRole("button",{name:"Open a PDF"}));
   await screen.findByRole("tab",{name:"One.pdf"});
