@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { createRoot } from "react-dom/client";
-import { PageView } from "../../src/components/PageView";
+import { PageView, Thumbnail } from "../../src/components/PageView";
 import { createDemoAdapter } from "../../src/editor/adapter";
 import type { PagePlan, Rotation } from "../../src/editor/types";
 import "../../src/styles.css";
@@ -23,7 +23,7 @@ const picture = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height
 const adapter = { ...createDemoAdapter(), getPageText: async () => ({ characters: normalizedCharacters, intrinsicRotation }), renderPage: async () => `data:image/svg+xml,${encodeURIComponent(picture)}` };
 function Fixture() {
   const [tool, setTool] = useState<"select" | "highlight" | "comment">("highlight");
-  const [overlays, setOverlays] = useState<PagePlan["overlays"]>([]);
+  const [overlays, setOverlays] = useState<PagePlan["overlays"]>(() => params.has("opacity") ? [{ type: "highlight", id: "imported", color: "#ffff00", opacity: Number(params.get("opacity")), rects: [{ x: 0, y: 0, width, height }] }] : []);
   const [selected, setSelected] = useState<string | null>(null);
   const [status, setStatus] = useState("");
   const page: PagePlan = { id: "browser", sourceId: "browser", pageIndex: 0, width, height, rotation: Number(params.get("rotation") ?? 0) as Rotation, overlays };
@@ -31,6 +31,6 @@ function Fixture() {
     onSelectOverlay={id => { setSelected(id); setStatus(id ?? ""); }} onAddText={() => {}} onPlaceSignature={() => {}}
     onHighlight={rects => setOverlays(value => [...value, { type: "highlight", id: `highlight-${value.length}`, rects, color: "#ffff00" }])}
     onAddComment={point => setOverlays(value => [...value, { type: "comment", id: `comment-${value.length}`, ...point, text: "Review note", color: "#ffff00" }])}
-    onMoveOverlay={(_id, _x, _y, phase) => { if (phase === "move") setStatus("moved overlay"); }} /></div>;
+    onMoveOverlay={(_id, _x, _y, phase) => { if (phase === "move") setStatus("moved overlay"); }} />{params.has("thumbnail") && <aside style={{ position: "absolute", left: 20, top: 100, width: 120 }}><Thumbnail adapter={adapter} page={page} /></aside>}</div>;
 }
 createRoot(document.getElementById("root")!).render(<Fixture />);

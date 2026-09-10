@@ -1,4 +1,6 @@
-.annotation-highlight { pointer-events: none; }
+/* PDF highlight appearances multiply against the paper and embedded content. */
+.page-canvas, .thumbnail-canvas { isolation: isolate; }
+.annotation-highlight { pointer-events: none; mix-blend-mode: multiply; }
 .annotation-highlight.selected rect { stroke: var(--accent); stroke-width: 1; stroke-dasharray: 3 2; }
 .annotation-comment { cursor: pointer; }
 .annotation-empty-cue { position: absolute; left: 12px; right: 12px; bottom: 12px; padding: 8px 10px; color: var(--muted); background: var(--panel); border: 1px solid var(--line); border-radius: 6px; font: 12px/1.5 system-ui, sans-serif; white-space: normal; user-select: none; pointer-events: none; }
