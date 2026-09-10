@@ -61,8 +61,7 @@ Dark mode changes the interface; PDF pages retain their original colors.
 - Added text uses Helvetica with a verified Latin character set and common punctuation.
   Unsupported characters, including CJK, emoji, nonbreaking spaces and soft hyphens,
   produce an export error instead of silently disappearing.
-- Search, printing, OCR, redaction, form editing and password-protected PDFs are
-  not implemented.
+- OCR, redaction, form editing and password-protected PDFs are not implemented.
 - Printing uses bounded raster images (up to 2400 pixels wide), so it does not preserve
   selectable/vector text in virtual-printer output. Save a copy preserves source vectors.
 - Opened PDFs are held as immutable source bytes, with a 512 MiB per-file limit.

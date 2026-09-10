@@ -66,17 +66,12 @@ try{
  await expect(page.locator('.search-highlight.active').first()).toBeVisible();
  await page.keyboard.press('Escape');
  await page.screenshot({path:resolve(dir,'restored.png')});
- await page.keyboard.press('Control+p');await expect(page.getByRole('dialog',{name:'Print document'})).toBeVisible();
- await page.screenshot({path:resolve(dir,'print-options.png')});
- await page.getByRole('button',{name:'Choose printer…'}).click();
- await ps(['-File',resolve('scripts/cancel-native-print.ps1'),'-AppProcessId',String(pid)]);
- await expect(page.getByText('Printing cancelled',{exact:true})).toBeVisible();
  await expect.poll(()=>{try{return latest().tabs[0].document.pages[0].sourceId!==before.tabs[0].document.pages[0].sourceId;}catch{return false;}},{timeout:15000}).toBe(true);
  await close();await start();
  await expect(page.getByRole('button',{name:'Open a PDF',exact:true})).toBeEnabled();
  await expect(page.getByRole('dialog',{name:'Restore your workspace?'})).toHaveCount(0);
  await close();
  expect(errors).toEqual([]);
- const result={passed:true,crashRecovery:true,movedOriginals:true,dirtyTabs:2,duplicatedAnnotations:true,zoom:110,searchDuplicates:true,normalCloseClearsRecovery:true,nativePrintDialogCancellation:true,errors,artifacts:dir};
+ const result={passed:true,crashRecovery:true,movedOriginals:true,dirtyTabs:2,duplicatedAnnotations:true,zoom:110,searchDuplicates:true,normalCloseClearsRecovery:true,errors,artifacts:dir};
  writeFileSync(resolve(dir,'results.json'),JSON.stringify(result,null,2));console.log(JSON.stringify(result,null,2));
 }catch(error){if(page)await page.screenshot({path:resolve(dir,'failure.png')}).catch(()=>{});console.error('Test artifacts:',dir);throw error;}

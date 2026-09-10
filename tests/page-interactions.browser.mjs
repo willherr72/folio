@@ -1,11 +1,12 @@
 import { chromium, expect } from "@playwright/test";
+const origin = process.env.FOLIO_INTERACTION_TEST_ORIGIN ?? "http://127.0.0.1:1422";
 const browser = await chromium.launch({ headless: true });
 try {
   const context = await browser.newContext({ permissions: ["clipboard-read", "clipboard-write"] });
   const page = await context.newPage();
   for (const intrinsic of [180, 0, 90, 270]) for (const rotation of [0, 90, 180, 270]) {
     const direction = (intrinsic + rotation) % 360;
-    await page.goto(`http://127.0.0.1:1422/tests/fixtures/page-interactions.html?rotation=${rotation}&intrinsic=${intrinsic}`);
+    await page.goto(`${origin}/tests/fixtures/page-interactions.html?rotation=${rotation}&intrinsic=${intrinsic}`);
     const glyphs = page.locator("[data-pdf-character]");
     await expect(glyphs).toHaveCount(21);
     const first = await glyphs.nth(0).boundingBox();
@@ -26,7 +27,7 @@ try {
     expect(await page.evaluate(() => navigator.clipboard.readText())).toBe("Hello PDF\r\nSecond line");
     console.log(`Forward/reverse native mouse selection and Ctrl+C preserved lines at intrinsic ${intrinsic} + editor ${rotation} degrees / 150% zoom`);
   }
-  await page.goto("http://127.0.0.1:1422/tests/fixtures/page-interactions.html");
+  await page.goto(`${origin}/tests/fixtures/page-interactions.html`);
   const overlay = page.locator("[data-overlay]");
   await overlay.hover();
   await page.mouse.down();
