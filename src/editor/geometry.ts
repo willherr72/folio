@@ -35,6 +35,32 @@ export function pageTransform(width: number, height: number, rotation: Rotation)
   }
 }
 
+export function placeInkPaths(
+  paths: Point[][],
+  requestedOrigin: Point,
+  pageWidth: number,
+  pageHeight: number,
+  maxWidth = 180,
+  maxHeight = 72,
+): Point[][] {
+  const points = paths.flat();
+  if (!points.length) return [];
+  const minX = Math.min(...points.map((point) => point.x));
+  const maxX = Math.max(...points.map((point) => point.x));
+  const minY = Math.min(...points.map((point) => point.y));
+  const maxY = Math.max(...points.map((point) => point.y));
+  const sourceWidth = Math.max(1, maxX - minX);
+  const sourceHeight = Math.max(1, maxY - minY);
+  const scale = Math.min(0.55, maxWidth / sourceWidth, maxHeight / sourceHeight, pageWidth / sourceWidth, pageHeight / sourceHeight);
+  const placedWidth = (maxX - minX) * scale;
+  const placedHeight = (maxY - minY) * scale;
+  const originX = Math.max(0, Math.min(pageWidth - placedWidth, requestedOrigin.x));
+  const originY = Math.max(0, Math.min(pageHeight - placedHeight, requestedOrigin.y));
+  return paths.map((path) => path.map((point) => ({
+    x: originX + (point.x - minX) * scale,
+    y: originY + (point.y - minY) * scale,
+  })));
+}
 export function clientPointToPage(
   clientX: number,
   clientY: number,

@@ -3,25 +3,35 @@ import type { FolioAdapter } from "../editor/adapter";
 import { clientPointToPage, displayDimensions, pageTransform } from "../editor/geometry";
 import type { InkPoint, Overlay, PagePlan } from "../editor/types";
 
-interface RenderEntry { sourceId: string; request: Promise<string> }
+interface RenderEntry {
+  sourceId: string;
+  request: Promise<string>;
+  references: number;
+  disposalRequested: boolean;
+}
 const renderCache = new Map<string, RenderEntry>();
 const MAX_RENDER_CACHE = 60;
 
 function releaseEntry(key: string, entry: RenderEntry) {
-  if (renderCache.get(key) === entry) renderCache.delete(key);
+  if (renderCache.get(key) !== entry) return;
+  renderCache.delete(key);
   void entry.request.then((url) => { if (url.startsWith("blob:")) URL.revokeObjectURL(url); }).catch(() => {});
 }
 
 export function clearRenderCache(sourceIds: string[]) {
   const targets = new Set(sourceIds);
-  for (const [key, entry] of renderCache) if (targets.has(entry.sourceId)) releaseEntry(key, entry);
+  for (const [key, entry] of renderCache) {
+    if (!targets.has(entry.sourceId)) continue;
+    entry.disposalRequested = true;
+    if (entry.references === 0) releaseEntry(key, entry);
+  }
 }
 
 function pruneRenderCache() {
   while (renderCache.size > MAX_RENDER_CACHE) {
-    const oldest = renderCache.entries().next().value as [string, RenderEntry] | undefined;
-    if (!oldest) break;
-    releaseEntry(oldest[0], oldest[1]);
+    const candidate = [...renderCache.entries()].find(([, entry]) => entry.references === 0);
+    if (!candidate) return;
+    releaseEntry(candidate[0], candidate[1]);
   }
 }
 
@@ -33,19 +43,45 @@ function usePageImage(adapter: FolioAdapter, page: PagePlan, pixelWidth: number)
     setState({ key });
     let entry = renderCache.get(key);
     if (!entry) {
-      entry = { sourceId: page.sourceId, request: adapter.renderPage(page.sourceId, page.pageIndex, pixelWidth) };
+      entry = {
+        sourceId: page.sourceId,
+        request: adapter.renderPage(page.sourceId, page.pageIndex, pixelWidth),
+        references: 0,
+        disposalRequested: false,
+      };
       renderCache.set(key, entry);
-      pruneRenderCache();
     }
+    entry.references += 1;
+    pruneRenderCache();
     entry.request.then((url) => active && setState({ key, url })).catch((error: unknown) => {
       if (renderCache.get(key) === entry) renderCache.delete(key);
       if (active) setState({ key, error: error instanceof Error ? error.message : String(error) });
     });
-    return () => { active = false; };
+    return () => {
+      active = false;
+      entry.references = Math.max(0, entry.references - 1);
+      if (entry.disposalRequested) releaseEntry(key, entry);
+      else pruneRenderCache();
+    };
   }, [adapter, key, page.pageIndex, page.sourceId, pixelWidth]);
   return state.key === key ? state : { key };
 }
 
+function useNearViewport(ref: React.RefObject<HTMLDivElement | null>) {
+  const [visible, setVisible] = useState(() => typeof IntersectionObserver === "undefined");
+  useEffect(() => {
+    if (visible || typeof IntersectionObserver === "undefined" || !ref.current) return;
+    const observer = new IntersectionObserver((entries) => {
+      if (entries.some((entry) => entry.isIntersecting)) {
+        setVisible(true);
+        observer.disconnect();
+      }
+    }, { rootMargin: "300px 0px" });
+    observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [ref, visible]);
+  return visible;
+}
 function bounds(overlay: Overlay) {
   if (overlay.type === "text") {
     const lines = overlay.text.split("\n");
@@ -131,7 +167,7 @@ export function PageView(props: PageViewProps) {
             const box = bounds(overlay);
             return <g key={overlay.id} data-overlay={overlay.id} className={`overlay ${selected ? "selected" : ""}`} onPointerDown={(event) => startDrag(event, overlay)}>
               {overlay.type === "text" ? (
-                <text x={overlay.x} y={overlay.y + overlay.fontSize} fill={overlay.color} fontFamily="Arial, Helvetica, sans-serif" fontSize={overlay.fontSize}>
+                <text x={overlay.x} y={overlay.y + overlay.fontSize} fill={overlay.color} xmlSpace="preserve" style={{ whiteSpace: "pre" }} fontFamily="Arial, Helvetica, sans-serif" fontSize={overlay.fontSize}>
                   {overlay.text.split("\n").map((line, index) => <tspan key={index} x={overlay.x} dy={index === 0 ? 0 : overlay.fontSize * 1.2}>{line || " "}</tspan>)}
                 </text>
               ) : overlay.paths.map((path, index) => <polyline key={index} points={path.map((point) => `${point.x},${point.y}`).join(" ")} fill="none" stroke={overlay.color} strokeWidth={overlay.strokeWidth} strokeLinecap="round" strokeLinejoin="round" />)}
@@ -147,6 +183,14 @@ export function PageView(props: PageViewProps) {
 }
 
 export function Thumbnail({ adapter, page }: { adapter: FolioAdapter; page: PagePlan }) {
+  const hostRef = useRef<HTMLDivElement>(null);
+  const visible = useNearViewport(hostRef);
+  return <div className="thumbnail-render" ref={hostRef}>
+    {visible ? <ThumbnailImage adapter={adapter} page={page} /> : <div className="thumbnail-placeholder" />}
+  </div>;
+}
+
+function ThumbnailImage({ adapter, page }: { adapter: FolioAdapter; page: PagePlan }) {
   const dimensions = displayDimensions(page.width, page.height, page.rotation);
   const rendered = usePageImage(adapter, page, 240);
   const transform = useMemo(() => pageTransform(page.width, page.height, page.rotation), [page]);
@@ -154,7 +198,7 @@ export function Thumbnail({ adapter, page }: { adapter: FolioAdapter; page: Page
     <g transform={transform || undefined}>
       {rendered.url ? <image href={rendered.url} width={page.width} height={page.height} /> : <rect width={page.width} height={page.height} fill="#fff" />}
       {page.overlays.map((overlay) => overlay.type === "text"
-        ? <text key={overlay.id} x={overlay.x} y={overlay.y + overlay.fontSize} fontSize={overlay.fontSize} fontFamily="Arial, Helvetica, sans-serif" fill={overlay.color}>{overlay.text.split("\n")[0]}</text>
+        ? <text key={overlay.id} x={overlay.x} y={overlay.y + overlay.fontSize} fontSize={overlay.fontSize} fontFamily="Arial, Helvetica, sans-serif" fill={overlay.color} xmlSpace="preserve" style={{ whiteSpace: "pre" }}>{overlay.text.split("\n")[0]}</text>
         : <g key={overlay.id}>{overlay.paths.map((path, i) => <polyline key={i} points={path.map((point) => `${point.x},${point.y}`).join(" ")} fill="none" stroke={overlay.color} strokeWidth={overlay.strokeWidth} />)}</g>)}
     </g>
   </svg>;

@@ -4,7 +4,7 @@ import {
   GripVertical, Minus, MousePointer2, PenLine, Plus, Redo2, RotateCw, Trash2, Type, Undo2, X,
 } from "lucide-react";
 import { createDemoAdapter, documentToPages, nativeAdapter, type FolioAdapter } from "./editor/adapter";
-import { displayDimensions } from "./editor/geometry";
+import { displayDimensions, placeInkPaths } from "./editor/geometry";
 import {
   commit, createHistory, deletePage, duplicatePage, movePage, planDigest, redo, removeOverlay,
   rotatePage, undo, uniqueId, updateOverlay, type EditorDocument, type History, type Overlay,
@@ -133,11 +133,8 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
 
   const placeSignature = (point: InkPoint) => {
     if (!selectedPage || !pendingSignature) return;
-    const points = pendingSignature.flat();
-    const minX = Math.min(...points.map((value) => value.x)), minY = Math.min(...points.map((value) => value.y));
-    const maxX = Math.max(...points.map((value) => value.x)), maxY = Math.max(...points.map((value) => value.y));
-    const scale = Math.min(0.55, 180 / Math.max(1, maxX - minX), 72 / Math.max(1, maxY - minY));
-    const paths = pendingSignature.map((path) => path.map((value) => ({ x: Math.min(selectedPage.width, point.x + (value.x - minX) * scale), y: Math.min(selectedPage.height, point.y + (value.y - minY) * scale) })));
+    const paths = placeInkPaths(pendingSignature, point, selectedPage.width, selectedPage.height);
+
     const id = uniqueId("signature");
     edit((document) => ({ ...document, pages: document.pages.map((page) => page.id === selectedPage.id ? { ...page, overlays: [...page.overlays, { type: "ink", id, paths, color: "#2D2A26", strokeWidth: 2 }] } : page), selectedOverlayId: id }));
     setPendingSignature(null); setTool("select"); setNotice("Signature placed");
