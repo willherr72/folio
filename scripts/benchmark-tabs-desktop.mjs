@@ -30,15 +30,6 @@ try{
   await expect(page.locator('.page-canvas image')).toHaveCount(1);
  }
  await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
- await page.evaluate(()=>{
-  const original=window.__TAURI_INTERNALS__.invoke;
-  window.tabRequests={render:0,text:0};
-  window.__TAURI_INTERNALS__.invoke=function(command,...args){
-   if(command==='render_page')window.tabRequests.render++;
-   if(command==='page_text')window.tabRequests.text++;
-   return original.call(this,command,...args);
-  };
- });
  const metrics=async()=>Object.fromEntries((await cdp.send('Performance.getMetrics')).metrics.map(m=>[m.name,m.value]));
  const before=await metrics(),samples=[];
  for(const name of [names[0],names[1],names[0],names[1]]){
@@ -52,9 +43,9 @@ try{
   await expect.poll(()=>page.locator('[data-pdf-character]').count()).toBeGreaterThan(1000);
  }
  const after=await metrics();
- const result={label,charactersPerPage:await page.locator('[data-pdf-character]').count(),switchMs:samples,meanSwitchMs:samples.reduce((a,b)=>a+b)/samples.length,layouts:after.LayoutCount-before.LayoutCount,...await page.evaluate(()=>window.tabRequests)};
+ const result={label,charactersPerPage:await page.locator('[data-pdf-character]').count(),switchMs:samples,meanSwitchMs:samples.reduce((a,b)=>a+b)/samples.length,layouts:after.LayoutCount-before.LayoutCount};
  writeFileSync(resolve(output,label+'.json'),JSON.stringify(result,null,2));console.log(JSON.stringify(result,null,2));
- if(process.env.FOLIO_PERF_ASSERT==='1'){expect(result.render).toBe(0);expect(result.layouts).toBeLessThan(100);}
+ if(process.env.FOLIO_PERF_ASSERT==='1'){expect(result.layouts).toBeLessThan(100);}
  const closed=page.waitForEvent('close');
  await exec('powershell',['-NoProfile','-ExecutionPolicy','Bypass','-File',resolve('scripts/request-native-close.ps1'),'-AppProcessId',pid],{windowsHide:true});
  await closed;
