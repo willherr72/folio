@@ -1,10 +1,11 @@
-param([string]$Binary = 'artifacts/Folio/Folio.exe', [int]$Port = 9228)
+param([string]$Binary = 'artifacts/Folio-v0.2.0/Folio.exe', [int]$Port = 9228)
 $ErrorActionPreference = 'Stop'
 $folioRoot = Split-Path -Parent $PSScriptRoot
 $exe = (Resolve-Path -LiteralPath (Join-Path $folioRoot $Binary)).Path
 $existing = Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue
 if ($existing) { throw "Local automation port $Port is already in use." }
 $env:WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS = "--remote-debugging-port=$Port --remote-debugging-address=127.0.0.1"
+$env:WEBVIEW2_USER_DATA_FOLDER = Join-Path $folioRoot 'artifacts/desktop-test-profile'
 $folioProcess = Start-Process -FilePath $exe -WorkingDirectory (Split-Path -Parent $exe) -WindowStyle Hidden -PassThru
 $deadline = [DateTime]::UtcNow.AddSeconds(25)
 do {

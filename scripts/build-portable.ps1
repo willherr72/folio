@@ -10,14 +10,16 @@ try {
     }
     & npm.cmd run tauri -- build --no-bundle
     if ($LASTEXITCODE -ne 0) { throw 'Desktop release build failed.' }
-    $portableDir = Join-Path $folioRoot 'artifacts/Folio'
+    $folioVersion = (Get-Content -LiteralPath 'package.json' -Raw | ConvertFrom-Json).version
+    $portableName = 'Folio-v' + $folioVersion
+    $portableDir = Join-Path $folioRoot ('artifacts/' + $portableName)
     [IO.Directory]::CreateDirectory($portableDir) | Out-Null
     [IO.Directory]::CreateDirectory((Join-Path $portableDir 'resources')) | Out-Null
     Copy-Item -LiteralPath 'src-tauri/target/release/folio.exe' -Destination (Join-Path $portableDir 'Folio.exe') -Force
     Copy-Item -LiteralPath 'src-tauri/resources/pdfium' -Destination (Join-Path $portableDir 'resources') -Recurse -Force
     Copy-Item -LiteralPath 'examples' -Destination $portableDir -Recurse -Force
     Copy-Item -LiteralPath 'docs' -Destination $portableDir -Recurse -Force
-    foreach ($name in @('LICENSE','THIRD_PARTY_NOTICES.md','README.md')) {
+    foreach ($name in @('LICENSE','THIRD_PARTY_NOTICES.md','README.md','CHANGELOG.md')) {
         Copy-Item -LiteralPath $name -Destination $portableDir -Force
     }
     & (Join-Path $PSScriptRoot 'collect-licenses.ps1') -Destination (Join-Path $portableDir 'licenses')
@@ -29,7 +31,7 @@ try {
             $_.LastWriteTime = $zipMinimumDate
         }
     }
-    $zip = Join-Path $folioRoot 'artifacts/Folio-windows-x64.zip'
+    $zip = Join-Path $folioRoot ('artifacts/' + $portableName + '-windows-x64.zip')
     Compress-Archive -Path (Join-Path $portableDir '*') -DestinationPath $zip -Force
     Write-Host "Portable app: $portableDir"
     Write-Host "Archive: $zip"

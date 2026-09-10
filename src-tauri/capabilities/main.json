@@ -3,5 +3,5 @@
   "identifier": "main-capability",
   "description": "Core capability for the Folio editor window",
   "windows": ["main"],
-  "permissions": ["core:default"]
+  "permissions": ["core:default", "core:window:allow-destroy"]
 }

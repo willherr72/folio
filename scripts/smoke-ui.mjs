@@ -12,6 +12,9 @@ page.on('dialog', dialog => dialog.accept());
 try {
   await page.goto(process.env.FOLIO_UI_URL || 'http://127.0.0.1:1420/?demo=1');
   await expect(page.getByText('Folio welcome.pdf', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await page.getByRole('combobox', { name: 'Page view' }).selectOption('single');
+  await page.getByRole('button', { name: 'Done', exact: true }).click();
   const canvas = page.locator('.page-stage .page-canvas');
   await expect(canvas.locator('image')).toHaveCount(1);
   await page.screenshot({ path: resolve(artifacts, '01-workspace.png'), fullPage: true });

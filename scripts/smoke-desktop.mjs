@@ -14,7 +14,8 @@ const context = browser.contexts()[0];
 const page = context.pages().find(page => !page.url().startsWith('devtools:')) || await context.newPage();
 const errors = [];
 page.on('pageerror', error => errors.push(error.message));
-page.on('dialog', dialog => dialog.accept());
+const browserPrompts = [];
+page.on('dialog', dialog => { browserPrompts.push(dialog.type()); return dialog.accept(); });
 const source = resolve('examples/Welcome to Folio.pdf');
 const outputDirectory = resolve(artifacts, 'output-' + Date.now());
 mkdirSync(outputDirectory, { recursive: true });
@@ -31,10 +32,15 @@ try {
   await page.getByRole('button', { name: 'Open a PDF', exact: true }).click();
   await fileDialog('Open', source);
   await expect(page.getByText('Welcome to Folio.pdf', { exact: true })).toBeVisible({ timeout: 15000 });
-  const canvas = page.locator('.page-stage .page-canvas');
+  const canvas = page.locator('.document-page').first().locator('.page-canvas');
   await expect(canvas.locator('image')).toHaveCount(1, { timeout: 15000 });
   const openAndRenderMs = Date.now() - before;
   await expect(page.locator('.page-error')).toHaveCount(0);
+  await expect(page.locator('[data-page-id]')).toHaveCount(3);
+  await page.getByRole('button',{name:'Settings',exact:true}).click();
+  await page.getByLabel('Theme',{exact:true}).selectOption('dark');
+  await page.getByRole('button',{name:'Done',exact:true}).click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme','dark');
   await page.screenshot({ path: resolve(artifacts, '01-native-open.png'), fullPage: true });
 
   await page.getByRole('button', { name: 'Text', exact: true }).click();
@@ -53,6 +59,34 @@ try {
   await page.getByRole('button', { name: 'Use signature' }).click();
   await canvas.click({ position: { x: 100, y: 455 } });
   await expect(canvas.locator('[data-overlay]')).toHaveCount(2);
+  await page.getByRole('button',{name:'Draw',exact:true}).click();
+  const drawingBox = await canvas.boundingBox();
+  await page.mouse.move(drawingBox.x+60,drawingBox.y+190);
+  await page.mouse.down();
+  for (const [x,y] of [[90,170],[125,195],[155,175],[185,193]]) await page.mouse.move(drawingBox.x+x,drawingBox.y+y,{steps:5});
+  await page.mouse.up();
+  await expect(canvas.locator('[data-overlay]')).toHaveCount(3);
+  await page.getByRole('button',{name:'Select',exact:true}).click();
+  await page.getByRole('button',{name:'Open',exact:true}).click();
+  await expect(page.getByRole('dialog',{name:'Discard unsaved changes?'})).toBeVisible();
+  await page.getByRole('button',{name:'Keep editing'}).click();
+  await expect(canvas.locator('[data-overlay]')).toHaveCount(3);
+  await execFileAsync('powershell',['-NoProfile','-ExecutionPolicy','Bypass','-File',resolve('scripts/request-native-close.ps1'),'-AppProcessId',appProcessId],{windowsHide:true});
+  await expect(page.getByRole('dialog',{name:'Close Folio?'})).toBeVisible();
+  await page.getByRole('button',{name:'Keep editing'}).click();
+  // Verify real Windows HTML drag handling, then undo back to the sample order.
+  const firstThumb=page.getByLabel('Page 1 of 3',{exact:true});
+  const lastThumb=page.getByLabel('Page 3 of 3',{exact:true});
+  const firstBox=await firstThumb.boundingBox(),lastBox=await lastThumb.boundingBox();
+  await page.mouse.move(lastBox.x+10,lastBox.y+lastBox.height/2);
+  await page.mouse.down();
+  await page.mouse.move(lastBox.x+20,lastBox.y+lastBox.height/2,{steps:3});
+  await page.mouse.move(firstBox.x+40,firstBox.y+10,{steps:12});
+  await expect(firstThumb).toHaveClass(/drop-before/);
+  await page.mouse.up();
+  await expect.poll(async () => (await page.locator('.document-page').first().boundingBox()).width).toBeCloseTo(712.8,0);
+  await page.getByRole('button',{name:'Undo',exact:true}).click();
+  await page.getByLabel('Page 1 of 3',{exact:true}).click();
   await canvas.click({ position: { x: 15, y: 15 } });
   await page.screenshot({ path: resolve(artifacts, '02-native-edited.png'), fullPage: true });
 
@@ -84,12 +118,20 @@ try {
   await expect(canvas.locator('[data-overlay]')).toHaveCount(0);
   await expect(page.locator('.page-error')).toHaveCount(0);
   expect(errors).toEqual([]);
+  expect(browserPrompts).toEqual([]);
   await page.screenshot({ path: resolve(artifacts, '03-native-reopened.png'), fullPage: true });
-  const report = { passed: true, source, output, openAndRenderMsIncludingDialogAutomation: openAndRenderMs, checks: ['native open dialog', 'native PDF render', 'text', 'drawn signature', 'duplicate annotated page', 'merge through native dialog', 'unsupported text rejected without creating output', 'native save dialog', 'saved PDF file', 'native reopen of seven-page output'], consoleErrors: errors };
+  await page.getByRole('button',{name:'Text',exact:true}).click();
+  await canvas.click({position:{x:60,y:60}});
+  await execFileAsync('powershell',['-NoProfile','-ExecutionPolicy','Bypass','-File',resolve('scripts/request-native-close.ps1'),'-AppProcessId',appProcessId],{windowsHide:true});
+  await expect(page.getByRole('dialog',{name:'Close Folio?'})).toBeVisible();
+  const closed = page.waitForEvent('close');
+  await page.getByRole('button',{name:'Discard and close'}).click();
+  await closed;
+  const report = { passed: true, source, output, openAndRenderMsIncludingDialogAutomation: openAndRenderMs, checks: ['native open dialog', 'native PDF render', 'text', 'drawn signature', 'freehand drawing', 'real thumbnail drag and undo', 'dark settings', 'custom open modal', 'native close cancelled and confirmed', 'duplicate annotated page', 'merge through native dialog', 'unsupported text rejected without creating output', 'native save dialog', 'saved PDF file', 'native reopen of seven-page output'], consoleErrors: errors };
   writeFileSync(resolve(artifacts, 'results.json'), JSON.stringify(report, null, 2));
   console.log(JSON.stringify(report, null, 2));
 } catch (error) {
-  await page.screenshot({ path: resolve(artifacts, 'failure.png'), fullPage: true });
+  if (!page.isClosed()) await page.screenshot({ path: resolve(artifacts, 'failure.png'), fullPage: true });
   throw error;
 } finally {
   await browser.close();

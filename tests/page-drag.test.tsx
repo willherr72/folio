@@ -1,0 +1,20 @@
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { afterEach, expect, it, vi } from "vitest";
+import { App } from "../src/App";
+afterEach(cleanup);
+it("sets move drag data and reorders by the insertion edge with one undo", async () => {
+  localStorage.clear();
+  render(<App initialDemo/>);
+  await screen.findByText("Folio welcome.pdf");
+  const original = screen.getByLabelText("Page 1 of 3");
+  const last = screen.getByLabelText("Page 3 of 3");
+  const dataTransfer = { setData: vi.fn(), effectAllowed: "", dropEffect: "" };
+  fireEvent.dragStart(last, { dataTransfer });
+  expect(dataTransfer.setData).toHaveBeenCalledWith("text/plain", expect.any(String));
+  fireEvent.dragOver(original, { dataTransfer, clientY: 0 });
+  expect(original).toHaveClass("drop-before");
+  fireEvent.drop(original, { dataTransfer, clientY: 0 });
+  await waitFor(() => expect(screen.getByLabelText("Page 1 of 3").querySelector("image")?.getAttribute("href")).toContain("Export%20with%20confidence"));
+  fireEvent.click(screen.getByRole("button", { name: "Undo" }));
+  await waitFor(() => expect(screen.getByLabelText("Page 1 of 3").querySelector("image")?.getAttribute("href")).toContain("Welcome%20to%20Folio"));
+});
