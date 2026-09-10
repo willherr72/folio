@@ -16,10 +16,19 @@ try {
     Copy-Item -LiteralPath 'src-tauri/target/release/folio.exe' -Destination (Join-Path $portableDir 'Folio.exe') -Force
     Copy-Item -LiteralPath 'src-tauri/resources/pdfium' -Destination (Join-Path $portableDir 'resources') -Recurse -Force
     Copy-Item -LiteralPath 'examples' -Destination $portableDir -Recurse -Force
+    Copy-Item -LiteralPath 'docs' -Destination $portableDir -Recurse -Force
     foreach ($name in @('LICENSE','THIRD_PARTY_NOTICES.md','README.md')) {
         Copy-Item -LiteralPath $name -Destination $portableDir -Force
     }
     & (Join-Path $PSScriptRoot 'collect-licenses.ps1') -Destination (Join-Path $portableDir 'licenses')
+    # Some upstream license files carry 1970 timestamps, outside ZIP's range.
+    # Normalize only copied distribution entries, leaving upstream sources intact.
+    $zipMinimumDate = [DateTime]::new(1980, 2, 1)
+    Get-ChildItem -LiteralPath $portableDir -Recurse -Force | ForEach-Object {
+        if ($_.LastWriteTime.Year -lt 1980 -or $_.LastWriteTime.Year -gt 2107) {
+            $_.LastWriteTime = $zipMinimumDate
+        }
+    }
     $zip = Join-Path $folioRoot 'artifacts/Folio-windows-x64.zip'
     Compress-Archive -Path (Join-Path $portableDir '*') -DestinationPath $zip -Force
     Write-Host "Portable app: $portableDir"

@@ -62,6 +62,14 @@ try {
   await fileDialog('Open', source);
   await expect(page.getByLabel('Page 5 of 7')).toHaveClass(/selected/, { timeout: 15000 });
   await page.getByLabel('Page 1 of 7').click();
+  await canvas.locator('[data-overlay] tspan').first().click();
+  await page.getByRole('textbox', { name: 'Content' }).fill('A 中文 B');
+  await page.getByRole('button', { name: 'Save a copy', exact: true }).click();
+  await fileDialog('Save', output);
+  await expect(page.locator('.status-error')).toContainText('U+4E2D', { timeout: 15000 });
+  await expect(page.getByLabel('Unsaved changes')).toHaveCount(1);
+  expect(existsSync(output)).toBe(false);
+  await page.getByRole('textbox', { name: 'Content' }).fill('Built while you slept.');
   await page.getByRole('button', { name: 'Save a copy', exact: true }).click();
   await fileDialog('Save', output);
   await expect(page.getByLabel('Unsaved changes')).toHaveCount(0, { timeout: 15000 });
@@ -77,7 +85,7 @@ try {
   await expect(page.locator('.page-error')).toHaveCount(0);
   expect(errors).toEqual([]);
   await page.screenshot({ path: resolve(artifacts, '03-native-reopened.png'), fullPage: true });
-  const report = { passed: true, source, output, openAndRenderMsIncludingDialogAutomation: openAndRenderMs, checks: ['native open dialog', 'native PDF render', 'text', 'drawn signature', 'duplicate annotated page', 'merge through native dialog', 'native save dialog', 'saved PDF file', 'native reopen of seven-page output'], consoleErrors: errors };
+  const report = { passed: true, source, output, openAndRenderMsIncludingDialogAutomation: openAndRenderMs, checks: ['native open dialog', 'native PDF render', 'text', 'drawn signature', 'duplicate annotated page', 'merge through native dialog', 'unsupported text rejected without creating output', 'native save dialog', 'saved PDF file', 'native reopen of seven-page output'], consoleErrors: errors };
   writeFileSync(resolve(artifacts, 'results.json'), JSON.stringify(report, null, 2));
   console.log(JSON.stringify(report, null, 2));
 } catch (error) {
