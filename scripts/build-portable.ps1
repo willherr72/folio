@@ -19,6 +19,7 @@ try {
     foreach ($name in @('LICENSE','THIRD_PARTY_NOTICES.md','README.md')) {
         Copy-Item -LiteralPath $name -Destination $portableDir -Force
     }
+    & (Join-Path $PSScriptRoot 'collect-licenses.ps1') -Destination (Join-Path $portableDir 'licenses')
     $zip = Join-Path $folioRoot 'artifacts/Folio-windows-x64.zip'
     Compress-Archive -Path (Join-Path $portableDir '*') -DestinationPath $zip -Force
     Write-Host "Portable app: $portableDir"

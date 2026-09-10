@@ -6,3 +6,5 @@ src-tauri/resources/pdfium/
 artifacts/
 .superpowers/
 *.log
+
+src-tauri/gen/
