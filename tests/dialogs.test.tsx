@@ -1,5 +1,5 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { useState } from "react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { StrictMode, useLayoutEffect, useState } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ConfirmDialog } from "../src/components/ConfirmDialog";
 import { SettingsDialog } from "../src/components/SettingsDialog";
@@ -15,7 +15,7 @@ function ConfirmationExample() {
 }
 
 describe("shared dialogs", () => {
-  it("focuses cancel, traps both tab directions, and restores the trigger after Escape", () => {
+  it("focuses cancel, traps both tab directions, and restores the trigger after Escape", async () => {
     render(<ConfirmationExample />);
     const trigger = screen.getByRole("button", { name: "Open decision" });
     trigger.focus();
@@ -30,9 +30,62 @@ describe("shared dialogs", () => {
     fireEvent.keyDown(cancel, { key: "Escape" });
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     expect(screen.getByText("Unchanged")).toBeInTheDocument();
-    expect(trigger).toHaveFocus();
+    await waitFor(() => expect(trigger).toHaveFocus());
   });
 
+  it("preserves the original opener across Strict Mode effect replay", async () => {
+    render(<StrictMode><button>Other action</button><ConfirmationExample /></StrictMode>);
+    const trigger = screen.getByText("Open decision");
+    trigger.focus();
+    fireEvent.click(trigger);
+    await waitFor(() => expect(screen.getByText("Keep editing")).toHaveFocus());
+    fireEvent.keyDown(screen.getByText("Keep editing"), { key: "Escape" });
+    await waitFor(() => expect(trigger).toHaveFocus());
+  });
+  it("makes background content inert and restores its original state on close", () => {
+    const alreadyInert = document.createElement("aside");
+    alreadyInert.setAttribute("inert", "existing");
+    document.body.append(alreadyInert);
+    try {
+      const { container } = render(<ConfirmationExample />);
+      fireEvent.click(screen.getByText("Open decision"));
+      expect(container).toHaveAttribute("inert");
+      expect(screen.getByRole("dialog").closest(".modal-backdrop")).not.toHaveAttribute("inert");
+      fireEvent.click(screen.getByText("Keep editing"));
+      expect(container).not.toHaveAttribute("inert");
+      expect(alreadyInert).toHaveAttribute("inert", "existing");
+    } finally { alreadyInert.remove(); }
+  });
+
+  it("restores focus after the opener becomes enabled during close commit", async () => {
+    function Example() {
+      const [open, setOpen] = useState(false);
+      const [disabled, setDisabled] = useState(false);
+      useLayoutEffect(() => setDisabled(open), [open]);
+      return <>{open && <ConfirmDialog title="Discard edits?" description="Unsaved work will be lost." confirmLabel="Discard" onCancel={() => setOpen(false)} onConfirm={() => setOpen(false)} />}<button disabled={disabled} onClick={() => setOpen(true)}>Open decision</button></>;
+    }
+    render(<Example />);
+    const trigger = screen.getByRole("button", { name: "Open decision" });
+    trigger.focus();
+    fireEvent.click(trigger);
+    expect(trigger).toBeDisabled();
+    fireEvent.keyDown(screen.getByText("Keep editing"), { key: "Escape" });
+    expect(trigger).toBeEnabled();
+    await waitFor(() => expect(trigger).toHaveFocus());
+  });
+
+  it("focuses an available control when the original opener was removed", async () => {
+    function Example() {
+      const [open, setOpen] = useState(false);
+      return <>{!open && <button onClick={() => setOpen(true)}>Open decision</button>}<button>Available action</button>{open && <ConfirmDialog title="Discard edits?" description="Unsaved work will be lost." confirmLabel="Discard" onCancel={() => setOpen(false)} onConfirm={() => setOpen(false)} />}</>;
+    }
+    render(<Example />);
+    const originalTrigger = screen.getByText("Open decision");
+    originalTrigger.focus();
+    fireEvent.click(originalTrigger);
+    fireEvent.keyDown(screen.getByText("Keep editing"), { key: "Escape" });
+    await waitFor(() => expect(screen.getByText("Open decision")).toHaveFocus());
+  });
   it("keeps editor keyboard shortcuts from bubbling outside a dialog", () => {
     const shortcut = vi.fn();
     window.addEventListener("keydown", shortcut);

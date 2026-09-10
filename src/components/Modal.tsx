@@ -15,21 +15,43 @@ const focusableSelector = 'button:not([disabled]), input:not([disabled]), select
 export function Modal({ title, children, onClose, className = "", description, initialFocusRef }: ModalProps) {
   const dialogRef = useRef<HTMLElement>(null);
   const initialFocus = useRef(initialFocusRef);
+  const openerRef = useRef<HTMLElement | null>(null);
   const headingId = useId();
   const descriptionId = useId();
 
   useLayoutEffect(() => {
-    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    if (!openerRef.current && document.activeElement instanceof HTMLElement) openerRef.current = document.activeElement;
+    const previousFocus = openerRef.current;
     const dialog = dialogRef.current;
     const focusInside = () => (initialFocus.current?.current ?? dialog?.querySelector<HTMLElement>(focusableSelector) ?? dialog)?.focus();
     focusInside();
+    const background = Array.from(document.body.children)
+      .filter((element): element is HTMLElement => element instanceof HTMLElement && element !== dialog?.parentElement)
+      .map((element) => ({ element, inert: element.getAttribute("inert") }));
+    background.forEach(({ element }) => element.setAttribute("inert", ""));
     const retainFocus = (event: FocusEvent) => {
       if (event.target instanceof Node && !dialog?.contains(event.target)) focusInside();
     };
     document.addEventListener("focusin", retainFocus);
     return () => {
       document.removeEventListener("focusin", retainFocus);
-      if (previousFocus?.isConnected) previousFocus.focus();
+      background.forEach(({ element, inert }) => {
+        if (inert === null) element.removeAttribute("inert");
+        else element.setAttribute("inert", inert);
+      });
+      // React removes the dialog and re-enables its opener during this commit.
+      queueMicrotask(() => {
+        if (dialog?.isConnected) return;
+        const active = document.activeElement;
+        if (active instanceof HTMLElement && active !== document.body && active.isConnected) return;
+        const canFocus = (element: HTMLElement) => element.isConnected && !element.closest("[inert], [hidden]") && !element.matches(":disabled");
+        const fallback = background.flatMap(({ element }) => Array.from(element.querySelectorAll<HTMLElement>(focusableSelector)));
+        for (const target of [previousFocus, ...fallback]) {
+          if (!target || target === document.body || !canFocus(target)) continue;
+          target.focus({ preventScroll: true });
+          if (document.activeElement === target) break;
+        }
+      });
     };
   }, []);
 

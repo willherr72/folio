@@ -26,10 +26,10 @@ function NumericPreference({ label, value, min, max, step, hint, onChange }: {
 export function SettingsDialog({ preferences, onChange, onReset, onClose }: SettingsDialogProps) {
   return <Modal title="Settings" description="Make Folio feel right for you. Changes are saved automatically." onClose={onClose} className="settings-dialog">
     <div className="settings-fields">
-      <label className="settings-field">Theme<select value={preferences.theme} onChange={(event) => onChange({ ...preferences, theme: event.target.value as Preferences["theme"] })}>
+      <label className="settings-field">Theme<select aria-label="Theme" value={preferences.theme} onChange={(event) => onChange({ ...preferences, theme: event.target.value as Preferences["theme"] })}>
         <option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option>
       </select></label>
-      <label className="settings-field">Page view<select value={preferences.viewMode} onChange={(event) => onChange({ ...preferences, viewMode: event.target.value as Preferences["viewMode"] })}>
+      <label className="settings-field">Page view<select aria-label="Page view" value={preferences.viewMode} onChange={(event) => onChange({ ...preferences, viewMode: event.target.value as Preferences["viewMode"] })}>
         <option value="continuous">Continuous</option><option value="single">Single page</option>
       </select></label>
       <NumericPreference label="Default zoom" value={preferences.defaultZoom} min={50} max={200} step={5} hint="Percent, from 50 to 200" onChange={(defaultZoom) => onChange({ ...preferences, defaultZoom })} />
