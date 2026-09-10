@@ -40,16 +40,19 @@ export function PdfTextLayer({ adapter, page, pageNumber, selectable }: {
   adapter: FolioAdapter; page: PagePlan; pageNumber: number; selectable: boolean;
 }) {
   const text = usePageText(adapter, page);
+  const intrinsicRotation = text?.intrinsicRotation ?? 0;
+  const sideways = intrinsicRotation === 90 || intrinsicRotation === 270;
   const layerRef = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
     const spans = layerRef.current?.querySelectorAll<HTMLElement>("[data-pdf-character]");
     spans?.forEach((span, index) => {
-      const width = text?.characters[index].width ?? 0;
+      const character = text?.characters[index];
+      const width = (sideways ? character?.height : character?.width) ?? 0;
       // offsetWidth is in unrotated CSS pixels, independent of page zoom.
       const naturalWidth = span.offsetWidth;
-      span.style.transform = width > 0 && naturalWidth > 0 ? `scaleX(${width / naturalWidth})` : "";
+      span.style.transform = `rotate(${intrinsicRotation}deg) scaleX(${width > 0 && naturalWidth > 0 ? width / naturalWidth : 1})`;
     });
-  }, [text]);
+  }, [text, intrinsicRotation, sideways]);
 
   useEffect(() => {
     if (!selectable) return;
@@ -82,10 +85,14 @@ export function PdfTextLayer({ adapter, page, pageNumber, selectable }: {
 
   return <foreignObject className="pdf-text-host" width={page.width} height={page.height} pointerEvents={selectable ? "auto" : "none"}>
     <div ref={layerRef} className="pdf-text-layer" role="document" aria-label={`Page ${pageNumber} text`} data-selectable={selectable}>
-      {text?.characters.map((character, index) => <span key={index} data-pdf-character="" style={{
-        left: character.x, top: character.y, fontSize: Math.max(1, character.height),
-        height: Math.max(1, character.height),
-      }}>{character.text}</span>)}
+      {text?.characters.map((character, index) => {
+        // Bounds already include source rotation. Restore the glyph's local axes
+        // within that rectangle so browser carets face the same way as the PDF.
+        const left = character.x + (intrinsicRotation === 90 || intrinsicRotation === 180 ? character.width : 0);
+        const top = character.y + (intrinsicRotation === 180 || intrinsicRotation === 270 ? character.height : 0);
+        const height = Math.max(1, sideways ? character.width : character.height);
+        return <span key={index} data-pdf-character="" style={{ left, top, fontSize: height, height }}>{character.text}</span>;
+      })}
     </div>
   </foreignObject>;
 }

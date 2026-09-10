@@ -60,5 +60,7 @@ export interface PdfTextCharacter {
 }
 
 export interface PageText {
+  /** Source page rotation already included in the character bounds; defaults to zero. */
+  intrinsicRotation?: Rotation;
   characters: PdfTextCharacter[];
 }

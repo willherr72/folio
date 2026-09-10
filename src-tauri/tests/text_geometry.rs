@@ -79,6 +79,11 @@ fn character_bounds_match_rendered_ink_for_every_intrinsic_rotation_and_crop() {
         write_pdf(&path, "BT /F1 20 Tf 60 300 Td (A) Tj ET", rotation);
         let source = engine.open_document(&path).unwrap();
         let text = engine.page_text(&source.id, 0).unwrap();
+        assert_eq!(
+            serde_json::to_value(&text).unwrap()["intrinsicRotation"],
+            rotation,
+            "normalized bounds must retain the source orientation for browser carets"
+        );
         assert_eq!(text.characters.len(), 1);
         let character = &text.characters[0];
         assert_eq!(character.text, "A");

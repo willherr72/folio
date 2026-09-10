@@ -3,14 +3,15 @@ const browser = await chromium.launch({ headless: true });
 try {
   const context = await browser.newContext({ permissions: ["clipboard-read", "clipboard-write"] });
   const page = await context.newPage();
-  for (const rotation of [0, 90, 180, 270]) {
-    await page.goto(`http://127.0.0.1:1422/tests/fixtures/page-interactions.html?rotation=${rotation}`);
+  for (const intrinsic of [180, 0, 90, 270]) for (const rotation of [0, 90, 180, 270]) {
+    const direction = (intrinsic + rotation) % 360;
+    await page.goto(`http://127.0.0.1:1422/tests/fixtures/page-interactions.html?rotation=${rotation}&intrinsic=${intrinsic}`);
     const glyphs = page.locator("[data-pdf-character]");
     await expect(glyphs).toHaveCount(21);
     const first = await glyphs.nth(0).boundingBox();
     const last = await glyphs.nth(20).boundingBox();
-    const start = rotation === 0 ? [first.x + .2, first.y + first.height / 2] : rotation === 90 ? [first.x + first.width / 2, first.y + .2] : rotation === 180 ? [first.x + first.width - .2, first.y + first.height / 2] : [first.x + first.width / 2, first.y + first.height - .2];
-    const end = rotation === 0 ? [last.x + last.width - .2, last.y + last.height / 2] : rotation === 90 ? [last.x + last.width / 2, last.y + last.height - .2] : rotation === 180 ? [last.x + .2, last.y + last.height / 2] : [last.x + last.width / 2, last.y + .2];
+    const start = direction === 0 ? [first.x + .2, first.y + first.height / 2] : direction === 90 ? [first.x + first.width / 2, first.y + .2] : direction === 180 ? [first.x + first.width - .2, first.y + first.height / 2] : [first.x + first.width / 2, first.y + first.height - .2];
+    const end = direction === 0 ? [last.x + last.width - .2, last.y + last.height / 2] : direction === 90 ? [last.x + last.width / 2, last.y + last.height - .2] : direction === 180 ? [last.x + .2, last.y + last.height / 2] : [last.x + last.width / 2, last.y + .2];
     await page.mouse.move(...start);
     await page.mouse.down();
     await page.mouse.move(...end, { steps: 15 });
@@ -23,7 +24,7 @@ try {
     await page.mouse.up();
     await page.keyboard.press("Control+c");
     expect(await page.evaluate(() => navigator.clipboard.readText())).toBe("Hello PDF\r\nSecond line");
-    console.log(`Forward/reverse native mouse selection and Ctrl+C preserved lines at ${rotation} degrees / 150% zoom`);
+    console.log(`Forward/reverse native mouse selection and Ctrl+C preserved lines at intrinsic ${intrinsic} + editor ${rotation} degrees / 150% zoom`);
   }
   await page.goto("http://127.0.0.1:1422/tests/fixtures/page-interactions.html");
   const overlay = page.locator("[data-overlay]");

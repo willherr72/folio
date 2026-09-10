@@ -80,5 +80,8 @@ pub struct PdfTextCharacter {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PageText {
+    /// Source page rotation, already included in the normalized character bounds.
+    #[serde(default)]
+    pub intrinsic_rotation: u16,
     pub characters: Vec<PdfTextCharacter>,
 }

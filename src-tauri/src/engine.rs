@@ -435,7 +435,10 @@ impl WorkerRuntime {
             });
             last_position = position;
         }
-        Ok(PageText { characters })
+        Ok(PageText {
+            intrinsic_rotation: geometry.rotation,
+            characters,
+        })
     }
 
     fn close_document(&mut self, source_id: &str) -> EngineResult<()> {
