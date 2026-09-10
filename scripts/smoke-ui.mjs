@@ -20,6 +20,12 @@ try {
   await canvas.click({ position: { x: 100, y: 265 } });
   await page.getByRole('textbox', { name: 'Content' }).fill('Morning review\nFolio is working.');
   await expect(canvas.locator('[data-overlay]')).toHaveCount(1);
+  const textBox = await canvas.locator('[data-overlay] tspan').first().boundingBox();
+  if (!textBox) throw new Error('Added text not visible');
+  await page.mouse.move(textBox.x + 4, textBox.y + textBox.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(textBox.x + 40, textBox.y + textBox.height / 2 + 18, { steps: 6 });
+  await page.mouse.up();
 
   await page.getByRole('button', { name: 'Signature', exact: true }).click();
   const pad = page.getByLabel('Signature drawing area');
@@ -49,6 +55,10 @@ try {
   await expect(page.getByLabel('Page 3 of 4')).toHaveClass(/selected/);
   await page.getByRole('button', { name: 'Redo', exact: true }).click();
   await expect(page.getByLabel('Page 3 of 3')).toBeVisible();
+  await page.keyboard.press('Control+z');
+  await expect(page.getByLabel('Page 3 of 4')).toHaveClass(/selected/);
+  await page.keyboard.press('Control+Shift+Z');
+  await expect(page.getByLabel('Page 3 of 3')).toBeVisible();
   await page.getByLabel('Page 2 of 3').click();
 
   const downloadPromise = page.waitForEvent('download');
@@ -62,6 +72,8 @@ try {
   expect(plan.pages[1].rotation).toBe(90);
   expect(plan.pages[1].overlays).toHaveLength(2);
   expect(plan.pages[1].overlays[0].text).toBe('Morning review\nFolio is working.');
+  expect(plan.pages[1].overlays[0].x).toBeCloseTo(151.11, 0);
+  expect(plan.pages[1].overlays[0].y).toBeCloseTo(314.44, 0);
   expect(plan.pages[1].overlays[1].type).toBe('ink');
   expect(plan.pages[1].overlays[1].paths[0].length).toBeGreaterThan(6);
   await expect(page.getByLabel('Unsaved changes')).toHaveCount(0);

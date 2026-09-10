@@ -16,7 +16,9 @@ const errors = [];
 page.on('pageerror', error => errors.push(error.message));
 page.on('dialog', dialog => dialog.accept());
 const source = resolve('examples/Welcome to Folio.pdf');
-const output = resolve(artifacts, 'Folio edited sample.pdf');
+const outputDirectory = resolve(artifacts, 'output-' + Date.now());
+mkdirSync(outputDirectory, { recursive: true });
+const output = resolve(outputDirectory, 'Folio edited sample.pdf');
 async function fileDialog(action, path) {
   const result = await execFileAsync('C:/Windows/System32/WindowsPowerShell/v1.0/powershell.exe', [
     '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', resolve('scripts/set-native-dialog.ps1'),
@@ -54,10 +56,12 @@ try {
   await canvas.click({ position: { x: 15, y: 15 } });
   await page.screenshot({ path: resolve(artifacts, '02-native-edited.png'), fullPage: true });
 
+  await page.getByRole('button', { name: 'Duplicate', exact: true }).click();
+  await expect(page.getByLabel('Page 2 of 4')).toHaveClass(/selected/);
   await page.getByRole('button', { name: 'Add PDF', exact: true }).click();
   await fileDialog('Open', source);
-  await expect(page.getByLabel('Page 4 of 6')).toHaveClass(/selected/, { timeout: 15000 });
-  await page.getByLabel('Page 1 of 6').click();
+  await expect(page.getByLabel('Page 5 of 7')).toHaveClass(/selected/, { timeout: 15000 });
+  await page.getByLabel('Page 1 of 7').click();
   await page.getByRole('button', { name: 'Save a copy', exact: true }).click();
   await fileDialog('Save', output);
   await expect(page.getByLabel('Unsaved changes')).toHaveCount(0, { timeout: 15000 });
@@ -67,13 +71,13 @@ try {
   await page.getByRole('button', { name: 'Open', exact: true }).click();
   await fileDialog('Open', output);
   await expect(page.getByText('Folio edited sample.pdf', { exact: true })).toBeVisible({ timeout: 15000 });
-  await expect(page.getByLabel('Page 1 of 6')).toHaveClass(/selected/);
+  await expect(page.getByLabel('Page 1 of 7')).toHaveClass(/selected/);
   await expect(canvas.locator('image')).toHaveCount(1, { timeout: 15000 });
   await expect(canvas.locator('[data-overlay]')).toHaveCount(0);
   await expect(page.locator('.page-error')).toHaveCount(0);
   expect(errors).toEqual([]);
   await page.screenshot({ path: resolve(artifacts, '03-native-reopened.png'), fullPage: true });
-  const report = { passed: true, source, output, openAndRenderMsIncludingDialogAutomation: openAndRenderMs, checks: ['native open dialog', 'native PDF render', 'text', 'drawn signature', 'merge through native dialog', 'native save dialog', 'saved PDF file', 'native reopen of six-page output'], consoleErrors: errors };
+  const report = { passed: true, source, output, openAndRenderMsIncludingDialogAutomation: openAndRenderMs, checks: ['native open dialog', 'native PDF render', 'text', 'drawn signature', 'duplicate annotated page', 'merge through native dialog', 'native save dialog', 'saved PDF file', 'native reopen of seven-page output'], consoleErrors: errors };
   writeFileSync(resolve(artifacts, 'results.json'), JSON.stringify(report, null, 2));
   console.log(JSON.stringify(report, null, 2));
 } catch (error) {
