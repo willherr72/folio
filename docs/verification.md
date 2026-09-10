@@ -1,83 +1,87 @@
-# Folio 0.3.0 verification — 2026-09-10
+# Folio 0.3.1 verification — 2026-09-10
 
 Verified on Windows x64 with PDFium chromium/8044.
 
 | Check | Result |
 | --- | --- |
-| Complete frontend suite | 65 passed |
-| TypeScript check and Vite production build | Passed |
+| Frontend tests | 68 passed |
+| TypeScript and Vite production build | Passed |
 | Rust formatting and native integration tests | Passed; 7 tests |
-| Browser editing and upgrade workflows | Passed |
-| Real page click followed by immediate typing | Passed; Content retains focus and replaces the placeholder |
-| Browser forward/reverse mouse selection and Ctrl+C | Passed at all 16 intrinsic/editor quarter-turn combinations and 150% zoom |
-| Native standalone release build | Passed |
-| Packaged Windows editing, tabs, export/reopen and close | Passed; no page errors or browser confirmation prompts |
-| Independent implementation review | Approved; rotation and click-focus findings corrected and rechecked |
+| Independent performance-fix review | Approved |
+| Text selection and editing browser regressions | Passed, including all 16 intrinsic/editor rotation combinations |
+| Native standalone editing, export/reopen and close workflow | Passed; no page errors |
 
-The native executable opened actual PDFs through Windows dialogs. It copied text
-from a normal PDF and the complete two-line text from a cropped PDF with intrinsic
-180-degree rotation. It added text through immediate keyboard typing, drew a
-signature, verified that preview points exactly matched the placed signature,
-drew freehand ink, dragged thumbnails, duplicated and merged pages, rejected
-unsupported text without creating output, saved and reopened the seven-page PDF.
+## Tab performance
 
-The same run verified separate tabs, restored zoom and scroll position, a
-cancellable tab-close dialog, and app-close protection for unsaved edits in an
-inactive tab. The final discard decision closed the test app.
+Both versions switched four times between the same two already-open documents.
+The Windows test uses actual PDFs containing 1,038 extracted characters per page.
+The browser fixture uses 1,000 characters and a generated page image.
 
-Native geometry tests compare character bounds against rendered ink for nonzero
-crop origins and all four intrinsic rotations. Export regressions cover crop and
-rotation, multiline text, the final stroke segment, duplicate annotated pages,
-atomic replacement, source-path safety and hardlink aliases.
+| Measurement | 0.3.0 | 0.3.1 |
+| --- | --- | --- |
+| Windows mean tab switch | 1,602 ms | 92 ms |
+| Windows layout passes across four switches | 4,164 | 16 |
+| Browser mean tab switch | 1,436 ms | 47 ms |
+| Browser repeated render requests | 4 | 0 |
 
-The native-tested executable SHA-256 is
-`b12373f8048d36c3b3fd2953e798571de92d9942f9700611bf9a567f5d753c57`.
-Release packaging checks that the executable inside the ZIP matches this hash.
-The distribution includes notices for 513 dependency packages.
+These are controlled fixture results on this machine, not a guarantee for every
+document or a Foxit comparison. Timing runs from the tab click to the second
+animation frame; each sample also verifies that its page image and text appear.
+A separate 4,500-character browser page averaged 281 ms after the fix.
+
+The original text layer alternated reading a character's width with writing its
+transform, causing a layout pass for nearly every character. Reading all widths
+before writing transforms removes that repeated work. Full-size page images now
+survive normal unmounts and are reused when returning to a tab or scrolling back.
+
+The image cache has a 60-entry limit and a 96 MiB estimate of decoded image memory.
+It evicts the least recently used idle images and protects mounted consumers.
+This is an estimated cache budget, not a process-RAM limit; mounted images may
+exceed the budget. Closing a PDF releases its entries, including pending renders
+that resolve later. Regression tests cover reuse, eviction and late disposal.
+
+## Native workflow
+
+The release executable opened real PDFs, accepted immediate keyboard input after
+text placement, matched signature preview and placement geometry, copied normal
+and intrinsically upside-down PDF text, drew ink, dragged thumbnails, duplicated
+and merged pages, rejected unsupported text without creating output, saved and
+reopened seven pages, and protected unsaved changes in an inactive tab.
+
+Native-tested executable SHA-256:
+`f902894dd9211839c7d3c93288f90049c7eae7e7e7ea0c1b2649b081a0bcb907`.
+
+Packaging checks that the ZIP contains this same executable, PDFium, examples,
+documentation and notices for 513 dependency packages.
 
 ## Reproduce
 
-Run `scripts/verify.ps1` for frontend and native checks and
-`scripts/build-portable.ps1` for a standalone build and portable distribution.
-Use a normal dependency installation for license collection; npm's dependency
-listing does not handle a shared node_modules directory junction reliably.
+Run `scripts/verify.ps1` for the complete suite. Build a portable release with
+`scripts/build-portable.ps1` from a normal dependency installation.
 
-For browser checks, install Playwright Chromium and start Vite:
+For the browser performance regression:
 
 ```powershell
-npx vite --host 127.0.0.1 --port 1422 --strictPort
-# In another PowerShell window:
-$env:FOLIO_UI_URL='http://127.0.0.1:1422/?demo=1'
-node scripts/smoke-ui.mjs
-node scripts/smoke-upgrades.mjs
-node tests/productivity.browser.mjs
-node tests/page-interactions.browser.mjs
+npx vite --host 127.0.0.1 --port 1423 --strictPort
+# In another window:
+$env:FOLIO_PERF_ASSERT='1'
+node tests/tab-performance.browser.mjs
+# Optional dense page:
+$env:FOLIO_PERF_CHARACTERS='4500'
+node tests/tab-performance.browser.mjs
 ```
 
-For native smoke, install PowerShell 7 (pwsh) and Playwright. Run
-`scripts/start-desktop-test.ps1` in a separate PowerShell process, set
-`FOLIO_APP_PID` from `artifacts/desktop-process.json`, then run
-`node scripts/smoke-desktop.mjs`. The test closes its own app after checking
-both close-confirmation decisions. A failed run may leave its recorded test
-process open.
+For Windows, launch a separate test instance with
+`scripts/start-desktop-test.ps1`, set `FOLIO_APP_PID` from
+`artifacts/desktop-process.json`, then run
+`node scripts/benchmark-tabs-desktop.mjs`.
+The benchmark opens generated fixtures and closes its test instance.
+Launch another test instance to run `node scripts/smoke-desktop.mjs`.
+Both scripts require Playwright and PowerShell 7.
 
-Native dialog automation is restricted to the recorded process and English
-Windows dialog titles. It uses accessibility controls and the default save
-filename in a fresh test directory. First-run Explorer initialization is allowed
-up to 45 seconds. Leave the test window untouched while it runs. The launcher
-uses an isolated WebView profile and a temporary loopback automation port;
-the normal launcher does not enable that port.
+Dialog automation targets only the recorded process. Leave automated test
+windows untouched while a run is active. The normal launcher does not enable
+the temporary loopback debugging port used by these scripts.
 
-Reports, saved output, screenshots and probe results are retained under
-`artifacts`, which is intentionally ignored by Git.
-See [the native desktop screenshot](folio-desktop.png).
-
-## Evidence limits
-
-These checks use generated samples and targeted regression PDFs. Folio has not
-been evaluated against a broad real-world PDF corpus or benchmarked against
-Foxit. The browser fixtures exercise selection mechanics with known geometry;
-the native run additionally checks real PDFium geometry and Windows behavior.
-Image-only scans have no selectable text without OCR.
-
+Reports and PDFs are retained under ignored `artifacts` folders.
 See [README](../README.md) for supported operations and prototype boundaries.

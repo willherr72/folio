@@ -23,8 +23,12 @@ try{
  const page=browser.contexts()[0].pages().find(p=>!p.url().startsWith('devtools:'));
  const cdp=await page.context().newCDPSession(page);await cdp.send('Performance.enable');
  for(const [index,name] of names.entries()){
-  await page.getByRole('button',{name:index===0?'Open a PDF':'Open',exact:true}).click();
+  if(await page.getByRole('tab',{name,exact:true}).count()){
+   await page.getByRole('tab',{name,exact:true}).click();
+  }else{
+  await page.getByRole('button',{name:(await page.getByRole('tab').count())===0?'Open a PDF':'Open',exact:true}).click();
   await exec('pwsh',['-NoProfile','-ExecutionPolicy','Bypass','-File',resolve('scripts/set-native-dialog.ps1'),'-AppProcessId',pid,'-FilePath',resolve(output,name),'-Action','Open'],{windowsHide:true,timeout:60000});
+  }
   await expect(page.getByRole('tab',{name,exact:true})).toHaveAttribute('aria-selected','true');
   await expect.poll(()=>page.locator('[data-pdf-character]').count(),{timeout:30000}).toBeGreaterThan(1000);
   await expect(page.locator('.page-canvas image')).toHaveCount(1);
@@ -46,6 +50,8 @@ try{
  const result={label,charactersPerPage:await page.locator('[data-pdf-character]').count(),switchMs:samples,meanSwitchMs:samples.reduce((a,b)=>a+b)/samples.length,layouts:after.LayoutCount-before.LayoutCount};
  writeFileSync(resolve(output,label+'.json'),JSON.stringify(result,null,2));console.log(JSON.stringify(result,null,2));
  if(process.env.FOLIO_PERF_ASSERT==='1'){expect(result.layouts).toBeLessThan(100);}
+ await cdp.send('Performance.disable');
+ await cdp.detach();
  const closed=page.waitForEvent('close');
  await exec('powershell',['-NoProfile','-ExecutionPolicy','Bypass','-File',resolve('scripts/request-native-close.ps1'),'-AppProcessId',pid],{windowsHide:true});
  await closed;
