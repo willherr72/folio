@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type SetStateAction } from "react";
 import {
   ArrowDown, ArrowUp, ChevronLeft, ChevronRight, Copy, Download, FilePlus2, FolderOpen,
   GripVertical, Minus, MousePointer2, PenLine, Pencil, Plus, Redo2, RotateCw, Settings, Trash2, Type, Undo2, X,
@@ -6,9 +6,10 @@ import {
 import { createDemoAdapter, documentToPages, nativeAdapter, type FolioAdapter } from "./editor/adapter";
 import { displayDimensions, placeInkPaths } from "./editor/geometry";
 import {
-  commit, createHistory, deletePage, duplicatePage, movePage, planDigest, redo, removeOverlay,
+  commit, deletePage, duplicatePage, movePage, planDigest, redo, removeOverlay,
   rotatePage, undo, uniqueId, updateOverlay, type EditorDocument, type History, type Overlay,
 } from "./editor/model";
+import { addSession, createSession, emptyWorkspace, removeSession, updateSession, type DocumentSession, type ScrollPosition } from "./editor/workspace";
 import type { InkPoint } from "./editor/types";
 import { usePreferences } from "./editor/preferences";
 import { clearRenderCache, Thumbnail } from "./components/PageView";
@@ -25,11 +26,28 @@ function errorMessage(error: unknown) { return error instanceof Error ? error.me
 
 export function App({ initialDemo = new URLSearchParams(location.search).get("demo") === "1" }: AppProps) {
   const { preferences, setPreferences, resetPreferences } = usePreferences();
-  const [history, setHistory] = useState<History<EditorDocument> | null>(null);
-  const [savedDigest, setSavedDigest] = useState("");
-  const [adapter, setAdapter] = useState<FolioAdapter>(nativeAdapter);
+  const [workspace, setWorkspace] = useState(emptyWorkspace);
+  const activeTab = workspace.tabs.find(tab => tab.id === workspace.activeId) ?? null;
+  const history = activeTab?.history ?? null;
+  const savedDigest = activeTab?.savedDigest ?? "";
+  const adapter = activeTab?.adapter ?? nativeAdapter;
+  const zoom = activeTab?.zoom ?? preferences.defaultZoom;
+  const navigationRequest = activeTab?.navigationRequest ?? null;
+  const scrollPositions = useRef(new Map<string, ScrollPosition>());
+  const [newTextId, setNewTextId] = useState<string | null>(null);
+  const setHistory = useCallback((action: SetStateAction<History<EditorDocument> | null>) => {
+    setWorkspace(value => updateSession(value, workspace.activeId, tab => {
+      const next = typeof action === "function" ? action(tab.history) : action;
+      return next && next !== tab.history ? {...tab, history:next} : tab;
+    }));
+  }, [workspace.activeId]);
+  const setSavedDigest = useCallback((digest: string) => setWorkspace(value => updateSession(value, workspace.activeId, tab => ({...tab,savedDigest:digest}))), [workspace.activeId]);
+  const setZoom = useCallback((action: SetStateAction<number>) => setWorkspace(value => updateSession(value, workspace.activeId, tab => {
+    const next = typeof action === "function" ? action(tab.zoom) : action;
+    return next === tab.zoom ? tab : {...tab,zoom:next};
+  })), [workspace.activeId]);
+  const setNavigationRequest = useCallback((action: SetStateAction<DocumentSession["navigationRequest"]>) => setWorkspace(value => updateSession(value, workspace.activeId, tab => ({...tab,navigationRequest:typeof action === "function" ? action(tab.navigationRequest) : action}))), [workspace.activeId]);
   const [tool, setTool] = useState<Tool>("select");
-  const [zoom, setZoom] = useState(preferences.defaultZoom);
   const [pendingSignature, setPendingSignature] = useState<InkPoint[][] | null>(null);
   const [signatureOpen, setSignatureOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -39,9 +57,7 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
   const [failure, setFailure] = useState<string | null>(null);
   const [draggedPageId, setDraggedPageId] = useState<string | null>(null);
   const [dropTarget, setDropTarget] = useState<{ pageId: string; side: "before" | "after" } | null>(null);
-  const [navigationRequest, setNavigationRequest] = useState<{ pageId: string; revision: number } | null>(null);
   const dragOverlay = useRef<{ document: EditorDocument; pageId: string; x: number; y: number; id: string } | null>(null);
-  const openedSources = useRef(new Set<string>());
   const operation = useRef(false);
   const decision = useRef<((accepted: boolean) => void) | null>(null);
   const current = history?.present ?? null;
@@ -50,8 +66,9 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
   const selectedOverlay = selectedPage?.overlays.find((overlay) => overlay.id === current?.selectedOverlayId) ?? null;
   const modalOpen = signatureOpen || settingsOpen || !!confirmation;
   const blocked = modalOpen || !!busy;
-  const closeState = useRef({ dirty, blocked });
-  closeState.current = { dirty, blocked };
+  const dirtyTabs = workspace.tabs.filter(tab => planDigest(tab.history.present) !== tab.savedDigest);
+  const closeState = useRef({ dirty:dirtyTabs.length > 0, blocked, dirtyCount:dirtyTabs.length });
+  closeState.current = { dirty:dirtyTabs.length > 0, blocked, dirtyCount:dirtyTabs.length };
   const isDesktop = "__TAURI_INTERNALS__" in window;
 
   useEffect(() => setZoom(preferences.defaultZoom), [preferences.defaultZoom]);
@@ -62,87 +79,103 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
     setConfirmation(null);
     resolve?.(accepted);
   }, []);
-  const askDiscard = useCallback((action: "open" | "demo" | "close"): Promise<boolean> => {
+  const askDiscard = useCallback((action: "tab" | "close", name?: string): Promise<boolean> => {
     if (decision.current) return Promise.resolve(false);
     setConfirmation({
-      title: action === "close" ? "Close Folio?" : "Discard unsaved changes?",
+      title: action === "close" ? "Close Folio?" : "Close document?",
       description: action === "close"
-        ? "Your changes haven't been saved. Keep editing to save a copy, or discard them and close Folio."
-        : `Your changes haven't been saved. Opening ${action === "demo" ? "the demo" : "another PDF"} will discard them.`,
-      confirmLabel: action === "close" ? "Discard and close" : "Discard and open",
+        ? "You have unsaved changes in " + closeState.current.dirtyCount + " document" + (closeState.current.dirtyCount === 1 ? "" : "s") + ". Keep editing to save your work, or discard the changes and close Folio."
+        : "Changes to " + name + " haven't been saved. Keep editing to save a copy, or discard them and close this tab.",
+      confirmLabel: "Discard and close",
     });
-    return new Promise((resolve) => { decision.current = resolve; });
+    return new Promise(resolve => { decision.current = resolve; });
   }, []);
   useEffect(() => () => { decision.current?.(false); decision.current = null; }, []);
 
-  const closeSources = useCallback(async (using: FolioAdapter) => {
-    const ids = [...openedSources.current];
-    openedSources.current.clear();
-    clearRenderCache(ids);
-    await Promise.allSettled(ids.map((sourceId) => using.closeDocument(sourceId)));
+  const releaseSession = useCallback(async (tab: DocumentSession) => {
+    clearRenderCache(tab.sourceIds);
+    await Promise.allSettled(tab.sourceIds.map(sourceId => tab.adapter.closeDocument(sourceId)));
+    scrollPositions.current.delete(tab.id);
   }, []);
+  const clearTransient = useCallback(() => {
+    setTool("select"); setPendingSignature(null); setNewTextId(null);
+    setNotice(null); setFailure(null); setDraggedPageId(null); setDropTarget(null);
+    window.getSelection()?.removeAllRanges();
+  }, []);
+  const switchTab = useCallback((id: string) => {
+    if (operation.current || blocked || id === workspace.activeId) return;
+    const start = dragOverlay.current;
+    if (start) {
+      setHistory(value => value && planDigest(value.present) !== planDigest(start.document)
+        ? {past:[...value.past,start.document],present:value.present,future:[]} : value);
+      dragOverlay.current = null;
+    }
+    setWorkspace(value => value.tabs.some(tab => tab.id === id) ? {...value,activeId:id} : value);
+    clearTransient();
+  }, [blocked, clearTransient, setHistory, workspace.activeId]);
+  const closeTab = useCallback(async (id: string) => {
+    if (operation.current || blocked) return;
+    const tab = workspace.tabs.find(value => value.id === id);
+    if (!tab) return;
+    operation.current = true;
+    try {
+      if (planDigest(tab.history.present) !== tab.savedDigest && !await askDiscard("tab", tab.history.present.name)) return;
+      setBusy("Closing document…");
+      await releaseSession(tab);
+      setWorkspace(value => removeSession(value, id));
+      if (id === workspace.activeId) { dragOverlay.current = null; clearTransient(); }
+    } finally { operation.current = false; setBusy(null); }
+  }, [askDiscard, blocked, clearTransient, releaseSession, workspace]);
 
   const navigateToPage = useCallback((pageId: string) => {
     setHistory((value) => value ? { ...value, present: { ...value.present, selectedPageId: pageId, selectedOverlayId: null } } : value);
     setNavigationRequest((request) => ({ pageId, revision: (request?.revision ?? 0) + 1 }));
-  }, []);
+  }, [setHistory, setNavigationRequest]);
   const selectPage = useCallback((pageId: string) => {
     setHistory((value) => value && value.present.selectedPageId !== pageId
       ? { ...value, present: { ...value.present, selectedPageId: pageId, selectedOverlayId: null } } : value);
-  }, []);
+  }, [setHistory]);
   const selectOverlay = useCallback((pageId: string, id: string | null) => {
     setHistory((value) => value ? { ...value, present: { ...value.present, selectedPageId: pageId, selectedOverlayId: id } } : value);
-  }, []);
+  }, [setHistory]);
 
   const installDocument = useCallback((info: Awaited<ReturnType<FolioAdapter["openPdf"]>>, nextAdapter: FolioAdapter, append = false) => {
     if (!info) return;
-    openedSources.current.add(info.id);
-    const newPages = documentToPages(info);
-    setAdapter(nextAdapter);
-    setHistory((existing) => {
-      const document: EditorDocument = append && existing
-        ? { ...existing.present, pages: [...existing.present.pages, ...newPages], selectedPageId: newPages[0]?.id ?? existing.present.selectedPageId, selectedOverlayId: null }
-        : { name: info.name, pages: newPages, selectedPageId: newPages[0]?.id ?? null, selectedOverlayId: null };
-      return append && existing ? commit(existing, () => document) : createHistory(document);
-    });
-    if (!append) {
-      setSavedDigest(planDigest({ name: info.name, pages: newPages, selectedPageId: newPages[0]?.id ?? null, selectedOverlayId: null }));
-      setZoom(preferences.defaultZoom);
+    if (append && activeTab) {
+      const newPages = documentToPages(info);
+      setWorkspace(value => updateSession(value, activeTab.id, tab => ({
+        ...tab, sourceIds:[...new Set([...tab.sourceIds,info.id])],
+        history:commit(tab.history, document => ({...document,pages:[...document.pages,...newPages],selectedPageId:newPages[0]?.id??document.selectedPageId,selectedOverlayId:null})),
+        navigationRequest:newPages[0] ? {pageId:newPages[0].id,revision:(tab.navigationRequest?.revision??0)+1} : tab.navigationRequest,
+      })));
+      setNotice(info.pages.length + " pages added");
+    } else {
+      const session = createSession(info, nextAdapter, preferences.defaultZoom);
+      setWorkspace(value => addSession(value,session));
+      clearTransient();
     }
-    if (newPages[0]) setNavigationRequest((request) => ({ pageId: newPages[0].id, revision: (request?.revision ?? 0) + 1 }));
     setTool("select"); setPendingSignature(null); setFailure(null);
-    setNotice(append ? `${info.pages.length} pages added` : null);
-  }, [preferences.defaultZoom]);
-
+  }, [activeTab, clearTransient, preferences.defaultZoom]);
   const openDemo = useCallback(async () => {
     if (operation.current || modalOpen) return;
     operation.current = true;
     try {
-      if (dirty && !await askDiscard("demo")) return;
       setBusy("Opening demo…");
       const demo = createDemoAdapter();
-      const info = await demo.openPdf();
-      if (!info) return;
-      await closeSources(adapter);
-      installDocument(info, demo);
-    } catch (error) { setFailure(`Couldn’t open demo: ${errorMessage(error)}`); }
+      installDocument(await demo.openPdf(), demo);
+    } catch (error) { setFailure("Couldn’t open demo: " + errorMessage(error)); }
     finally { operation.current = false; setBusy(null); }
-  }, [adapter, askDiscard, closeSources, dirty, installDocument, modalOpen]);
-  useEffect(() => { if (initialDemo && !history) void openDemo(); }, []); // explicit demo entry only
-
+  }, [installDocument, modalOpen]);
+  useEffect(() => { if (initialDemo && !history) void openDemo(); }, []);
   const openPdf = useCallback(async () => {
     if (operation.current || modalOpen) return;
     operation.current = true;
     try {
-      if (dirty && !await askDiscard("open")) return;
       setBusy("Opening PDF…"); setFailure(null);
-      const info = await nativeAdapter.openPdf();
-      if (!info) return;
-      await closeSources(adapter);
-      installDocument(info, nativeAdapter);
-    } catch (error) { setFailure(`Couldn’t open PDF: ${errorMessage(error)}`); }
+      installDocument(await nativeAdapter.openPdf(), nativeAdapter);
+    } catch (error) { setFailure("Couldn’t open PDF: " + errorMessage(error)); }
     finally { operation.current = false; setBusy(null); }
-  }, [adapter, askDiscard, closeSources, dirty, installDocument, modalOpen]);
+  }, [installDocument, modalOpen]);
 
   const addPdf = useCallback(async () => {
     if (operation.current || modalOpen || !current || adapter.kind !== "native") return;
@@ -162,12 +195,12 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
       if (path) { setSavedDigest(planDigest(current)); setNotice(adapter.kind === "demo" ? "Demo edit plan downloaded" : `Saved a copy to ${path}`); }
     } catch (error) { setFailure(`Couldn’t export: ${errorMessage(error)}`); }
     finally { operation.current = false; setBusy(null); }
-  }, [adapter, current, modalOpen]);
+  }, [adapter, current, modalOpen, setSavedDigest]);
 
   const edit = useCallback((update: (document: EditorDocument) => EditorDocument) => {
     if (blocked) return;
     setHistory((value) => value ? commit(value, update) : value);
-  }, [blocked]);
+  }, [blocked, setHistory]);
   const addText = (pageId: string, point: InkPoint) => {
     const id = uniqueId("text");
     edit((document) => ({
@@ -175,6 +208,7 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
       pages: document.pages.map((page) => page.id === pageId
         ? { ...page, overlays: [...page.overlays, { type: "text", id, x: point.x, y: point.y, text: "Type here", fontSize: 18, color: "#2D2A26" }] } : page),
     }));
+    setNewTextId(id);
     setTool("select");
   };
   const addDrawing = (pageId: string, path: InkPoint[]) => {
@@ -224,7 +258,7 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
   const changeHistory = useCallback((direction: "undo" | "redo") => {
     if (blocked) return;
     setHistory((value) => value ? (direction === "undo" ? undo(value) : redo(value)) : value);
-  }, [blocked]);
+  }, [blocked, setHistory]);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -232,7 +266,13 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
       const command = event.ctrlKey || event.metaKey;
       const key = event.key.toLowerCase();
       const typing = (event.target as HTMLElement)?.closest?.("input, textarea, select, [contenteditable='true']");
-      if (command && key === "o") { event.preventDefault(); void openPdf(); }
+      if (command && key === "w" && workspace.activeId) { event.preventDefault(); void closeTab(workspace.activeId); }
+      else if (event.ctrlKey && event.key === "Tab" && workspace.tabs.length > 1) {
+        event.preventDefault();
+        const index = workspace.tabs.findIndex(tab => tab.id === workspace.activeId);
+        switchTab(workspace.tabs[(index + (event.shiftKey ? -1 : 1) + workspace.tabs.length) % workspace.tabs.length].id);
+      }
+      else if (command && key === "o") { event.preventDefault(); void openPdf(); }
       else if (command && key === "s") { event.preventDefault(); void exportPdf(); }
       else if (command && !typing && key === "z") { event.preventDefault(); changeHistory(event.shiftKey ? "redo" : "undo"); }
       else if (command && !typing && key === "y") { event.preventDefault(); changeHistory("redo"); }
@@ -245,7 +285,7 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [blocked, changeHistory, edit, exportPdf, openPdf, selectOverlay, selectedOverlay, selectedPage]);
+  }, [blocked, changeHistory, closeTab, edit, exportPdf, openPdf, selectOverlay, selectedOverlay, selectedPage, switchTab, workspace]);
 
   useEffect(() => {
     if (!isDesktop) {
@@ -325,7 +365,23 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
   return <div className="app-shell">
     <header className="titlebar">
       <div className="brand"><span className="folio-mark small">F</span><span>Folio</span></div>
-      <div className="document-title"><span>{current.name}</span>{dirty && <i aria-label="Unsaved changes"/>}{adapter.kind === "demo" && <b>DEMO</b>}</div>
+      <div className="document-tabs" role="tablist" aria-label="Open documents">
+        {workspace.tabs.map(tab => <div key={tab.id} className={"document-tab " + (tab.id === workspace.activeId ? "active" : "")}>
+          <button id={"tab-" + tab.id} role="tab" aria-label={tab.history.present.name} aria-selected={tab.id === workspace.activeId} tabIndex={tab.id === workspace.activeId ? 0 : -1} disabled={!!busy}
+            title={tab.history.present.name} onClick={() => switchTab(tab.id)} onKeyDown={event => {
+              if (!["ArrowLeft","ArrowRight","Home","End"].includes(event.key)) return;
+              event.preventDefault();
+              const index = workspace.tabs.indexOf(tab);
+              const next = event.key === "Home" ? 0 : event.key === "End" ? workspace.tabs.length - 1 : (index + (event.key === "ArrowLeft" ? -1 : 1) + workspace.tabs.length) % workspace.tabs.length;
+              switchTab(workspace.tabs[next].id);
+              document.getElementById("tab-" + workspace.tabs[next].id)?.focus();
+            }}>
+            <span>{tab.history.present.name}</span>{planDigest(tab.history.present) !== tab.savedDigest && <i aria-label="Unsaved changes"/>}
+          </button>
+          <button className="tab-close" aria-label={"Close " + tab.history.present.name} title="Close tab (Ctrl+W)" disabled={!!busy} onClick={() => void closeTab(tab.id)}><X size={13}/></button>
+        </div>)}
+        <button className="icon-button new-document" aria-label="Open PDF in new tab" title="Open PDF in new tab (Ctrl+O)" disabled={!!busy} onClick={openPdf}><Plus size={16}/></button>
+      </div>
       <div className="titlebar-actions"><button className="icon-button" aria-label="Settings" title="Settings" disabled={!!busy} onClick={() => setSettingsOpen(true)}><Settings size={18}/></button></div>
     </header>
     <div className="toolbar" role="toolbar" aria-label="Document tools">
@@ -343,7 +399,7 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
       <div className="zoom-control"><button aria-label="Zoom out" disabled={blocked} onClick={() => setZoom((value) => Math.max(50, value - 10))}><Minus size={15}/></button><button className="zoom-value" title="Reset zoom to 100% (Ctrl+scroll to zoom)" disabled={blocked} onClick={() => setZoom(100)}>{zoom}%</button><button aria-label="Zoom in" disabled={blocked} onClick={() => setZoom((value) => Math.min(200, value + 10))}><Plus size={15}/></button></div>
       <button className="button primary export" onClick={exportPdf} disabled={blocked}><Download size={17}/>{adapter.kind === "demo" ? "Export demo plan" : "Save a copy"}</button>
     </div>
-    <div className="workspace">
+    <div className="workspace" role="tabpanel" aria-labelledby={"tab-" + activeTab!.id}>
       <aside className="sidebar">
         <div className="panel-heading"><span>PAGES</span><em>{current.pages.length}</em></div>
         <div className="thumbnails">
@@ -358,7 +414,7 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
       </aside>
       <div className="document-area">
         {pendingSignature && <div className="placement-banner"><PenLine size={16}/> Click a page to place your signature <button aria-label="Cancel signature placement" onClick={() => { setPendingSignature(null); setTool("select"); }}><X size={15}/></button></div>}
-        <DocumentViewport adapter={adapter} pages={current.pages} selectedPageId={selectedPage?.id ?? null} selectedOverlayId={current.selectedOverlayId}
+        <DocumentViewport key={activeTab!.id} initialScrollPosition={scrollPositions.current.get(activeTab!.id)} onScrollPositionChange={position => { scrollPositions.current.set(activeTab!.id, position); }} adapter={adapter} pages={current.pages} selectedPageId={selectedPage?.id ?? null} selectedOverlayId={current.selectedOverlayId}
           zoom={zoom} onZoomChange={setZoom} viewMode={preferences.viewMode} tool={tool} penColor={preferences.penColor} penWidth={preferences.penWidth}
           pendingSignature={pendingSignature} interactionDisabled={blocked} navigationRequest={navigationRequest}
           onSelectPage={selectPage} onSelectOverlay={selectOverlay} onAddText={addText} onPlaceSignature={placeSignature} onMoveOverlay={moveOverlay} onDraw={addDrawing}/>
@@ -370,7 +426,7 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
           <label className="field-label">Pen color<span className="color-input"><input aria-label="Pen color" type="color" value={preferences.penColor} onChange={(event) => setPreferences({ ...preferences, penColor: event.target.value.toUpperCase() })}/><code>{preferences.penColor}</code></span></label>
           <label className="field-label">Pen width · {preferences.penWidth} pt<input aria-label="Pen width" type="range" min="0.5" max="20" step="0.5" value={preferences.penWidth} onChange={(event) => setPreferences({ ...preferences, penWidth: Number(event.target.value) })}/></label>
           <p>Draw directly on any page. Each stroke can be undone. Switch to Select to move or delete a stroke.</p>
-        </section> : selectedOverlay && selectedPage ? <OverlayProperties overlay={selectedOverlay} onChange={(update) => edit((document) => updateOverlay(document, selectedPage.id, selectedOverlay.id, update))} onDelete={() => edit((document) => removeOverlay(document, selectedPage.id, selectedOverlay.id))}/> : selectedPage && <>
+        </section> : selectedOverlay && selectedPage ? <OverlayProperties autoEdit={selectedOverlay.id === newTextId} onAutoEdited={() => setNewTextId(null)} overlay={selectedOverlay} onChange={(update) => edit((document) => updateOverlay(document, selectedPage.id, selectedOverlay.id, update))} onDelete={() => edit((document) => removeOverlay(document, selectedPage.id, selectedOverlay.id))}/> : selectedPage && <>
           <section className="property-section"><h3>Page</h3><div className="page-summary"><div className="mini-page" style={{ aspectRatio: `${displaySize!.width}/${displaySize!.height}` }}/><div><strong>Page {selectedIndex + 1}</strong><span>{Math.round(selectedPage.width)} × {Math.round(selectedPage.height)} pt</span><small>{selectedPage.rotation ? `${selectedPage.rotation}° clockwise` : "Original orientation"}</small></div></div></section>
           <section className="property-section"><h3>Arrange</h3><div className="property-grid"><button disabled={blocked || selectedIndex <= 0} onClick={() => edit((document) => movePage(document, selectedPage.id, selectedIndex - 1))}><ArrowUp size={16}/>Move up</button><button disabled={blocked || selectedIndex >= current.pages.length - 1} onClick={() => edit((document) => movePage(document, selectedPage.id, selectedIndex + 1))}><ArrowDown size={16}/>Move down</button><button disabled={blocked} onClick={() => edit((document) => rotatePage(document, selectedPage.id))}><RotateCw size={16}/>Rotate</button><button disabled={blocked} onClick={() => { const id = uniqueId("page"); edit((document) => duplicatePage(document, selectedPage.id, id)); setNavigationRequest((request) => ({ pageId: id, revision: (request?.revision ?? 0) + 1 })); }}><Copy size={16}/>Duplicate</button></div></section>
           <section className="property-section"><h3>Page actions</h3><button className="danger-action" disabled={blocked || current.pages.length <= 1} onClick={() => edit((document) => deletePage(document, selectedPage.id))}><Trash2 size={16}/>Delete page</button><p>Source files are never changed.</p></section>
@@ -382,10 +438,14 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
   </div>;
 }
 
-function OverlayProperties({ overlay, onChange, onDelete }: { overlay: Overlay; onChange(update: (value: Overlay) => Overlay): void; onDelete(): void }) {
+function OverlayProperties({ overlay, onChange, onDelete, autoEdit, onAutoEdited }: { overlay: Overlay; onChange(update: (value: Overlay) => Overlay): void; onDelete(): void; autoEdit: boolean; onAutoEdited(): void }) {
+  const contentRef = useRef<HTMLTextAreaElement>(null);
+  useLayoutEffect(() => {
+    if (autoEdit && contentRef.current) { contentRef.current.focus(); contentRef.current.select(); onAutoEdited(); }
+  }, [autoEdit, overlay.id, onAutoEdited]);
   return <>
     <section className="property-section"><h3>{overlay.type === "text" ? "Text" : "Ink"}</h3>{overlay.type === "text" ? <>
-      <label className="field-label">Content<textarea value={overlay.text} rows={4} onChange={(event) => onChange((value) => value.type === "text" ? { ...value, text: event.target.value } : value)}/></label>
+      <label className="field-label">Content<textarea ref={contentRef} value={overlay.text} rows={4} onChange={(event) => onChange((value) => value.type === "text" ? { ...value, text: event.target.value } : value)}/></label>
       <div className="field-row"><label className="field-label">Size<input type="number" min="6" max="96" value={overlay.fontSize} onChange={(event) => onChange((value) => value.type === "text" ? { ...value, fontSize: Math.max(6, Math.min(96, Number(event.target.value))) } : value)}/></label><label className="field-label">Color<span className="color-input"><input type="color" value={overlay.color} onChange={(event) => onChange((value) => ({ ...value, color: event.target.value.toUpperCase() }))}/><code>{overlay.color}</code></span></label></div>
       <p>Helvetica · {overlay.text.split("\n").length} {overlay.text.includes("\n") ? "lines" : "line"}</p>
     </> : <><label className="field-label">Ink color<span className="color-input"><input type="color" value={overlay.color} onChange={(event) => onChange((value) => ({ ...value, color: event.target.value.toUpperCase() }))}/><code>{overlay.color}</code></span></label><label className="field-label">Stroke width · {overlay.strokeWidth} pt<input type="range" min="0.5" max="20" step="0.5" value={overlay.strokeWidth} onChange={(event) => onChange((value) => value.type === "ink" ? { ...value, strokeWidth: Number(event.target.value) } : value)}/></label></>}</section>

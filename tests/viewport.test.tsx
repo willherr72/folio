@@ -109,3 +109,14 @@ describe("document viewport", () => {
     expect(callbacks.onZoomChange).toHaveBeenCalledOnce();
   });
 });
+it("restores a tab's viewport without replaying its old page navigation", () => {
+  const callbacks = props();
+  const changed = vi.fn();
+  const view = render(<DocumentViewport {...callbacks} selectedPageId="p5" navigationRequest={{pageId:"p1",revision:1}} initialScrollPosition={{top:1658,left:40}} onScrollPositionChange={changed}/>);
+  const host = view.getByRole("main",{name:"Document"});
+  expect(host.scrollTop).toBe(1658);
+  expect(host.scrollLeft).toBe(40);
+  host.scrollTop=1720;
+  fireEvent.scroll(host);
+  expect(changed).toHaveBeenLastCalledWith({top:1720,left:40});
+});

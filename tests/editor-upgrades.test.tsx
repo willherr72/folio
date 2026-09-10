@@ -11,13 +11,13 @@ async function demo() {
   await screen.findByText("Folio welcome.pdf");
 }
 describe("editor upgrades", () => {
-  it("uses a cancellable app modal without invoking the native picker or browser confirmation", async () => {
+  it("uses a cancellable tab-close modal without invoking the native picker or browser confirmation", async () => {
     const confirm = vi.spyOn(window, "confirm").mockReturnValue(false);
     const open = vi.spyOn(nativeAdapter, "openPdf").mockResolvedValue(null);
     await demo();
     fireEvent.click(screen.getByRole("button", { name: "Rotate" }));
-    fireEvent.click(screen.getByRole("button", { name: "Open" }));
-    const dialog = await screen.findByRole("dialog", { name: "Discard unsaved changes?" });
+    fireEvent.click(screen.getByRole("button", { name: "Close Folio welcome.pdf" }));
+    const dialog = await screen.findByRole("dialog", { name: "Close document?" });
     expect(dialog).toBeInTheDocument();
     fireEvent.keyDown(window, { key: "z", ctrlKey: true });
     expect(screen.getByText("90° clockwise")).toBeInTheDocument();
@@ -27,12 +27,12 @@ describe("editor upgrades", () => {
     expect(confirm).not.toHaveBeenCalled();
     expect(screen.getByLabelText("Unsaved changes")).toBeInTheDocument();
   });
-  it("opens the picker after explicit discard and preserves the current PDF when the picker is cancelled", async () => {
+  it("opens another PDF without discarding edits and preserves the current tab when the picker is cancelled", async () => {
     const open = vi.spyOn(nativeAdapter, "openPdf").mockResolvedValue(null);
     await demo();
     fireEvent.click(screen.getByRole("button", { name: "Rotate" }));
     fireEvent.click(screen.getByRole("button", { name: "Open" }));
-    fireEvent.click(await screen.findByRole("button", { name: "Discard and open" }));
+
     await waitFor(() => expect(open).toHaveBeenCalledTimes(1));
     expect(screen.getByText("Folio welcome.pdf")).toBeInTheDocument();
     expect(screen.getByLabelText("Unsaved changes")).toBeInTheDocument();

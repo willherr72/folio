@@ -1,0 +1,34 @@
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { afterEach, beforeEach, expect, it, vi } from "vitest";
+import { App } from "../src/App";
+import { nativeAdapter } from "../src/editor/adapter";
+const nativeWindow = vi.hoisted(()=>({listen:vi.fn(),unlisten:vi.fn()}));
+vi.mock("@tauri-apps/api/window",()=>({getCurrentWindow:()=>({onCloseRequested:nativeWindow.listen})}));
+beforeEach(()=>{
+  localStorage.clear();
+  nativeWindow.listen.mockReset().mockResolvedValue(nativeWindow.unlisten);
+  Object.defineProperty(window,"__TAURI_INTERNALS__",{configurable:true,value:{}});
+});
+afterEach(()=>{cleanup(); delete (window as unknown as Record<string,unknown>).__TAURI_INTERNALS__; vi.restoreAllMocks();});
+it("protects unsaved edits in an inactive tab when the native window closes",async()=>{
+  vi.spyOn(nativeAdapter,"openPdf").mockResolvedValueOnce({id:"one",name:"One.pdf",pages:[{width:300,height:400}]}).mockResolvedValueOnce({id:"two",name:"Two.pdf",pages:[{width:300,height:400}]});
+  vi.spyOn(nativeAdapter,"renderPage").mockResolvedValue("data:image/png;base64,");
+  vi.spyOn(nativeAdapter,"getPageText").mockResolvedValue({characters:[]});
+  render(<App initialDemo={false}/>);
+  fireEvent.click(screen.getByRole("button",{name:"Open a PDF"}));
+  await screen.findByRole("tab",{name:"One.pdf"});
+  fireEvent.click(screen.getByRole("button",{name:"Rotate"}));
+  fireEvent.click(screen.getByRole("button",{name:"Open"}));
+  await screen.findByRole("tab",{name:"Two.pdf"});
+  await waitFor(()=>expect(nativeWindow.listen).toHaveBeenCalledTimes(1));
+  const event={preventDefault:vi.fn()};
+  let closing:Promise<void> = Promise.resolve();
+  act(()=>{closing=nativeWindow.listen.mock.calls[0][0](event);});
+  expect(await screen.findByRole("dialog",{name:"Close Folio?"})).toHaveTextContent("unsaved changes in 1 document");
+  fireEvent.click(screen.getByRole("button",{name:"Keep editing"}));
+  await act(()=>closing);
+  expect(event.preventDefault).toHaveBeenCalledTimes(1);
+  expect(screen.getAllByRole("tab")).toHaveLength(2);
+  fireEvent.click(screen.getByRole("tab",{name:"One.pdf"}));
+  expect(screen.getByText("90° clockwise")).toBeInTheDocument();
+});

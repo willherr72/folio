@@ -232,3 +232,15 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-
 .drag-handle { cursor: grab; }
 .drag-handle:active, .thumbnail-item.dragging .drag-handle { cursor: grabbing; }
 @media (max-width: 850px) { .titlebar { grid-template-columns: 140px minmax(0, 1fr) 40px; } }
+
+/* Document tabs share the top bar; only the active document renders pages. */
+.titlebar { grid-template-columns: 110px minmax(0, 1fr) 40px; gap: 12px; }
+.document-tabs { height: 100%; display: flex; align-items: stretch; gap: 4px; overflow-x: auto; min-width: 0; scrollbar-width: thin; }
+.document-tab { display: flex; flex: 0 1 220px; min-width: 115px; margin-top: 6px; border: 1px solid transparent; border-bottom: 0; border-radius: 7px 7px 0 0; color: var(--muted); }
+.document-tab.active { background: var(--toolbar); color: var(--ink); border-color: var(--line); box-shadow: inset 0 2px var(--accent); }
+.document-tab > [role=tab] { border: 0; background: transparent; padding: 0 10px; min-width: 0; flex: 1; display: flex; align-items: center; gap: 8px; font-size: 11px; text-align: left; cursor: pointer; }
+.document-tab > [role=tab] > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.document-tab i { flex: 0 0 6px; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+.tab-close { border: 0; background: transparent; align-self: center; border-radius: 4px; display: grid; place-items: center; width: 24px; height: 24px; margin-right: 4px; cursor: pointer; }
+.tab-close:hover { background: var(--hover); }
+.new-document { align-self: center; flex-shrink: 0; }

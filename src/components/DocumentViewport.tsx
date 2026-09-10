@@ -5,6 +5,8 @@ import type { InkPoint, PagePlan } from "../editor/types";
 import { PageView } from "./PageView";
 
 export interface DocumentViewportProps {
+  initialScrollPosition?: { top: number; left: number };
+  onScrollPositionChange?(position: { top: number; left: number }): void;
   adapter: FolioAdapter;
   pages: PagePlan[];
   selectedPageId: string | null;
@@ -73,7 +75,15 @@ export function DocumentViewport(props: DocumentViewportProps) {
     measure();
   }, [props.zoom, props.pages, props.viewMode, measure]);
 
-  const lastNavigation = useRef<string | null>(null);
+  const lastNavigation = useRef<string | null>(props.initialScrollPosition && props.navigationRequest ? props.navigationRequest.pageId + ":" + props.navigationRequest.revision : null);
+  useLayoutEffect(() => {
+    const host = hostRef.current;
+    if (host && props.initialScrollPosition) {
+      host.scrollTop = props.initialScrollPosition.top;
+      host.scrollLeft = props.initialScrollPosition.left;
+      measure();
+    }
+  }, []);
   const previousMode = useRef(props.viewMode);
   useLayoutEffect(() => {
     const request = props.navigationRequest;
@@ -119,7 +129,7 @@ export function DocumentViewport(props: DocumentViewportProps) {
     return () => { host.removeEventListener("wheel", onWheel); observer?.disconnect(); };
   }, [measure]);
 
-  return <main ref={hostRef} className="viewport document-viewport" aria-label="Document" onScroll={() => measure(true)}
+  return <main ref={hostRef} className="viewport document-viewport" aria-label="Document" onScroll={(event) => { props.onScrollPositionChange?.({top:event.currentTarget.scrollTop,left:event.currentTarget.scrollLeft}); measure(true); }}
     onPointerDownCapture={(event) => {
       if (props.interactionDisabled) return;
       const page = (event.target as Element).closest<HTMLElement>("[data-page-id]");
