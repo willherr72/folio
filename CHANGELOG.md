@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.6.0
+
+- Added text, drawings and signatures remain editable after save and reopen, without original files or sidecars.
+- Portable standard FreeText/Ink annotation appearances with versioned, validated Folio metadata.
+- Explicit Flatten text and ink export, with editable Save a copy/Ctrl+S as the default.
+- Restored text orientation, selection, search and dragging across page rotations.
+- Recovery migrates earlier annotation import versions without resurrecting deleted additions.
+- Redistributable synthetic PDF corpus, large-document generators and native/desktop performance reports.
+- Expanded crop, rotation, organization, repeated save/reopen and bounded-cache regression coverage.
+
 ## 0.5.0
 
 - Named local signature library with previews, reuse, rename and deletion.

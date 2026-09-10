@@ -8,6 +8,8 @@ export interface TextOverlay {
   text: string;
   fontSize: number;
   color: string;
+  /** Clockwise orientation about the local top-left x/y anchor. */
+  rotation?: Rotation;
 }
 
 export interface InkPoint { x: number; y: number }

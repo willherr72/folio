@@ -104,3 +104,46 @@ only its generated output before reopening. Custom save-name UI automation could
 reliably commit edits in this desktop environment. Physical printers were not tested.
 Source annotations with unsupported visibility, locking, or zoom/rotation flags remain
 native instead of being silently restyled as editable overlays.
+
+## v0.6.0 verification
+
+Verified on Windows 11 Pro build 26200, AMD Ryzen AI 9 HX 370, 95.3 GiB RAM,
+with PDFium chromium/8044. Tested executable SHA-256:
+`0bab799243f9173f20196b154a91159e8caa0c8f604a9ba55668794ee1b50ea3`.
+
+- 146 frontend tests across 29 files passed; TypeScript and production Vite build passed.
+- 45 ordinary native tests passed, including six portable-persistence tests, the small corpus, thirteen recovery checks, and existing annotation/geometry suites. Rust formatting passed.
+- Two opt-in Windows printing tests passed: native dialog cancellation and Microsoft Print to PDF. No physical printer was used.
+- Native persistence covered 64 source/page/text rotation combinations, repeated edit/save/reopen cycles, deletion, duplicated IDs, invalid/stale metadata, external ink notes, moved sources, and legacy recovery import markers.
+- MuPDF and pypdf independently verified 64 editable/flattened PDF pairs. Ink appearance matched exactly; text color-mask overlap was at least 92.7%, with visible bounds within 2 raster pixels at 2x scale. Minor text-edge rasterization differences remain between the two export representations.
+- Browser text rotation checks passed 32 page/text/zoom combinations for rendering, selection, search, thumbnails and dragging. Annotation regressions passed 32 source/page/zoom combinations, multiline copying, and cross-page selections spanning two/five pages. Opaque-highlight compositing preserved black text in page and thumbnail renders.
+- Save-menu first-click stability, clipping and keyboard navigation passed at 900px/1280px in light/dark themes. A 6000-character warm-tab browser fixture averaged 419 ms, with 19 layouts and zero repeated native render/text requests. Timing includes its synthetic workload and shared-machine activity.
+- The exact packaged candidate passed real native-dialog save/reopen with rotated and duplicated/moved pages, text/ink/signature editing, resize undo/redo, removal of the original source path, repeated saves, explicit flatten export, and deletion without resurrection. Independent MuPDF/pypdf inspection confirmed the desktop outputs' annotation counts, rotations, flattened selectable text and preserved duplicated pages.
+- An actual crash/restart restored two dirty tabs, rotated/duplicated additions, comments, 110% zoom and search after both generated originals moved. Confirmed normal close cleared recovery. Signature-library persistence was verified in 0.5; this run did not repeat that optional library check.
+- The packaged corpus passed twelve warm switches with zero repeated native render/text requests, fourteen scroll samples with only two/three page canvases mounted, and six actual copy checks covering tables, accented Latin, Greek, Cyrillic and math. All four mixed crop/rotation page dimensions matched. Memory declined naturally after closing all test tabs; dense-text latency and WebView memory costs are tracked in [issue #9](https://github.com/willherr72/folio/issues/9).
+- The independent native review's two findings (duplicate metadata IDs and externally attached Ink notes) were fixed with regressions; no concrete blockers remained.
+
+Large-document methods and final native/desktop measurements are recorded in
+[the corpus guide](corpus/README.md). The native benchmark uses three fresh
+processes for each of the 300-page text and 96 MiB scan fixtures, with source integrity,
+reordering and editable export/reopen checks. Absolute timing is a baseline, not a
+universal pass/fail limit or a Foxit parity claim.
+
+Evidence is retained in `.worktrees/release-0.6/artifacts`: `annotation-tests`,
+`persistence-desktop-1789073303233`, `recovery-desktop-1789073444416`,
+`corpus-results-final`, `corpus-ui`, `save-options-review`, the browser text logs and
+`final-review-v0.6.md`. The native summary is explicitly labeled as transcribed
+from completed test output.
+
+Reproduce portable checks with `cargo test --manifest-path src-tauri/Cargo.toml
+--test persistence --offline`; set `FOLIO_PERSISTENCE_ARTIFACT_DIR` to retain PDFs,
+then run `python -X utf8 scripts/verify-persistence-pdf.py <artifact-directory>`.
+For packaged UI checks, use `scripts/smoke-persistence-desktop.mjs` with an isolated
+process from `scripts/start-desktop-test.ps1`; recovery uses
+`scripts/smoke-recovery-desktop.mjs` with `FOLIO_TEST_BINARY`.
+
+The English Windows test helper targets only the recorded app PID and its known
+dialog title. It can discover dialogs through owned threads when global enumeration
+misses them, and retries transient filename initialization before accepting only the
+requested path. Save automation retains the default filename; the persistence test
+renames only its own generated output. The app's filename UI is unchanged.

@@ -1,0 +1,188 @@
+{
+  "schemaVersion": 1,
+  "generatorVersion": 1,
+  "seed": 6062026,
+  "toolchain": {
+    "python": "3.14.0",
+    "pymupdf": "1.27.1",
+    "pillow": "12.1.0"
+  },
+  "font": {
+    "file": "fonts/DejaVuSerif.ttf",
+    "sha256": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+    "licenseFile": "fonts/LICENSE_DEJAVU.txt",
+    "source": "https://dejavu-fonts.github.io/",
+    "distribution": "Unmodified DejaVu Serif distributed with Matplotlib; exact bytes bundled for offline regeneration"
+  },
+  "fixtures": [
+    {
+      "file": "dense-tables.pdf",
+      "kind": "dense-text",
+      "pages": 3,
+      "bytes": 36801,
+      "sha256": "60436103b475ce30b2a50e6be1bb5fa672114ff20907de1f4a2a270bb17c4947",
+      "settings": {
+        "rows": 60,
+        "columns": 8
+      },
+      "samples": [
+        {
+          "page": 0,
+          "text": "FOLIO DENSE PAGE 0001"
+        },
+        {
+          "page": 1,
+          "text": "FOLIO DENSE PAGE 0002"
+        },
+        {
+          "page": 2,
+          "text": "FOLIO DENSE PAGE 0003"
+        }
+      ],
+      "textProbes": [],
+      "dimensions": [
+        [
+          612.0,
+          792.0
+        ],
+        [
+          612.0,
+          792.0
+        ],
+        [
+          612.0,
+          792.0
+        ]
+      ],
+      "license": "Repository license for synthetic content; bundled DejaVu license for font/image glyphs",
+      "source": "Generated locally by scripts/corpus-generate.py; no external PDF/image/text source"
+    },
+    {
+      "file": "mixed-geometry.pdf",
+      "kind": "mixed-geometry",
+      "pages": 4,
+      "bytes": 6631,
+      "sha256": "26b0b01cac8530ca438d0e036ad91d5dda3404f3c4b5487e00ce38ca5d3f7409",
+      "settings": {
+        "rotations": [
+          0,
+          90,
+          180,
+          270
+        ],
+        "cropInset": [
+          30,
+          40,
+          20,
+          30
+        ]
+      },
+      "samples": [
+        {
+          "page": 0,
+          "text": "FOLIO GEOMETRY PAGE 0001"
+        },
+        {
+          "page": 2,
+          "text": "FOLIO GEOMETRY PAGE 0003"
+        },
+        {
+          "page": 3,
+          "text": "FOLIO GEOMETRY PAGE 0004"
+        }
+      ],
+      "textProbes": [],
+      "dimensions": [
+        [
+          562.0,
+          722.0
+        ],
+        [
+          525.0,
+          792.0
+        ],
+        [
+          370.0,
+          525.0
+        ],
+        [
+          830.0,
+          850.0
+        ]
+      ],
+      "license": "Repository license for synthetic content; bundled DejaVu license for font/image glyphs",
+      "source": "Generated locally by scripts/corpus-generate.py; no external PDF/image/text source"
+    },
+    {
+      "file": "embedded-font.pdf",
+      "kind": "embedded-font",
+      "pages": 2,
+      "bytes": 229158,
+      "sha256": "e6664f83c2285cf3b8f44326a5f25a4e75b775abfe0f6a22e9059cac343d872a",
+      "settings": {
+        "font": "DejaVuSerif.ttf",
+        "scripts": [
+          "Latin",
+          "Greek",
+          "Cyrillic",
+          "Mathematical symbols"
+        ]
+      },
+      "samples": [
+        {
+          "page": 0,
+          "text": "FOLIO EMBEDDED FONT"
+        },
+        {
+          "page": 1,
+          "text": "FOLIO EMBEDDED FONT"
+        }
+      ],
+      "textProbes": [
+        "café naïve Straße Ångström",
+        "Ελληνικά αβγδε Ω",
+        "Пример текста",
+        "∑ ∫ √ ∞ ≠ ≤ ≥"
+      ],
+      "dimensions": [
+        [
+          612.0,
+          792.0
+        ],
+        [
+          612.0,
+          792.0
+        ]
+      ],
+      "license": "Repository license for synthetic content; bundled DejaVu license for font/image glyphs",
+      "source": "Generated locally by scripts/corpus-generate.py; no external PDF/image/text source"
+    },
+    {
+      "file": "scan-small.pdf",
+      "kind": "scan",
+      "pages": 1,
+      "bytes": 659321,
+      "sha256": "e1c69830a5d645f8c7ef6e2068b2d50b19d15d5cd92a18477781f803659806ac",
+      "settings": {
+        "dpi": 100,
+        "seed": 6062026,
+        "paperNoiseTones": 32
+      },
+      "samples": [
+        {
+          "page": 0,
+          "text": ""
+        }
+      ],
+      "textProbes": [],
+      "dimensions": [
+        [
+          612.0,
+          792.0
+        ]
+      ],
+      "license": "Repository license for synthetic content; bundled DejaVu license for font/image glyphs",
+      "source": "Generated locally by scripts/corpus-generate.py; no external PDF/image/text source"
+    }
+  ]
+}

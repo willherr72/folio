@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { FolioAdapter } from "../editor/adapter";
 import { clientPointToPage, displayDimensions, pageTransform, placeInkPaths } from "../editor/geometry";
+import { textOverlayBounds } from "../editor/text-overlay-geometry";
+import { TextOverlayPresentation } from "./TextOverlayPresentation";
 import type { SearchMatch } from "../editor/search";
 import "./search.css";
 import { CommentIcon, HighlightMarks } from "./AnnotationPresentation";
@@ -98,10 +100,7 @@ function useNearViewport(ref: React.RefObject<HTMLDivElement | null>) {
   return visible;
 }
 function bounds(overlay: Overlay) {
-  if (overlay.type === "text") {
-    const lines = overlay.text.split("\n");
-    return { x: overlay.x - 4, y: overlay.y - 3, width: Math.max(36, ...lines.map((line) => line.length * overlay.fontSize * .56)) + 8, height: Math.max(overlay.fontSize * 1.2, lines.length * overlay.fontSize * 1.2) + 5 };
-  }
+  if (overlay.type === "text") return textOverlayBounds(overlay);
   if (overlay.type === "comment") return { x: overlay.x, y: overlay.y, width: 20, height: 20 };
   if (overlay.type === "highlight") {
     if (!overlay.rects.length) return { x: 0, y: 0, width: 0, height: 0 };
@@ -280,11 +279,7 @@ export function PageView(props: PageViewProps) {
             const selected = overlay.id === selectedOverlayId;
             const box = bounds(overlay);
             return <g key={overlay.id} data-overlay={overlay.id} className={`overlay ${selected ? "selected" : ""}`} role="button" tabIndex={props.interactionDisabled ? -1 : 0} aria-label={overlay.type === "comment" ? `Comment: ${overlay.text || "Empty comment"}` : overlay.type === "text" ? `Text: ${overlay.text}` : "Ink annotation"} onKeyDown={(event) => { if (!props.interactionDisabled && (event.key === "Enter" || event.key === " ")) { event.preventDefault(); props.onActivate?.(); props.onSelectOverlay(overlay.id); } }} onPointerDown={(event) => startDrag(event, overlay)}>
-              {overlay.type === "text" ? (
-                <text x={overlay.x} y={overlay.y + overlay.fontSize} fill={overlay.color} xmlSpace="preserve" style={{ whiteSpace: "pre" }} fontFamily="Arial, Helvetica, sans-serif" fontSize={overlay.fontSize}>
-                  {overlay.text.split("\n").map((line, index) => <tspan key={index} x={overlay.x} dy={index === 0 ? 0 : overlay.fontSize * 1.2}>{line || " "}</tspan>)}
-                </text>
-              ) : overlay.type === "comment" ? <CommentIcon overlay={overlay} /> : overlay.paths.map((path, index) => <polyline key={index} points={path.map((point) => `${point.x},${point.y}`).join(" ")} fill="none" stroke={overlay.color} strokeWidth={overlay.strokeWidth} strokeLinecap="round" strokeLinejoin="round" />)}
+              {overlay.type === "text" ? <TextOverlayPresentation overlay={overlay} /> : overlay.type === "comment" ? <CommentIcon overlay={overlay} /> : overlay.paths.map((path, index) => <polyline key={index} points={path.map((point) => `${point.x},${point.y}`).join(" ")} fill="none" stroke={overlay.color} strokeWidth={overlay.strokeWidth} strokeLinecap="round" strokeLinejoin="round" />)}
               {selected && <rect className="selection-box" x={box.x} y={box.y} width={box.width} height={box.height} />}
             </g>;
           })}
@@ -313,7 +308,7 @@ function ThumbnailImage({ adapter, page }: { adapter: FolioAdapter; page: PagePl
     <g transform={transform || undefined}>
       {rendered.url ? <image href={rendered.url} width={page.width} height={page.height} /> : <rect width={page.width} height={page.height} fill="#fff" />}
       {page.overlays.map((overlay) => overlay.type === "text"
-        ? <text key={overlay.id} x={overlay.x} y={overlay.y + overlay.fontSize} fontSize={overlay.fontSize} fontFamily="Arial, Helvetica, sans-serif" fill={overlay.color} xmlSpace="preserve" style={{ whiteSpace: "pre" }}>{overlay.text.split("\n")[0]}</text>
+        ? <TextOverlayPresentation key={overlay.id} overlay={overlay} />
         : overlay.type === "highlight" ? <HighlightMarks key={overlay.id} overlay={overlay} />
         : overlay.type === "comment" ? <CommentIcon key={overlay.id} overlay={overlay} />
         : <g key={overlay.id}>{overlay.paths.map((path, i) => <polyline key={i} points={path.map((point) => `${point.x},${point.y}`).join(" ")} fill="none" stroke={overlay.color} strokeWidth={overlay.strokeWidth} />)}</g>)}

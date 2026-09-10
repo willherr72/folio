@@ -1,0 +1,191 @@
+{
+  "passed": true,
+  "closedTabs": [
+    "dense-300-pages.pdf",
+    "scan-40-pages.pdf",
+    "dense-tables.pdf",
+    "embedded-font.pdf",
+    "mixed-geometry.pdf"
+  ],
+  "snapshots": [
+    {
+      "phase": "before-closing-corpus-tabs",
+      "elapsedSinceCloseMs": null,
+      "memory": {
+        "utc": "2026-09-10T20:54:55.9943016Z",
+        "currentTreeWorkingSetBytes": 1280569344,
+        "currentTreePrivateBytes": 780619776,
+        "processes": [
+          {
+            "name": "Folio",
+            "workingSetBytes": 396136448,
+            "privateBytes": 256647168,
+            "processLifetimePeakWorkingSetBytes": 396136448
+          },
+          {
+            "name": "msedgewebview2",
+            "workingSetBytes": 232873984,
+            "privateBytes": 68890624,
+            "processLifetimePeakWorkingSetBytes": 244301824
+          },
+          {
+            "name": "msedgewebview2",
+            "workingSetBytes": 34217984,
+            "privateBytes": 3313664,
+            "processLifetimePeakWorkingSetBytes": 38273024
+          },
+          {
+            "name": "msedgewebview2",
+            "workingSetBytes": 364355584,
+            "privateBytes": 330731520,
+            "processLifetimePeakWorkingSetBytes": 555716608
+          },
+          {
+            "name": "msedgewebview2",
+            "workingSetBytes": 65896448,
+            "privateBytes": 13164544,
+            "processLifetimePeakWorkingSetBytes": 66924544
+          },
+          {
+            "name": "msedgewebview2",
+            "workingSetBytes": 24948736,
+            "privateBytes": 8822784,
+            "processLifetimePeakWorkingSetBytes": 24952832
+          },
+          {
+            "name": "msedgewebview2",
+            "workingSetBytes": 162140160,
+            "privateBytes": 99049472,
+            "processLifetimePeakWorkingSetBytes": 1074057216
+          }
+        ],
+        "note": "Snapshot of native app and descendant WebView processes. Lifetime process peaks are not a simultaneous tree peak. Shared pages can be counted in multiple working sets."
+      },
+      "jsHeapUsedBytes": 12472436,
+      "jsHeapTotalBytes": 13615104,
+      "domNodes": 873,
+      "layoutObjects": 796,
+      "openTabs": 5
+    },
+    {
+      "phase": "all-tabs-closed",
+      "elapsedSinceCloseMs": 3561.3898,
+      "memory": {
+        "utc": "2026-09-10T20:55:00.7803163Z",
+        "currentTreeWorkingSetBytes": 1046867968,
+        "currentTreePrivateBytes": 541937664,
+        "processes": [
+          {
+            "name": "Folio",
+            "workingSetBytes": 163586048,
+            "privateBytes": 23343104,
+            "processLifetimePeakWorkingSetBytes": 396328960
+          },
+          {
+            "name": "msedgewebview2",
+            "workingSetBytes": 204152832,
+            "privateBytes": 39297024,
+            "processLifetimePeakWorkingSetBytes": 244301824
+          },
+          {
+            "name": "msedgewebview2",
+            "workingSetBytes": 34217984,
+            "privateBytes": 3313664,
+            "processLifetimePeakWorkingSetBytes": 38273024
+          },
+          {
+            "name": "msedgewebview2",
+            "workingSetBytes": 387969024,
+            "privateBytes": 351166464,
+            "processLifetimePeakWorkingSetBytes": 555716608
+          },
+          {
+            "name": "msedgewebview2",
+            "workingSetBytes": 65855488,
+            "privateBytes": 13119488,
+            "processLifetimePeakWorkingSetBytes": 66924544
+          },
+          {
+            "name": "msedgewebview2",
+            "workingSetBytes": 24948736,
+            "privateBytes": 8822784,
+            "processLifetimePeakWorkingSetBytes": 24952832
+          },
+          {
+            "name": "msedgewebview2",
+            "workingSetBytes": 166137856,
+            "privateBytes": 102875136,
+            "processLifetimePeakWorkingSetBytes": 1074057216
+          }
+        ],
+        "note": "Snapshot of native app and descendant WebView processes. Lifetime process peaks are not a simultaneous tree peak. Shared pages can be counted in multiple working sets."
+      },
+      "jsHeapUsedBytes": 7197512,
+      "jsHeapTotalBytes": 14278656,
+      "domNodes": 857,
+      "layoutObjects": 803,
+      "openTabs": 0
+    },
+    {
+      "phase": "closed-idle-10s",
+      "elapsedSinceCloseMs": 16297.772700000001,
+      "memory": {
+        "utc": "2026-09-10T20:55:13.6123909Z",
+        "currentTreeWorkingSetBytes": 964685824,
+        "currentTreePrivateBytes": 458522624,
+        "processes": [
+          {
+            "name": "Folio",
+            "workingSetBytes": 163139584,
+            "privateBytes": 22847488,
+            "processLifetimePeakWorkingSetBytes": 396328960
+          },
+          {
+            "name": "msedgewebview2",
+            "workingSetBytes": 204292096,
+            "privateBytes": 39419904,
+            "processLifetimePeakWorkingSetBytes": 244301824
+          },
+          {
+            "name": "msedgewebview2",
+            "workingSetBytes": 34181120,
+            "privateBytes": 3252224,
+            "processLifetimePeakWorkingSetBytes": 38273024
+          },
+          {
+            "name": "msedgewebview2",
+            "workingSetBytes": 306147328,
+            "privateBytes": 268238848,
+            "processLifetimePeakWorkingSetBytes": 555716608
+          },
+          {
+            "name": "msedgewebview2",
+            "workingSetBytes": 65839104,
+            "privateBytes": 13066240,
+            "processLifetimePeakWorkingSetBytes": 66924544
+          },
+          {
+            "name": "msedgewebview2",
+            "workingSetBytes": 24948736,
+            "privateBytes": 8822784,
+            "processLifetimePeakWorkingSetBytes": 24952832
+          },
+          {
+            "name": "msedgewebview2",
+            "workingSetBytes": 166137856,
+            "privateBytes": 102875136,
+            "processLifetimePeakWorkingSetBytes": 1074057216
+          }
+        ],
+        "note": "Snapshot of native app and descendant WebView processes. Lifetime process peaks are not a simultaneous tree peak. Shared pages can be counted in multiple working sets."
+      },
+      "jsHeapUsedBytes": 7212644,
+      "jsHeapTotalBytes": 14278656,
+      "domNodes": 857,
+      "layoutObjects": 803,
+      "openTabs": 0
+    }
+  ],
+  "forcedGarbageCollection": false,
+  "note": "Natural idle snapshots. Process working sets include shared pages and allocator/GPU caches; these readings alone do not establish a leak."
+}

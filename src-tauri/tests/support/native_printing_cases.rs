@@ -65,10 +65,20 @@ fn prepared_job_exports_selected_order_rotation_and_edits_and_cleans_up() {
         ),
         (200.0, 300.0)
     );
-    assert!(engine
-        .extract_text(&prepared.document.id, 0)
+    let saved = lopdf::Document::load(prepared._directory.path().join("Folio print.pdf")).unwrap();
+    let page = saved.get_dictionary(saved.get_pages()[&1]).unwrap();
+    let annotations = page.get(b"Annots").unwrap().as_array().unwrap();
+    assert!(annotations.iter().any(|annotation| saved
+        .dereference(annotation)
         .unwrap()
-        .contains("PRINT EDIT"));
+        .1
+        .as_dict()
+        .unwrap()
+        .get(b"Subtype")
+        .unwrap()
+        .as_name()
+        .unwrap()
+        == b"FreeText"));
     let (width, height, pixels) =
         png_to_bgra(&engine.render_page(&prepared.document.id, 0, 600).unwrap()).unwrap();
     assert_eq!((width, height), (600, 1200));
@@ -107,7 +117,14 @@ fn print_raster_preserves_channel_order_and_flattens_alpha_onto_white() {
 
 #[test]
 fn empty_print_request_is_rejected_before_native_dialog() {
-    assert!(PreparedPrint::new(engine(), ExportRequest { pages: vec![] }).is_err());
+    assert!(PreparedPrint::new(
+        engine(),
+        ExportRequest {
+            flatten: true,
+            pages: vec![]
+        }
+    )
+    .is_err());
 }
 
 #[test]

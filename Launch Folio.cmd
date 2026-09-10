@@ -1,8 +1,8 @@
 @echo off
 setlocal
 cd /d "%~dp0"
-if exist "artifacts\Folio-v0.5.0\Folio.exe" (
-    start "" "artifacts\Folio-v0.5.0\Folio.exe"
+if exist "artifacts\Folio-v0.6.0\Folio.exe" (
+    start "" "artifacts\Folio-v0.6.0\Folio.exe"
     exit /b
 )
 echo Folio has not been built yet.

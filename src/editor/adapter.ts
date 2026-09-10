@@ -7,7 +7,7 @@ export interface FolioAdapter {
   openPdf(): Promise<DocumentInfo | null>;
   renderPage(sourceId: string, pageIndex: number, width: number): Promise<string>;
   getPageText?(sourceId: string, pageIndex: number): Promise<PageText>;
-  exportPdf(pages: PagePlan[]): Promise<string | null>;
+  exportPdf(pages: PagePlan[], options?: {flatten?: boolean}): Promise<string | null>;
   closeDocument(sourceId: string): Promise<void>;
   engineStatus(): Promise<string>;
 }
@@ -33,7 +33,7 @@ export const nativeAdapter: FolioAdapter = {
     return bytesToUrl(bytes);
   },
   getPageText: (sourceId, pageIndex) => invoke<PageText>("page_text", { sourceId, pageIndex }),
-  exportPdf: (pages) => invoke<string | null>("export_pdf", { request: { pages } }),
+  exportPdf: (pages, options) => invoke<string | null>("export_pdf", { request: { pages, ...(options?.flatten ? {flatten:true} : {}) } }),
   closeDocument: (sourceId) => invoke<void>("close_document", { sourceId }),
   engineStatus: () => invoke<string>("engine_status"),
 };

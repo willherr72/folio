@@ -13,10 +13,12 @@ Add-Type -AssemblyName UIAutomationTypes
 Add-Type -TypeDefinition @"
 using System;
 using System.Text;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 public static class FolioDialogAutomation {
     private delegate bool EnumProc(IntPtr hwnd, IntPtr data);
     [DllImport("user32.dll")] private static extern bool EnumWindows(EnumProc callback, IntPtr data);
+    [DllImport("user32.dll")] private static extern bool EnumThreadWindows(uint threadId, EnumProc callback, IntPtr data);
     [DllImport("user32.dll")] private static extern bool EnumChildWindows(IntPtr parent, EnumProc callback, IntPtr data);
     [DllImport("user32.dll")] private static extern uint GetWindowThreadProcessId(IntPtr hwnd, out uint pid);
     [DllImport("user32.dll", CharSet=CharSet.Unicode)] private static extern int GetClassName(IntPtr hwnd, StringBuilder text, int count);
@@ -44,7 +46,7 @@ public static class FolioDialogAutomation {
     public static IntPtr Find(int appPid, string action) {
         IntPtr target = IntPtr.Zero;
         string title = action == "Open" ? "Open a PDF" : "Save a PDF copy";
-        EnumWindows((window, data) => {
+        EnumProc inspect = (window, data) => {
             uint pid; GetWindowThreadProcessId(window, out pid);
             if (pid != appPid || ClassName(window) != "#32770" || Caption(window) != title) return true;
             bool hasAccept = false;
@@ -54,7 +56,13 @@ public static class FolioDialogAutomation {
             }, IntPtr.Zero);
             if (hasAccept) target = window;
             return true;
-        }, IntPtr.Zero);
+        };
+        EnumWindows(inspect, IntPtr.Zero);
+        if (target == IntPtr.Zero) {
+            using (var process = Process.GetProcessById(appPid))
+                foreach (ProcessThread thread in process.Threads)
+                    EnumThreadWindows((uint)thread.Id, inspect, IntPtr.Zero);
+        }
         return target;
 
 
@@ -81,7 +89,9 @@ do {
         if ($filename) {
             $value = $filename.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern)
             if ($Action -eq 'Open') { $value.SetValue($FilePath) }
-            if ($Action -eq 'Open' -and $value.Current.Value -ne $FilePath) { throw 'Native filename field did not retain the exact test path.' }
+            # Shell initialization can replace the filename just after ValuePattern.SetValue.
+            # Retry within the bounded dialog deadline; never accept a different path.
+            if ($Action -eq 'Open' -and $value.Current.Value -ne $FilePath) { Start-Sleep -Milliseconds 100; continue }
             if ($Action -eq 'Save' -and $value.Current.Value -notin @([IO.Path]::GetFileName($FilePath), [IO.Path]::GetFileNameWithoutExtension($FilePath))) { throw ('Unexpected default filename in isolated save test: ' + $value.Current.Value) }
             if (![FolioDialogAutomation]::Accept($AppProcessId, $Action)) { throw 'Owned dialog accept button unavailable.' }
             Write-Output "$Action dialog submitted through accessibility controls."

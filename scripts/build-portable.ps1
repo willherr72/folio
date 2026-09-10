@@ -35,7 +35,11 @@ try {
         }
     }
     $zip = Join-Path $folioRoot ('artifacts/' + $portableName + '-windows-x64.zip')
-    Compress-Archive -Path (Join-Path $portableDir '*') -DestinationPath $zip -Force
+    # .NET emits portable forward-slash entry names on Windows too.
+    if (Test-Path -LiteralPath $zip) { Remove-Item -LiteralPath $zip -Force }
+    [IO.Compression.ZipFile]::CreateFromDirectory($portableDir, $zip, [IO.Compression.CompressionLevel]::Optimal, $false)
+    $digest = (Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash.ToLowerInvariant()
+    [IO.File]::WriteAllText($zip + '.sha256', $digest + '  ' + [IO.Path]::GetFileName($zip) + [Environment]::NewLine)
     Write-Host "Portable app: $portableDir"
     Write-Host "Archive: $zip"
 } finally {

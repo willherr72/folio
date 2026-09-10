@@ -1,0 +1,89 @@
+{
+  "passed": true,
+  "copies": [
+    {
+      "fixture": "dense-tables.pdf",
+      "expected": "001-01-01",
+      "copied": "001-01-01",
+      "passed": true
+    },
+    {
+      "fixture": "embedded-font.pdf",
+      "expected": "café naïve Straße Ångström",
+      "copied": "café naïve Straße Ångström",
+      "passed": true
+    },
+    {
+      "fixture": "embedded-font.pdf",
+      "expected": "Ελληνικά αβγδε Ω",
+      "copied": "Ελληνικά αβγδε Ω",
+      "passed": true
+    },
+    {
+      "fixture": "embedded-font.pdf",
+      "expected": "Пример текста",
+      "copied": "Пример текста",
+      "passed": true
+    },
+    {
+      "fixture": "embedded-font.pdf",
+      "expected": "∑ ∫ √ ∞ ≠ ≤ ≥",
+      "copied": "∑ ∫ √ ∞ ≠ ≤ ≥",
+      "passed": true
+    },
+    {
+      "fixture": "mixed-geometry.pdf",
+      "expected": "FOLIO GEOMETRY PAGE 0001",
+      "copied": "FOLIO GEOMETRY PAGE 0001",
+      "passed": true
+    }
+  ],
+  "geometry": [
+    {
+      "page": 1,
+      "rotation": 0,
+      "viewBox": [
+        0,
+        0,
+        562,
+        722
+      ],
+      "passed": true
+    },
+    {
+      "page": 2,
+      "rotation": 90,
+      "viewBox": [
+        0,
+        0,
+        525,
+        792
+      ],
+      "passed": true
+    },
+    {
+      "page": 3,
+      "rotation": 180,
+      "viewBox": [
+        0,
+        0,
+        370,
+        525
+      ],
+      "passed": true
+    },
+    {
+      "page": 4,
+      "rotation": 270,
+      "viewBox": [
+        0,
+        0,
+        830,
+        850
+      ],
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "method": "Actual native PDF glyph mouse selection with quarter-glyph endpoints and Control+C; observed text/plain copy event payload. No document edits."
+}

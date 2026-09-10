@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type SetStateAction } from "react";
 import {
-  ArrowDown, ArrowUp, ChevronLeft, ChevronRight, Copy, Download, FilePlus2, FolderOpen,
+  ArrowDown, ArrowUp, ChevronLeft, ChevronRight, Copy, FilePlus2, FolderOpen,
   GripVertical, Highlighter, MessageSquare, Search, Printer, Minus, MousePointer2, PenLine, Pencil, Plus, Redo2, RotateCw, Settings, Trash2, Type, Undo2, X,
 } from "lucide-react";
 import { createDemoAdapter, documentToPages, nativeAdapter, type FolioAdapter } from "./editor/adapter";
@@ -25,6 +25,7 @@ import {RecoveryDialog} from "./components/RecoveryDialog";
 import {printPdf,type PrintOptions} from "./editor/printing";
 import type {PagePlan} from "./editor/types";
 import "./styles.css";
+import {SaveCopyButton} from "./components/SaveCopyButton";
 import { OverlayProperties } from "./components/OverlayProperties";
 import { ReviewList } from "./components/ReviewList";
 
@@ -233,13 +234,13 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
     finally { operation.current = false; setBusy(null); }
   }, [adapter.kind, current, installDocument, modalOpen]);
 
-  const exportPdf = useCallback(async () => {
+  const exportPdf = useCallback(async (flatten = false) => {
     if (operation.current || modalOpen || !current?.pages.length) return;
     operation.current = true;
     setBusy(adapter.kind === "demo" ? "Preparing demo plan…" : "Exporting PDF…"); setFailure(null);
     try {
-      const path = await adapter.exportPdf(current.pages);
-      if (path) { setSavedDigest(planDigest(current)); setNotice(adapter.kind === "demo" ? "Demo edit plan downloaded" : `Saved a copy to ${path}`); }
+      const path = await (flatten ? adapter.exportPdf(current.pages, {flatten:true}) : adapter.exportPdf(current.pages));
+      if (path) { if (!flatten) setSavedDigest(planDigest(current)); setNotice(adapter.kind === "demo" ? "Demo edit plan downloaded" : flatten ? `Exported flattened text and ink to ${path}` : `Saved a copy to ${path}`); }
     } catch (error) { setFailure(`Couldn’t export: ${errorMessage(error)}`); }
     finally { operation.current = false; setBusy(null); }
   }, [adapter, current, modalOpen, setSavedDigest]);
@@ -473,7 +474,7 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
       <div className="zoom-control"><button aria-label="Zoom out" disabled={blocked} onClick={() => setZoom((value) => Math.max(50, value - 10))}><Minus size={15}/></button><button className="zoom-value" title="Reset zoom to 100% (Ctrl+scroll to zoom)" disabled={blocked} onClick={() => setZoom(100)}>{zoom}%</button><button aria-label="Zoom in" disabled={blocked} onClick={() => setZoom((value) => Math.min(200, value + 10))}><Plus size={15}/></button></div>
       <button className="icon-button" aria-label="Find" title="Find (Ctrl+F)" disabled={blocked} onClick={openSearch}><Search size={18}/></button>
       <button className="icon-button" aria-label="Print" title="Print (Ctrl+P)" disabled={blocked||adapter.kind==="demo"} onClick={openPrint}><Printer size={18}/></button>
-      <button className="button primary export" onClick={exportPdf} disabled={blocked}><Download size={17}/>{adapter.kind === "demo" ? "Export demo plan" : "Save a copy"}</button>
+      <SaveCopyButton key={activeTab!.id} disabled={blocked} demo={adapter.kind === "demo"} onSave={flatten=>void exportPdf(flatten)}/>
     </div>
     <div className="workspace" role="tabpanel" aria-labelledby={"tab-" + activeTab!.id}>
       <aside className="sidebar">

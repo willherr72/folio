@@ -1,0 +1,441 @@
+{
+  "machine": {
+    "collectedUtc": "2026-09-10T20:37:30.2739687Z",
+    "os": "Microsoft Windows 11 Pro",
+    "osVersion": "10.0.26200",
+    "osBuild": "26200",
+    "architecture": "64-bit",
+    "processors": [
+      {
+        "Name": "AMD Ryzen AI 9 HX 370 w/ Radeon 890M           ",
+        "NumberOfCores": 12,
+        "NumberOfLogicalProcessors": 24,
+        "MaxClockSpeed": 2000
+      }
+    ],
+    "totalPhysicalMemoryBytes": 102317273088,
+    "freePhysicalMemoryBytesAtStart": 26919198720,
+    "profile": "release",
+    "renderWidth": 900,
+    "sequentialPages": 24,
+    "powerPlan": "Power Scheme GUID: 381b4222-f694-41f0-9685-ff5bb260df2e  (Balanced)",
+    "gitRevision": "c0d704545421581766d0c8ecae0c8d499aedcfe5",
+    "rust": "rustc 1.97.1 (8bab26f4f 2026-07-14)",
+    "note": "Isolated native test processes; warm OS filesystem cache may apply. No WebView, printer, or UI latency included. Machine may be shared with other release work.",
+    "sourceSha256": {
+      "src-tauri/Cargo.toml": "9ace810be0b76aacfaa6ba62c8a4385ccc5f9faf57630d7b8e696fc20065218a",
+      "src-tauri/Cargo.lock": "73487f3723f306f11af6ddeaa1a3d456fc54b8decc9bdbf2843c65d326c885b2",
+      "src-tauri/src/engine.rs": "4bce3b042cc15d0411f7d512ae56979d053ae3e47802941b0a02286177f8f03a",
+      "src-tauri/src/persistence.rs": "69c32e171770e9f4f44fd3b961babc4359d887eccccd3ece418ed63f47c3a508",
+      "src-tauri/src/types.rs": "fc8b54a3c82c95b9b62e35d1cf1fc654d46d537e9b8d1910ed09215b2431b2eb",
+      "src-tauri/tests/corpus.rs": "5983adfb252235b06dafab37de926466ead136a968cae32750cb05206a80f075"
+    },
+    "testExecutableSha256": "c1b66db9e33ce8b9cd99d1f14597a6496aedb7df4b5b21fa2e836544d7f79674"
+  },
+  "results": [
+    {
+      "exportBytes": 3913604,
+      "exportReverseWithEditsMs": 596.1956,
+      "extractAllMs": 591.5313,
+      "fixture": "dense-300-pages.pdf",
+      "memory": {
+        "processPeakWorkingSetBytes": 90791936,
+        "sampleIntervalMs": 10,
+        "sampledPeakPrivateBytes": 77688832
+      },
+      "openMs": 205.321,
+      "pages": 300,
+      "passed": true,
+      "reopenMs": 386.5573,
+      "repeatFirstPageRenderMs": 8.4099,
+      "samples": [
+        {
+          "characters": 4940,
+          "extractMs": 3.3688,
+          "page": 0,
+          "pngBytes": 496717,
+          "renderMs": 11.389399999999998
+        },
+        {
+          "characters": 4940,
+          "extractMs": 2.0147,
+          "page": 150,
+          "pngBytes": 466960,
+          "renderMs": 7.1299
+        },
+        {
+          "characters": 4940,
+          "extractMs": 2.1599000000000004,
+          "page": 299,
+          "pngBytes": 530433,
+          "renderMs": 7.6691
+        }
+      ],
+      "sequentialRenderMs": [
+        8.526499999999999,
+        9.4981,
+        7.7886,
+        8.506400000000001,
+        8.5517,
+        8.4123,
+        7.9151,
+        8.4286,
+        8.8876,
+        7.6049999999999995,
+        7.948500000000001,
+        8.1724,
+        9.7054,
+        8.8895,
+        8.106800000000002,
+        7.824599999999999,
+        9.5243,
+        8.3262,
+        7.920800000000001,
+        6.9572,
+        9.093800000000002,
+        7.6530000000000005,
+        7.6681,
+        6.462899999999999
+      ],
+      "sourceBytes": 3635470,
+      "totalCharacters": 1482000
+    },
+    {
+      "exportBytes": 3913604,
+      "exportReverseWithEditsMs": 567.1097000000001,
+      "extractAllMs": 1016.5667000000001,
+      "fixture": "dense-300-pages.pdf",
+      "memory": {
+        "processPeakWorkingSetBytes": 90607616,
+        "sampleIntervalMs": 10,
+        "sampledPeakPrivateBytes": 76500992
+      },
+      "openMs": 200.6516,
+      "pages": 300,
+      "passed": true,
+      "reopenMs": 415.2919,
+      "repeatFirstPageRenderMs": 7.3794,
+      "samples": [
+        {
+          "characters": 4940,
+          "extractMs": 3.0199,
+          "page": 0,
+          "pngBytes": 496717,
+          "renderMs": 8.8133
+        },
+        {
+          "characters": 4940,
+          "extractMs": 2.5742,
+          "page": 150,
+          "pngBytes": 466960,
+          "renderMs": 7.8534
+        },
+        {
+          "characters": 4940,
+          "extractMs": 2.2116000000000002,
+          "page": 299,
+          "pngBytes": 530433,
+          "renderMs": 9.034699999999999
+        }
+      ],
+      "sequentialRenderMs": [
+        9.4629,
+        8.1264,
+        7.8641000000000005,
+        8.3384,
+        10.3761,
+        9.9602,
+        7.991699999999999,
+        9.2362,
+        9.4778,
+        8.5127,
+        9.0315,
+        9.0087,
+        11.3577,
+        9.0805,
+        9.8878,
+        10.2748,
+        9.1492,
+        9.439400000000001,
+        9.6282,
+        10.7391,
+        11.706100000000001,
+        20.645899999999997,
+        17.4276,
+        18.9458
+      ],
+      "sourceBytes": 3635470,
+      "totalCharacters": 1482000
+    },
+    {
+      "exportBytes": 3913604,
+      "exportReverseWithEditsMs": 766.8855,
+      "extractAllMs": 703.8543999999999,
+      "fixture": "dense-300-pages.pdf",
+      "memory": {
+        "processPeakWorkingSetBytes": 90554368,
+        "sampleIntervalMs": 10,
+        "sampledPeakPrivateBytes": 79216640
+      },
+      "openMs": 209.5186,
+      "pages": 300,
+      "passed": true,
+      "reopenMs": 500.5119,
+      "repeatFirstPageRenderMs": 10.306799999999999,
+      "samples": [
+        {
+          "characters": 4940,
+          "extractMs": 2.4654,
+          "page": 0,
+          "pngBytes": 496717,
+          "renderMs": 8.246099999999998
+        },
+        {
+          "characters": 4940,
+          "extractMs": 1.9553,
+          "page": 150,
+          "pngBytes": 466960,
+          "renderMs": 7.7364
+        },
+        {
+          "characters": 4940,
+          "extractMs": 2.0446,
+          "page": 299,
+          "pngBytes": 530433,
+          "renderMs": 7.8922
+        }
+      ],
+      "sequentialRenderMs": [
+        7.826,
+        10.0962,
+        9.1781,
+        7.1633000000000004,
+        7.037,
+        7.1165,
+        8.8171,
+        8.916699999999999,
+        8.5158,
+        7.3727,
+        8.590800000000002,
+        6.7546,
+        9.3891,
+        7.984,
+        7.3543,
+        8.3453,
+        8.5353,
+        8.35,
+        10.2027,
+        8.4345,
+        9.2103,
+        9.9311,
+        9.644,
+        11.522499999999999
+      ],
+      "sourceBytes": 3635470,
+      "totalCharacters": 1482000
+    },
+    {
+      "exportBytes": 100968576,
+      "exportReverseWithEditsMs": 262.8278,
+      "extractAllMs": 0.9354,
+      "fixture": "scan-40-pages.pdf",
+      "memory": {
+        "processPeakWorkingSetBytes": 554565632,
+        "sampleIntervalMs": 10,
+        "sampledPeakPrivateBytes": 516161536
+      },
+      "openMs": 131.0521,
+      "pages": 40,
+      "passed": true,
+      "reopenMs": 105.8293,
+      "repeatFirstPageRenderMs": 48.032,
+      "samples": [
+        {
+          "characters": 0,
+          "extractMs": 0.0926,
+          "page": 0,
+          "pngBytes": 2415991,
+          "renderMs": 51.646499999999996
+        },
+        {
+          "characters": 0,
+          "extractMs": 0.3876,
+          "page": 20,
+          "pngBytes": 2416603,
+          "renderMs": 47.5571
+        },
+        {
+          "characters": 0,
+          "extractMs": 0.1672,
+          "page": 39,
+          "pngBytes": 2414732,
+          "renderMs": 54.8055
+        }
+      ],
+      "sequentialRenderMs": [
+        47.0976,
+        39.6236,
+        38.621500000000005,
+        39.464800000000004,
+        36.7362,
+        35.9243,
+        34.5413,
+        33.3529,
+        33.5542,
+        33.609300000000005,
+        39.8468,
+        43.611200000000004,
+        37.8761,
+        35.5979,
+        34.7108,
+        33.829,
+        35.1393,
+        35.041000000000004,
+        35.0718,
+        34.588800000000006,
+        35.45,
+        34.2665,
+        36.1865,
+        36.6279
+      ],
+      "sourceBytes": 100865244,
+      "totalCharacters": 0
+    },
+    {
+      "exportBytes": 100968576,
+      "exportReverseWithEditsMs": 397.504,
+      "extractAllMs": 1.9999000000000002,
+      "fixture": "scan-40-pages.pdf",
+      "memory": {
+        "processPeakWorkingSetBytes": 554577920,
+        "sampleIntervalMs": 10,
+        "sampledPeakPrivateBytes": 528814080
+      },
+      "openMs": 75.4432,
+      "pages": 40,
+      "passed": true,
+      "reopenMs": 103.8899,
+      "repeatFirstPageRenderMs": 33.9859,
+      "samples": [
+        {
+          "characters": 0,
+          "extractMs": 0.0594,
+          "page": 0,
+          "pngBytes": 2415991,
+          "renderMs": 36.28
+        },
+        {
+          "characters": 0,
+          "extractMs": 0.1206,
+          "page": 20,
+          "pngBytes": 2416603,
+          "renderMs": 36.913000000000004
+        },
+        {
+          "characters": 0,
+          "extractMs": 0.1148,
+          "page": 39,
+          "pngBytes": 2414732,
+          "renderMs": 35.3217
+        }
+      ],
+      "sequentialRenderMs": [
+        37.0617,
+        37.3972,
+        36.095,
+        35.157000000000004,
+        33.8035,
+        37.8312,
+        34.3369,
+        38.7277,
+        34.3211,
+        35.3246,
+        34.4612,
+        35.0208,
+        34.7949,
+        36.4754,
+        44.0512,
+        37.7326,
+        37.345299999999995,
+        39.5943,
+        41.2475,
+        47.8733,
+        51.6261,
+        51.1079,
+        48.7779,
+        47.664
+      ],
+      "sourceBytes": 100865244,
+      "totalCharacters": 0
+    },
+    {
+      "exportBytes": 100968576,
+      "exportReverseWithEditsMs": 452.99089999999995,
+      "extractAllMs": 0.9238999999999999,
+      "fixture": "scan-40-pages.pdf",
+      "memory": {
+        "processPeakWorkingSetBytes": 554242048,
+        "sampleIntervalMs": 10,
+        "sampledPeakPrivateBytes": 543961088
+      },
+      "openMs": 102.468,
+      "pages": 40,
+      "passed": true,
+      "reopenMs": 112.9464,
+      "repeatFirstPageRenderMs": 60.9294,
+      "samples": [
+        {
+          "characters": 0,
+          "extractMs": 0.18560000000000001,
+          "page": 0,
+          "pngBytes": 2415991,
+          "renderMs": 41.2439
+        },
+        {
+          "characters": 0,
+          "extractMs": 0.2088,
+          "page": 20,
+          "pngBytes": 2416603,
+          "renderMs": 39.8883
+        },
+        {
+          "characters": 0,
+          "extractMs": 0.3252,
+          "page": 39,
+          "pngBytes": 2414732,
+          "renderMs": 44.6331
+        }
+      ],
+      "sequentialRenderMs": [
+        55.9334,
+        57.461400000000005,
+        48.257099999999994,
+        52.2385,
+        44.176,
+        36.4505,
+        35.1842,
+        35.4681,
+        37.6813,
+        38.4926,
+        40.6445,
+        35.0537,
+        39.0982,
+        49.9222,
+        43.0463,
+        39.5419,
+        35.378800000000005,
+        37.451100000000004,
+        34.9613,
+        35.9706,
+        37.508399999999995,
+        37.0353,
+        38.7512,
+        39.4766
+      ],
+      "sourceBytes": 100865244,
+      "totalCharacters": 0
+    }
+  ],
+  "manifest": "artifacts/corpus/manifest.json",
+  "baselineStatus": "Final v0.6 implementation: 3 isolated release runs per bulk fixture, strict editable text/ink and source annotation checks passed."
+}

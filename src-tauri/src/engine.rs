@@ -7,6 +7,9 @@ use std::path::{Path, PathBuf};
 use std::sync::{mpsc, Arc, OnceLock};
 use uuid::Uuid;
 
+#[path = "persistence.rs"]
+mod persistence;
+
 pub type EngineResult<T> = Result<T, EngineError>;
 pub(crate) const MAX_SOURCE_BYTES: u64 = 512 * 1024 * 1024;
 
@@ -599,6 +602,7 @@ impl WorkerRuntime {
 
         let mut output = self.pdfium.create_new_pdf()?;
         let font = output.fonts_mut().helvetica();
+        let mut geometries = Vec::with_capacity(request.pages.len());
 
         for plan in &request.pages {
             let destination_index = output.pages().len();
@@ -613,13 +617,18 @@ impl WorkerRuntime {
 
             let mut page = output.pages().get(destination_index)?;
             let geometry = page_geometry(&page)?;
+            geometries.push(geometry);
             for overlay in &plan.overlays {
                 match overlay {
                     Overlay::Text(text) => {
-                        add_text_overlay(&mut page, geometry, text, font)?;
+                        if request.flatten {
+                            add_text_overlay(&mut page, geometry, text, font)?;
+                        }
                     }
                     Overlay::Ink(ink) => {
-                        add_ink_overlay(&mut page, geometry, ink)?;
+                        if request.flatten {
+                            add_ink_overlay(&mut page, geometry, ink)?;
+                        }
                     }
                     Overlay::Highlight(highlight) => {
                         add_highlight_annotation(&mut page, geometry, highlight)?
@@ -646,11 +655,11 @@ impl WorkerRuntime {
         let temporary = temporary.into_temp_path();
         output.save_to_file(&temporary)?;
         if request.pages.iter().any(|page| {
-            page.overlays
-                .iter()
-                .any(|overlay| matches!(overlay, Overlay::Highlight(_) | Overlay::Comment(_)))
+            page.overlays.iter().any(|overlay| {
+                !request.flatten || matches!(overlay, Overlay::Highlight(_) | Overlay::Comment(_))
+            })
         }) {
-            normalize_annotation_references(&temporary)?;
+            persistence::finalize(&temporary, &request, &geometries)?;
         }
         std::fs::OpenOptions::new()
             .write(true)
@@ -791,65 +800,6 @@ fn page_geometry(page: &PdfPage<'_>) -> EngineResult<PageGeometry> {
     })
 }
 
-fn normalize_annotation_references(path: &Path) -> EngineResult<()> {
-    // PDFium creates direct annotation dictionaries. Several conforming readers
-    // require individual object identities for annotation APIs and popup editing.
-    let file = std::fs::File::open(path).map_err(|error| EngineError::Io(error.to_string()))?;
-    if file
-        .metadata()
-        .map_err(|error| EngineError::Io(error.to_string()))?
-        .len()
-        > MAX_SOURCE_BYTES
-    {
-        return Err(EngineError::InvalidRequest(
-            "annotated export exceeds the 512 MiB limit".into(),
-        ));
-    }
-    let error =
-        |error: lopdf::Error| EngineError::Io(format!("normalizing PDF annotations: {error}"));
-    let options = lopdf::LoadOptions {
-        strict: true,
-        max_decompressed_size: Some(64 * 1024 * 1024),
-        ..Default::default()
-    };
-    let mut document =
-        lopdf::Document::load_from_with_options(file.take(MAX_SOURCE_BYTES + 1), options)
-            .map_err(error)?;
-    for page_id in document.get_pages().into_values() {
-        let Some(annotations) = document
-            .get_dictionary(page_id)
-            .map_err(error)?
-            .get(b"Annots")
-            .ok()
-            .cloned()
-        else {
-            continue;
-        };
-        let mut annotations = document
-            .dereference(&annotations)
-            .map_err(error)?
-            .1
-            .as_array()
-            .map_err(error)?
-            .clone();
-        for annotation in &mut annotations {
-            if let lopdf::Object::Dictionary(dictionary) = annotation {
-                let mut dictionary = dictionary.clone();
-                dictionary.set("P", lopdf::Object::Reference(page_id));
-                *annotation = lopdf::Object::Reference(document.add_object(dictionary));
-            }
-        }
-        document
-            .get_dictionary_mut(page_id)
-            .map_err(error)?
-            .set("Annots", annotations);
-    }
-    document
-        .save(path)
-        .map_err(|error| EngineError::Io(format!("saving normalized annotations: {error}")))?;
-    Ok(())
-}
-
 #[derive(Clone)]
 struct AnnotationMetadata {
     id: Option<lopdf::ObjectId>,
@@ -858,6 +808,7 @@ struct AnnotationMetadata {
     subtype: Vec<u8>,
     color: Option<String>,
     opacity: Option<f32>,
+    owned: Option<persistence::PortableRecord>,
 }
 
 type SourceAnnotationMetadata = HashMap<usize, Vec<AnnotationMetadata>>;
@@ -929,6 +880,7 @@ fn parse_annotation_metadata(bytes: &[u8]) -> Result<SourceAnnotationMetadata, l
                 Err(_) => Some(1.0),
             };
             metadata.push(AnnotationMetadata {
+                owned: persistence::decode(&document, dictionary),
                 id,
                 subtype,
                 color,
@@ -951,7 +903,10 @@ fn parse_annotation_metadata(bytes: &[u8]) -> Result<SourceAnnotationMetadata, l
 fn editable_annotation(annotation: &PdfPageAnnotation<'_>) -> bool {
     matches!(
         annotation.annotation_type(),
-        PdfPageAnnotationType::Highlight | PdfPageAnnotationType::Text
+        PdfPageAnnotationType::Highlight
+            | PdfPageAnnotationType::Text
+            | PdfPageAnnotationType::FreeText
+            | PdfPageAnnotationType::Ink
     ) && !annotation.is_hidden()
         && !annotation.is_printable_but_not_viewable()
         && annotation.is_printed()
@@ -991,6 +946,7 @@ fn import_annotations(
         return Ok(imported);
     };
     let mut deleted = HashSet::new();
+    let mut imported_ids = HashSet::new();
     for index in 0..annotations.len() {
         let annotation = annotations.get(index)?;
         if !editable_annotation(&annotation) {
@@ -1000,7 +956,17 @@ fn import_annotations(
         let Some(color) = &metadata_item.color else {
             continue;
         };
-        let overlay = match annotation.annotation_type() {
+        let mut overlay = match annotation.annotation_type() {
+            PdfPageAnnotationType::FreeText | PdfPageAnnotationType::Ink => {
+                let Some(overlay) = metadata_item
+                    .owned
+                    .as_ref()
+                    .and_then(|record| record.displayed(geometry))
+                else {
+                    continue;
+                };
+                overlay
+            }
             PdfPageAnnotationType::Highlight => {
                 if metadata_item.subtype != b"Highlight" || metadata_item.opacity.is_none() {
                     continue;
@@ -1077,6 +1043,17 @@ fn import_annotations(
             }
             _ => continue,
         };
+        let id = match &mut overlay {
+            Overlay::Text(overlay) => &mut overlay.id,
+            Overlay::Ink(overlay) => &mut overlay.id,
+            Overlay::Highlight(overlay) => &mut overlay.id,
+            Overlay::Comment(overlay) => &mut overlay.id,
+        };
+        // Other readers can duplicate an annotation including its private ID.
+        if !imported_ids.insert(id.clone()) {
+            *id = Uuid::new_v4().to_string();
+            imported_ids.insert(id.clone());
+        }
         deleted.insert(index);
         for (popup_index, popup) in metadata.iter().enumerate() {
             if popup.subtype == b"Popup"
@@ -1271,9 +1248,16 @@ fn add_text_overlay(
 ) -> EngineResult<()> {
     let color = parse_color(&overlay.color)?;
     for (line_index, line) in overlay.text.lines().enumerate() {
+        let relative = persistence::rotated_point(
+            Point {
+                x: 0.0,
+                y: overlay.font_size + line_index as f32 * overlay.font_size * 1.2,
+            },
+            overlay.rotation,
+        );
         let baseline = Point {
-            x: overlay.x,
-            y: overlay.y + overlay.font_size + line_index as f32 * overlay.font_size * 1.2,
+            x: overlay.x + relative.x,
+            y: overlay.y + relative.y,
         };
         let (x, y) = geometry.displayed_to_pdf(baseline);
         let mut object = page.objects_mut().create_text_object(
@@ -1284,8 +1268,9 @@ fn add_text_overlay(
             PdfPoints::new(overlay.font_size),
         )?;
         object.set_fill_color(color)?;
-        if geometry.rotation != 0 {
-            object.rotate_counter_clockwise_degrees(geometry.rotation as f32)?;
+        let rotation = (geometry.rotation + 360 - overlay.rotation) % 360;
+        if rotation != 0 {
+            object.rotate_counter_clockwise_degrees(rotation as f32)?;
         }
         object.translate(x, y)?;
     }
@@ -1309,6 +1294,8 @@ fn add_ink_overlay(
             color,
             PdfPoints::new(overlay.stroke_width),
         )?;
+        object.set_line_cap(PdfPageObjectLineCap::Round)?;
+        object.set_line_join(PdfPageObjectLineJoin::Round)?;
         let path_object = object
             .as_path_object_mut()
             .ok_or_else(|| EngineError::Pdfium("created ink object was not a path".into()))?;
@@ -1321,6 +1308,9 @@ fn add_ink_overlay(
 }
 
 fn validate_text(overlay: &TextOverlay, width: f32, height: f32) -> EngineResult<()> {
+    if !matches!(overlay.rotation, 0 | 90 | 180 | 270) {
+        return Err(EngineError::InvalidRequest("invalid text rotation".into()));
+    }
     validate_color(&overlay.color)?;
     validate_point(overlay.x, overlay.y, width, height)?;
     if overlay.text.len() > 1_000_000 {

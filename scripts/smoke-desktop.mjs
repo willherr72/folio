@@ -59,8 +59,8 @@ async function copyPdfText(canvas,phrase,rotation=0) {
     if(cursor===offset+phrase.length){endIndex=i;break;}
   }
   const first=await glyphs.nth(startIndex).boundingBox(),last=await glyphs.nth(endIndex).boundingBox();
-  const startX=rotation===180?first.x+first.width-.2:first.x+.2;
-  const endX=rotation===180?last.x+.2:last.x+last.width-.2;
+  const startX=rotation===180?first.x+first.width*.75:first.x+first.width*.25;
+  const endX=rotation===180?last.x+last.width*.25:last.x+last.width*.75;
   await page.mouse.move(startX,first.y+first.height/2);
   await page.mouse.down();
   await page.mouse.move(endX,last.y+last.height/2,{steps:15});
@@ -188,7 +188,9 @@ try {
   await expect(page.getByText('Folio edited.pdf', { exact: true })).toBeVisible({ timeout: 15000 });
   await expect(page.getByLabel('Page 1 of 7')).toHaveClass(/selected/);
   await expect(canvas.locator('image')).toHaveCount(1, { timeout: 15000 });
-  await expect(canvas.locator('[data-overlay]')).toHaveCount(0);
+  await expect(canvas.locator('[data-overlay]')).toHaveCount(3);
+  await canvas.locator('[data-overlay] tspan').first().click();
+  await expect(page.getByRole('textbox', { name: 'Content' })).toHaveValue('Built while you slept.');
   await expect(page.locator('.page-error')).toHaveCount(0);
   expect(errors).toEqual([]);
   expect(browserPrompts).toEqual([]);

@@ -335,6 +335,7 @@ fn restored_sources_still_protect_original_paths_and_hardlink_aliases() {
     for destination in [&alias, &original] {
         let result = engine.export_pdf(
             ExportRequest {
+                flatten: true,
                 pages: vec![page.clone()],
             },
             destination,
@@ -352,7 +353,13 @@ fn restored_sources_still_protect_original_paths_and_hardlink_aliases() {
     let page: PagePlan =
         serde_json::from_value(restored_again["tabs"][0]["document"]["pages"][0].clone()).unwrap();
     assert!(engine
-        .export_pdf(ExportRequest { pages: vec![page] }, &original)
+        .export_pdf(
+            ExportRequest {
+                flatten: true,
+                pages: vec![page]
+            },
+            &original
+        )
         .is_err());
 }
 

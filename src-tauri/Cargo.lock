@@ -1244,7 +1244,7 @@ checksum = "77ce24cb58228fbb8aa041425bb1050850ac19177686ea6e0f41a70416f56fdb"
 
 [[package]]
 name = "folio"
-version = "0.5.0"
+version = "0.6.0"
 dependencies = [
  "image",
  "lopdf",
@@ -1253,6 +1253,7 @@ dependencies = [
  "same-file",
  "serde",
  "serde_json",
+ "sha2 0.11.0",
  "tauri",
  "tauri-build",
  "tempfile",

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { FolioAdapter } from "./adapter";
-import type { PagePlan, PageText, PdfTextCharacter, TextOverlay } from "./types";
+import { textOverlayCharacters } from "./text-overlay-geometry";
+import type { PagePlan, PageText, PdfTextCharacter } from "./types";
 
 /** Coordinates are page units, after source rotation and before editor rotation. */
 export interface SearchRect { x: number; y: number; width: number; height: number }
@@ -107,22 +108,12 @@ function findTextMatches(pageId: string, scope: string, text: PageText, query: s
   return matches;
 }
 
-function overlayText(overlay: TextOverlay): PageText {
-  const characters: PdfTextCharacter[] = [];
-  let column = 0, line = 0;
-  for (const text of overlay.text) {
-    characters.push({ text, x: overlay.x + column * overlay.fontSize * .56, y: overlay.y + line * overlay.fontSize * 1.2, width: text === "\n" ? 0 : overlay.fontSize * .56, height: overlay.fontSize * 1.2 });
-    if (text === "\n") { line++; column = 0; } else column++;
-  }
-  return { characters };
-}
-
 export function findPageMatches(page: PagePlan, text: PageText, query: string): SearchMatch[] {
   const needle = normalizeSearchQuery(query);
   if (!needle) return [];
   const matches = findTextMatches(page.id, "source", text, needle);
   for (const overlay of page.overlays) {
-    if (overlay.type === "text") matches.push(...findTextMatches(page.id, `overlay:${overlay.id}`, overlayText(overlay), needle));
+    if (overlay.type === "text") matches.push(...findTextMatches(page.id, `overlay:${overlay.id}`, textOverlayCharacters(overlay), needle));
   }
   return matches;
 }

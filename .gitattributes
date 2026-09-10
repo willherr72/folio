@@ -10,3 +10,6 @@
 *.pdf binary
 *.png binary
 *.ico binary
+
+# Preserve the bundled upstream font license, including its original whitespace.
+tests/fixtures/corpus/fonts/LICENSE_DEJAVU.txt -text -whitespace

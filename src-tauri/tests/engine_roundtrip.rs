@@ -116,6 +116,7 @@ fn export_roundtrip_preserves_pages_and_places_overlays_on_rotated_crop() {
     engine
         .export_pdf(
             ExportRequest {
+                flatten: true,
                 pages: vec![
                     PagePlan {
                         id: "beta-page".into(),
@@ -135,6 +136,7 @@ fn export_roundtrip_preserves_pages_and_places_overlays_on_rotated_crop() {
                         rotation: 0,
                         overlays: vec![
                             Overlay::Text(TextOverlay {
+                                rotation: 0,
                                 id: "text-1".into(),
                                 x: 30.0,
                                 y: 20.0,
@@ -252,13 +254,17 @@ fn render_width_is_clamped_and_export_validation_rejects_unsafe_payloads() {
     };
     assert!(engine
         .export_pdf(
-            ExportRequest { pages: vec![] },
+            ExportRequest {
+                flatten: true,
+                pages: vec![]
+            },
             temp.path().join("empty.pdf")
         )
         .is_err());
     assert!(engine
         .export_pdf(
             ExportRequest {
+                flatten: true,
                 pages: vec![valid_page.clone()]
             },
             &source
@@ -270,6 +276,7 @@ fn render_width_is_clamped_and_export_validation_rejects_unsafe_payloads() {
     assert!(engine
         .export_pdf(
             ExportRequest {
+                flatten: true,
                 pages: vec![bad_rotation]
             },
             temp.path().join("rotation.pdf")
@@ -278,6 +285,7 @@ fn render_width_is_clamped_and_export_validation_rejects_unsafe_payloads() {
 
     let mut bad_color = valid_page.clone();
     bad_color.overlays.push(Overlay::Text(TextOverlay {
+        rotation: 0,
         id: "bad-color".into(),
         x: 10.0,
         y: 10.0,
@@ -288,6 +296,7 @@ fn render_width_is_clamped_and_export_validation_rejects_unsafe_payloads() {
     assert!(engine
         .export_pdf(
             ExportRequest {
+                flatten: true,
                 pages: vec![bad_color]
             },
             temp.path().join("color.pdf")
@@ -307,6 +316,7 @@ fn render_width_is_clamped_and_export_validation_rejects_unsafe_payloads() {
     assert!(engine
         .export_pdf(
             ExportRequest {
+                flatten: true,
                 pages: vec![bad_point]
             },
             temp.path().join("point.pdf")
@@ -325,6 +335,7 @@ fn render_width_is_clamped_and_export_validation_rejects_unsafe_payloads() {
         fs::write(&unsupported_output, prior_output).unwrap();
         let mut unsupported_page = valid_page.clone();
         unsupported_page.overlays.push(Overlay::Text(TextOverlay {
+            rotation: 0,
             id: format!("unsupported-{name}"),
             x: 10.0,
             y: 10.0,
@@ -335,6 +346,7 @@ fn render_width_is_clamped_and_export_validation_rejects_unsafe_payloads() {
         let error = engine
             .export_pdf(
                 ExportRequest {
+                    flatten: true,
                     pages: vec![unsupported_page],
                 },
                 &unsupported_output,
@@ -352,6 +364,7 @@ fn render_width_is_clamped_and_export_validation_rejects_unsafe_payloads() {
     let mut clipped_page = valid_page;
     clipped_page.overlays = vec![
         Overlay::Text(TextOverlay {
+            rotation: 0,
             id: "cleared-text".into(),
             x: -40.0,
             y: 340.0,
@@ -372,6 +385,7 @@ fn render_width_is_clamped_and_export_validation_rejects_unsafe_payloads() {
     engine
         .export_pdf(
             ExportRequest {
+                flatten: true,
                 pages: vec![clipped_page],
             },
             &clipped_output,
@@ -394,6 +408,7 @@ fn duplicated_annotated_pages_may_reuse_overlay_ids() {
     let document = engine.open_document(&source).unwrap();
     fs::write(&output, b"previous export").unwrap();
     let overlay = Overlay::Text(TextOverlay {
+        rotation: 0,
         id: "same-overlay-after-clone".into(),
         x: 20.0,
         y: 20.0,
@@ -416,6 +431,7 @@ fn duplicated_annotated_pages_may_reuse_overlay_ids() {
     engine
         .export_pdf(
             ExportRequest {
+                flatten: true,
                 pages: vec![first, second],
             },
             &output,
@@ -454,7 +470,13 @@ fn export_rejects_a_hardlink_alias_of_an_open_source_without_modifying_it() {
     };
 
     assert!(engine
-        .export_pdf(ExportRequest { pages: vec![plan] }, &alias)
+        .export_pdf(
+            ExportRequest {
+                flatten: true,
+                pages: vec![plan]
+            },
+            &alias
+        )
         .is_err());
     assert_eq!(fs::read(&source).unwrap(), original);
 }

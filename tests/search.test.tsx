@@ -135,3 +135,33 @@ it("highlights every match once inside the rotated page and centers the active r
   expect(host.scrollLeft).toBe(132);
   expect(host.scrollTop).toBe(88);
 });
+it("bounds dense glyph memory independently of page count", async () => {
+  const glyph = { text: "A", x: 10, y: 20, width: 5, height: 10 };
+  const calls: number[] = [];
+  const adapter = { ...createDemoAdapter(), async getPageText(_id: string, index: number) { calls.push(index); return { characters: Array.from({ length: 130_000 }, () => glyph) }; } };
+  await readSearchPageText(adapter, page.sourceId, 0);
+  await readSearchPageText(adapter, page.sourceId, 1);
+  await readSearchPageText(adapter, page.sourceId, 1);
+  expect(calls).toEqual([0, 1]);
+  await readSearchPageText(adapter, page.sourceId, 0);
+  expect(calls).toEqual([0, 1, 0]);
+});
+
+it("retains recent text after hundreds of pages and never resurrects a closed pending extraction", async () => {
+  const getPageText = vi.fn(async (_id: string, index: number) => text(`page ${index}`));
+  const adapter = { ...createDemoAdapter(), getPageText };
+  for (let index = 0; index < 320; index++) await readSearchPageText(adapter, page.sourceId, index);
+  for (let index = 300; index < 320; index++) await readSearchPageText(adapter, page.sourceId, index);
+  expect(getPageText).toHaveBeenCalledTimes(320);
+  await readSearchPageText(adapter, page.sourceId, 0);
+  expect(getPageText).toHaveBeenCalledTimes(321);
+  let resolveOld!: (value: PageText) => void;
+  const lateAdapter = { ...createDemoAdapter(), getPageText: vi.fn().mockImplementationOnce(() => new Promise<PageText>(resolve => { resolveOld = resolve; })).mockResolvedValue(text("reopened")) };
+  const oldRequest = readSearchPageText(lateAdapter, "other-source", 0);
+  await Promise.resolve();
+  clearSearchTextCache(["other-source"]);
+  const reopened = await readSearchPageText(lateAdapter, "other-source", 0);
+  resolveOld(text("closed old")); await oldRequest;
+  expect(await readSearchPageText(lateAdapter, "other-source", 0)).toBe(reopened);
+  expect(lateAdapter.getPageText).toHaveBeenCalledTimes(2);
+});

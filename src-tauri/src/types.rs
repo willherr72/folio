@@ -21,6 +21,8 @@ pub struct DocumentInfo {
 #[serde(rename_all = "camelCase")]
 pub struct ExportRequest {
     pub pages: Vec<PagePlan>,
+    #[serde(default)]
+    pub flatten: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -53,6 +55,8 @@ pub struct TextOverlay {
     pub text: String,
     pub font_size: f32,
     pub color: String,
+    #[serde(default)]
+    pub rotation: u16,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

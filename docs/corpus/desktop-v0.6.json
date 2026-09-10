@@ -1,0 +1,479 @@
+{
+  "passed": true,
+  "opening": [
+    {
+      "fixture": "dense-300-pages.pdf",
+      "dialogAndOpenToFirstPageMs": 4732.1597,
+      "mountedPages": 2,
+      "textGlyphs": 9880
+    },
+    {
+      "fixture": "scan-40-pages.pdf",
+      "dialogAndOpenToFirstPageMs": 2698.505000000001,
+      "mountedPages": 2,
+      "textGlyphs": 0
+    }
+  ],
+  "switching": [
+    {
+      "fixture": "dense-300-pages.pdf",
+      "round": 0,
+      "readyMs": 802.598399999999
+    },
+    {
+      "fixture": "scan-40-pages.pdf",
+      "round": 0,
+      "readyMs": 149.27369999999974
+    },
+    {
+      "fixture": "dense-300-pages.pdf",
+      "round": 1,
+      "readyMs": 766.6857
+    },
+    {
+      "fixture": "scan-40-pages.pdf",
+      "round": 1,
+      "readyMs": 118.21739999999954
+    },
+    {
+      "fixture": "dense-300-pages.pdf",
+      "round": 2,
+      "readyMs": 769.8576999999987
+    },
+    {
+      "fixture": "scan-40-pages.pdf",
+      "round": 2,
+      "readyMs": 109.53009999999995
+    },
+    {
+      "fixture": "dense-300-pages.pdf",
+      "round": 3,
+      "readyMs": 789.7246000000014
+    },
+    {
+      "fixture": "scan-40-pages.pdf",
+      "round": 3,
+      "readyMs": 161.4857000000011
+    },
+    {
+      "fixture": "dense-300-pages.pdf",
+      "round": 4,
+      "readyMs": 666.2158000000018
+    },
+    {
+      "fixture": "scan-40-pages.pdf",
+      "round": 4,
+      "readyMs": 109.10889999999927
+    },
+    {
+      "fixture": "dense-300-pages.pdf",
+      "round": 5,
+      "readyMs": 681.8227000000006
+    },
+    {
+      "fixture": "scan-40-pages.pdf",
+      "round": 5,
+      "readyMs": 136.94130000000223
+    }
+  ],
+  "scrolling": [
+    {
+      "fixture": "dense-300-pages.pdf",
+      "page": 2,
+      "readyMs": 192.29349999999977,
+      "mountedPages": 3,
+      "textGlyphs": 9880
+    },
+    {
+      "fixture": "dense-300-pages.pdf",
+      "page": 3,
+      "readyMs": 529.8211999999985,
+      "mountedPages": 3,
+      "textGlyphs": 9880
+    },
+    {
+      "fixture": "dense-300-pages.pdf",
+      "page": 4,
+      "readyMs": 454.09360000000015,
+      "mountedPages": 3,
+      "textGlyphs": 14820
+    },
+    {
+      "fixture": "dense-300-pages.pdf",
+      "page": 5,
+      "readyMs": 245.70950000000084,
+      "mountedPages": 3,
+      "textGlyphs": 9880
+    },
+    {
+      "fixture": "dense-300-pages.pdf",
+      "page": 6,
+      "readyMs": 690.8297999999995,
+      "mountedPages": 3,
+      "textGlyphs": 14820
+    },
+    {
+      "fixture": "dense-300-pages.pdf",
+      "page": 21,
+      "readyMs": 898.0126000000018,
+      "mountedPages": 3,
+      "textGlyphs": 14820
+    },
+    {
+      "fixture": "dense-300-pages.pdf",
+      "page": 1,
+      "readyMs": 724.9994999999981,
+      "mountedPages": 2,
+      "textGlyphs": 9880
+    },
+    {
+      "fixture": "scan-40-pages.pdf",
+      "page": 2,
+      "readyMs": 46.05340000000069,
+      "mountedPages": 3,
+      "textGlyphs": 0
+    },
+    {
+      "fixture": "scan-40-pages.pdf",
+      "page": 3,
+      "readyMs": 113.91300000000047,
+      "mountedPages": 3,
+      "textGlyphs": 0
+    },
+    {
+      "fixture": "scan-40-pages.pdf",
+      "page": 4,
+      "readyMs": 49.14649999999892,
+      "mountedPages": 3,
+      "textGlyphs": 0
+    },
+    {
+      "fixture": "scan-40-pages.pdf",
+      "page": 5,
+      "readyMs": 120.2393000000011,
+      "mountedPages": 3,
+      "textGlyphs": 0
+    },
+    {
+      "fixture": "scan-40-pages.pdf",
+      "page": 6,
+      "readyMs": 36.03479999999763,
+      "mountedPages": 3,
+      "textGlyphs": 0
+    },
+    {
+      "fixture": "scan-40-pages.pdf",
+      "page": 21,
+      "readyMs": 214.62620000000243,
+      "mountedPages": 3,
+      "textGlyphs": 0
+    },
+    {
+      "fixture": "scan-40-pages.pdf",
+      "page": 1,
+      "readyMs": 58.45929999999862,
+      "mountedPages": 2,
+      "textGlyphs": 0
+    }
+  ],
+  "warmCacheRequests": [],
+  "memory": [
+    {
+      "phase": "before-opening",
+      "utc": "2026-09-10T20:52:04.7557766Z",
+      "currentTreeWorkingSetBytes": 687570944,
+      "currentTreePrivateBytes": 289677312,
+      "processes": [
+        {
+          "name": "Folio",
+          "workingSetBytes": 75272192,
+          "privateBytes": 6307840,
+          "processLifetimePeakWorkingSetBytes": 75296768
+        },
+        {
+          "name": "msedgewebview2",
+          "workingSetBytes": 196009984,
+          "privateBytes": 35373056,
+          "processLifetimePeakWorkingSetBytes": 197087232
+        },
+        {
+          "name": "msedgewebview2",
+          "workingSetBytes": 31318016,
+          "privateBytes": 2760704,
+          "processLifetimePeakWorkingSetBytes": 31318016
+        },
+        {
+          "name": "msedgewebview2",
+          "workingSetBytes": 225570816,
+          "privateBytes": 195309568,
+          "processLifetimePeakWorkingSetBytes": 226144256
+        },
+        {
+          "name": "msedgewebview2",
+          "workingSetBytes": 65286144,
+          "privateBytes": 12955648,
+          "processLifetimePeakWorkingSetBytes": 65556480
+        },
+        {
+          "name": "msedgewebview2",
+          "workingSetBytes": 24805376,
+          "privateBytes": 8859648,
+          "processLifetimePeakWorkingSetBytes": 24879104
+        },
+        {
+          "name": "msedgewebview2",
+          "workingSetBytes": 69308416,
+          "privateBytes": 28110848,
+          "processLifetimePeakWorkingSetBytes": 69328896
+        }
+      ],
+      "note": "Snapshot of native app and descendant WebView processes. Lifetime process peaks are not a simultaneous tree peak. Shared pages can be counted in multiple working sets."
+    },
+    {
+      "phase": "opened-dense-300-pages.pdf",
+      "utc": "2026-09-10T20:52:11.5902207Z",
+      "currentTreeWorkingSetBytes": 1054597120,
+      "currentTreePrivateBytes": 613277696,
+      "processes": [
+        {
+          "name": "Folio",
+          "workingSetBytes": 141434880,
+          "privateBytes": 47939584,
+          "processLifetimePeakWorkingSetBytes": 148578304
+        },
+        {
+          "name": "msedgewebview2",
+          "workingSetBytes": 201375744,
+          "privateBytes": 39882752,
+          "processLifetimePeakWorkingSetBytes": 202715136
+        },
+        {
+          "name": "msedgewebview2",
+          "workingSetBytes": 31318016,
+          "privateBytes": 2760704,
+          "processLifetimePeakWorkingSetBytes": 31318016
+        },
+        {
+          "name": "msedgewebview2",
+          "workingSetBytes": 291319808,
+          "privateBytes": 256430080,
+          "processLifetimePeakWorkingSetBytes": 304082944
+        },
+        {
+          "name": "msedgewebview2",
+          "workingSetBytes": 65556480,
+          "privateBytes": 13176832,
+          "processLifetimePeakWorkingSetBytes": 65691648
+        },
+        {
+          "name": "msedgewebview2",
+          "workingSetBytes": 24805376,
+          "privateBytes": 8859648,
+          "processLifetimePeakWorkingSetBytes": 24879104
+        },
+        {
+          "name": "msedgewebview2",
+          "workingSetBytes": 298786816,
+          "privateBytes": 244228096,
+          "processLifetimePeakWorkingSetBytes": 312164352
+        }
+      ],
+      "note": "Snapshot of native app and descendant WebView processes. Lifetime process peaks are not a simultaneous tree peak. Shared pages can be counted in multiple working sets."
+    },
+    {
+      "phase": "opened-scan-40-pages.pdf",
+      "utc": "2026-09-10T20:52:16.8829974Z",
+      "currentTreeWorkingSetBytes": 1398071296,
+      "currentTreePrivateBytes": 950013952,
+      "processes": [
+        {
+          "name": "Folio",
+          "workingSetBytes": 345169920,
+          "privateBytes": 251875328,
+          "processLifetimePeakWorkingSetBytes": 377634816
+        },
+        {
+          "name": "msedgewebview2",
+          "workingSetBytes": 205602816,
+          "privateBytes": 43978752,
+          "processLifetimePeakWorkingSetBytes": 213438464
+        },
+        {
+          "name": "msedgewebview2",
+          "workingSetBytes": 38109184,
+          "privateBytes": 3788800,
+          "processLifetimePeakWorkingSetBytes": 38113280
+        },
+        {
+          "name": "msedgewebview2",
+          "workingSetBytes": 318156800,
+          "privateBytes": 281698304,
+          "processLifetimePeakWorkingSetBytes": 324259840
+        },
+        {
+          "name": "msedgewebview2",
+          "workingSetBytes": 65576960,
+          "privateBytes": 13180928,
+          "processLifetimePeakWorkingSetBytes": 65851392
+        },
+        {
+          "name": "msedgewebview2",
+          "workingSetBytes": 24805376,
+          "privateBytes": 8859648,
+          "processLifetimePeakWorkingSetBytes": 24879104
+        },
+        {
+          "name": "msedgewebview2",
+          "workingSetBytes": 400650240,
+          "privateBytes": 346632192,
+          "processLifetimePeakWorkingSetBytes": 409858048
+        }
+      ],
+      "note": "Snapshot of native app and descendant WebView processes. Lifetime process peaks are not a simultaneous tree peak. Shared pages can be counted in multiple working sets."
+    },
+    {
+      "phase": "warm-switches-complete",
+      "utc": "2026-09-10T20:52:24.0841729Z",
+      "currentTreeWorkingSetBytes": 1795887104,
+      "currentTreePrivateBytes": 1326456832,
+      "processes": [
+        {
+          "name": "Folio",
+          "workingSetBytes": 345206784,
+          "privateBytes": 251883520,
+          "processLifetimePeakWorkingSetBytes": 377634816
+        },
+        {
+          "name": "msedgewebview2",
+          "workingSetBytes": 206487552,
+          "privateBytes": 45142016,
+          "processLifetimePeakWorkingSetBytes": 213438464
+        },
+        {
+          "name": "msedgewebview2",
+          "workingSetBytes": 38109184,
+          "privateBytes": 3788800,
+          "processLifetimePeakWorkingSetBytes": 38113280
+        },
+        {
+          "name": "msedgewebview2",
+          "workingSetBytes": 397475840,
+          "privateBytes": 351813632,
+          "processLifetimePeakWorkingSetBytes": 406409216
+        },
+        {
+          "name": "msedgewebview2",
+          "workingSetBytes": 65576960,
+          "privateBytes": 13180928,
+          "processLifetimePeakWorkingSetBytes": 65851392
+        },
+        {
+          "name": "msedgewebview2",
+          "workingSetBytes": 24825856,
+          "privateBytes": 8859648,
+          "processLifetimePeakWorkingSetBytes": 24879104
+        },
+        {
+          "name": "msedgewebview2",
+          "workingSetBytes": 718204928,
+          "privateBytes": 651788288,
+          "processLifetimePeakWorkingSetBytes": 757272576
+        }
+      ],
+      "note": "Snapshot of native app and descendant WebView processes. Lifetime process peaks are not a simultaneous tree peak. Shared pages can be counted in multiple working sets."
+    },
+    {
+      "phase": "scrolling-complete",
+      "utc": "2026-09-10T20:52:31.9342315Z",
+      "currentTreeWorkingSetBytes": 2270425088,
+      "currentTreePrivateBytes": 1827930112,
+      "processes": [
+        {
+          "name": "Folio",
+          "workingSetBytes": 345419776,
+          "privateBytes": 252002304,
+          "processLifetimePeakWorkingSetBytes": 377634816
+        },
+        {
+          "name": "msedgewebview2",
+          "workingSetBytes": 227201024,
+          "privateBytes": 66744320,
+          "processLifetimePeakWorkingSetBytes": 235126784
+        },
+        {
+          "name": "msedgewebview2",
+          "workingSetBytes": 38170624,
+          "privateBytes": 3756032,
+          "processLifetimePeakWorkingSetBytes": 38199296
+        },
+        {
+          "name": "msedgewebview2",
+          "workingSetBytes": 521138176,
+          "privateBytes": 485142528,
+          "processLifetimePeakWorkingSetBytes": 541941760
+        },
+        {
+          "name": "msedgewebview2",
+          "workingSetBytes": 65581056,
+          "privateBytes": 13180928,
+          "processLifetimePeakWorkingSetBytes": 65851392
+        },
+        {
+          "name": "msedgewebview2",
+          "workingSetBytes": 24825856,
+          "privateBytes": 8859648,
+          "processLifetimePeakWorkingSetBytes": 24879104
+        },
+        {
+          "name": "msedgewebview2",
+          "workingSetBytes": 1048088576,
+          "privateBytes": 998244352,
+          "processLifetimePeakWorkingSetBytes": 1074057216
+        }
+      ],
+      "note": "Snapshot of native app and descendant WebView processes. Lifetime process peaks are not a simultaneous tree peak. Shared pages can be counted in multiple working sets."
+    }
+  ],
+  "metrics": {
+    "Timestamp": 1376798.966562,
+    "AudioHandlers": 0,
+    "AudioWorkletProcessors": 0,
+    "Documents": 1,
+    "Frames": 1,
+    "JSEventListeners": 636,
+    "LayoutObjects": 25625,
+    "MediaKeySessions": 0,
+    "MediaKeys": 0,
+    "Nodes": 35594,
+    "Resources": 43,
+    "ContextLifecycleStateObservers": 6,
+    "V8PerContextDatas": 2,
+    "WorkerGlobalScopes": 0,
+    "UACSSResources": 0,
+    "RTCPeerConnections": 0,
+    "ResourceFetchers": 1,
+    "AdSubframes": 0,
+    "DetachedScriptStates": 0,
+    "ArrayBufferContents": 52,
+    "LayoutCount": 119,
+    "RecalcStyleCount": 222,
+    "LayoutDuration": 2.020424,
+    "RecalcStyleDuration": 2.204902,
+    "DevToolsCommandDuration": 1.063239,
+    "ScriptDuration": 1.972659,
+    "V8CompileDuration": 0,
+    "TaskDuration": 11.582835,
+    "TaskOtherDuration": 4.321611,
+    "ThreadTime": 11.279545,
+    "ProcessTime": 15.343388,
+    "JSHeapUsedSize": 30945972,
+    "JSHeapTotalSize": 77897728,
+    "FirstMeaningfulPaint": 1376753.393413,
+    "DomContentLoaded": 1376752.922899,
+    "NavigationStart": 1376752.746195
+  },
+  "errors": [],
+  "method": "Playwright wall-clock readiness includes automation polling and IPC. Open includes native dialog helper. Warm switches wait for raster/text and two animation frames. Native timings are measured separately. No absolute performance threshold asserted.",
+  "binarySha256": "0bab799243f9173f20196b154a91159e8caa0c8f604a9ba55668794ee1b50ea3",
+  "binary": "artifacts/Folio-test-0.6/Folio.exe"
+}

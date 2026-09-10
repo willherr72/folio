@@ -12,8 +12,8 @@ Extract it and open **Folio.exe**. Keep the resources folder beside the executab
 Microsoft Edge WebView2 Runtime is required.
 
 In this development checkout, double-click **Launch Folio.cmd** after building.
-Version 0.5.0 lives in **artifacts/Folio-v0.5.0/Folio.exe**.
-The ZIP is **artifacts/Folio-v0.5.0-windows-x64.zip**.
+Version 0.6.0 lives in **artifacts/Folio-v0.6.0/Folio.exe**.
+The ZIP is **artifacts/Folio-v0.6.0-windows-x64.zip**.
 
 ## Everyday editing
 
@@ -54,7 +54,12 @@ The ZIP is **artifacts/Folio-v0.5.0-windows-x64.zip**.
 - **Recovery:** local checkpoints preserve native tabs, edits, page arrangement,
   zoom and scroll after an unexpected exit. On restart, restore or discard the workspace.
   Source snapshots allow recovery even if the original PDFs moved. Undo history starts fresh.
-- **Save a copy:** export a new PDF while preserving source vector content.
+- **Save a copy:** save a portable PDF with editable text, drawings and signatures,
+  alongside highlights and comments. Reopening in Folio restores their controls,
+  including on rotated or reorganized pages. No original files or sidecars are needed.
+  The arrow beside Save offers **Flatten text and ink**, which turns those additions
+  into page content. Highlights and comments remain annotations. A flattened export
+  does not mark your editable workspace saved.
 
 Start with **examples/Welcome to Folio.pdf**. Ctrl+Z/Ctrl+Shift+Z undo and redo;
 Ctrl+O opens a PDF in a new tab and Ctrl+S saves a copy of the active document.
@@ -68,8 +73,11 @@ Dark mode changes the interface; PDF pages retain their original colors.
 
 - Existing words in a PDF are not editable.
 - Drawn signatures are visual marks, not certificate-based digital signatures.
-- Added text and ink become page content on export; reopening does not restore their
-  editing handles yet. Highlights and comments remain editable annotations.
+- Editable additions use standard PDF annotations with self-contained appearances and
+  versioned Folio metadata. Other readers can display them; edits made by another
+  reader may prevent Folio from restoring handles. Unsupported or changed metadata
+  leaves the annotation in the PDF with its native appearance. See
+  [editable PDF format](docs/editable-pdf-format.md).
 - Added text uses Helvetica with a verified Latin character set and common punctuation.
   Unsupported characters, including CJK, emoji, nonbreaking spaces and soft hyphens,
   produce an export error instead of silently disappearing.
@@ -154,3 +162,9 @@ MIT for Folio's original code. Dependencies retain their own licenses; see
 licenses and collected dependency notices.
 
 [Changelog](CHANGELOG.md)
+
+## Compatibility and performance corpus
+
+The [corpus guide](docs/corpus/README.md) records fixture provenance, reproducible
+commands and measured Windows baselines. Small synthetic PDFs are versioned; large
+scans and 300-page fixtures are generated locally. No private documents are included.
