@@ -12,18 +12,25 @@ Extract it and open **Folio.exe**. Keep the resources folder beside the executab
 Microsoft Edge WebView2 Runtime is required.
 
 In this development checkout, double-click **Launch Folio.cmd** after building.
-Version 0.2.0 lives in **artifacts/Folio-v0.2.0/Folio.exe**.
-The ZIP is **artifacts/Folio-v0.2.0-windows-x64.zip**.
+Version 0.3.0 lives in **artifacts/Folio-v0.3.0/Folio.exe**.
+The ZIP is **artifacts/Folio-v0.3.0-windows-x64.zip**.
 
 ## Everyday editing
 
-- **Text:** click a page, enter your note, adjust size/color, and drag to move it.
+- **Documents:** Open adds a PDF in a new top tab. Each document retains its edits,
+  undo/redo history, selected page, zoom and scroll position when you switch tabs.
+- **Text:** choose Text and click a page. The Content field selects the placeholder
+  immediately, so typing replaces it. Adjust size/color and drag the note to move it.
+- **Select and copy:** drag across embedded PDF text in Select mode, then press
+  **Ctrl+C** to copy it, including spaces and line breaks. Scanned pages without
+  embedded text require OCR, which is not included.
 - **Draw:** write or sketch directly on any page. Choose pen color and width in
   Properties. Each stroke is one undo step; Select lets you move or delete it.
-- **Signature:** draw in the signature pad, then click a page to place it.
+- **Signature:** draw in the signature pad, then move over a page to preview its
+  actual placement. Click to place it, or press **Escape** to cancel.
 - **Pages:** drag thumbnails by their handles to reorder. A line shows the drop
   position. Page properties also provide move, rotate, duplicate and delete.
-  **Add PDF** appends another document.
+  **Add PDF** appends pages from another PDF to the active document.
 - **Reading:** scroll continuously between pages. Hold **Ctrl** while scrolling
   to zoom around the pointer.
 - **Settings:** choose Light, Dark or System theme, continuous or single-page
@@ -31,8 +38,10 @@ The ZIP is **artifacts/Folio-v0.2.0-windows-x64.zip**.
 - **Save a copy:** export a new PDF while preserving source vector content.
 
 Start with **examples/Welcome to Folio.pdf**. Ctrl+Z/Ctrl+Shift+Z undo and redo;
-Ctrl+O opens a PDF and Ctrl+S saves a copy. Unsaved changes use a centered app
-confirmation when opening another document or closing Folio.
+Ctrl+O opens a PDF in a new tab and Ctrl+S saves a copy of the active document.
+Ctrl+Tab/Ctrl+Shift+Tab switch tabs; Ctrl+W closes the active tab. Closing an
+unsaved tab asks for confirmation. Closing Folio checks every tab for unsaved
+changes, including inactive tabs. Cancelling a close leaves your documents open.
 
 Dark mode changes the interface; PDF pages retain their original colors.
 
@@ -88,7 +97,8 @@ Its launcher uses an isolated test profile. See [verification notes](docs/verifi
 ## Internals and license
 
 React keeps an undoable edit plan. Rust owns source documents and serializes
-PDFium work on a dedicated thread. Nearby pages use cached native renders.
+PDFium work on a dedicated thread. Nearby pages use cached native renders and
+embedded text geometry.
 Export copies PDF pages and adds text and vector ink.
 
 MIT for Folio's original code. Dependencies retain their own licenses; see
