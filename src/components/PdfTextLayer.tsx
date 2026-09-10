@@ -45,11 +45,14 @@ export function PdfTextLayer({ adapter, page, pageNumber, selectable }: {
   const layerRef = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
     const spans = layerRef.current?.querySelectorAll<HTMLElement>("[data-pdf-character]");
+    // Finish all layout reads before writing transforms: interleaving these
+    // forces a full text-layer layout for every character on a tab remount.
+    const widths = Array.from(spans ?? [], span => span.offsetWidth);
     spans?.forEach((span, index) => {
       const character = text?.characters[index];
       const width = (sideways ? character?.height : character?.width) ?? 0;
       // offsetWidth is in unrotated CSS pixels, independent of page zoom.
-      const naturalWidth = span.offsetWidth;
+      const naturalWidth = widths[index];
       span.style.transform = `rotate(${intrinsicRotation}deg) scaleX(${width > 0 && naturalWidth > 0 ? width / naturalWidth : 1})`;
     });
   }, [text, intrinsicRotation, sideways]);

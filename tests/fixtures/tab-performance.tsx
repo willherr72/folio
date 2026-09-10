@@ -1,0 +1,13 @@
+import React from "react";
+import {createRoot} from "react-dom/client";
+import {App} from "../../src/App";
+import {nativeAdapter} from "../../src/editor/adapter";
+const stats={renders:0,textRequests:0};
+(window as unknown as {tabPerf:typeof stats}).tabPerf=stats;
+const characters=Array.from({length:Number(new URLSearchParams(location.search).get("characters") ?? 1000)},(_,i)=>({text:String.fromCharCode(65+i%26),x:40+(i%75)*6,y:40+Math.floor(i/75)*10,width:6,height:9}));
+let opened=0;
+nativeAdapter.openPdf=async()=>({id:"perf-"+(++opened),name:"PDF"+opened+".pdf",pages:[{width:612,height:792}]});
+nativeAdapter.renderPage=async()=>{stats.renders++;return URL.createObjectURL(new Blob(['<svg xmlns="http://www.w3.org/2000/svg" width="612" height="792"><rect width="612" height="792" fill="white"/></svg>'],{type:"image/svg+xml"}));};
+nativeAdapter.getPageText=async()=>{stats.textRequests++;return {characters};};
+nativeAdapter.closeDocument=async()=>{};
+createRoot(document.getElementById("root")!).render(<App initialDemo={false}/>);

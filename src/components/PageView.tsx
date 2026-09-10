@@ -10,9 +10,12 @@ interface RenderEntry {
   request: Promise<string>;
   references: number;
   disposalRequested: boolean;
+  estimatedBytes: number;
 }
 const renderCache = new Map<string, RenderEntry>();
 const MAX_RENDER_CACHE = 60;
+// Bound retained decoded image memory; mounted pages stay valid even over budget.
+const MAX_RENDER_BYTES = 96 * 1024 * 1024;
 
 function releaseEntry(key: string, entry: RenderEntry) {
   if (renderCache.get(key) !== entry) return;
@@ -31,14 +34,16 @@ export function clearRenderCache(sourceIds: string[]) {
 }
 
 function pruneRenderCache() {
-  while (renderCache.size > MAX_RENDER_CACHE) {
+  let bytes = [...renderCache.values()].reduce((sum, entry) => sum + entry.estimatedBytes, 0);
+  while (renderCache.size > MAX_RENDER_CACHE || bytes > MAX_RENDER_BYTES) {
     const candidate = [...renderCache.entries()].find(([, entry]) => entry.references === 0);
     if (!candidate) return;
+    bytes -= candidate[1].estimatedBytes;
     releaseEntry(candidate[0], candidate[1]);
   }
 }
 
-function usePageImage(adapter: FolioAdapter, page: PagePlan, pixelWidth: number, releaseOnUnmount = false) {
+function usePageImage(adapter: FolioAdapter, page: PagePlan, pixelWidth: number) {
   const key = `${adapter.kind}:${page.sourceId}:${page.pageIndex}:${Math.round(pixelWidth)}`;
   const [state, setState] = useState<{ key: string; url?: string; error?: string }>({ key });
   useEffect(() => {
@@ -51,9 +56,13 @@ function usePageImage(adapter: FolioAdapter, page: PagePlan, pixelWidth: number,
         request: adapter.renderPage(page.sourceId, page.pageIndex, pixelWidth),
         references: 0,
         disposalRequested: false,
+        estimatedBytes: pixelWidth * Math.ceil(pixelWidth * page.height / page.width) * 4,
       };
       renderCache.set(key, entry);
     }
+    // Access order makes eviction discard the least recently used idle image.
+    renderCache.delete(key);
+    renderCache.set(key, entry);
     entry.references += 1;
     pruneRenderCache();
     entry.request.then((url) => active && setState({ key, url })).catch((error: unknown) => {
@@ -63,10 +72,10 @@ function usePageImage(adapter: FolioAdapter, page: PagePlan, pixelWidth: number,
     return () => {
       active = false;
       entry.references = Math.max(0, entry.references - 1);
-      if ((entry.disposalRequested || releaseOnUnmount) && entry.references === 0) releaseEntry(key, entry);
+      if (entry.disposalRequested && entry.references === 0) releaseEntry(key, entry);
       else pruneRenderCache();
     };
-  }, [adapter, key, page.pageIndex, page.sourceId, pixelWidth, releaseOnUnmount]);
+  }, [adapter, key, page.pageIndex, page.sourceId, pixelWidth, page.width, page.height]);
   return state.key === key ? state : { key };
 }
 
@@ -129,7 +138,7 @@ export function PageView(props: PageViewProps) {
   const previewEnabled = !!pendingSignature && tool === "signature" && !props.interactionDisabled && !signatureCancelled;
   const previewPaths = previewEnabled && signaturePoint ? placeInkPaths(pendingSignature!, signaturePoint, page.width, page.height) : [];
   const cssWidth = dimensions.width * zoom / 100;
-  const rendered = usePageImage(adapter, page, Math.min(2400, Math.max(600, Math.round(cssWidth * devicePixelRatio))), true);
+  const rendered = usePageImage(adapter, page, Math.min(2400, Math.max(600, Math.round(cssWidth * devicePixelRatio))));
   const cursor = pendingSignature || tool === "draw" ? "crosshair" : tool === "text" ? "text" : "default";
 
   const originalPoint = (event: React.PointerEvent) => {

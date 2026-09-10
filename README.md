@@ -12,8 +12,8 @@ Extract it and open **Folio.exe**. Keep the resources folder beside the executab
 Microsoft Edge WebView2 Runtime is required.
 
 In this development checkout, double-click **Launch Folio.cmd** after building.
-Version 0.3.0 lives in **artifacts/Folio-v0.3.0/Folio.exe**.
-The ZIP is **artifacts/Folio-v0.3.0-windows-x64.zip**.
+Version 0.3.1 lives in **artifacts/Folio-v0.3.1/Folio.exe**.
+The ZIP is **artifacts/Folio-v0.3.1-windows-x64.zip**.
 
 ## Everyday editing
 

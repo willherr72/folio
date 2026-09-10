@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.1
+
+- Faster PDF tab switching: measure the text layer in one batch instead of forcing layout for every character.
+- Reuse recently rendered pages when revisiting tabs or scrolling back.
+- Limit retained page images by estimated decoded memory (96 MiB) and entry count, while protecting currently displayed pages.
+- Regression checks cover cache reuse, eviction, late native renders and dense-page tab performance.
+
 ## 0.3.0
 
 - Open PDFs in separate top tabs, retaining each document's edits, undo/redo

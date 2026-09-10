@@ -36,7 +36,7 @@ describe("document viewport", () => {
     expect(callbacks.onSelectPage).toHaveBeenCalledWith("p1");
     expect(callbacks.onAddText).toHaveBeenCalledWith("p1", { x: 20, y: 20 });
   });
-  it("mounts nearby pages, releases distant full-size images and scroll-selects without jumping", async () => {
+  it("mounts only nearby pages, retains recent images and scroll-selects without jumping", async () => {
     const callbacks = props();
     const view = render(<DocumentViewport {...callbacks} />);
     await waitFor(() => expect(view.container.querySelector('[data-page-id="p0"] image')).toBeInTheDocument());
@@ -46,7 +46,7 @@ describe("document viewport", () => {
     fireEvent.scroll(host);
     await waitFor(() => expect(view.container.querySelector('[data-page-id="p5"] svg')).toBeInTheDocument());
     expect(view.container.querySelector('[data-page-id="p0"] svg')).toBeNull();
-    await waitFor(() => expect(URL.revokeObjectURL).toHaveBeenCalledWith("blob:viewport-0"));
+    expect(URL.revokeObjectURL).not.toHaveBeenCalledWith("blob:viewport-0");
     expect(callbacks.onSelectPage).toHaveBeenCalledWith("p5");
     view.rerender(<DocumentViewport {...callbacks} selectedPageId="p5" />);
     expect(host.scrollTop).toBe(1658);
