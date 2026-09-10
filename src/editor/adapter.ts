@@ -1,10 +1,11 @@
 import { invoke } from "@tauri-apps/api/core";
-import type { DocumentInfo, PagePlan } from "./types";
+import type { DocumentInfo, PagePlan, PageText } from "./types";
 
 export interface FolioAdapter {
   kind: "native" | "demo";
   openPdf(): Promise<DocumentInfo | null>;
   renderPage(sourceId: string, pageIndex: number, width: number): Promise<string>;
+  getPageText?(sourceId: string, pageIndex: number): Promise<PageText>;
   exportPdf(pages: PagePlan[]): Promise<string | null>;
   closeDocument(sourceId: string): Promise<void>;
   engineStatus(): Promise<string>;
@@ -30,6 +31,7 @@ export const nativeAdapter: FolioAdapter = {
     });
     return bytesToUrl(bytes);
   },
+  getPageText: (sourceId, pageIndex) => invoke<PageText>("page_text", { sourceId, pageIndex }),
   exportPdf: (pages) => invoke<string | null>("export_pdf", { request: { pages } }),
   closeDocument: (sourceId) => invoke<void>("close_document", { sourceId }),
   engineStatus: () => invoke<string>("engine_status"),
@@ -62,13 +64,45 @@ function demoSvg(pageIndex: number): string {
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
 
+function demoPageText(pageIndex: number): PageText {
+  const page = DEMO_PAGES[pageIndex] ?? DEMO_PAGES[0];
+  const titles = ["Welcome to Folio", "Shape the details", "Export with confidence"];
+  const subtitles = [
+    "A calmer way to finish everyday PDFs.",
+    "Add text, place a signature, and arrange pages.",
+    "Your source stays untouched. Your work stays local.",
+  ];
+  const lines = [
+    { text: `FOLIO · ${String(pageIndex + 1).padStart(2, "0")}`, baseline: 92, size: 13, spacing: 2 },
+    { text: titles[pageIndex] ?? titles[0], baseline: 180, size: page.width > page.height ? 44 : 42, spacing: 0 },
+    { text: subtitles[pageIndex] ?? subtitles[0], baseline: 228, size: 18, spacing: 0 },
+    { text: "PRIVATE BY DESIGN · LOCAL ON YOUR DEVICE", baseline: page.height - 54, size: 11, spacing: 0 },
+  ];
+  const characters: PageText["characters"] = [];
+  for (const [index, line] of lines.entries()) {
+    let x = 74;
+    for (const text of line.text) {
+      // The generated browser demo uses approximate metrics; native PDFs use PDFium glyph bounds.
+      const width = line.size * (text === " " ? 0.28 : 0.52) + line.spacing;
+      characters.push({ text, x, y: line.baseline - line.size * 0.8, width, height: line.size });
+      x += width;
+    }
+    if (index < lines.length - 1) {
+      characters.push({ text: "\n", x, y: line.baseline - line.size * 0.8, width: 0, height: line.size });
+    }
+  }
+  return { characters };
+}
+
 export function createDemoAdapter(): FolioAdapter {
+  const sourceId = `folio-demo-${crypto.randomUUID()}`;
   return {
     kind: "demo",
     async openPdf() {
-      return { id: "folio-demo", name: "Folio welcome.pdf", pages: DEMO_PAGES.map((page) => ({ ...page })) };
+      return { id: sourceId, name: "Folio welcome.pdf", pages: DEMO_PAGES.map((page) => ({ ...page })) };
     },
     async renderPage(_sourceId, pageIndex) { return demoSvg(pageIndex); },
+    async getPageText(_sourceId, pageIndex) { return demoPageText(pageIndex); },
     async exportPdf(pages) {
       const blob = new Blob([JSON.stringify({ format: "folio-demo-edit-plan", pages }, null, 2)], { type: "application/json" });
       const url = URL.createObjectURL(blob);

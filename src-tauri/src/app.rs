@@ -1,4 +1,4 @@
-use crate::{DocumentInfo, EngineError, ExportRequest, PdfEngine};
+use crate::{DocumentInfo, EngineError, ExportRequest, PageText, PdfEngine};
 use std::path::PathBuf;
 use tauri::{ipc::Response, Manager, State};
 
@@ -43,6 +43,16 @@ async fn render_page(
     on_worker(move || engine.render_page(&source_id, page_index, width))
         .await
         .map(Response::new)
+}
+
+#[tauri::command]
+async fn page_text(
+    engine: State<'_, PdfEngine>,
+    source_id: String,
+    page_index: usize,
+) -> Result<PageText, String> {
+    let engine = engine.inner().clone();
+    on_worker(move || engine.page_text(&source_id, page_index)).await
 }
 
 #[tauri::command]
@@ -121,6 +131,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             open_pdf,
             render_page,
+            page_text,
             export_pdf,
             close_document,
             engine_status

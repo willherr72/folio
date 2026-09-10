@@ -50,3 +50,15 @@ export interface History<T> {
   present: T;
   future: T[];
 }
+/** Embedded text in source reading order; coordinates include crop and intrinsic rotation. */
+export interface PdfTextCharacter {
+  text: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+export interface PageText {
+  characters: PdfTextCharacter[];
+}

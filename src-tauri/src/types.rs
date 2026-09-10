@@ -65,3 +65,20 @@ pub struct Point {
     pub x: f32,
     pub y: f32,
 }
+
+/// Embedded text in PDFium reading order, in displayed page points before editor rotation.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PdfTextCharacter {
+    pub text: String,
+    pub x: f32,
+    pub y: f32,
+    pub width: f32,
+    pub height: f32,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PageText {
+    pub characters: Vec<PdfTextCharacter>,
+}

@@ -107,6 +107,16 @@ impl PdfEngine {
         receive.recv().map_err(|_| EngineError::WorkerStopped)?
     }
 
+    pub fn page_text(&self, source_id: &str, page_index: usize) -> EngineResult<PageText> {
+        let (reply, receive) = mpsc::channel();
+        self.send(WorkerRequest::PageText {
+            source_id: source_id.to_owned(),
+            page_index,
+            reply,
+        })?;
+        receive.recv().map_err(|_| EngineError::WorkerStopped)?
+    }
+
     pub fn status(&self) -> EngineResult<String> {
         let (reply, receive) = mpsc::channel();
         self.send(WorkerRequest::Status { reply })?;
@@ -172,6 +182,11 @@ enum WorkerRequest {
         page_index: usize,
         reply: mpsc::Sender<EngineResult<String>>,
     },
+    PageText {
+        source_id: String,
+        page_index: usize,
+        reply: mpsc::Sender<EngineResult<PageText>>,
+    },
     Status {
         reply: mpsc::Sender<String>,
     },
@@ -218,6 +233,17 @@ impl PageGeometry {
                 height: self.raw_height(),
             }
         }
+    }
+
+    fn pdf_to_displayed(self, x: f32, y: f32) -> Point {
+        let (x, y) = match self.rotation {
+            0 => (x - self.left, self.top - y),
+            90 => (y - self.bottom, x - self.left),
+            180 => (self.right - x, y - self.bottom),
+            270 => (self.top - y, self.right - x),
+            _ => unreachable!("PDFium only reports quarter-turn rotations"),
+        };
+        Point { x, y }
     }
 
     fn displayed_to_pdf(self, point: Point) -> (PdfPoints, PdfPoints) {
@@ -284,6 +310,13 @@ impl WorkerRuntime {
                 } => {
                     let _ = reply.send(self.extract_text(&source_id, page_index));
                 }
+                WorkerRequest::PageText {
+                    source_id,
+                    page_index,
+                    reply,
+                } => {
+                    let _ = reply.send(self.page_text(&source_id, page_index));
+                }
                 WorkerRequest::Status { reply } => {
                     let _ = reply.send(self.status.clone());
                 }
@@ -347,6 +380,62 @@ impl WorkerRuntime {
         let bounds = page.boundaries().bounding()?.bounds;
         let text = page.text()?.inside_rect(bounds);
         Ok(text)
+    }
+
+    fn page_text(&self, source_id: &str, page_index: usize) -> EngineResult<PageText> {
+        let document = self.document(source_id)?;
+        let page = document.document.pages().get(page_index_i32(page_index)?)?;
+        let geometry = page_geometry(&page)?;
+        let text = page.text()?;
+        let chars = text.chars();
+        let mut characters = Vec::with_capacity(chars.len() as usize);
+        let mut last_position = Point { x: 0.0, y: 0.0 };
+        for character in chars.iter() {
+            let value = character
+                .unicode_char()
+                .unwrap_or(char::REPLACEMENT_CHARACTER);
+            // Generated whitespace can lack glyph bounds. Keep it in reading order
+            // so browser range copying retains word and line separators.
+            let bounds = if value.is_whitespace() {
+                character
+                    .loose_bounds()
+                    .or_else(|_| character.tight_bounds())
+            } else {
+                character
+                    .tight_bounds()
+                    .or_else(|_| character.loose_bounds())
+            };
+            let (position, width, height) = match bounds {
+                Ok(bounds) => {
+                    let a = geometry.pdf_to_displayed(bounds.left().value, bounds.bottom().value);
+                    let b = geometry.pdf_to_displayed(bounds.right().value, bounds.top().value);
+                    (
+                        Point {
+                            x: a.x.min(b.x),
+                            y: a.y.min(b.y),
+                        },
+                        (a.x - b.x).abs(),
+                        (a.y - b.y).abs(),
+                    )
+                }
+                Err(_) => {
+                    let position = character
+                        .origin()
+                        .map(|(x, y)| geometry.pdf_to_displayed(x.value, y.value))
+                        .unwrap_or(last_position);
+                    (position, 0.0, 0.0)
+                }
+            };
+            characters.push(PdfTextCharacter {
+                text: value.to_string(),
+                x: position.x,
+                y: position.y,
+                width,
+                height,
+            });
+            last_position = position;
+        }
+        Ok(PageText { characters })
     }
 
     fn close_document(&mut self, source_id: &str) -> EngineResult<()> {
