@@ -1,6 +1,9 @@
 param()
 $ErrorActionPreference = 'Stop'
 $folioRoot = Split-Path -Parent $PSScriptRoot
+$previousCargoTarget = $env:CARGO_TARGET_DIR
+$folioVersion = (Get-Content -LiteralPath (Join-Path $folioRoot 'package.json') -Raw | ConvertFrom-Json).version
+$env:CARGO_TARGET_DIR = Join-Path $folioRoot ('artifacts/build-target-v' + $folioVersion)
 Push-Location $folioRoot
 try {
     & (Join-Path $PSScriptRoot 'fetch-pdfium.ps1')
@@ -15,7 +18,7 @@ try {
     $portableDir = Join-Path $folioRoot ('artifacts/' + $portableName)
     [IO.Directory]::CreateDirectory($portableDir) | Out-Null
     [IO.Directory]::CreateDirectory((Join-Path $portableDir 'resources')) | Out-Null
-    Copy-Item -LiteralPath 'src-tauri/target/release/folio.exe' -Destination (Join-Path $portableDir 'Folio.exe') -Force
+    Copy-Item -LiteralPath (Join-Path $env:CARGO_TARGET_DIR 'release/folio.exe') -Destination (Join-Path $portableDir 'Folio.exe') -Force
     Copy-Item -LiteralPath 'src-tauri/resources/pdfium' -Destination (Join-Path $portableDir 'resources') -Recurse -Force
     Copy-Item -LiteralPath 'examples' -Destination $portableDir -Recurse -Force
     Copy-Item -LiteralPath 'docs' -Destination $portableDir -Recurse -Force
@@ -36,5 +39,6 @@ try {
     Write-Host "Portable app: $portableDir"
     Write-Host "Archive: $zip"
 } finally {
+    $env:CARGO_TARGET_DIR = $previousCargoTarget
     Pop-Location
 }

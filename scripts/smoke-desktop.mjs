@@ -1,7 +1,7 @@
 import { chromium, expect } from '@playwright/test';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
-import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync, existsSync, copyFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const execFileAsync = promisify(execFile);
@@ -16,12 +16,14 @@ const errors = [];
 page.on('pageerror', error => errors.push(error.message));
 const browserPrompts = [];
 page.on('dialog', dialog => { browserPrompts.push(dialog.type()); return dialog.accept(); });
-const source = resolve('examples/Welcome to Folio.pdf');
+const sample = resolve('examples/Welcome to Folio.pdf');
 const outputDirectory = resolve(artifacts, 'output-' + Date.now());
 mkdirSync(outputDirectory, { recursive: true });
-const output = resolve(outputDirectory, 'Folio edited sample.pdf');
+const source = resolve(outputDirectory, 'Welcome to Folio.pdf');
+copyFileSync(sample, source);
+const output = resolve(outputDirectory, 'Folio edited.pdf');
 async function fileDialog(action, path) {
-  const result = await execFileAsync('C:/Windows/System32/WindowsPowerShell/v1.0/powershell.exe', [
+  const result = await execFileAsync('pwsh', [
     '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', resolve('scripts/set-native-dialog.ps1'),
     '-AppProcessId', appProcessId, '-FilePath', path, '-Action', action,
   ], { timeout: 30000, windowsHide: true });
@@ -112,7 +114,7 @@ try {
 
   await page.getByRole('button', { name: 'Open', exact: true }).click();
   await fileDialog('Open', output);
-  await expect(page.getByText('Folio edited sample.pdf', { exact: true })).toBeVisible({ timeout: 15000 });
+  await expect(page.getByText('Folio edited.pdf', { exact: true })).toBeVisible({ timeout: 15000 });
   await expect(page.getByLabel('Page 1 of 7')).toHaveClass(/selected/);
   await expect(canvas.locator('image')).toHaveCount(1, { timeout: 15000 });
   await expect(canvas.locator('[data-overlay]')).toHaveCount(0);
