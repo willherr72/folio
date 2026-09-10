@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
-import { Eraser, PenLine, X } from "lucide-react";
+import { Eraser } from "lucide-react";
+import { Modal } from "./Modal";
 import type { InkPoint } from "../editor/types";
 
 interface SignaturePadProps {
@@ -8,6 +9,7 @@ interface SignaturePadProps {
 }
 
 export function SignaturePad({ onCancel, onAccept }: SignaturePadProps) {
+  const cancelRef = useRef<HTMLButtonElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const activePath = useRef<InkPoint[] | null>(null);
   const [paths, setPaths] = useState<InkPoint[][]>([]);
@@ -58,13 +60,7 @@ export function SignaturePad({ onCancel, onAccept }: SignaturePadProps) {
   const clear = () => { setPaths([]); draw([]); };
 
   return (
-    <div className="modal-backdrop" role="presentation" onPointerDown={(event) => event.target === event.currentTarget && onCancel()}>
-      <section className="signature-dialog" role="dialog" aria-modal="true" aria-labelledby="signature-heading">
-        <header>
-          <div className="dialog-mark"><PenLine size={18} /></div>
-          <div><h2 id="signature-heading">Create a signature</h2><p>Draw with your mouse, trackpad, or pen.</p></div>
-          <button className="icon-button" aria-label="Close signature pad" onClick={onCancel}><X size={18} /></button>
-        </header>
+    <Modal title="Create a signature" description="Draw with your mouse, trackpad, or pen." onClose={onCancel} className="signature-dialog" initialFocusRef={cancelRef}>
         <div className="signature-paper">
           <canvas ref={canvasRef} width={360} height={140} aria-label="Signature drawing area"
             onPointerDown={begin} onPointerMove={move} onPointerUp={end} onPointerCancel={end} />
@@ -72,9 +68,8 @@ export function SignaturePad({ onCancel, onAccept }: SignaturePadProps) {
         </div>
         <footer>
           <button className="button subtle" onClick={clear}><Eraser size={16} /> Clear</button>
-          <div className="dialog-actions"><button className="button" onClick={onCancel}>Cancel</button><button className="button primary" disabled={!paths.length} onClick={() => onAccept(paths)}>Use signature</button></div>
+          <div className="dialog-actions"><button ref={cancelRef} className="button" onClick={onCancel}>Cancel</button><button className="button primary" disabled={!paths.length} onClick={() => onAccept(paths)}>Use signature</button></div>
         </footer>
-      </section>
-    </div>
+    </Modal>
   );
 }
