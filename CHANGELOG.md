@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.4.0
+
+- Local crash recovery restores editable tabs, source snapshots, page organization, zoom and scroll.
+- Atomic checkpoints, previous-generation fallback, safe discard and instance locking protect recovery data.
+- Ctrl+F searches embedded and added text, with per-tab queries and rotated-page result highlights.
+- Ctrl+P prints current edits through Windows, with page ranges, fit/actual sizing and printer properties.
+- Immutable source snapshots survive moved originals and retain original-path export protection.
+- Additional lifecycle, geometry, native printing and crash/restart regression coverage.
 ## 0.3.1
 
 - Faster PDF tab switching: measure the text layer in one batch instead of forcing layout for every character.
