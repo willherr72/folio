@@ -21,6 +21,15 @@ Fixture provenance and checksums are recorded in the adjacent manifest. Corpus
 PDFs contain synthetic test data; Python generation/inspection tools are development
 dependencies and are not embedded in the desktop application.
 
+The issue #14 development gate additionally includes DejaVu Sans and static Noto
+Sans Arabic/Devanagari fonts. Full DejaVu and SIL Open Font License notices and
+immutable source hashes are in [tests/fixtures/shaped-text](tests/fixtures/shaped-text/README.md).
+Versioned Unicode development data carries the complete
+[Unicode License V3](tests/fixtures/shaped-text/unicode/LICENSE_UNICODE.txt).
+Optional native shaping dependencies, versions and licenses are documented in
+[the dependency decision](docs/shaped-text-dependencies.md); they require the
+nondefault `shaped-text` build feature.
+
 ## Standard font metric data
 
 The WinAnsi advance tables in `src-tauri/src/persistence.rs` are adapted from

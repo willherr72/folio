@@ -168,3 +168,9 @@ licenses and collected dependency notices.
 The [corpus guide](docs/corpus/README.md) records fixture provenance, reproducible
 commands and measured Windows baselines. Small synthetic PDFs are versioned; large
 scans and 300-page fixtures are generated locally. No private documents are included.
+
+The [complex-text development gate](docs/shaped-text-interop.md) records native
+shaping and PDF serialization experiments for issue #14. These require the
+nondefault `shaped-text` Cargo feature and are not enabled in application builds.
+Reader copy and selection compatibility must pass before broader script support
+is offered in the editor.

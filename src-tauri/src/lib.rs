@@ -1,6 +1,17 @@
 mod app;
 mod engine;
 mod fonts;
+#[cfg(feature = "shaped-text")]
+mod shaped_pdf;
+#[cfg(feature = "shaped-text")]
+mod shaping;
+#[cfg(feature = "shaped-text")]
+pub use shaped_pdf::{create_shaped_pdf, ShapedPdf};
+#[cfg(feature = "shaped-text")]
+pub use shaping::{
+    shape_text, PositionedGlyph, ShapedRun, ShapedText, TextBoundary, TextBounds, TextDirection,
+    TextRange,
+};
 mod types;
 pub use fonts::{FontAsset, FontInfo, FontRegistry, InstalledFont};
 

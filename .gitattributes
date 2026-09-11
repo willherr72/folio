@@ -13,3 +13,7 @@
 
 # Preserve the bundled upstream font license, including its original whitespace.
 tests/fixtures/corpus/fonts/LICENSE_DEJAVU.txt -text -whitespace
+# These pinned assets are verified byte-for-byte against their provenance.
+tests/fixtures/shaped-text/*.ttf binary
+tests/fixtures/shaped-text/*.txt -text -whitespace
+tests/fixtures/shaped-text/unicode/*.txt -text -whitespace

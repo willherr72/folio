@@ -12,10 +12,38 @@ path = "src/lib.rs"
 name = "folio"
 path = "src/main.rs"
 
+[features]
+default = []
+shaped-text = ["dep:harfrust", "dep:unicode-bidi", "dep:unicode-script", "dep:unicode-segmentation"]
+
+[[test]]
+name = "shaping"
+required-features = ["shaped-text"]
+
+[[test]]
+name = "shaping_unicode_conformance"
+required-features = ["shaped-text"]
+
+[[test]]
+name = "shaped_pdf"
+required-features = ["shaped-text"]
+
+[[test]]
+name = "shaped_pdfium_api"
+required-features = ["shaped-text"]
+
+[[example]]
+name = "shaped-text-probe"
+required-features = ["shaped-text"]
+
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
+harfrust = {version = "=0.13.3", optional = true}
+unicode-bidi = {version = "=0.3.18", optional = true}
+unicode-script = {version = "=0.5.8", optional = true}
+unicode-segmentation = {version = "=1.13.3", optional = true}
 image = { version = "0.25", default-features = false, features = ["png"] }
 lopdf = { version = "=0.45.0", default-features = false }
 pdfium-render = { version = "=0.9.4", default-features = false, features = ["pdfium_7881", "image_025", "thread_safe"] }

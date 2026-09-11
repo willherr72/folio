@@ -33,7 +33,7 @@ fn allowed_character(character: char) -> bool {
         0xa673 | 0xa67e..=0xa69d | 0xa720..=0xa7ff | 0xab30..=0xab6f)
 }
 
-fn checked_face(bytes: &[u8]) -> EngineResult<ttf_parser::Face<'_>> {
+pub(crate) fn checked_face(bytes: &[u8]) -> EngineResult<ttf_parser::Face<'_>> {
     if bytes.len() > MAX_FONT_BYTES {
         return Err(invalid("A font file cannot exceed 16 MiB."));
     }
@@ -140,6 +140,17 @@ pub struct FontAsset {
 
 impl FontAsset {
     pub fn parse(bytes: Vec<u8>) -> EngineResult<Self> {
+        Self::parse_profile(bytes, false)
+    }
+
+    /// Validate an exact font program for the experimental shaping gate. The
+    /// legacy coverage metadata and legacy text validation are not widened.
+    #[cfg(feature = "shaped-text")]
+    pub fn parse_for_shaping(bytes: Vec<u8>) -> EngineResult<Self> {
+        Self::parse_profile(bytes, true)
+    }
+
+    fn parse_profile(bytes: Vec<u8>, shaping: bool) -> EngineResult<Self> {
         let face = checked_face(&bytes)?;
         let mut coverage: Vec<[u32; 2]> = Vec::new();
         for codepoint in 0x20..=0xab6f {
@@ -158,7 +169,7 @@ impl FontAsset {
                 _ => coverage.push([codepoint, codepoint]),
             }
         }
-        if coverage.is_empty() {
+        if coverage.is_empty() && !shaping {
             return Err(invalid("This font has no supported Latin, Greek, Cyrillic, punctuation, or symbol characters."));
         }
         let info = FontInfo {
