@@ -1,0 +1,14 @@
+.existing-text-run {fill:transparent;stroke:var(--accent, #b85836);stroke-opacity:.35;stroke-width:1;vector-effect:non-scaling-stroke;cursor:text;}
+.existing-text-run:hover,.existing-text-run:focus-visible {fill:rgba(199,109,75,.12);stroke-opacity:1;stroke-width:2;outline:none;}
+.existing-text-run.unsupported {stroke:var(--muted, #746f68);stroke-dasharray:4 3;cursor:help;}
+.existing-text-run[aria-disabled="true"] {pointer-events:none;cursor:default;}
+.existing-text-cue {padding:9px 12px;border:1px solid var(--line);border-radius:6px;background:var(--panel, #f5f1e9);color:var(--ink, #2d2a26);font:12px/1.5 system-ui,sans-serif;}
+.existing-text-dialog {width:min(520px, calc(100vw - 32px));}
+.existing-text-fields {display:grid;gap:14px;padding:0 24px 20px;}
+.existing-text-fields p {margin:0;color:var(--muted);font-size:13px;line-height:1.5;}
+.existing-text-fields label {display:grid;gap:7px;color:var(--ink);font-size:13px;font-weight:600;}
+.existing-text-fields input {width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:7px;background:var(--control);color:var(--ink);font:inherit;}
+.existing-text-fields input:focus {outline:2px solid var(--accent, #b85836);outline-offset:2px;}
+.existing-text-fields .existing-text-error {color:var(--danger, #a33127);}
+.existing-text-fields .existing-text-original {color:var(--ink);white-space:pre-wrap;overflow-wrap:anywhere;}
+.existing-text-dialog .dialog-actions {padding:4px 24px 24px;justify-content:flex-end;}

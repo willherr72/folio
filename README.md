@@ -12,13 +12,14 @@ Extract it and open **Folio.exe**. Keep the resources folder beside the executab
 Microsoft Edge WebView2 Runtime is required.
 
 In this development checkout, double-click **Launch Folio.cmd** after building.
-Version 0.6.1 lives in **artifacts/Folio-v0.6.1/Folio.exe**.
-The ZIP is **artifacts/Folio-v0.6.1-windows-x64.zip**.
+Version 0.7.0 lives in **artifacts/Folio-v0.7.0/Folio.exe**.
+The ZIP is **artifacts/Folio-v0.7.0-windows-x64.zip**.
 
 ## Everyday editing
 
 - **Documents:** Open adds a PDF in a new top tab. Each document retains its edits,
   undo/redo history, selected page, zoom and scroll position when you switch tabs.
+- **Edit existing text:** choose **Edit text**, click an outlined run, change **Replacement text**, and apply. This first version supports standard Helvetica, Times and Courier fonts with printable ASCII text. Replacements must fit the existing run; embedded/subset fonts and complex layouts are not supported yet. [Support details](docs/existing-text-editing.md).
 - **Text:** choose Text and click a page. The Content field selects the placeholder
   immediately, so typing replaces it. Adjust size/color and drag the note to move it.
 - **Select and copy:** drag across embedded PDF text in Select mode, then press
@@ -149,7 +150,7 @@ Real PDF editing runs in the desktop app.
 
 The native smoke opens a real PDF through Windows dialogs, edits it, draws,
 drags thumbnails, checks both close-confirmation decisions, saves and reopens.
-Its launcher uses an isolated test profile. See [v0.6.1 performance verification](docs/performance-v0.6.1.md), the [compatibility corpus](docs/corpus/README.md), and [earlier verification notes](docs/verification.md).
+Its launcher uses an isolated test profile. See [v0.7.0 text-edit verification](docs/verification-v0.7.0.md), [v0.6.1 performance verification](docs/performance-v0.6.1.md), the [compatibility corpus](docs/corpus/README.md), and [earlier verification notes](docs/verification.md).
 
 ## Internals and license
 

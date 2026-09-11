@@ -1,5 +1,7 @@
 use crate::printing::{print_document, PrintOptions};
-use crate::{DocumentInfo, EngineError, ExportRequest, PageText, PdfEngine, RecoveryStore};
+use crate::{
+    DocumentInfo, EngineError, ExportRequest, PageText, PdfEngine, RecoveryStore, TextRuns,
+};
 use std::path::PathBuf;
 use std::sync::Arc;
 use tauri::{ipc::Response, Manager, State};
@@ -55,6 +57,38 @@ async fn page_text(
 ) -> Result<PageText, String> {
     let engine = engine.inner().clone();
     on_worker(move || engine.page_text(&source_id, page_index)).await
+}
+
+#[tauri::command]
+async fn list_text_runs(
+    engine: State<'_, PdfEngine>,
+    source_id: String,
+    page_index: usize,
+) -> Result<TextRuns, String> {
+    let engine = engine.inner().clone();
+    on_worker(move || engine.list_text_runs(&source_id, page_index)).await
+}
+
+#[tauri::command]
+async fn replace_text(
+    engine: State<'_, PdfEngine>,
+    source_id: String,
+    page_index: usize,
+    object_index: usize,
+    expected_text: String,
+    replacement: String,
+) -> Result<DocumentInfo, String> {
+    let engine = engine.inner().clone();
+    on_worker(move || {
+        engine.replace_text(
+            &source_id,
+            page_index,
+            object_index,
+            &expected_text,
+            &replacement,
+        )
+    })
+    .await
 }
 
 #[tauri::command]
@@ -184,6 +218,8 @@ pub fn run() {
             open_pdf,
             render_page,
             page_text,
+            list_text_runs,
+            replace_text,
             export_pdf,
             close_document,
             engine_status,

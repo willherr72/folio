@@ -23,6 +23,17 @@ export interface InkOverlay {
 }
 
 export interface AnnotationRect { x: number; y: number; width: number; height: number }
+/** Existing page-content text; bounds include crop and intrinsic page rotation. */
+export interface EditableTextRun {
+  objectIndex: number;
+  text: string;
+  fontName: string;
+  fontSize: number;
+  bounds: AnnotationRect;
+  supported: boolean;
+  reason?: string;
+}
+export interface TextRuns { runs: EditableTextRun[]; reason?: string }
 export interface HighlightOverlay {
   type: "highlight";
   id: string;

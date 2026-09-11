@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { FolioAdapter } from "../editor/adapter";
 import { displayDimensions, toDisplayPoint } from "../editor/geometry";
-import type { AnnotationRect, InkPoint, PagePlan } from "../editor/types";
+import type { AnnotationRect, EditableTextRun, InkPoint, PagePlan } from "../editor/types";
 import type { SearchMatch, SearchRect } from "../editor/search";
 import { PageView } from "./PageView";
 
@@ -17,7 +17,8 @@ export interface DocumentViewportProps {
   zoom: number;
   onZoomChange(zoom: number): void;
   viewMode: "continuous" | "single";
-  tool: "select" | "text" | "signature" | "draw" | "highlight" | "comment";
+  tool: "select" | "text" | "signature" | "draw" | "highlight" | "comment" | "edit";
+  onEditText?(pageId: string, run: EditableTextRun): void;
   penColor: string;
   penWidth: number;
   pendingSignature: InkPoint[][] | null;
@@ -194,6 +195,7 @@ export function DocumentViewport(props: DocumentViewportProps) {
             onActivate={() => props.onSelectPage(page.id)}
             onSelectOverlay={(id) => props.onSelectOverlay(page.id, id)}
             onAddText={(point) => props.onAddText(page.id, point)}
+            onEditText={(run) => props.onEditText?.(page.id, run)}
             onPlaceSignature={(point) => props.onPlaceSignature(page.id, point)}
             onMoveOverlay={(id, x, y, phase) => props.onMoveOverlay(page.id, id, x, y, phase)}
             onHighlight={(rects) => props.onHighlight?.(page.id, rects)}

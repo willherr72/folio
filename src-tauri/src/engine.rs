@@ -9,6 +9,8 @@ use uuid::Uuid;
 
 #[path = "persistence.rs"]
 mod persistence;
+#[path = "text_edit.rs"]
+mod text_edit;
 
 pub type EngineResult<T> = Result<T, EngineError>;
 pub(crate) const MAX_SOURCE_BYTES: u64 = 512 * 1024 * 1024;
@@ -45,6 +47,36 @@ struct EngineInner {
 static SHARED_ENGINE: OnceLock<Result<PdfEngine, String>> = OnceLock::new();
 
 impl PdfEngine {
+    pub fn list_text_runs(&self, source_id: &str, page_index: usize) -> EngineResult<TextRuns> {
+        let (reply, receive) = mpsc::channel();
+        self.send(WorkerRequest::ListTextRuns {
+            source_id: source_id.into(),
+            page_index,
+            reply,
+        })?;
+        receive.recv().map_err(|_| EngineError::WorkerStopped)?
+    }
+
+    pub fn replace_text(
+        &self,
+        source_id: &str,
+        page_index: usize,
+        object_index: usize,
+        expected_text: &str,
+        replacement: &str,
+    ) -> EngineResult<DocumentInfo> {
+        let (reply, receive) = mpsc::channel();
+        self.send(WorkerRequest::ReplaceText {
+            source_id: source_id.into(),
+            page_index,
+            object_index,
+            expected_text: expected_text.into(),
+            replacement: replacement.into(),
+            reply,
+        })?;
+        receive.recv().map_err(|_| EngineError::WorkerStopped)?
+    }
+
     pub fn start(engine_path: impl AsRef<Path>) -> EngineResult<Self> {
         let path = engine_path.as_ref().to_path_buf();
         match SHARED_ENGINE.get_or_init(|| start_worker(path)) {
@@ -214,6 +246,19 @@ fn start_worker(engine_path: PathBuf) -> Result<PdfEngine, String> {
 }
 
 enum WorkerRequest {
+    ListTextRuns {
+        source_id: String,
+        page_index: usize,
+        reply: mpsc::Sender<EngineResult<TextRuns>>,
+    },
+    ReplaceText {
+        source_id: String,
+        page_index: usize,
+        object_index: usize,
+        expected_text: String,
+        replacement: String,
+        reply: mpsc::Sender<EngineResult<DocumentInfo>>,
+    },
     Open {
         path: PathBuf,
         original_path: Option<PathBuf>,
@@ -264,6 +309,7 @@ struct OpenDocument {
     document: PdfDocument<'static>,
     source_bytes: Arc<[u8]>,
     for_printing: bool,
+    text_edit_restriction: OnceLock<Option<String>>,
 }
 
 struct WorkerRuntime {
@@ -353,6 +399,29 @@ impl WorkerRuntime {
     fn run(&mut self, receiver: mpsc::Receiver<WorkerRequest>) {
         while let Ok(request) = receiver.recv() {
             match request {
+                WorkerRequest::ListTextRuns {
+                    source_id,
+                    page_index,
+                    reply,
+                } => {
+                    let _ = reply.send(self.list_text_runs(&source_id, page_index));
+                }
+                WorkerRequest::ReplaceText {
+                    source_id,
+                    page_index,
+                    object_index,
+                    expected_text,
+                    replacement,
+                    reply,
+                } => {
+                    let _ = reply.send(self.replace_text(
+                        &source_id,
+                        page_index,
+                        object_index,
+                        &expected_text,
+                        &replacement,
+                    ));
+                }
                 WorkerRequest::Open {
                     path,
                     original_path,
@@ -496,6 +565,7 @@ impl WorkerRuntime {
                 document,
                 source_bytes,
                 for_printing: !editable_annotations,
+                text_edit_restriction: OnceLock::new(),
             },
         );
         Ok(info)

@@ -86,7 +86,7 @@ it("retains traversed pages and commits glyphs loaded during a long cross-page g
    return { x: 0, y: top, left: 0, top, right: 500, bottom: top + (this.classList.contains("document-page") ? 300 : 400), width: 500, height: this.classList.contains("document-page") ? 300 : 400, toJSON() {} };
  });
  const onHighlight = vi.fn(); const options = props();
- const view = render(<DocumentViewport {...options} pages={pages} selectedPageId={pages[0].id} onSelectPage={vi.fn()} onZoomChange={vi.fn()} viewMode="continuous" penColor="#ffff00" penWidth={2} interactionDisabled={false} navigationRequest={null} onDraw={vi.fn()} onHighlight={onHighlight} onAddText={vi.fn()} onAddComment={vi.fn()} onPlaceSignature={vi.fn()} onMoveOverlay={vi.fn()} onSelectOverlay={vi.fn()} />);
+ const view = render(<DocumentViewport {...options} pages={pages} selectedPageId={pages[0].id} onSelectPage={vi.fn()} onZoomChange={vi.fn()} viewMode="continuous" penColor="#ffff00" penWidth={2} interactionDisabled={false} navigationRequest={null} onDraw={vi.fn()} onHighlight={onHighlight} onAddText={vi.fn()} onAddComment={vi.fn()} onPlaceSignature={vi.fn()} onMoveOverlay={vi.fn()} onSelectOverlay={vi.fn()} onEditText={undefined} />);
  await waitFor(() => expect(view.getByLabelText("Page 1 text").textContent).toBe("A B\nC"));
  const start = view.getByLabelText("Page 1 text"); fireEvent.pointerDown(start, { button: 0 });
  const host = view.getByRole("main", { name: "Document" }); host.scrollTop = 1658; fireEvent.scroll(host);

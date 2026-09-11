@@ -1,12 +1,14 @@
 import { cloneOverlay } from "./model";
 import { invoke } from "@tauri-apps/api/core";
-import type { DocumentInfo, PagePlan, PageText } from "./types";
+import type { DocumentInfo, PagePlan, PageText, TextRuns } from "./types";
 
 export interface FolioAdapter {
   kind: "native" | "demo";
   openPdf(): Promise<DocumentInfo | null>;
   renderPage(sourceId: string, pageIndex: number, width: number): Promise<string>;
   getPageText?(sourceId: string, pageIndex: number): Promise<PageText>;
+  listTextRuns?(sourceId: string, pageIndex: number): Promise<TextRuns>;
+  replaceText?(sourceId: string, pageIndex: number, objectIndex: number, expectedText: string, replacement: string): Promise<DocumentInfo>;
   exportPdf(pages: PagePlan[], options?: {flatten?: boolean}): Promise<string | null>;
   closeDocument(sourceId: string): Promise<void>;
   engineStatus(): Promise<string>;
@@ -33,6 +35,8 @@ export const nativeAdapter: FolioAdapter = {
     return bytesToUrl(bytes);
   },
   getPageText: (sourceId, pageIndex) => invoke<PageText>("page_text", { sourceId, pageIndex }),
+  listTextRuns: (sourceId, pageIndex) => invoke<TextRuns>("list_text_runs", {sourceId,pageIndex}),
+  replaceText: (sourceId, pageIndex, objectIndex, expectedText, replacement) => invoke<DocumentInfo>("replace_text", {sourceId,pageIndex,objectIndex,expectedText,replacement}),
   exportPdf: (pages, options) => invoke<string | null>("export_pdf", { request: { pages, ...(options?.flatten ? {flatten:true} : {}) } }),
   closeDocument: (sourceId) => invoke<void>("close_document", { sourceId }),
   engineStatus: () => invoke<string>("engine_status"),

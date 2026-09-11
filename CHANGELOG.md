@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.7.0
+
+- Edit supported existing PDF text runs through the new Edit text tool.
+- Preserve the original standard Latin font, color and placement; report unsupported fonts, layouts and replacements that do not fit.
+- Commit actual changed PDF content as an undoable page version, keeping duplicates and annotations independent.
+- Search, copy, printing, save/reopen and recovery use the replacement text.
+- Validate no-op geometry and rendering before changes, reject unsafe page features, and protect original files.
+- Add font/rotation, content-preservation, source-lifecycle and browser editing regressions.
+
 ## 0.6.1
 
 - Reuse measured text geometry when revisiting cached PDF pages, reducing dense-page tab layout work.

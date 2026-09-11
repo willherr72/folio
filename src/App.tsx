@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type SetStateAction } from "react";
 import {
   ArrowDown, ArrowUp, ChevronLeft, ChevronRight, Copy, FilePlus2, FolderOpen,
-  GripVertical, Highlighter, MessageSquare, Search, Printer, Minus, MousePointer2, PenLine, Pencil, Plus, Redo2, RotateCw, Settings, Trash2, Type, Undo2, X,
+  GripVertical, Highlighter, MessageSquare, Search, Printer, Minus, MousePointer2, PenLine, Pencil, Plus, Redo2, RotateCw, Settings, Trash2, Type, TextCursorInput, Undo2, X,
 } from "lucide-react";
 import { createDemoAdapter, documentToPages, nativeAdapter, type FolioAdapter } from "./editor/adapter";
 import { displayDimensions, placeInkPaths } from "./editor/geometry";
@@ -27,16 +27,22 @@ import type {PagePlan} from "./editor/types";
 import "./styles.css";
 import {SaveCopyButton} from "./components/SaveCopyButton";
 import { OverlayProperties } from "./components/OverlayProperties";
+import { ExistingTextDialog } from "./components/ExistingTextDialog";
+import { commitTextReplacement } from "./editor/text-edit";
+import type {EditableTextRun} from "./editor/types";
 import { ReviewList } from "./components/ReviewList";
 
 interface AppProps { initialDemo?: boolean }
-type Tool = "select" | "text" | "signature" | "draw" | "highlight" | "comment";
+type Tool = "edit" | "select" | "text" | "signature" | "draw" | "highlight" | "comment";
 type Confirmation = { title: string; description: string; confirmLabel: string };
 function errorMessage(error: unknown) { return error instanceof Error ? error.message : String(error); }
 
 export function App({ initialDemo = new URLSearchParams(location.search).get("demo") === "1" }: AppProps) {
   const { preferences, setPreferences, resetPreferences } = usePreferences();
   const [workspace, setWorkspace] = useState(emptyWorkspace);
+  const workspaceCurrent = useRef(workspace); workspaceCurrent.current = workspace;
+  const mounted = useRef(true);
+  useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
   const activeTab = workspace.tabs.find(tab => tab.id === workspace.activeId) ?? null;
   const history = activeTab?.history ?? null;
   const savedDigest = activeTab?.savedDigest ?? "";
@@ -71,6 +77,8 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
   const setNavigationRequest = useCallback((action: SetStateAction<DocumentSession["navigationRequest"]>) => setWorkspace(value => updateSession(value, workspace.activeId, tab => ({...tab,navigationRequest:typeof action === "function" ? action(tab.navigationRequest) : action}))), [workspace.activeId]);
   const [tool, setTool] = useState<Tool>("select");
   const [pendingSignature, setPendingSignature] = useState<InkPoint[][] | null>(null);
+  const [textEdit,setTextEdit] = useState<{tabId:string;page:PagePlan;run:EditableTextRun}|null>(null);
+  const [textEditError,setTextEditError] = useState<string|null>(null);
   const [signatureOpen, setSignatureOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [confirmation, setConfirmation] = useState<Confirmation | null>(null);
@@ -86,7 +94,7 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
   const dirty = current ? planDigest(current) !== savedDigest : false;
   const selectedPage = current?.pages.find((page) => page.id === current.selectedPageId) ?? current?.pages[0] ?? null;
   const selectedOverlay = selectedPage?.overlays.find((overlay) => overlay.id === current?.selectedOverlayId) ?? null;
-  const modalOpen = signatureOpen || settingsOpen || printOpen || !!confirmation || !recovery.ready;
+  const modalOpen = !!textEdit || signatureOpen || settingsOpen || printOpen || !!confirmation || !recovery.ready;
   const blocked = modalOpen || !!busy;
   const dirtyTabs = workspace.tabs.filter(tab => planDigest(tab.history.present) !== tab.savedDigest);
   const closeState = useRef({ dirty:dirtyTabs.length > 0, blocked, dirtyCount:dirtyTabs.length });
@@ -142,7 +150,7 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
     scrollPositions.current.delete(tab.id);
   }, []);
   const clearTransient = useCallback(() => {
-    setTool("select"); setPendingSignature(null); setNewTextId(null);
+    setTool("select"); setPendingSignature(null); setNewTextId(null); setTextEdit(null); setTextEditError(null);
     setNotice(null); setFailure(null); setDraggedPageId(null); setDropTarget(null);
     window.getSelection()?.removeAllRanges();
   }, []);
@@ -249,6 +257,34 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
     if (blocked) return;
     setHistory((value) => value ? commit(value, update) : value);
   }, [blocked, setHistory]);
+  const beginTextEdit = (pageId:string, run:EditableTextRun) => {
+    if (blocked || !activeTab || !adapter.replaceText) return;
+    const page = current?.pages.find(page=>page.id===pageId);
+    if (!page) return;
+    setTextEdit({tabId:activeTab.id,page,run});setTextEditError(null);
+  };
+  const applyTextEdit = async (replacement:string) => {
+    const request=textEdit;
+    if (!request || !request.run.supported || operation.current || !adapter.replaceText) return;
+    const editingAdapter=adapter;
+    operation.current=true;setBusy("Updating PDF text…");setTextEditError(null);
+    let orphanSource:string|null=null;
+    try {
+      const result=await editingAdapter.replaceText!(request.page.sourceId,request.page.pageIndex,request.run.objectIndex,request.run.text,replacement);
+      const session=workspaceCurrent.current.tabs.find(tab=>tab.id===request.tabId);
+      if (result.id && !workspaceCurrent.current.tabs.some(tab=>tab.sourceIds.includes(result.id))) orphanSource=result.id;
+      if (!mounted.current || !session) return;
+      // Validate before scheduling state; blocked workspace controls keep this version stable.
+      commitTextReplacement(session,request.page,result);
+      setWorkspace(value=>updateSession(value,request.tabId,tab=>commitTextReplacement(tab,request.page,result)));
+      orphanSource=null;setTextEdit(null);setTool("select");setNotice("PDF text updated");
+    } catch (error) {
+      if (mounted.current) setTextEditError(errorMessage(error));
+    } finally {
+      if (orphanSource) await editingAdapter.closeDocument(orphanSource).catch(()=>{});
+      operation.current=false;if (mounted.current) setBusy(null);
+    }
+  };
   const addText = (pageId: string, point: InkPoint) => {
     const id = uniqueId("text");
     edit((document) => ({
@@ -414,6 +450,7 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
   const selectedIndex = selectedPage ? current?.pages.findIndex((page) => page.id === selectedPage.id) ?? -1 : -1;
   const displaySize = selectedPage ? displayDimensions(selectedPage.width, selectedPage.height, selectedPage.rotation) : null;
   const dialogs = <>
+    {textEdit && <ExistingTextDialog run={textEdit.run} busy={!!busy} error={textEditError} onApply={replacement=>void applyTextEdit(replacement)} onCancel={()=>{if(!operation.current){setTextEdit(null);setTextEditError(null);}}}/> }
     {(recovery.pending||recovery.error)&&<RecoveryDialog count={recovery.pending?.tabs.length??0} error={recovery.error} busy={recovery.working} onRestore={()=>void recovery.restore()} onDiscard={()=>void recovery.discard()} onSkip={recovery.skip}/>}
     {printOpen&&current&&<PrintDialog pages={current.pages} currentPageId={selectedPage?.id??null} onClose={()=>setPrintOpen(false)} onPrint={(pages,options)=>void startPrint(pages,options)}/>}
     {signatureOpen && <SignaturePad onCancel={() => { setSignatureOpen(false); setTool("select"); }} onAccept={(paths) => { setSignatureOpen(false); setPendingSignature(paths); setNotice("Click a page to place your signature"); }}/>}
@@ -462,6 +499,7 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
       <div className="separator"/>
       <div className="tool-group modes">
         <button className={`tool-button ${tool === "select" ? "active" : ""}`} disabled={blocked} onClick={() => chooseTool("select")}><MousePointer2 size={17}/><span>Select</span></button>
+        <button className={`tool-button ${tool === "edit" ? "active" : ""}`} disabled={blocked || !adapter.listTextRuns || !adapter.replaceText} onClick={() => chooseTool("edit")} title="Change supported existing PDF text"><TextCursorInput size={17}/><span>Edit text</span></button>
         <button className={`tool-button ${tool === "text" ? "active" : ""}`} disabled={blocked} onClick={() => chooseTool("text")}><Type size={17}/><span>Text</span></button>
         <button className={`tool-button ${tool === "draw" ? "active" : ""}`} disabled={blocked} onClick={() => chooseTool("draw")}><Pencil size={17}/><span>Draw</span></button>
         <button className={`tool-button ${tool === "signature" ? "active" : ""}`} disabled={!!busy} onClick={() => chooseTool("signature")}><PenLine size={17}/><span>Signature</span></button>
@@ -492,13 +530,14 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
       <div className="document-area">
         {recovery.warning&&<div className="recovery-warning" role="status">{recovery.warning}</div>}
         {searchState.open&&<SearchBar key={"search-"+activeTab!.id} query={searchState.query} onQueryChange={query=>updateSearch({query,index:0})} index={searchState.index} total={search.matches.length} searching={search.searching} error={search.error} hasText={search.hasText} onNext={()=>moveSearch(1)} onPrevious={()=>moveSearch(-1)} onClose={()=>updateSearch({open:false})}/>}
+        {tool === "edit" && <div className="placement-banner"><TextCursorInput size={16}/> Click an outlined text run to edit it. Some fonts and layouts are not supported yet.</div>}
         {tool === "highlight" && <div className="placement-banner"><Highlighter size={16}/> Drag across selectable text to highlight it. Scanned pages need a text layer.</div>}
         {tool === "comment" && <div className="placement-banner"><MessageSquare size={16}/> Click a page to add a comment.</div>}
         {pendingSignature && <div className="placement-banner"><PenLine size={16}/> Click a page to place your signature <button aria-label="Cancel signature placement" onClick={() => { setPendingSignature(null); setTool("select"); }}><X size={15}/></button></div>}
         <DocumentViewport key={activeTab!.id} initialScrollPosition={scrollPositions.current.get(activeTab!.id)} onScrollPositionChange={position => { scrollPositions.current.set(activeTab!.id, position); recovery.schedule(); }} adapter={adapter} pages={current.pages} selectedPageId={selectedPage?.id ?? null} selectedOverlayId={current.selectedOverlayId}
           zoom={zoom} onZoomChange={setZoom} viewMode={preferences.viewMode} tool={tool} penColor={preferences.penColor} penWidth={preferences.penWidth}
           pendingSignature={pendingSignature} interactionDisabled={blocked} navigationRequest={navigationRequest} searchMatches={searchState.open?search.matches:[]} activeSearchMatchId={searchMatch?.id}
-          onSelectPage={selectPage} onSelectOverlay={selectOverlay} onAddText={addText} onPlaceSignature={placeSignature} onMoveOverlay={moveOverlay} onDraw={addDrawing} onHighlight={addHighlight} onAddComment={addComment}/>
+          onSelectPage={selectPage} onEditText={beginTextEdit} onSelectOverlay={selectOverlay} onAddText={addText} onPlaceSignature={placeSignature} onMoveOverlay={moveOverlay} onDraw={addDrawing} onHighlight={addHighlight} onAddComment={addComment}/>
         <div className="page-nav"><button aria-label="Previous page" disabled={blocked || selectedIndex <= 0} onClick={() => navigateToPage(current.pages[selectedIndex - 1].id)}><ChevronLeft size={16}/></button><span>Page {selectedIndex + 1} of {current.pages.length}</span><button aria-label="Next page" disabled={blocked || selectedIndex >= current.pages.length - 1} onClick={() => navigateToPage(current.pages[selectedIndex + 1].id)}><ChevronRight size={16}/></button></div>
       </div>
       <aside className="properties">

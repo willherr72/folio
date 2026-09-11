@@ -6,7 +6,8 @@ import { TextOverlayPresentation } from "./TextOverlayPresentation";
 import type { SearchMatch } from "../editor/search";
 import "./search.css";
 import { CommentIcon, HighlightMarks } from "./AnnotationPresentation";
-import type { AnnotationRect, InkPoint, Overlay, PagePlan } from "../editor/types";
+import type { AnnotationRect, EditableTextRun, InkPoint, Overlay, PagePlan } from "../editor/types";
+import { ExistingTextLayer } from "./ExistingTextLayer";
 
 import { PdfTextLayer, clearPageTextCache } from "./PdfTextLayer";
 
@@ -121,7 +122,8 @@ interface PageViewProps {
   page: PagePlan;
   pageNumber: number;
   zoom: number;
-  tool: "select" | "text" | "signature" | "draw" | "highlight" | "comment";
+  tool: "select" | "text" | "signature" | "draw" | "highlight" | "comment" | "edit";
+  onEditText?(run: EditableTextRun): void;
   selectedOverlayId: string | null;
   pendingSignature: InkPoint[][] | null;
   onDraw?(path: InkPoint[]): void;
@@ -191,6 +193,7 @@ export function PageView(props: PageViewProps) {
 
   const handleBackground = (event: React.PointerEvent<SVGSVGElement>) => {
     if (props.interactionDisabled || event.button !== 0 || strokeRef.current || dragRef.current) return;
+    if (tool === "edit") { props.onActivate?.(); return; }
     if (tool !== "draw" && event.target !== event.currentTarget && (event.target as Element).closest("[data-overlay]")) return;
     props.onActivate?.();
     const point = originalPoint(event);
@@ -209,6 +212,7 @@ export function PageView(props: PageViewProps) {
   };
 
   const startDrag = (event: React.PointerEvent, overlay: Overlay) => {
+    if (tool === "edit") { event.stopPropagation(); return; }
     if (tool === "draw") return;
     event.stopPropagation();
     if (props.interactionDisabled || event.button !== 0 || dragRef.current) return;
@@ -277,11 +281,12 @@ export function PageView(props: PageViewProps) {
             if (overlay.type === "highlight") return null;
             const selected = overlay.id === selectedOverlayId;
             const box = bounds(overlay);
-            return <g key={overlay.id} data-overlay={overlay.id} className={`overlay ${selected ? "selected" : ""}`} role="button" tabIndex={props.interactionDisabled ? -1 : 0} aria-label={overlay.type === "comment" ? `Comment: ${overlay.text || "Empty comment"}` : overlay.type === "text" ? `Text: ${overlay.text}` : "Ink annotation"} onKeyDown={(event) => { if (!props.interactionDisabled && (event.key === "Enter" || event.key === " ")) { event.preventDefault(); props.onActivate?.(); props.onSelectOverlay(overlay.id); } }} onPointerDown={(event) => startDrag(event, overlay)}>
+            return <g key={overlay.id} data-overlay={overlay.id} className={`overlay ${selected ? "selected" : ""}`} role="button" tabIndex={props.interactionDisabled || tool === "edit" ? -1 : 0} aria-label={overlay.type === "comment" ? `Comment: ${overlay.text || "Empty comment"}` : overlay.type === "text" ? `Text: ${overlay.text}` : "Ink annotation"} onKeyDown={(event) => { if (!props.interactionDisabled && tool !== "edit" && (event.key === "Enter" || event.key === " ")) { event.preventDefault(); props.onActivate?.(); props.onSelectOverlay(overlay.id); } }} onPointerDown={(event) => startDrag(event, overlay)}>
               {overlay.type === "text" ? <TextOverlayPresentation overlay={overlay} /> : overlay.type === "comment" ? <CommentIcon overlay={overlay} /> : overlay.paths.map((path, index) => <polyline key={index} points={path.map((point) => `${point.x},${point.y}`).join(" ")} fill="none" stroke={overlay.color} strokeWidth={overlay.strokeWidth} strokeLinecap="round" strokeLinejoin="round" />)}
               {selected && <rect className="selection-box" x={box.x} y={box.y} width={box.width} height={box.height} />}
             </g>;
           })}
+          {tool === "edit" && <ExistingTextLayer adapter={adapter} page={page} disabled={props.interactionDisabled} onEditText={run => { props.onActivate?.(); props.onEditText?.(run); }} />}
         </g>
       </svg>
       {previewPaths.length > 0 && <div className="signature-placement-cue">Click to place · Esc to cancel</div>}

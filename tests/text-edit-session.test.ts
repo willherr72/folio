@@ -1,0 +1,34 @@
+import {expect,it} from "vitest";
+import {commitTextReplacement} from "../src/editor/text-edit";
+import {nativeAdapter} from "../src/editor/adapter";
+import {createSession} from "../src/editor/workspace";
+import {duplicatePage,undo,redo,planDigest} from "../src/editor/model";
+import {snapshotWorkspace} from "../src/editor/recovery";
+const original={id:"original",name:"Source.pdf",pages:[{width:300,height:400}]};
+const derived={id:"derived",name:"Changed page.pdf",pages:[{width:300,height:400}]};
+it("commits just one duplicated page as an undoable source version, preserving placement and annotations",()=>{
+ const session=createSession(original,nativeAdapter,125),page=session.history.present.pages[0];
+ page.rotation=90;page.overlays=[{type:"comment",id:"note",x:50,y:60,text:"Keep",color:"#ffff00"}];
+ session.history.present=duplicatePage(session.history.present,page.id,"duplicate");
+ const changed=commitTextReplacement(session,page,derived);
+ expect(changed.history.present.pages[0]).toEqual({...page,sourceId:"derived",pageIndex:0});
+ expect(changed.history.present.pages[1].sourceId).toBe("original");
+ expect(changed.sourceIds).toEqual(["original","derived"]);
+ expect(changed.history.past).toHaveLength(1);
+ expect(changed.history.present.name).toBe("Source.pdf");expect(changed.zoom).toBe(125);
+ expect(planDigest(changed.history.present)).not.toBe(session.savedDigest);
+ const undone=undo(changed.history);expect(undone.present.pages[0].sourceId).toBe("original");
+ expect(redo(undone).present.pages[0].sourceId).toBe("derived");
+ const recovery=snapshotWorkspace({tabs:[changed],activeId:changed.id},new Map());
+ expect(recovery.tabs[0].document.pages[0].sourceId).toBe("derived");expect(recovery.tabs[0].dirty).toBe(true);
+ expect(session.history.present.pages[0].sourceId).toBe("original");
+});
+it("refuses stale and malformed replacement results without changing the session",()=>{
+ const session=createSession(original,nativeAdapter,100),page=session.history.present.pages[0];
+ expect(()=>commitTextReplacement(session,{...page,sourceId:"stale"},derived)).toThrow(/changed/);
+ expect(()=>commitTextReplacement(session,{...page,id:"gone"},derived)).toThrow(/changed/);
+ expect(()=>commitTextReplacement(session,page,{...derived,pages:[{width:301,height:400}]})).toThrow(/dimensions/);
+ expect(()=>commitTextReplacement(session,page,{...derived,pages:[]})).toThrow(/one page/);
+ expect(()=>commitTextReplacement(session,page,original)).toThrow(/new source/);
+ expect(session.sourceIds).toEqual(["original"]);expect(session.history.past).toHaveLength(0);
+});

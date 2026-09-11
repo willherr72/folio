@@ -1,0 +1,197 @@
+{
+  "browser": {
+    "passed": true,
+    "checks": [
+      {
+        "intrinsic": 0,
+        "rotation": 0,
+        "zoom": 90
+      },
+      {
+        "intrinsic": 0,
+        "rotation": 0,
+        "zoom": 170
+      },
+      {
+        "intrinsic": 0,
+        "rotation": 90,
+        "zoom": 90
+      },
+      {
+        "intrinsic": 0,
+        "rotation": 90,
+        "zoom": 170
+      },
+      {
+        "intrinsic": 0,
+        "rotation": 180,
+        "zoom": 90
+      },
+      {
+        "intrinsic": 0,
+        "rotation": 180,
+        "zoom": 170
+      },
+      {
+        "intrinsic": 0,
+        "rotation": 270,
+        "zoom": 90
+      },
+      {
+        "intrinsic": 0,
+        "rotation": 270,
+        "zoom": 170
+      },
+      {
+        "intrinsic": 90,
+        "rotation": 0,
+        "zoom": 90
+      },
+      {
+        "intrinsic": 90,
+        "rotation": 0,
+        "zoom": 170
+      },
+      {
+        "intrinsic": 90,
+        "rotation": 90,
+        "zoom": 90
+      },
+      {
+        "intrinsic": 90,
+        "rotation": 90,
+        "zoom": 170
+      },
+      {
+        "intrinsic": 90,
+        "rotation": 180,
+        "zoom": 90
+      },
+      {
+        "intrinsic": 90,
+        "rotation": 180,
+        "zoom": 170
+      },
+      {
+        "intrinsic": 90,
+        "rotation": 270,
+        "zoom": 90
+      },
+      {
+        "intrinsic": 90,
+        "rotation": 270,
+        "zoom": 170
+      },
+      {
+        "intrinsic": 180,
+        "rotation": 0,
+        "zoom": 90
+      },
+      {
+        "intrinsic": 180,
+        "rotation": 0,
+        "zoom": 170
+      },
+      {
+        "intrinsic": 180,
+        "rotation": 90,
+        "zoom": 90
+      },
+      {
+        "intrinsic": 180,
+        "rotation": 90,
+        "zoom": 170
+      },
+      {
+        "intrinsic": 180,
+        "rotation": 180,
+        "zoom": 90
+      },
+      {
+        "intrinsic": 180,
+        "rotation": 180,
+        "zoom": 170
+      },
+      {
+        "intrinsic": 180,
+        "rotation": 270,
+        "zoom": 90
+      },
+      {
+        "intrinsic": 180,
+        "rotation": 270,
+        "zoom": 170
+      },
+      {
+        "intrinsic": 270,
+        "rotation": 0,
+        "zoom": 90
+      },
+      {
+        "intrinsic": 270,
+        "rotation": 0,
+        "zoom": 170
+      },
+      {
+        "intrinsic": 270,
+        "rotation": 90,
+        "zoom": 90
+      },
+      {
+        "intrinsic": 270,
+        "rotation": 90,
+        "zoom": 170
+      },
+      {
+        "intrinsic": 270,
+        "rotation": 180,
+        "zoom": 90
+      },
+      {
+        "intrinsic": 270,
+        "rotation": 180,
+        "zoom": 170
+      },
+      {
+        "intrinsic": 270,
+        "rotation": 270,
+        "zoom": 90
+      },
+      {
+        "intrinsic": 270,
+        "rotation": 270,
+        "zoom": 170
+      }
+    ],
+    "errors": [],
+    "method": "Actual pointer click and keyboard submit at32source/editor/zoomcombinations; changed source text layer and programmatic copy event verified."
+  },
+  "desktop": {
+    "passed": true,
+    "resumedFromOverflow": false,
+    "resumedAtSave": false,
+    "originalSha256": "ad06e87cccbda67242d20ac1bba27ed2f188b3a5cd0a00839f6a53d576770764",
+    "outputSha256": "f5d5ce12023e55168d1ec57d8ebc3610d14a2f8d60e16bb6ee6f5f4d1e83a531",
+    "checks": [
+      "overflow rejection preserves input",
+      "actual content replacement",
+      "added annotation preserved",
+      "undo/redo",
+      "search invalidation",
+      "native mouse selection and Ctrl+C",
+      "original unchanged",
+      "saved/reopened without original path",
+      "reopened run editable",
+      "embedded-font refusal"
+    ],
+    "errors": []
+  },
+  "independent": {
+    "passed": true,
+    "pypdfText": "New sentence\nKeep this neighbor",
+    "changedPixels": 1040,
+    "changesOutsideTextBounds": 0,
+    "originalUnchanged": true,
+    "annotationCount": 1
+  }
+}
