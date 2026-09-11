@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Preserve logical reader/search order on eligible rotated simple-text pages by extracting from a temporary unrotated page copy and retaining original display geometry. Leave counterrotated, mixed, non-ASCII and ambiguous layouts on the existing path; keep raw interoperability extraction unchanged.
+
 - Retain negative font-resource boundary probes: multiple Type3 resources reorder PDFium copy on 180-degree pages, while whole-line ActualText repairs copy but collapses selection geometry. Keep the supported writer's 255-definition guard and add strict per-font inspection regressions.
 
 - Add an experimental native complex-text PDF representation with exact Unicode across PDFium, MuPDF and pypdf for 32 sample/rotation cases, retained source fonts and bounded outline generation. Mixed-direction text remains refused; editor integration and portable cluster selection are still pending.

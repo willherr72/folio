@@ -1,4 +1,4 @@
-use folio_engine::{EngineError, PdfEngine};
+use folio_engine::{EngineError, ExportRequest, PagePlan, PdfEngine};
 use std::path::{Path, PathBuf};
 
 fn engine() -> PdfEngine {
@@ -33,6 +33,204 @@ fn write_pdf(path: &Path, stream: &str, rotation: u16) {
         format!("trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n{xref}\n%%EOF\n").as_bytes(),
     );
     std::fs::write(path, pdf).unwrap();
+}
+
+#[test]
+fn reading_order_is_stable_across_page_rotation_and_separate_text_operations() {
+    let temp = tempfile::tempdir().unwrap();
+    let engine = engine();
+    for rotation in [0, 90, 180, 270] {
+        let path = temp.path().join(format!("split-{rotation}.pdf"));
+        write_pdf(
+            &path,
+            "BT /F1 20 Tf 60 300 Td (AB) Tj (CD) Tj (EF) Tj 0 -40 Td (GH) Tj (IJ) Tj ET",
+            rotation,
+        );
+        let original = std::fs::read(&path).unwrap();
+        let source = engine.open_document(&path).unwrap();
+        let raw_before = engine.extract_text(&source.id, 0).unwrap();
+        let before = engine.render_page(&source.id, 0, 600).unwrap();
+        let text = engine.page_text(&source.id, 0).unwrap();
+        let copied = text
+            .characters
+            .iter()
+            .map(|c| c.text.as_str())
+            .collect::<String>();
+        assert_eq!(
+            copied.replace("\r\n", "\n"),
+            "ABCDEF\nGHIJ",
+            "rotation {rotation}"
+        );
+        assert_eq!(text.intrinsic_rotation, rotation);
+        let control_path = temp.path().join(format!("joined-{rotation}.pdf"));
+        write_pdf(
+            &control_path,
+            "BT /F1 20 Tf 60 300 Td (ABCDEF) Tj 0 -40 Td (GHIJ) Tj ET",
+            rotation,
+        );
+        let control = engine.open_document(&control_path).unwrap();
+        let control_text = engine.page_text(&control.id, 0).unwrap();
+        assert_eq!(text.characters.len(), control_text.characters.len());
+        for (actual, expected) in text.characters.iter().zip(&control_text.characters) {
+            assert_eq!(actual.text, expected.text);
+            for (a, b) in [actual.x, actual.y, actual.width, actual.height]
+                .into_iter()
+                .zip([expected.x, expected.y, expected.width, expected.height])
+            {
+                assert!(
+                    (a - b).abs() < 0.01,
+                    "Each copied character must retain its original box"
+                );
+            }
+        }
+        engine.close_document(&control.id).unwrap();
+        assert_eq!(engine.render_page(&source.id, 0, 600).unwrap(), before);
+        assert_eq!(engine.extract_text(&source.id, 0).unwrap(), raw_before);
+        let saved = temp.path().join(format!("saved-{rotation}.pdf"));
+        engine
+            .export_pdf(
+                ExportRequest {
+                    flatten: false,
+                    pages: vec![PagePlan {
+                        id: "page".into(),
+                        source_id: source.id.clone(),
+                        page_index: 0,
+                        width: source.pages[0].width,
+                        height: source.pages[0].height,
+                        rotation: 0,
+                        overlays: vec![],
+                    }],
+                },
+                &saved,
+            )
+            .unwrap();
+        let reopened = engine.open_document(&saved).unwrap();
+        assert_eq!(engine.render_page(&reopened.id, 0, 600).unwrap(), before);
+        assert_eq!(engine.extract_text(&reopened.id, 0).unwrap(), raw_before);
+        assert_eq!(
+            serde_json::to_value(engine.page_text(&reopened.id, 0).unwrap()).unwrap(),
+            serde_json::to_value(&text).unwrap()
+        );
+        engine.close_document(&reopened.id).unwrap();
+        assert_eq!(std::fs::read(&path).unwrap(), original);
+        engine.close_document(&source.id).unwrap();
+    }
+}
+
+#[test]
+fn retained_minimal_pdfs_read_correctly_without_mutating_raw_pdfium_order() {
+    let engine = engine();
+    for name in ["single-180.pdf", "split-180.pdf", "counterrotated-180.pdf"] {
+        let path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("../tests/fixtures/reader-order")
+            .join(name);
+        let source = engine.open_document(&path).unwrap();
+        let raw = engine.extract_text(&source.id, 0).unwrap();
+        assert_eq!(
+            raw,
+            if name == "split-180.pdf" {
+                "EF CD AB"
+            } else {
+                "ABCDEF"
+            }
+        );
+        let started = std::time::Instant::now();
+        for _ in 0..20 {
+            assert_eq!(
+                engine
+                    .page_text(&source.id, 0)
+                    .unwrap()
+                    .characters
+                    .iter()
+                    .map(|c| c.text.as_str())
+                    .collect::<String>(),
+                "ABCDEF"
+            );
+        }
+        eprintln!(
+            "{name}: 20 uncached reader requests in {:?}",
+            started.elapsed()
+        );
+        assert_eq!(engine.extract_text(&source.id, 0).unwrap(), raw);
+        engine.close_document(&source.id).unwrap();
+    }
+}
+
+#[test]
+fn ambiguous_advances_and_single_character_objects_keep_raw_order() {
+    let temp = tempfile::tempdir().unwrap();
+    let engine = engine();
+    for (name, content) in [
+        ("negative-spacing", "BT /F1 20 Tf -30 Tc 1 0 0 1 210 200 Tm (AB) Tj (CD) Tj (EF) Tj ET"),
+        ("singletons", "BT /F1 20 Tf 60 300 Td (A) Tj (B) Tj (C) Tj (D) Tj ET"),
+        ("mixed-orientation", "BT /F1 20 Tf 60 300 Td (AB) Tj (CD) Tj ET BT /F1 20 Tf -1 0 0 -1 200 120 Tm (EF) Tj (GH) Tj ET"),
+    ] {
+        let path = temp.path().join(format!("{name}.pdf"));
+        write_pdf(&path,content,180);
+        let source = engine.open_document(&path).unwrap();
+        let raw = engine.extract_text(&source.id,0).unwrap();
+        let text = engine.page_text(&source.id,0).unwrap();
+        assert_eq!(text.characters.iter().map(|c|c.text.as_str()).collect::<String>().replace("\r\n","\n"),raw.replace("\r\n","\n"),"{name}");
+        engine.close_document(&source.id).unwrap();
+    }
+}
+
+#[test]
+fn counterrotated_text_retains_its_existing_correct_reading_order() {
+    let temp = tempfile::tempdir().unwrap();
+    let path = temp.path().join("counterrotated.pdf");
+    write_pdf(
+        &path,
+        "BT /F1 20 Tf -1 0 0 -1 200 120 Tm (AB) Tj (CD) Tj (EF) Tj ET",
+        180,
+    );
+    let engine = engine();
+    let source = engine.open_document(&path).unwrap();
+    assert_eq!(engine.extract_text(&source.id, 0).unwrap(), "ABCDEF");
+    assert_eq!(
+        engine
+            .page_text(&source.id, 0)
+            .unwrap()
+            .characters
+            .iter()
+            .map(|c| c.text.as_str())
+            .collect::<String>(),
+        "ABCDEF"
+    );
+    engine.close_document(&source.id).unwrap();
+}
+
+#[test]
+fn reading_copy_preserves_inherited_page_rotation_and_crop() {
+    let temp = tempfile::tempdir().unwrap();
+    let path = temp.path().join("inherited.pdf");
+    write_pdf(&path, "BT /F1 20 Tf 60 300 Td (AB) Tj (CD) Tj ET", 180);
+    let mut pdf = lopdf::Document::load(&path).unwrap();
+    pdf.get_object_mut((3, 0))
+        .unwrap()
+        .as_dict_mut()
+        .unwrap()
+        .remove(b"Rotate");
+    pdf.get_object_mut((2, 0))
+        .unwrap()
+        .as_dict_mut()
+        .unwrap()
+        .set("Rotate", 180);
+    pdf.save(&path).unwrap();
+    let engine = engine();
+    let source = engine.open_document(&path).unwrap();
+    let before = engine.render_page(&source.id, 0, 600).unwrap();
+    let text = engine.page_text(&source.id, 0).unwrap();
+    assert_eq!(text.intrinsic_rotation, 180);
+    assert_eq!(
+        text.characters
+            .iter()
+            .map(|c| c.text.as_str())
+            .collect::<String>(),
+        "ABCD"
+    );
+    assert_eq!(engine.render_page(&source.id, 0, 600).unwrap(), before);
+    engine.close_document(&source.id).unwrap();
 }
 
 #[test]

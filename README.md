@@ -194,3 +194,7 @@ need a proven reader-order strategy before editor integration.
 splitting definitions across fonts does not yet remove the 255-definition gate:
 PDFium can reorder copied text on rotated pages, and whole-line ActualText loses
 selection geometry. These negative probes remain outside the editor.
+
+The [rotated reader-order investigation](docs/reader-order-workaround.md) reduces
+the defect to ordinary same-font text and documents Folio's conservative
+correction for eligible simple-text pages, including explicit fallback cases.

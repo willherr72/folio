@@ -218,6 +218,8 @@ impl PdfEngine {
         receive.recv().map_err(|_| EngineError::WorkerStopped)?
     }
 
+    /// Raw PDFium extraction for engine interoperability checks. The selectable
+    /// reader/search path is page_text(), which compensates for page rotation.
     pub fn extract_text(&self, source_id: &str, page_index: usize) -> EngineResult<String> {
         let (reply, receive) = mpsc::channel();
         self.send(WorkerRequest::ExtractText {
@@ -657,7 +659,34 @@ impl WorkerRuntime {
         let document = self.document(source_id)?;
         let page = document.document.pages().get(page_index_i32(page_index)?)?;
         let geometry = page_geometry(&page)?;
-        let text = page.text()?;
+        let source_text = page.text()?;
+        // PDFium sorts separate text-show objects by rotated display X, which
+        // reverses collinear segments on 180-degree pages. Read in source axes
+        // but map character boxes through the ORIGINAL displayed geometry.
+        // Import only this page into a temporary document: changing /Rotate on
+        // the open source would mutate its dictionary and could affect export.
+        let mut reading_document =
+            if geometry.rotation != 0 && simple_forward_text(&page, &source_text) {
+                Some(self.pdfium.create_new_pdf()?)
+            } else {
+                None
+            };
+        let mut reading_page = None;
+        if let Some(copy) = reading_document.as_mut() {
+            copy.pages_mut().copy_page_from_document(
+                &document.document,
+                page_index_i32(page_index)?,
+                0,
+            )?;
+            let mut copied_page = copy.pages().get(0)?;
+            copied_page.set_rotation(PdfPageRenderRotation::None);
+            reading_page = Some(copied_page);
+        }
+        let text = if let Some(reading_page) = reading_page.as_ref() {
+            reading_page.text()?
+        } else {
+            source_text
+        };
         let chars = text.chars();
         let mut characters: Vec<PdfTextCharacter> = Vec::with_capacity(chars.len() as usize);
         let mut pending_high_surrogate: Option<u32> = None;
@@ -993,6 +1022,73 @@ impl WorkerRuntime {
         }
         Ok(())
     }
+}
+
+// A page-wide rotation workaround is unsafe for counterrotated, vertical,
+// mixed-direction or individually positioned text. Keep those on the raw path.
+// Bound the per-object character lookup (the wrapper scans the text page).
+fn simple_forward_text(page: &PdfPage<'_>, text: &PdfPageText<'_>) -> bool {
+    if page.objects().len() > 64 || text.chars().len() > 4096 {
+        return false;
+    }
+    let mut text_objects = 0;
+    for object in page.objects().iter() {
+        match object.object_type() {
+            PdfPageObjectType::Text => {
+                let Some(object) = object.as_text_object() else {
+                    return false;
+                };
+                let Ok(matrix) = object.matrix() else {
+                    return false;
+                };
+                if matrix.a() <= 0.0
+                    || matrix.d() <= 0.0
+                    || matrix.b() != 0.0
+                    || matrix.c() != 0.0
+                    || ![matrix.a(), matrix.d(), matrix.e(), matrix.f()]
+                        .iter()
+                        .all(|n| n.is_finite())
+                    || !object.unscaled_font_size().value.is_finite()
+                    || object.unscaled_font_size().value <= 0.0
+                {
+                    return false;
+                }
+                let Ok(chars) = text.chars_for_object(object) else {
+                    return false;
+                };
+                if chars.len() < 2 {
+                    return false;
+                }
+                let mut first = None;
+                let mut previous_x = f32::NEG_INFINITY;
+                for character in chars.iter() {
+                    // Limit the workaround to the tested printable ASCII subset.
+                    // Font direction alone does not establish character advances.
+                    if !(0x20..=0x7e).contains(&character.unicode_value()) {
+                        return false;
+                    }
+                    let Ok((x, y)) = character.origin() else {
+                        return false;
+                    };
+                    if !x.value.is_finite() || !y.value.is_finite() || x.value < previous_x {
+                        return false;
+                    }
+                    let (_, baseline) = *first.get_or_insert((x.value, y.value));
+                    if y.value != baseline {
+                        return false;
+                    }
+                    previous_x = x.value;
+                }
+                if !first.is_some_and(|(x, _)| previous_x > x) {
+                    return false;
+                }
+                text_objects += 1;
+            }
+            PdfPageObjectType::Path | PdfPageObjectType::Image | PdfPageObjectType::Shading => (),
+            _ => return false,
+        }
+    }
+    text_objects >= 2
 }
 
 fn page_geometry(page: &PdfPage<'_>) -> EngineResult<PageGeometry> {
