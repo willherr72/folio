@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.6.1
+
+- Reuse measured text geometry when revisiting cached PDF pages, reducing dense-page tab layout work.
+- Release off-screen thumbnail images so scrolling long documents respects the existing raster cache limits.
+- Cover warm text selection, copy and highlighting across page rotations, duplicate-page metric reuse, and fast thumbnail visibility transitions.
+- Add repeatable packaged tab and WebView process-memory profiling, including explicitly labeled CPU-throttled simulations.
+
 ## 0.6.0
 
 - Added text, drawings and signatures remain editable after save and reopen, without original files or sidecars.

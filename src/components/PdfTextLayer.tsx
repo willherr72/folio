@@ -8,6 +8,10 @@ import { registerHighlightLayer } from "../editor/annotation-selection";
 import { clearSearchTextCache, readSearchPageText } from "../editor/search";
 export const clearPageTextCache = clearSearchTextCache;
 
+// Extraction objects live in the bounded source-text cache. Weak keys let
+// their measured geometry disappear when that cache/source is released.
+const measuredScales = new WeakMap<PageText, Float64Array>();
+
 function usePageText(adapter: FolioAdapter, page: PagePlan) {
   const key = `${adapter.kind}:${page.sourceId}:${page.pageIndex}`;
   const [state, setState] = useState<{ key: string; text?: PageText }>({ key });
@@ -31,6 +35,7 @@ export function PdfTextLayer({ adapter, page, pageNumber, selectable, highlighti
   const text = usePageText(adapter, page);
   const intrinsicRotation = text?.intrinsicRotation ?? 0;
   const sideways = intrinsicRotation === 90 || intrinsicRotation === 270;
+  const scales = text ? measuredScales.get(text) : undefined;
   const layerRef = useRef<HTMLDivElement>(null);
   const highlightCallback = useRef(onHighlight);
   highlightCallback.current = onHighlight;
@@ -41,18 +46,24 @@ export function PdfTextLayer({ adapter, page, pageNumber, selectable, highlighti
     return registerHighlightLayer(layer, { characters: text.characters, rotation: intrinsicRotation, onHighlight: rects => highlightCallback.current?.(rects) });
   }, [highlighting, selectable, text, intrinsicRotation]);
   useLayoutEffect(() => {
+    if (!text || scales) return;
     const spans = layerRef.current?.querySelectorAll<HTMLElement>("[data-pdf-character]");
-    // Finish all layout reads before writing transforms: interleaving these
-    // forces a full text-layer layout for every character on a tab remount.
-    const widths = Array.from(spans ?? [], span => span.offsetWidth);
-    spans?.forEach((span, index) => {
-      const character = text?.characters[index];
-      const width = (sideways ? character?.height : character?.width) ?? 0;
-      // offsetWidth is in unrotated CSS pixels, independent of page zoom.
-      const naturalWidth = widths[index];
-      span.style.transform = `rotate(${intrinsicRotation}deg) scaleX(${width > 0 && naturalWidth > 0 ? width / naturalWidth : 1})`;
-    });
-  }, [text, intrinsicRotation, sideways]);
+    if (!spans?.length) return;
+    // A sibling duplicate can populate the cache after this layer rendered.
+    // Apply that result too, without measuring the same source page twice.
+    let measured = measuredScales.get(text);
+    if (!measured) {
+      // Reads before writes avoid per-glyph forced layouts on the first visit.
+      const widths = Array.from(spans, span => span.offsetWidth);
+      measured = new Float64Array(widths.length);
+      text.characters.forEach((character, index) => {
+        const width = sideways ? character.height : character.width;
+        measured![index] = width > 0 && widths[index] > 0 ? width / widths[index] : 1;
+      });
+      measuredScales.set(text, measured);
+    }
+    spans.forEach((span, index) => { span.style.transform = `rotate(${intrinsicRotation}deg) scaleX(${measured![index]})`; });
+  }, [text, intrinsicRotation, sideways, scales]);
 
   useEffect(() => {
     if (!selectable) return;
@@ -91,7 +102,7 @@ export function PdfTextLayer({ adapter, page, pageNumber, selectable, highlighti
         const left = character.x + (intrinsicRotation === 90 || intrinsicRotation === 180 ? character.width : 0);
         const top = character.y + (intrinsicRotation === 180 || intrinsicRotation === 270 ? character.height : 0);
         const height = Math.max(1, sideways ? character.width : character.height);
-        return <span key={index} data-pdf-character={index} style={{ left, top, fontSize: height, height }}>{character.text}</span>;
+        return <span key={index} data-pdf-character={index} style={{ left, top, fontSize: height, height, transform: scales ? `rotate(${intrinsicRotation}deg) scaleX(${scales[index]})` : undefined }}>{character.text}</span>;
       })}
       {highlighting && ((!adapter.getPageText) || (text && !text.characters.some(character => character.text.trim()))) && <div className="annotation-empty-cue">No embedded text to highlight on this page. Use a comment instead.</div>}
     </div>

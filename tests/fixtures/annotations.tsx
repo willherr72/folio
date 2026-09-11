@@ -26,8 +26,9 @@ function Fixture() {
   const [overlays, setOverlays] = useState<PagePlan["overlays"]>(() => params.has("opacity") ? [{ type: "highlight", id: "imported", color: "#ffff00", opacity: Number(params.get("opacity")), rects: [{ x: 0, y: 0, width, height }] }] : []);
   const [selected, setSelected] = useState<string | null>(null);
   const [status, setStatus] = useState("");
+  const [mount, setMount] = useState(0);
   const page: PagePlan = { id: "browser", sourceId: "browser", pageIndex: 0, width, height, rotation: Number(params.get("rotation") ?? 0) as Rotation, overlays };
-  return <div style={{ padding: 20 }}><nav>{["select", "highlight", "comment"].map(name => <button key={name} onClick={() => setTool(name as typeof tool)}>{name}</button>)}</nav><output style={{ display: "block", height: 24 }} aria-label="Selection state">{status}</output><output style={{ display: "none" }} aria-label="Annotations">{JSON.stringify(overlays)}</output><PageView adapter={adapter} page={page} pageNumber={1} zoom={Number(params.get("zoom") ?? 150)} tool={tool} selectedOverlayId={selected} pendingSignature={null}
+  return <div style={{ padding: 20 }}><nav>{["select", "highlight", "comment"].map(name => <button key={name} onClick={() => setTool(name as typeof tool)}>{name}</button>)}<button onClick={() => setMount(value => value + 1)}>Remount page</button></nav><output style={{ display: "block", height: 24 }} aria-label="Selection state">{status}</output><output style={{ display: "none" }} aria-label="Annotations">{JSON.stringify(overlays)}</output><PageView key={mount} adapter={adapter} page={page} pageNumber={1} zoom={Number(params.get("zoom") ?? 150)} tool={tool} selectedOverlayId={selected} pendingSignature={null}
     onSelectOverlay={id => { setSelected(id); setStatus(id ?? ""); }} onAddText={() => {}} onPlaceSignature={() => {}}
     onHighlight={rects => setOverlays(value => [...value, { type: "highlight", id: `highlight-${value.length}`, rects, color: "#ffff00" }])}
     onAddComment={point => setOverlays(value => [...value, { type: "comment", id: `comment-${value.length}`, ...point, text: "Review note", color: "#ffff00" }])}

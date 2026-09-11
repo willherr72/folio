@@ -12,8 +12,8 @@ Extract it and open **Folio.exe**. Keep the resources folder beside the executab
 Microsoft Edge WebView2 Runtime is required.
 
 In this development checkout, double-click **Launch Folio.cmd** after building.
-Version 0.6.0 lives in **artifacts/Folio-v0.6.0/Folio.exe**.
-The ZIP is **artifacts/Folio-v0.6.0-windows-x64.zip**.
+Version 0.6.1 lives in **artifacts/Folio-v0.6.1/Folio.exe**.
+The ZIP is **artifacts/Folio-v0.6.1-windows-x64.zip**.
 
 ## Everyday editing
 
@@ -111,7 +111,8 @@ show a visible warning. Checkpoints are limited to 32 MiB of edit/view metadata.
 
 [GitHub Issues](https://github.com/willherr72/folio/issues) is the central backlog.
 Milestones group v0.4 recovery/search/printing, v0.5 reusable signatures/highlights,
-v0.6 editable persistence/extensive testing, and v0.7 existing-word editing.
+v0.6 editable persistence/extensive testing, v0.6.1 performance fixes, and v0.7 existing-word editing.
+Physical 8 GB hardware validation remains tracked in [issue #10](https://github.com/willherr72/folio/issues/10).
 
 ## Build from source
 
@@ -148,7 +149,7 @@ Real PDF editing runs in the desktop app.
 
 The native smoke opens a real PDF through Windows dialogs, edits it, draws,
 drags thumbnails, checks both close-confirmation decisions, saves and reopens.
-Its launcher uses an isolated test profile. See [verification notes](docs/verification.md).
+Its launcher uses an isolated test profile. See [v0.6.1 performance verification](docs/performance-v0.6.1.md), the [compatibility corpus](docs/corpus/README.md), and [earlier verification notes](docs/verification.md).
 
 ## Internals and license
 

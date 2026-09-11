@@ -1,0 +1,286 @@
+{
+  "schemaVersion": 1,
+  "workload": "Open dense-300-pages.pdf in a fresh isolated app/profile; settle at least 10 seconds; traverse all 300 thumbnails; sample; idle 10 seconds; close clean tab; idle 10 seconds.",
+  "fixture": {
+    "name": "dense-300-pages.pdf",
+    "sha256": "476785062c3549b718de185653d5ad8ad8f3987fdae84ebcf65de15c4bd1c3f1",
+    "pages": 300
+  },
+  "machineAtCandidateRun": {
+    "os": "Microsoft Windows 11 Pro",
+    "build": "26200",
+    "cpu": "AMD Ryzen AI 9 HX 370 w/ Radeon 890M           ",
+    "logicalProcessors": 24,
+    "physicalMemoryBytes": 102317273088,
+    "webviewVersion": "152.0.4191.66"
+  },
+  "forcedGarbageCollection": false,
+  "artificialCpuThrottling": false,
+  "responseTransport": {
+    "renderPageMimeType": "application/octet-stream",
+    "blobMimeType": "image/png",
+    "pngSignature": [
+      137,
+      80,
+      78,
+      71,
+      13,
+      10,
+      26,
+      10
+    ]
+  },
+  "limitations": [
+    "Single focused baseline/candidate runs on successive dates; other development work shared the machine.",
+    "Dialog automation stalled before scrolling. The baseline dense phase resumed with its original app and instrumentation; no dialog time is presented as scroll time.",
+    "Live URL and mounted thumbnail counts establish ownership bounds. PNG bytes and RGBA dimension estimates are not total process or GPU memory.",
+    "Process values are snapshots including allocator/GPU retention; working sets may count shared pages more than once. These are not simultaneous unique physical-memory peaks.",
+    "The process snapshots do not demonstrate a total-RAM reduction. Actual 8 GB hardware validation remains tracked in issue 10."
+  ],
+  "runs": [
+    {
+      "version": "0.6.0",
+      "binarySha256": "0bab799243f9173f20196b154a91159e8caa0c8f604a9ba55668794ee1b50ea3",
+      "localArtifacts": "artifacts/issue9-thumbnails-baseline",
+      "snapshots": [
+        {
+          "phase": "empty",
+          "utc": "2026-09-10T21:31:09.5677491Z",
+          "treeWorkingSetBytes": 546283520,
+          "treePrivateBytes": 311848960,
+          "processRolePrivateBytes": {
+            "native": 6549504,
+            "browser": 35983360,
+            "crashpad-handler": 2707456,
+            "gpu-process": 214315008,
+            "utility": 22130688,
+            "renderer": 30162944
+          },
+          "jsHeapUsedBytes": 3124616,
+          "domNodes": 71,
+          "mountedThumbnails": 0,
+          "mountedPages": 0,
+          "liveImageUrls": 0,
+          "createdImageUrls": 0,
+          "revokedImageUrls": 0,
+          "retainedEncodedPngBytes": 0,
+          "decodedRgbaSizeEstimateBytes": 0
+        },
+        {
+          "phase": "dense-open",
+          "utc": "2026-09-10T21:36:01.7682974Z",
+          "treeWorkingSetBytes": 913645568,
+          "treePrivateBytes": 606208000,
+          "processRolePrivateBytes": {
+            "native": 47095808,
+            "browser": 38457344,
+            "crashpad-handler": 3223552,
+            "gpu-process": 265580544,
+            "utility": 22163456,
+            "renderer": 229687296
+          },
+          "jsHeapUsedBytes": 10519152,
+          "domNodes": 24828,
+          "mountedThumbnails": 5,
+          "mountedPages": 2,
+          "liveImageUrls": 7,
+          "createdImageUrls": 7,
+          "revokedImageUrls": 0,
+          "retainedEncodedPngBytes": 1323639,
+          "decodedRgbaSizeEstimateBytes": 8556752
+        },
+        {
+          "phase": "dense-all-thumbnails",
+          "utc": "2026-09-10T21:36:54.6317654Z",
+          "treeWorkingSetBytes": 1302315008,
+          "treePrivateBytes": 1004081152,
+          "processRolePrivateBytes": {
+            "native": 48455680,
+            "browser": 65695744,
+            "crashpad-handler": 3223552,
+            "gpu-process": 353140736,
+            "utility": 22478848,
+            "renderer": 511086592
+          },
+          "jsHeapUsedBytes": 15055048,
+          "domNodes": 25796,
+          "mountedThumbnails": 300,
+          "mountedPages": 2,
+          "liveImageUrls": 302,
+          "createdImageUrls": 302,
+          "revokedImageUrls": 0,
+          "retainedEncodedPngBytes": 23957325,
+          "decodedRgbaSizeEstimateBytes": 96631952
+        },
+        {
+          "phase": "dense-thumbnails-idle",
+          "utc": "2026-09-10T21:37:11.1727949Z",
+          "treeWorkingSetBytes": 1084203008,
+          "treePrivateBytes": 784326656,
+          "processRolePrivateBytes": {
+            "native": 48275456,
+            "browser": 65822720,
+            "crashpad-handler": 3223552,
+            "gpu-process": 351236096,
+            "utility": 22478848,
+            "renderer": 293289984
+          },
+          "jsHeapUsedBytes": 12199848,
+          "domNodes": 25718,
+          "mountedThumbnails": 300,
+          "mountedPages": 2,
+          "liveImageUrls": 302,
+          "createdImageUrls": 302,
+          "revokedImageUrls": 0,
+          "retainedEncodedPngBytes": 23957325,
+          "decodedRgbaSizeEstimateBytes": 96631952
+        },
+        {
+          "phase": "all-closed-idle",
+          "utc": "2026-09-10T21:37:33.8218879Z",
+          "treeWorkingSetBytes": 972222464,
+          "treePrivateBytes": 667631616,
+          "processRolePrivateBytes": {
+            "native": 19750912,
+            "browser": 39370752,
+            "crashpad-handler": 3170304,
+            "gpu-process": 402149376,
+            "utility": 22114304,
+            "renderer": 181075968
+          },
+          "jsHeapUsedBytes": 5375216,
+          "domNodes": 58,
+          "mountedThumbnails": 0,
+          "mountedPages": 0,
+          "liveImageUrls": 0,
+          "createdImageUrls": 302,
+          "revokedImageUrls": 302,
+          "retainedEncodedPngBytes": 0,
+          "decodedRgbaSizeEstimateBytes": 0
+        }
+      ]
+    },
+    {
+      "version": "0.6.1",
+      "binarySha256": "51e312cf0a94ec4db3cdc95fefd9c4e5df27f64ebc895ab80c74b5688b93870d",
+      "localArtifacts": "artifacts/issue9-thumbnails-candidate",
+      "snapshots": [
+        {
+          "phase": "empty",
+          "utc": "2026-09-11T13:25:52.4646110Z",
+          "treeWorkingSetBytes": 535355392,
+          "treePrivateBytes": 289411072,
+          "processRolePrivateBytes": {
+            "native": 6062080,
+            "browser": 38035456,
+            "crashpad-handler": 3702784,
+            "gpu-process": 188502016,
+            "utility": 21827584,
+            "renderer": 31281152
+          },
+          "jsHeapUsedBytes": 2527864,
+          "domNodes": 58,
+          "mountedThumbnails": 0,
+          "mountedPages": 0,
+          "liveImageUrls": 0,
+          "createdImageUrls": 0,
+          "revokedImageUrls": 0,
+          "retainedEncodedPngBytes": 0,
+          "decodedRgbaSizeEstimateBytes": 0
+        },
+        {
+          "phase": "dense-open",
+          "utc": "2026-09-11T13:27:58.0015903Z",
+          "treeWorkingSetBytes": 964075520,
+          "treePrivateBytes": 575160320,
+          "processRolePrivateBytes": {
+            "native": 49463296,
+            "browser": 38862848,
+            "crashpad-handler": 3219456,
+            "gpu-process": 235282432,
+            "utility": 23289856,
+            "renderer": 225042432
+          },
+          "jsHeapUsedBytes": 13869032,
+          "domNodes": 24840,
+          "mountedThumbnails": 5,
+          "mountedPages": 2,
+          "liveImageUrls": 7,
+          "createdImageUrls": 7,
+          "revokedImageUrls": 0,
+          "retainedEncodedPngBytes": 1323639,
+          "decodedRgbaSizeEstimateBytes": 8556752
+        },
+        {
+          "phase": "dense-all-thumbnails",
+          "utc": "2026-09-11T13:28:17.8712144Z",
+          "treeWorkingSetBytes": 1420951552,
+          "treePrivateBytes": 1038061568,
+          "processRolePrivateBytes": {
+            "native": 48664576,
+            "browser": 44965888,
+            "crashpad-handler": 3219456,
+            "gpu-process": 374542336,
+            "utility": 23019520,
+            "renderer": 543649792
+          },
+          "jsHeapUsedBytes": 13487028,
+          "domNodes": 25303,
+          "mountedThumbnails": 5,
+          "mountedPages": 2,
+          "liveImageUrls": 60,
+          "createdImageUrls": 302,
+          "revokedImageUrls": 242,
+          "retainedEncodedPngBytes": 5413592,
+          "decodedRgbaSizeEstimateBytes": 24380432
+        },
+        {
+          "phase": "dense-thumbnails-idle",
+          "utc": "2026-09-11T13:28:31.2744751Z",
+          "treeWorkingSetBytes": 1198211072,
+          "treePrivateBytes": 812576768,
+          "processRolePrivateBytes": {
+            "native": 48488448,
+            "browser": 44498944,
+            "crashpad-handler": 3219456,
+            "gpu-process": 360452096,
+            "utility": 22777856,
+            "renderer": 333139968
+          },
+          "jsHeapUsedBytes": 11009800,
+          "domNodes": 25128,
+          "mountedThumbnails": 5,
+          "mountedPages": 2,
+          "liveImageUrls": 60,
+          "createdImageUrls": 302,
+          "revokedImageUrls": 242,
+          "retainedEncodedPngBytes": 5413592,
+          "decodedRgbaSizeEstimateBytes": 24380432
+        },
+        {
+          "phase": "all-closed-idle",
+          "utc": "2026-09-11T13:28:44.5146309Z",
+          "treeWorkingSetBytes": 1222307840,
+          "treePrivateBytes": 841338880,
+          "processRolePrivateBytes": {
+            "native": 20787200,
+            "browser": 38424576,
+            "crashpad-handler": 3219456,
+            "gpu-process": 402714624,
+            "utility": 22376448,
+            "renderer": 353816576
+          },
+          "jsHeapUsedBytes": 21552360,
+          "domNodes": 25167,
+          "mountedThumbnails": 0,
+          "mountedPages": 0,
+          "liveImageUrls": 0,
+          "createdImageUrls": 302,
+          "revokedImageUrls": 302,
+          "retainedEncodedPngBytes": 0,
+          "decodedRgbaSizeEstimateBytes": 0
+        }
+      ]
+    }
+  ]
+}

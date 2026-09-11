@@ -9,27 +9,38 @@ try {
     const direction = (intrinsic + rotation) % 360;
     await page.goto(`${origin}/tests/fixtures/annotations.html?rotation=${rotation}&intrinsic=${intrinsic}&zoom=${zoom}`);
     const glyphs = page.locator("[data-pdf-character]"); await expect(glyphs).toHaveCount(21);
-    const first = await glyphs.first().boundingBox(), last = await glyphs.last().boundingBox();
-    // Aim within each glyph's first/last quarter; subpixel transformed edges can
-    // resolve to the opposite caret in Chromium at fractional zoom.
-    const start = direction === 0 ? [first.x + first.width * .25, first.y + first.height / 2] : direction === 90 ? [first.x + first.width / 2, first.y + first.height * .25] : direction === 180 ? [first.x + first.width * .75, first.y + first.height / 2] : [first.x + first.width / 2, first.y + first.height * .75];
-    const end = direction === 0 ? [last.x + last.width * .75, last.y + last.height / 2] : direction === 90 ? [last.x + last.width / 2, last.y + last.height * .75] : direction === 180 ? [last.x + last.width * .25, last.y + last.height / 2] : [last.x + last.width / 2, last.y + last.height * .25];
-    const sourceRects = [{ x: 30, y: 40, width: 108, height: 20 }, { x: 30, y: 75, width: 132, height: 20 }];
-    const expected = sourceRects.map(rect => {
-      const { x, y, width: w, height: h } = rect;
-      return intrinsic === 90 ? { x: 320 - y - h, y: x, width: h, height: w } : intrinsic === 180 ? { x: 240 - x - w, y: 320 - y - h, width: w, height: h } : intrinsic === 270 ? { x: y, y: 240 - x - w, width: h, height: w } : rect;
-    });
-    for (const reverse of [false, true]) {
-      await page.mouse.move(...(reverse ? end : start)); await page.mouse.down(); await page.mouse.move(...(reverse ? start : end), { steps: 15 }); await page.mouse.up();
-      await expect(page.locator(".annotation-highlight")).toHaveCount(reverse ? 2 : 1);
-      const overlays = JSON.parse(await page.getByLabel("Annotations").textContent());
-      expect(overlays.at(-1).rects, `intrinsic=${intrinsic} rotation=${rotation} zoom=${zoom} reverse=${reverse}`).toEqual(expected);
+    for (let pass = 0; pass < 2; pass++) {
+      if (pass) {
+        await page.evaluate(() => { window.__previousGlyph = document.querySelector("[data-pdf-character]"); });
+        await page.getByRole("button", { name: "Remount page", exact: true }).click();
+        await page.waitForFunction(() => !window.__previousGlyph.isConnected);
+        await expect(glyphs).toHaveCount(21);
+        await page.getByRole("button", { name: "highlight", exact: true }).click();
+      }
+      await expect(glyphs.last()).toBeVisible();
+      await expect(glyphs.last()).toHaveCSS("transform", /matrix/);
+      const first = await glyphs.first().boundingBox(), last = await glyphs.last().boundingBox();
+      // Aim within each glyph's first/last quarter; subpixel transformed edges can
+      // resolve to the opposite caret in Chromium at fractional zoom.
+      const start = direction === 0 ? [first.x + first.width * .25, first.y + first.height / 2] : direction === 90 ? [first.x + first.width / 2, first.y + first.height * .25] : direction === 180 ? [first.x + first.width * .75, first.y + first.height / 2] : [first.x + first.width / 2, first.y + first.height * .75];
+      const end = direction === 0 ? [last.x + last.width * .75, last.y + last.height / 2] : direction === 90 ? [last.x + last.width / 2, last.y + last.height * .75] : direction === 180 ? [last.x + last.width * .25, last.y + last.height / 2] : [last.x + last.width / 2, last.y + last.height * .25];
+      const sourceRects = [{ x: 30, y: 40, width: 108, height: 20 }, { x: 30, y: 75, width: 132, height: 20 }];
+      const expected = sourceRects.map(rect => {
+        const { x, y, width: w, height: h } = rect;
+        return intrinsic === 90 ? { x: 320 - y - h, y: x, width: h, height: w } : intrinsic === 180 ? { x: 240 - x - w, y: 320 - y - h, width: w, height: h } : intrinsic === 270 ? { x: y, y: 240 - x - w, width: h, height: w } : rect;
+      });
+      for (const reverse of [false, true]) {
+        await page.mouse.move(...(reverse ? end : start)); await page.mouse.down(); await page.mouse.move(...(reverse ? start : end), { steps: 15 }); await page.mouse.up();
+        await expect(page.locator(".annotation-highlight")).toHaveCount(pass * 2 + (reverse ? 2 : 1));
+        const overlays = JSON.parse(await page.getByLabel("Annotations").textContent());
+        expect(overlays.at(-1).rects, `intrinsic=${intrinsic} rotation=${rotation} zoom=${zoom} reverse=${reverse}`).toEqual(expected);
+      }
+      await page.getByRole("button", { name: "select", exact: true }).click();
+      await page.mouse.move(...start); await page.mouse.down(); await page.mouse.move(...end, { steps: 15 }); await page.mouse.up(); await page.keyboard.press("Control+c");
+      expect(await page.evaluate(() => navigator.clipboard.readText())).toBe("Hello PDF\r\nSecond line");
+      expect(await page.getByLabel("Selection state").textContent()).not.toBe("moved overlay");
+      console.log(`${pass ? "Warm remount" : "Cold mount"} highlight source rects and preserved copy: intrinsic ${intrinsic}, editor ${rotation}, ${zoom}% zoom`);
     }
-    await page.getByRole("button", { name: "select", exact: true }).click();
-    await page.mouse.move(...start); await page.mouse.down(); await page.mouse.move(...end, { steps: 15 }); await page.mouse.up(); await page.keyboard.press("Control+c");
-    expect(await page.evaluate(() => navigator.clipboard.readText())).toBe("Hello PDF\r\nSecond line");
-    expect(await page.getByLabel("Selection state").textContent()).not.toBe("moved overlay");
-    console.log(`Highlight source rects and preserved copy: intrinsic ${intrinsic}, editor ${rotation}, ${zoom}% zoom`);
   }
   for (const destination of [1, 4]) {
     await page.goto(`${origin}/tests/fixtures/annotations-multipage.html`);

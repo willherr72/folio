@@ -87,16 +87,15 @@ function usePageImage(adapter: FolioAdapter, page: PagePlan, pixelWidth: number)
 function useNearViewport(ref: React.RefObject<HTMLDivElement | null>) {
   const [visible, setVisible] = useState(() => typeof IntersectionObserver === "undefined");
   useEffect(() => {
-    if (visible || typeof IntersectionObserver === "undefined" || !ref.current) return;
+    if (typeof IntersectionObserver === "undefined" || !ref.current) return;
     const observer = new IntersectionObserver((entries) => {
-      if (entries.some((entry) => entry.isIntersecting)) {
-        setVisible(true);
-        observer.disconnect();
-      }
+      // Release offscreen thumbnail references so the shared raster cache can evict them.
+      const latest = entries[entries.length - 1];
+      if (latest) setVisible(latest.isIntersecting);
     }, { rootMargin: "300px 0px" });
     observer.observe(ref.current);
     return () => observer.disconnect();
-  }, [ref, visible]);
+  }, [ref]);
   return visible;
 }
 function bounds(overlay: Overlay) {

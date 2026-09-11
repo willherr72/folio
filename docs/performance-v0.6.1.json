@@ -1,0 +1,673 @@
+{
+  "schemaVersion": 1,
+  "machine": {
+    "os": "Microsoft Windows 11 Pro",
+    "build": "26200",
+    "cpu": "AMD Ryzen AI 9 HX 370 w/ Radeon 890M           ",
+    "logicalProcessors": 24,
+    "physicalMemoryBytes": 102317273088,
+    "webviewVersion": "152.0.4191.66"
+  },
+  "summary": [
+    {
+      "cpuThrottle": 1,
+      "fixture": "dense-300-pages.pdf",
+      "0.6.0": {
+        "samples": 12,
+        "meanMs": 847.6583333611488,
+        "medianMs": 840.3500001430511,
+        "minMs": 667.2999999523163,
+        "maxMs": 1104.2999999523163
+      },
+      "0.6.1": {
+        "samples": 12,
+        "meanMs": 631.7583333055178,
+        "medianMs": 605.0500000715256,
+        "minMs": 517.8999998569489,
+        "maxMs": 827.0999999046326
+      },
+      "meanReductionPercent": 25.47016782098287
+    },
+    {
+      "cpuThrottle": 1,
+      "fixture": "scan-40-pages.pdf",
+      "0.6.0": {
+        "samples": 12,
+        "meanMs": 84.18333335717519,
+        "medianMs": 78.10000014305115,
+        "minMs": 64.20000004768372,
+        "maxMs": 149
+      },
+      "0.6.1": {
+        "samples": 12,
+        "meanMs": 74.45833337306976,
+        "medianMs": 72.75000011920929,
+        "minMs": 45.200000047683716,
+        "maxMs": 129.70000004768372
+      },
+      "meanReductionPercent": 11.552167865394381
+    },
+    {
+      "cpuThrottle": 4,
+      "fixture": "dense-300-pages.pdf",
+      "0.6.0": {
+        "samples": 6,
+        "meanMs": 4985.633333404859,
+        "medianMs": 4929.150000095367,
+        "minMs": 4129.200000047684,
+        "maxMs": 5764.299999952316
+      },
+      "0.6.1": {
+        "samples": 6,
+        "meanMs": 2610.1666666269302,
+        "medianMs": 2246.100000023842,
+        "minMs": 1790.7000000476837,
+        "maxMs": 4467.599999904633
+      },
+      "meanReductionPercent": 47.64623685544163
+    },
+    {
+      "cpuThrottle": 4,
+      "fixture": "scan-40-pages.pdf",
+      "0.6.0": {
+        "samples": 6,
+        "meanMs": 421.0666666030884,
+        "medianMs": 445.7499998807907,
+        "minMs": 233.29999995231628,
+        "maxMs": 517.9000000953674
+      },
+      "0.6.1": {
+        "samples": 6,
+        "meanMs": 235.91666666666666,
+        "medianMs": 216.95000004768372,
+        "minMs": 150.90000009536743,
+        "maxMs": 343.40000009536743
+      },
+      "meanReductionPercent": 43.97165926956416
+    }
+  ],
+  "runs": [
+    {
+      "version": "0.6.0",
+      "binarySha256": "0bab799243f9173f20196b154a91159e8caa0c8f604a9ba55668794ee1b50ea3",
+      "run": {
+        "passed": true,
+        "startedUtc": "2026-09-11T13:29:38.227Z",
+        "completedUtc": "2026-09-11T13:30:20.901Z",
+        "hashes": {
+          "dense-300-pages.pdf": "476785062c3549b718de185653d5ad8ad8f3987fdae84ebcf65de15c4bd1c3f1",
+          "scan-40-pages.pdf": "ab832bf760e6c9bd830084b1bff3fba8f708c7b298e6b468ceb1a853fb3f7d8a"
+        },
+        "viewport": {
+          "width": 1280,
+          "height": 820,
+          "devicePixelRatio": 1.5
+        },
+        "expectedGlyphs": {
+          "dense-300-pages.pdf": 9880,
+          "scan-40-pages.pdf": 0
+        },
+        "positiveControl": {
+          "probeIndex": 20,
+          "observedCommands": [
+            "render_page",
+            "page_text"
+          ]
+        },
+        "results": [
+          {
+            "cpuThrottle": 1,
+            "samples": [
+              {
+                "fixture": "dense-300-pages.pdf",
+                "round": 0,
+                "readyMs": 764.7999999523163
+              },
+              {
+                "fixture": "scan-40-pages.pdf",
+                "round": 0,
+                "readyMs": 75.60000014305115
+              },
+              {
+                "fixture": "dense-300-pages.pdf",
+                "round": 1,
+                "readyMs": 766
+              },
+              {
+                "fixture": "scan-40-pages.pdf",
+                "round": 1,
+                "readyMs": 67.89999985694885
+              },
+              {
+                "fixture": "dense-300-pages.pdf",
+                "round": 2,
+                "readyMs": 667.2999999523163
+              },
+              {
+                "fixture": "scan-40-pages.pdf",
+                "round": 2,
+                "readyMs": 88.80000019073486
+              },
+              {
+                "fixture": "dense-300-pages.pdf",
+                "round": 3,
+                "readyMs": 812.1000001430511
+              },
+              {
+                "fixture": "scan-40-pages.pdf",
+                "round": 3,
+                "readyMs": 78.40000009536743
+              },
+              {
+                "fixture": "dense-300-pages.pdf",
+                "round": 4,
+                "readyMs": 688
+              },
+              {
+                "fixture": "scan-40-pages.pdf",
+                "round": 4,
+                "readyMs": 76.59999990463257
+              },
+              {
+                "fixture": "dense-300-pages.pdf",
+                "round": 5,
+                "readyMs": 704.8000001907349
+              },
+              {
+                "fixture": "scan-40-pages.pdf",
+                "round": 5,
+                "readyMs": 82.20000004768372
+              }
+            ],
+            "repeatNativeRequests": [],
+            "metrics": {
+              "LayoutCount": 62,
+              "LayoutDuration": 1.16194,
+              "RecalcStyleCount": 74,
+              "RecalcStyleDuration": 1.11006,
+              "ScriptDuration": 0.9762439999999999,
+              "TaskDuration": 4.980725
+            }
+          },
+          {
+            "cpuThrottle": 4,
+            "samples": [
+              {
+                "fixture": "dense-300-pages.pdf",
+                "round": 0,
+                "readyMs": 4644.800000190735
+              },
+              {
+                "fixture": "scan-40-pages.pdf",
+                "round": 0,
+                "readyMs": 517.9000000953674
+              },
+              {
+                "fixture": "dense-300-pages.pdf",
+                "round": 1,
+                "readyMs": 4920.900000095367
+              },
+              {
+                "fixture": "scan-40-pages.pdf",
+                "round": 1,
+                "readyMs": 381.59999990463257
+              },
+              {
+                "fixture": "dense-300-pages.pdf",
+                "round": 2,
+                "readyMs": 4937.400000095367
+              },
+              {
+                "fixture": "scan-40-pages.pdf",
+                "round": 2,
+                "readyMs": 233.29999995231628
+              },
+              {
+                "fixture": "dense-300-pages.pdf",
+                "round": 3,
+                "readyMs": 4129.200000047684
+              },
+              {
+                "fixture": "scan-40-pages.pdf",
+                "round": 3,
+                "readyMs": 436.69999980926514
+              },
+              {
+                "fixture": "dense-300-pages.pdf",
+                "round": 4,
+                "readyMs": 5764.299999952316
+              },
+              {
+                "fixture": "scan-40-pages.pdf",
+                "round": 4,
+                "readyMs": 502.09999990463257
+              },
+              {
+                "fixture": "dense-300-pages.pdf",
+                "round": 5,
+                "readyMs": 5517.200000047684
+              },
+              {
+                "fixture": "scan-40-pages.pdf",
+                "round": 5,
+                "readyMs": 454.7999999523163
+              }
+            ],
+            "repeatNativeRequests": [],
+            "metrics": {
+              "LayoutCount": 69,
+              "LayoutDuration": 8.156914,
+              "RecalcStyleCount": 81,
+              "RecalcStyleDuration": 9.625895,
+              "ScriptDuration": 6.243545,
+              "TaskDuration": 33.220716
+            }
+          }
+        ],
+        "errors": [],
+        "method": "In-WebView click to selected tab DOM, raster image element, calibrated dense text (or no text for scan), then two animation frames. This measures DOM/text readiness, not image decode or presentation completion. Six switches per fixture per rate. CPU 4x is a simulation on the same host, not lower-memory hardware. Native render/text requests must remain zero during every warm group. No absolute timing threshold."
+      }
+    },
+    {
+      "version": "0.6.1",
+      "binarySha256": "51e312cf0a94ec4db3cdc95fefd9c4e5df27f64ebc895ab80c74b5688b93870d",
+      "run": {
+        "passed": true,
+        "startedUtc": "2026-09-11T13:30:41.471Z",
+        "completedUtc": "2026-09-11T13:31:07.918Z",
+        "hashes": {
+          "dense-300-pages.pdf": "476785062c3549b718de185653d5ad8ad8f3987fdae84ebcf65de15c4bd1c3f1",
+          "scan-40-pages.pdf": "ab832bf760e6c9bd830084b1bff3fba8f708c7b298e6b468ceb1a853fb3f7d8a"
+        },
+        "viewport": {
+          "width": 1280,
+          "height": 820,
+          "devicePixelRatio": 1.5
+        },
+        "expectedGlyphs": {
+          "dense-300-pages.pdf": 9880,
+          "scan-40-pages.pdf": 0
+        },
+        "positiveControl": {
+          "probeIndex": 20,
+          "observedCommands": [
+            "render_page",
+            "page_text"
+          ]
+        },
+        "results": [
+          {
+            "cpuThrottle": 1,
+            "samples": [
+              {
+                "fixture": "dense-300-pages.pdf",
+                "round": 0,
+                "readyMs": 566.2000000476837
+              },
+              {
+                "fixture": "scan-40-pages.pdf",
+                "round": 0,
+                "readyMs": 77.79999995231628
+              },
+              {
+                "fixture": "dense-300-pages.pdf",
+                "round": 1,
+                "readyMs": 657.7000000476837
+              },
+              {
+                "fixture": "scan-40-pages.pdf",
+                "round": 1,
+                "readyMs": 45.200000047683716
+              },
+              {
+                "fixture": "dense-300-pages.pdf",
+                "round": 2,
+                "readyMs": 553.5
+              },
+              {
+                "fixture": "scan-40-pages.pdf",
+                "round": 2,
+                "readyMs": 82.40000009536743
+              },
+              {
+                "fixture": "dense-300-pages.pdf",
+                "round": 3,
+                "readyMs": 808
+              },
+              {
+                "fixture": "scan-40-pages.pdf",
+                "round": 3,
+                "readyMs": 52.799999952316284
+              },
+              {
+                "fixture": "dense-300-pages.pdf",
+                "round": 4,
+                "readyMs": 525.5999999046326
+              },
+              {
+                "fixture": "scan-40-pages.pdf",
+                "round": 4,
+                "readyMs": 87.29999995231628
+              },
+              {
+                "fixture": "dense-300-pages.pdf",
+                "round": 5,
+                "readyMs": 552
+              },
+              {
+                "fixture": "scan-40-pages.pdf",
+                "round": 5,
+                "readyMs": 58.200000047683716
+              }
+            ],
+            "repeatNativeRequests": [],
+            "metrics": {
+              "LayoutCount": 48,
+              "LayoutDuration": 0.8172569999999999,
+              "RecalcStyleCount": 60,
+              "RecalcStyleDuration": 0.6553669999999999,
+              "ScriptDuration": 0.927909,
+              "TaskDuration": 4.133632
+            }
+          },
+          {
+            "cpuThrottle": 4,
+            "samples": [
+              {
+                "fixture": "dense-300-pages.pdf",
+                "round": 0,
+                "readyMs": 4467.599999904633
+              },
+              {
+                "fixture": "scan-40-pages.pdf",
+                "round": 0,
+                "readyMs": 330.89999985694885
+              },
+              {
+                "fixture": "dense-300-pages.pdf",
+                "round": 1,
+                "readyMs": 2978.5999999046326
+              },
+              {
+                "fixture": "scan-40-pages.pdf",
+                "round": 1,
+                "readyMs": 156.39999985694885
+              },
+              {
+                "fixture": "dense-300-pages.pdf",
+                "round": 2,
+                "readyMs": 1931.8999998569489
+              },
+              {
+                "fixture": "scan-40-pages.pdf",
+                "round": 2,
+                "readyMs": 240.59999990463257
+              },
+              {
+                "fixture": "dense-300-pages.pdf",
+                "round": 3,
+                "readyMs": 2122.9000000953674
+              },
+              {
+                "fixture": "scan-40-pages.pdf",
+                "round": 3,
+                "readyMs": 193.30000019073486
+              },
+              {
+                "fixture": "dense-300-pages.pdf",
+                "round": 4,
+                "readyMs": 2369.2999999523163
+              },
+              {
+                "fixture": "scan-40-pages.pdf",
+                "round": 4,
+                "readyMs": 343.40000009536743
+              },
+              {
+                "fixture": "dense-300-pages.pdf",
+                "round": 5,
+                "readyMs": 1790.7000000476837
+              },
+              {
+                "fixture": "scan-40-pages.pdf",
+                "round": 5,
+                "readyMs": 150.90000009536743
+              }
+            ],
+            "repeatNativeRequests": [],
+            "metrics": {
+              "LayoutCount": 58,
+              "LayoutDuration": 3.266165,
+              "RecalcStyleCount": 70,
+              "RecalcStyleDuration": 2.7083950000000003,
+              "ScriptDuration": 4.670555,
+              "TaskDuration": 17.692557
+            }
+          }
+        ],
+        "errors": [],
+        "method": "In-WebView click to selected tab DOM, raster image element, calibrated dense text (or no text for scan), then two animation frames. This measures DOM/text readiness, not image decode or presentation completion. Six switches per fixture per rate. CPU 4x is a simulation on the same host, not lower-memory hardware. Native render/text requests must remain zero during every warm group. No absolute timing threshold."
+      }
+    },
+    {
+      "version": "0.6.0",
+      "binarySha256": "0bab799243f9173f20196b154a91159e8caa0c8f604a9ba55668794ee1b50ea3",
+      "run": {
+        "passed": true,
+        "startedUtc": "2026-09-11T13:31:52.821Z",
+        "completedUtc": "2026-09-11T13:32:08.766Z",
+        "hashes": {
+          "dense-300-pages.pdf": "476785062c3549b718de185653d5ad8ad8f3987fdae84ebcf65de15c4bd1c3f1",
+          "scan-40-pages.pdf": "ab832bf760e6c9bd830084b1bff3fba8f708c7b298e6b468ceb1a853fb3f7d8a"
+        },
+        "viewport": {
+          "width": 1280,
+          "height": 820,
+          "devicePixelRatio": 1.5
+        },
+        "expectedGlyphs": {
+          "dense-300-pages.pdf": 9880,
+          "scan-40-pages.pdf": 0
+        },
+        "positiveControl": {
+          "probeIndex": 40,
+          "observedCommands": [
+            "render_page",
+            "page_text"
+          ]
+        },
+        "results": [
+          {
+            "cpuThrottle": 1,
+            "samples": [
+              {
+                "fixture": "dense-300-pages.pdf",
+                "round": 0,
+                "readyMs": 975.2000000476837
+              },
+              {
+                "fixture": "scan-40-pages.pdf",
+                "round": 0,
+                "readyMs": 77.80000019073486
+              },
+              {
+                "fixture": "dense-300-pages.pdf",
+                "round": 1,
+                "readyMs": 939.2999999523163
+              },
+              {
+                "fixture": "scan-40-pages.pdf",
+                "round": 1,
+                "readyMs": 71.5
+              },
+              {
+                "fixture": "dense-300-pages.pdf",
+                "round": 2,
+                "readyMs": 902
+              },
+              {
+                "fixture": "scan-40-pages.pdf",
+                "round": 2,
+                "readyMs": 64.20000004768372
+              },
+              {
+                "fixture": "dense-300-pages.pdf",
+                "round": 3,
+                "readyMs": 979.5
+              },
+              {
+                "fixture": "scan-40-pages.pdf",
+                "round": 3,
+                "readyMs": 98.89999985694885
+              },
+              {
+                "fixture": "dense-300-pages.pdf",
+                "round": 4,
+                "readyMs": 868.6000001430511
+              },
+              {
+                "fixture": "scan-40-pages.pdf",
+                "round": 4,
+                "readyMs": 79.29999995231628
+              },
+              {
+                "fixture": "dense-300-pages.pdf",
+                "round": 5,
+                "readyMs": 1104.2999999523163
+              },
+              {
+                "fixture": "scan-40-pages.pdf",
+                "round": 5,
+                "readyMs": 149
+              }
+            ],
+            "repeatNativeRequests": [],
+            "metrics": {
+              "LayoutCount": 67,
+              "LayoutDuration": 1.378631,
+              "RecalcStyleCount": 79,
+              "RecalcStyleDuration": 1.395378,
+              "ScriptDuration": 1.2225899999999998,
+              "TaskDuration": 6.596339
+            }
+          }
+        ],
+        "errors": [],
+        "method": "In-WebView click to selected tab DOM, raster image element, calibrated dense text (or no text for scan), then two animation frames. This measures DOM/text readiness, not image decode or presentation completion. Six switches per fixture per rate. CPU 4x is a simulation on the same host, not lower-memory hardware. Native render/text requests must remain zero during every warm group. No absolute timing threshold."
+      }
+    },
+    {
+      "version": "0.6.1",
+      "binarySha256": "51e312cf0a94ec4db3cdc95fefd9c4e5df27f64ebc895ab80c74b5688b93870d",
+      "run": {
+        "passed": true,
+        "startedUtc": "2026-09-11T13:32:54.635Z",
+        "completedUtc": "2026-09-11T13:33:03.687Z",
+        "hashes": {
+          "dense-300-pages.pdf": "476785062c3549b718de185653d5ad8ad8f3987fdae84ebcf65de15c4bd1c3f1",
+          "scan-40-pages.pdf": "ab832bf760e6c9bd830084b1bff3fba8f708c7b298e6b468ceb1a853fb3f7d8a"
+        },
+        "viewport": {
+          "width": 1280,
+          "height": 820,
+          "devicePixelRatio": 1.5
+        },
+        "expectedGlyphs": {
+          "dense-300-pages.pdf": 9880,
+          "scan-40-pages.pdf": 0
+        },
+        "positiveControl": {
+          "probeIndex": 40,
+          "observedCommands": [
+            "render_page",
+            "page_text"
+          ]
+        },
+        "results": [
+          {
+            "cpuThrottle": 1,
+            "samples": [
+              {
+                "fixture": "dense-300-pages.pdf",
+                "round": 0,
+                "readyMs": 517.8999998569489
+              },
+              {
+                "fixture": "scan-40-pages.pdf",
+                "round": 0,
+                "readyMs": 129.70000004768372
+              },
+              {
+                "fixture": "dense-300-pages.pdf",
+                "round": 1,
+                "readyMs": 585.7000000476837
+              },
+              {
+                "fixture": "scan-40-pages.pdf",
+                "round": 1,
+                "readyMs": 72.60000014305115
+              },
+              {
+                "fixture": "dense-300-pages.pdf",
+                "round": 2,
+                "readyMs": 651.3999998569489
+              },
+              {
+                "fixture": "scan-40-pages.pdf",
+                "round": 2,
+                "readyMs": 72.90000009536743
+              },
+              {
+                "fixture": "dense-300-pages.pdf",
+                "round": 3,
+                "readyMs": 827.0999999046326
+              },
+              {
+                "fixture": "scan-40-pages.pdf",
+                "round": 3,
+                "readyMs": 92
+              },
+              {
+                "fixture": "dense-300-pages.pdf",
+                "round": 4,
+                "readyMs": 711.5999999046326
+              },
+              {
+                "fixture": "scan-40-pages.pdf",
+                "round": 4,
+                "readyMs": 59.60000014305115
+              },
+              {
+                "fixture": "dense-300-pages.pdf",
+                "round": 5,
+                "readyMs": 624.4000000953674
+              },
+              {
+                "fixture": "scan-40-pages.pdf",
+                "round": 5,
+                "readyMs": 63
+              }
+            ],
+            "repeatNativeRequests": [],
+            "metrics": {
+              "LayoutCount": 47,
+              "LayoutDuration": 0.895497,
+              "RecalcStyleCount": 60,
+              "RecalcStyleDuration": 0.7365499999999999,
+              "ScriptDuration": 0.9633450000000001,
+              "TaskDuration": 4.3435820000000005
+            }
+          }
+        ],
+        "errors": [],
+        "method": "In-WebView click to selected tab DOM, raster image element, calibrated dense text (or no text for scan), then two animation frames. This measures DOM/text readiness, not image decode or presentation completion. Six switches per fixture per rate. CPU 4x is a simulation on the same host, not lower-memory hardware. Native render/text requests must remain zero during every warm group. No absolute timing threshold."
+      }
+    }
+  ],
+  "limitations": [
+    "Sequential A/B then A/B repeats on the same host and display geometry, not randomized trials or a performance guarantee.",
+    "Unthrottled results have 12 samples per fixture/version; CPU 4x results have 6.",
+    "DOM/text readiness does not prove raster decode or display presentation completion.",
+    "CPU throttling does not simulate memory pressure; physical lower-memory hardware remains issue #10."
+  ]
+}
