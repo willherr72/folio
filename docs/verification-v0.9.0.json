@@ -1,0 +1,419 @@
+{
+  "version": "0.9.0",
+  "date": "2026-09-11",
+  "frontend": {
+    "passed": 209,
+    "files": 43
+  },
+  "native": {
+    "passed": 92,
+    "failed": 0,
+    "ignored": 3
+  },
+  "fontPickerBrowser": {
+    "passed": true,
+    "checks": [
+      {
+        "theme": "light",
+        "viewport": {
+          "width": 1280,
+          "height": 820
+        },
+        "layout": {
+          "dialog": {
+            "x": 280,
+            "y": 126.40625,
+            "width": 720,
+            "height": 567.1875
+          },
+          "footer": {
+            "bottom": 692.59375,
+            "right": 999
+          },
+          "bodyOverflow": false,
+          "viewportWidth": 1280,
+          "viewportHeight": 820
+        },
+        "fontReady": true
+      },
+      {
+        "theme": "light",
+        "viewport": {
+          "width": 900,
+          "height": 600
+        },
+        "layout": {
+          "dialog": {
+            "x": 90,
+            "y": 24,
+            "width": 720,
+            "height": 552
+          },
+          "footer": {
+            "bottom": 575,
+            "right": 809
+          },
+          "bodyOverflow": false,
+          "viewportWidth": 900,
+          "viewportHeight": 600
+        },
+        "fontReady": true
+      },
+      {
+        "theme": "light",
+        "viewport": {
+          "width": 900,
+          "height": 420
+        },
+        "layout": {
+          "dialog": {
+            "x": 90,
+            "y": 24,
+            "width": 720,
+            "height": 372
+          },
+          "footer": {
+            "bottom": 395,
+            "right": 809
+          },
+          "bodyOverflow": false,
+          "viewportWidth": 900,
+          "viewportHeight": 420
+        },
+        "fontReady": true
+      },
+      {
+        "theme": "light",
+        "viewport": {
+          "width": 390,
+          "height": 740
+        },
+        "layout": {
+          "dialog": {
+            "x": 12,
+            "y": 20.3125,
+            "width": 366,
+            "height": 699.375
+          },
+          "footer": {
+            "bottom": 718.6875,
+            "right": 377
+          },
+          "bodyOverflow": false,
+          "viewportWidth": 390,
+          "viewportHeight": 740
+        },
+        "fontReady": true
+      },
+      {
+        "theme": "dark",
+        "viewport": {
+          "width": 1280,
+          "height": 820
+        },
+        "layout": {
+          "dialog": {
+            "x": 280,
+            "y": 126.40625,
+            "width": 720,
+            "height": 567.1875
+          },
+          "footer": {
+            "bottom": 692.59375,
+            "right": 999
+          },
+          "bodyOverflow": false,
+          "viewportWidth": 1280,
+          "viewportHeight": 820
+        },
+        "fontReady": true
+      },
+      {
+        "theme": "dark",
+        "viewport": {
+          "width": 900,
+          "height": 600
+        },
+        "layout": {
+          "dialog": {
+            "x": 90,
+            "y": 24,
+            "width": 720,
+            "height": 552
+          },
+          "footer": {
+            "bottom": 575,
+            "right": 809
+          },
+          "bodyOverflow": false,
+          "viewportWidth": 900,
+          "viewportHeight": 600
+        },
+        "fontReady": true
+      },
+      {
+        "theme": "dark",
+        "viewport": {
+          "width": 900,
+          "height": 420
+        },
+        "layout": {
+          "dialog": {
+            "x": 90,
+            "y": 24,
+            "width": 720,
+            "height": 372
+          },
+          "footer": {
+            "bottom": 395,
+            "right": 809
+          },
+          "bodyOverflow": false,
+          "viewportWidth": 900,
+          "viewportHeight": 420
+        },
+        "fontReady": true
+      },
+      {
+        "theme": "dark",
+        "viewport": {
+          "width": 390,
+          "height": 740
+        },
+        "layout": {
+          "dialog": {
+            "x": 12,
+            "y": 20.3125,
+            "width": 366,
+            "height": 699.375
+          },
+          "footer": {
+            "bottom": 718.6875,
+            "right": 377
+          },
+          "bodyOverflow": false,
+          "viewportWidth": 390,
+          "viewportHeight": 740
+        },
+        "fontReady": true
+      }
+    ],
+    "errors": []
+  },
+  "substitutionDialogBrowser": {
+    "passed": true,
+    "checks": [
+      {
+        "theme": "light",
+        "viewport": {
+          "width": 1280,
+          "height": 820
+        }
+      },
+      {
+        "theme": "light",
+        "viewport": {
+          "width": 900,
+          "height": 600
+        }
+      },
+      {
+        "theme": "dark",
+        "viewport": {
+          "width": 1280,
+          "height": 820
+        }
+      },
+      {
+        "theme": "dark",
+        "viewport": {
+          "width": 900,
+          "height": 600
+        }
+      }
+    ],
+    "errors": []
+  },
+  "desktop": {
+    "passed": true,
+    "substituteFontId": "5f9f2d8104ad5e69e1be8107224063dc8c36f9e24680b2f9be324244c0b424a1",
+    "originalSha256": "44d323bf80bb914e642fd6f6141b86d8121404989cf9c469f85c708d5d5b533a",
+    "editableSha256": "ab82f8c037cc1e036e219a3606486892380a6535740d9f5d504d6b0385077a20",
+    "flattenedSha256": "2004be418d8f5457d5b7cc2947f0cb320e325cb862e3e36720a9e40a067e745f",
+    "checks": [
+      "subset reuse with longer accented string",
+      "missing subset glyph preserves draft",
+      "explicit Arial preview and substitution",
+      "source neighbor and annotation preserved",
+      "undo/redo",
+      "search and mouse selection/Ctrl+C",
+      "editable/flat save and reopen without original",
+      "ambiguous source mapping refused"
+    ],
+    "errors": []
+  },
+  "independent": {
+    "passed": true,
+    "readers": {
+      "PyMuPDF": "1.27.1",
+      "pypdf": "6.14.2"
+    },
+    "files": [
+      {
+        "file": "Editable.pdf",
+        "mupdfText": "Original sentence crème\nRésumé café\nKeep this neighbor\nKept addition\n",
+        "pypdfText": "Original sentence crème\nRésumé café\nKeep this neighbor",
+        "fontProgramSha256": [
+          "cef7390d561c297453a8c9c6ecc752871cfe018d568d48cc734e59dfc318dd88",
+          "5f9f2d8104ad5e69e1be8107224063dc8c36f9e24680b2f9be324244c0b424a1"
+        ],
+        "outsideEditPixelsChanged": 0
+      },
+      {
+        "file": "Flattened.pdf",
+        "mupdfText": "Original sentence crème\nRésumé café\nKeep this neighbor\nKept addition\n",
+        "pypdfText": "Original sentence crème\nRésumé café\nKeep this neighbor\nKept addition",
+        "fontProgramSha256": [
+          "cef7390d561c297453a8c9c6ecc752871cfe018d568d48cc734e59dfc318dd88",
+          "5f9f2d8104ad5e69e1be8107224063dc8c36f9e24680b2f9be324244c0b424a1"
+        ],
+        "outsideEditPixelsChanged": 0
+      }
+    ]
+  },
+  "complexTextInvestigation": {
+    "productionSupport": false,
+    "standaloneShapingCases": 7,
+    "harfbuzz": "14.2.1",
+    "packages": {
+      "uharfbuzz": "0.55.0",
+      "python-bidi": "0.6.11",
+      "fonttools": "4.62.1",
+      "pypdf": "6.14.2",
+      "pymupdf": "1.27.1"
+    },
+    "pdfExperiment": {
+      "sha256": "0fb93f49d6d2707dd50788f7b4c606bb179a4ffce2255c369da77e9cce7eb4a6",
+      "strategy": "Full cluster per glyph (negative control), with/without ActualText",
+      "pages": [
+        {
+          "case": "ligature_on",
+          "source": "office",
+          "actual_text": false,
+          "extracted": {
+            "pypdf": "office",
+            "mupdf": "office\n",
+            "pdfium": "office"
+          },
+          "exact_after_trailing_newlines": {
+            "pypdf": true,
+            "mupdf": true,
+            "pdfium": true
+          }
+        },
+        {
+          "case": "ligature_on",
+          "source": "office",
+          "actual_text": true,
+          "extracted": {
+            "pypdf": "office",
+            "mupdf": "office\n",
+            "pdfium": "office"
+          },
+          "exact_after_trailing_newlines": {
+            "pypdf": true,
+            "mupdf": true,
+            "pdfium": true
+          }
+        },
+        {
+          "case": "decomposed",
+          "source": "café",
+          "actual_text": false,
+          "extracted": {
+            "pypdf": "café",
+            "mupdf": "café\n",
+            "pdfium": "café"
+          },
+          "exact_after_trailing_newlines": {
+            "pypdf": true,
+            "mupdf": true,
+            "pdfium": true
+          }
+        },
+        {
+          "case": "decomposed",
+          "source": "café",
+          "actual_text": true,
+          "extracted": {
+            "pypdf": "café",
+            "mupdf": "café\n",
+            "pdfium": "café"
+          },
+          "exact_after_trailing_newlines": {
+            "pypdf": true,
+            "mupdf": true,
+            "pdfium": true
+          }
+        },
+        {
+          "case": "mark_offsets",
+          "source": "q̣̇",
+          "actual_text": false,
+          "extracted": {
+            "pypdf": "q̣̣̇̇",
+            "mupdf": "q̣̣̇̇\n",
+            "pdfium": "q̣̇\r\ṇ̇"
+          },
+          "exact_after_trailing_newlines": {
+            "pypdf": false,
+            "mupdf": false,
+            "pdfium": false
+          }
+        },
+        {
+          "case": "mark_offsets",
+          "source": "q̣̇",
+          "actual_text": true,
+          "extracted": {
+            "pypdf": "q̣̣̇̇",
+            "mupdf": "q̣̇\n",
+            "pdfium": "q̣̇"
+          },
+          "exact_after_trailing_newlines": {
+            "pypdf": false,
+            "mupdf": true,
+            "pdfium": true
+          }
+        }
+      ],
+      "actual_text_preserves_mupdf_pixels": true
+    }
+  },
+  "fixtures": {
+    "generator": "scripts/generate-embedded-native-fixtures.py",
+    "reportlab": "4.5.1",
+    "fontTools": "4.62.1",
+    "sourceFont": "../corpus/fonts/DejaVuSerif.ttf",
+    "license": "../corpus/fonts/LICENSE_DEJAVU.txt",
+    "files": {
+      "DejaVuSerif-conflicting-cmap.ttf": {
+        "bytes": 9024,
+        "sha256": "8032e52e7aff56f2ce691073d62590580cbfcab3f2bca917452336a5cf3c4e8a"
+      },
+      "DejaVuSerif-missing-cmap.ttf": {
+        "bytes": 9016,
+        "sha256": "d948874c708f2410f29e510d4034d453c04b676c9e78e165e72e4e4816a300b9"
+      },
+      "DejaVuSerif-subset.ttf": {
+        "bytes": 8928,
+        "sha256": "de440cc1b42deee3461b6252b58acfce69fe80ac8a9ddd37bfbe2b7e7bf6f172"
+      },
+      "reportlab-subset.pdf": {
+        "bytes": 35517,
+        "sha256": "f81d21249b77a94c4e6c4dc403ff1c0bf2f37827989bae0261e7cec37db1c496"
+      }
+    }
+  },
+  "executableSha256": "a0350d8bdf6fb339443ea331348fb8c5dcb634a2b30865615056a089a488dfee"
+}

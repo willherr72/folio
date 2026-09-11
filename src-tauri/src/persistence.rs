@@ -12,6 +12,17 @@ use std::{collections::HashMap, io::Read, path::Path, sync::Arc};
 mod custom_font_pdf;
 pub(super) use custom_font_pdf::ImportCache;
 
+/// Reuse the audited full-font resource format for explicit source-text substitution.
+pub(super) fn install_font_resource(
+    document: &mut Document,
+    asset: &FontAsset,
+) -> EngineResult<Object> {
+    Ok(custom_font_pdf::install(
+        document,
+        Object::Dictionary(custom_font_pdf::font(asset)?),
+    ))
+}
+
 const MAX_METADATA_BYTES: usize = 32 * 1024 * 1024;
 const MAX_AP_BYTES: usize = 64 * 1024 * 1024;
 

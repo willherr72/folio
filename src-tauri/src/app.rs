@@ -136,15 +136,17 @@ async fn replace_text(
     object_index: usize,
     expected_text: String,
     replacement: String,
+    font_id: Option<String>,
 ) -> Result<DocumentInfo, String> {
     let engine = engine.inner().clone();
     on_worker(move || {
-        engine.replace_text(
+        engine.replace_text_with_font(
             &source_id,
             page_index,
             object_index,
             &expected_text,
             &replacement,
+            font_id.as_deref(),
         )
     })
     .await

@@ -16,13 +16,15 @@ try{
  await page.getByRole('button',{name:'More fonts…',exact:true}).click();
  await page.getByRole('searchbox',{name:'Search fonts'}).fill('Arial');
  await page.getByRole('dialog').getByRole('button',{name:'Arial Italic',exact:true}).click({timeout:60000});
+ await page.getByRole('button',{name:'Apply font',exact:true}).click();
  await expect(page.getByRole('dialog')).toHaveCount(0,{timeout:30000});
  await expect(canvas().locator('[data-overlay] text')).toHaveAttribute('font-family',/^FolioFont_/);
  await expect(page.getByRole('combobox',{name:'Font'})).toHaveValue('custom');
  await page.getByRole('button',{name:'Undo',exact:true}).click();await expect(page.getByRole('combobox',{name:'Font'})).toHaveValue('Helvetica');
  await page.getByRole('button',{name:'Redo',exact:true}).click();await expect(page.getByRole('combobox',{name:'Font'})).toHaveValue('custom');
  await page.getByRole('button',{name:'More fonts…',exact:true}).click();await page.getByRole('button',{name:'Import font…',exact:true}).click();console.log('DIALOG Import a font => '+imported);
- await expect(page.getByRole('dialog')).toHaveCount(0,{timeout:180000});
+ await expect(page.getByRole('button',{name:'Apply font',exact:true})).toBeEnabled({timeout:180000});await page.getByRole('button',{name:'Apply font',exact:true}).click();
+ await expect(page.getByRole('dialog')).toHaveCount(0);
  await expect(canvas().locator('[data-overlay] text')).toHaveAttribute('font-family','FolioFont_'+fontHash);
  await expect(page.getByRole('combobox',{name:'Font'}).locator('option:checked')).toHaveText('DejaVu Serif');
  await page.getByRole('textbox',{name:'Content'}).fill('Missing 🙂');await expect(page.getByRole('alert')).toContainText('U+1F642');

@@ -1,11 +1,57 @@
-.font-picker { width: min(580px, calc(100vw - 32px)); }
-.font-picker > p { color: var(--muted); font-size: 13px; line-height: 1.5; }
-.font-picker input[type="search"] { padding: 9px; border: 1px solid var(--line); border-radius: 6px; background: var(--control); color: var(--ink); }
-.font-picker-list { max-height: 340px; min-height: 120px; overflow: auto; border: 1px solid var(--line); border-radius: 6px; }
-.font-picker-item { padding: 5px 10px; border-bottom: 1px solid var(--line); }
+.modal-dialog.font-picker { width: min(720px, 100%); display: flex; flex-direction: column; overflow: hidden; }
+.font-picker .modal-heading { flex: 0 0 auto; }
+.font-picker-body { padding: 0 24px 20px; overflow-y: auto; min-height: 0; }
+.font-picker-search { display: grid; gap: 7px; margin-bottom: 20px; font-size: 13px; font-weight: 600; }
+.font-picker-search > span { position: relative; display: flex; align-items: center; }
+.font-picker-search svg { position: absolute; left: 11px; color: var(--muted); pointer-events: none; }
+.font-picker-search input { width: 100%; min-width: 0; height: 38px; padding: 9px 11px 9px 35px; border: 1px solid var(--line); border-radius: 7px; background: var(--control); color: var(--ink); font: inherit; font-weight: 400; }
+.font-picker-search input::placeholder { color: var(--muted); opacity: 1; }
+.font-picker-columns { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: 20px; }
+.font-picker-catalog, .font-picker-preview-column { min-width: 0; }
+.font-picker-section-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 9px; }
+.font-picker-section-heading h3 { margin: 0; color: var(--ink); font-size: 12px; font-weight: 600; }
+.font-picker-section-heading > span { color: var(--muted); font-size: 11px; white-space: nowrap; }
+.font-picker-list { height: 284px; overflow-y: auto; margin: 0; padding: 4px; list-style: none; border: 1px solid var(--line); border-radius: 8px; background: var(--control); scrollbar-gutter: stable; }
+.font-picker-item { border-bottom: 1px solid var(--line); padding: 3px 0; }
 .font-picker-item:last-child { border-bottom: 0; }
-.font-picker-item button { width: 100%; text-align: left; padding: 8px; border: 0; background: transparent; color: var(--ink); cursor: pointer; }
-.font-picker-item button:hover:enabled { background: var(--accent-soft); }
-.font-picker-item button:disabled { opacity: .55; cursor: default; }
-.font-picker-item p, .font-picker-list > p { margin: 4px 8px 8px; color: var(--muted); font-size: 12px; }
+.font-picker-item button { width: 100%; min-height: 37px; padding: 9px 10px; display: flex; align-items: center; justify-content: space-between; gap: 8px; border: 0; border-radius: 5px; background: transparent; color: var(--ink); font: inherit; font-size: 12px; text-align: left; cursor: pointer; }
+.font-picker-item button > span { overflow-wrap: anywhere; }
+.font-picker-item button svg { flex-shrink: 0; }
+.font-picker-item button:hover:enabled { background: var(--panel); }
+.font-picker-item button[aria-pressed="true"], .font-picker-item button[aria-pressed="true"]:hover:enabled { background: var(--accent-soft); color: var(--accent-dark); font-weight: 600; }
+.font-picker-item button:disabled { color: var(--muted); cursor: default; }
+.font-picker-item p { margin: 0 10px 9px; color: var(--muted); font-size: 11px; line-height: 1.5; overflow-wrap: anywhere; }
+.font-picker-empty { padding: 16px 12px; color: var(--muted); font-size: 12px; line-height: 1.6; }
+.font-picker-preview-card { min-height: 284px; height: 284px; overflow-y: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--control); }
+.font-picker-placeholder { min-height: 100%; padding: 28px 24px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; text-align: center; color: var(--muted); }
+.font-picker-placeholder > svg { color: var(--accent); }
+.font-picker-placeholder strong { color: var(--ink); font-size: 13px; font-weight: 500; }
+.font-picker-placeholder p { max-width: 200px; margin: 0; color: var(--muted); font-size: 12px; line-height: 1.6; }
+.font-picker-face-info { display: grid; gap: 5px; padding: 17px 18px 14px; border-bottom: 1px solid var(--line); }
+.font-picker-face-info strong { color: var(--ink); font-size: 13px; line-height: 1.4; font-weight: 600; overflow-wrap: anywhere; }
+.font-picker-face-info span { color: var(--muted); font-size: 11px; }
+.font-picker-sample { padding: 22px 18px; color: var(--ink); font-size: 25px; line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; }
+.font-picker-error { margin: 14px 0 0; font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }
+.font-picker > .font-picker-actions { flex: 0 0 auto; padding-top: 0; }
+.font-picker-import { margin-right: auto; }
+.font-picker-spinner { animation: font-picker-spin 1s linear infinite; }
 .custom-font-action { width: 100%; margin: -3px 0 12px; }
+@keyframes font-picker-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .font-picker-spinner { animation: none; } }
+@media (max-height: 600px) {
+  .font-picker > .font-picker-actions { padding-top: 12px; border-top: 1px solid var(--line); }
+}
+@media (max-width: 600px) {
+  .font-picker-columns { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .font-picker-list { height: 190px; }
+  .font-picker-preview-card { height: 180px; min-height: 180px; }
+  .font-picker-sample { font-size: 22px; padding-top: 16px; }
+  .font-picker-placeholder { padding: 20px; gap: 9px; }
+}
+@media (max-width: 400px) {
+  .font-picker .modal-heading { padding: 20px 18px 16px; }
+  .font-picker-body { padding: 0 18px 18px; }
+  .font-picker > .font-picker-actions { padding: 0 18px 18px; }
+  .font-picker-actions .button { padding: 0 10px; }
+  .font-picker-import { gap: 5px; }
+}

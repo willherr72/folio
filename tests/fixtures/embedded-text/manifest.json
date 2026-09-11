@@ -1,0 +1,25 @@
+{
+  "generator": "scripts/generate-embedded-native-fixtures.py",
+  "reportlab": "4.5.1",
+  "fontTools": "4.62.1",
+  "sourceFont": "../corpus/fonts/DejaVuSerif.ttf",
+  "license": "../corpus/fonts/LICENSE_DEJAVU.txt",
+  "files": {
+    "DejaVuSerif-conflicting-cmap.ttf": {
+      "bytes": 9024,
+      "sha256": "8032e52e7aff56f2ce691073d62590580cbfcab3f2bca917452336a5cf3c4e8a"
+    },
+    "DejaVuSerif-missing-cmap.ttf": {
+      "bytes": 9016,
+      "sha256": "d948874c708f2410f29e510d4034d453c04b676c9e78e165e72e4e4816a300b9"
+    },
+    "DejaVuSerif-subset.ttf": {
+      "bytes": 8928,
+      "sha256": "de440cc1b42deee3461b6252b58acfce69fe80ac8a9ddd37bfbe2b7e7bf6f172"
+    },
+    "reportlab-subset.pdf": {
+      "bytes": 35517,
+      "sha256": "f81d21249b77a94c4e6c4dc403ff1c0bf2f37827989bae0261e7cec37db1c496"
+    }
+  }
+}

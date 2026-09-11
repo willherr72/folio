@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
-import { fontApi, ensureCustomFont, customFontState, retainCustomFonts, releaseUnownedFont, customTextError } from "../src/editor/custom-fonts";
+import { fontApi, holdCustomFont, ensureCustomFont, customFontState, retainCustomFonts, releaseUnownedFont, customTextError } from "../src/editor/custom-fonts";
 const id = "a".repeat(64);
 const info = { id, name: "Example Serif Bold", weight: 700, italic: false, coverage: [[32,126],[233,233]] as [number,number][] };
 const added = new Set<FontFace>();
@@ -37,4 +37,25 @@ it("does not install a font face after its last owner disappears during loading"
   await loading.catch(()=>{});
   expect(added.size).toBe(0);
   expect(customFontState(id)).toBeUndefined();
+});
+
+it("protects a temporary substitution preview until the editor releases its final lease",async()=>{
+  const first=holdCustomFont(id),second=holdCustomFont(id);
+  await ensureCustomFont(id);
+  retainCustomFonts(new Set([id]));retainCustomFonts(new Set());
+  await releaseUnownedFont(id);await first();
+  expect(fontApi.release).not.toHaveBeenCalled();expect(customFontState(id)?.status).toBe("ready");
+  await second();expect(fontApi.release).toHaveBeenCalledOnce();
+  await second();expect(fontApi.release).toHaveBeenCalledOnce();
+});
+
+it("transfers a preview lease to workspace ownership without releasing the font",async()=>{
+  const release=holdCustomFont(id);
+  await ensureCustomFont(id);
+  retainCustomFonts(new Set([id]));
+  await release(false);
+  expect(fontApi.release).not.toHaveBeenCalled();
+  expect(customFontState(id)?.status).toBe("ready");
+  retainCustomFonts(new Set());
+  await vi.waitFor(()=>expect(fontApi.release).toHaveBeenCalledOnce());
 });

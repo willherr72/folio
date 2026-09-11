@@ -36,6 +36,8 @@ export interface EditableTextRun {
   fontSize: number;
   bounds: AnnotationRect;
   supported: boolean;
+  isEmbedded?: boolean;
+  canSubstitute?: boolean;
   reason?: string;
 }
 export interface TextRuns { runs: EditableTextRun[]; reason?: string }

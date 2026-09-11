@@ -2,6 +2,10 @@
 //! published only after saving and reopening validates text, placement and style.
 use super::*;
 
+#[path = "embedded_font.rs"]
+mod embedded_font;
+use embedded_font::{FontProofs, VerifiedFont};
+
 const EPSILON: f32 = 0.02;
 
 fn invalid(message: &str) -> EngineError {
@@ -47,9 +51,12 @@ struct RunSnapshot {
     mode: PdfPageTextRenderMode,
     bounds: [f32; 4],
     reason: Option<String>,
+    embedded: bool,
+    program: Option<String>,
+    proof: Option<Arc<VerifiedFont>>,
 }
 
-fn snapshot(page: &PdfPage<'_>) -> EngineResult<Vec<RunSnapshot>> {
+fn snapshot(page: &PdfPage<'_>, proofs: Option<&FontProofs>) -> EngineResult<Vec<RunSnapshot>> {
     if page.objects().len() > 5000 {
         return Err(invalid(
             "This page has too many objects for safe text editing.",
@@ -57,6 +64,7 @@ fn snapshot(page: &PdfPage<'_>) -> EngineResult<Vec<RunSnapshot>> {
     }
     let page_text = page.text()?;
     let mut result = Vec::new();
+    let mut programs: HashMap<PdfFontToken, Option<String>> = HashMap::new();
     for (index, object) in page.objects().iter().enumerate() {
         let Some(text) = object.as_text_object() else {
             continue;
@@ -83,10 +91,49 @@ fn snapshot(page: &PdfPage<'_>) -> EngineResult<Vec<RunSnapshot>> {
         let mode = text.render_mode();
         let color = text.fill_color()?;
         let mut reason = None;
-        if !base_font(&font_name) || font.is_embedded()? {
-            reason = Some("This font is embedded, subset, or custom. Only standard Helvetica, Times, and Courier fonts can be edited.".into());
-        } else if !printable(&value) {
-            reason = Some("Only single-line printable ASCII text runs can be edited.".into());
+        let embedded = font.is_embedded()?;
+        let program = if embedded {
+            let token = font.token();
+            if let Some(hash) = programs.get(&token) {
+                hash.clone()
+            } else {
+                let hash = font.data().ok().map(|bytes| embedded_font::key(&bytes));
+                programs.insert(token, hash.clone());
+                hash
+            }
+        } else {
+            None
+        };
+        let proof = if embedded {
+            if let Some(proofs) = proofs {
+                match proofs.find(&font_name, program.as_deref().unwrap_or_default()) {
+                    Ok(proof) => Some(proof),
+                    Err(error) => {
+                        reason = Some(error);
+                        None
+                    }
+                }
+            } else {
+                None
+            }
+        } else {
+            None
+        };
+        if !embedded && !base_font(&font_name) {
+            reason = Some("This non-embedded custom font cannot be edited safely.".into());
+        } else if !(if embedded {
+            embedded_font::latin(&value)
+        } else {
+            printable(&value)
+        }) {
+            reason = Some(
+                if embedded {
+                    "Only bounded single-line Latin text runs can be edited."
+                } else {
+                    "Only single-line printable ASCII text runs can be edited."
+                }
+                .into(),
+            );
         } else if mode != PdfPageTextRenderMode::FilledUnstroked || color.alpha() != 255 {
             reason =
                 Some("Invisible, clipped, stroked, or transparent text is not supported.".into());
@@ -96,6 +143,13 @@ fn snapshot(page: &PdfPage<'_>) -> EngineResult<Vec<RunSnapshot>> {
             || (matrix[3] - 1.0).abs() > EPSILON
         {
             reason = Some("Rotated, scaled, or skewed text objects are not supported. Page rotation is supported.".into());
+        }
+        if reason.is_none() {
+            if let Some(proof) = &proof {
+                if let Err(error) = proof.supports(&value) {
+                    reason = Some(error.to_string());
+                }
+            }
         }
         result.push(RunSnapshot {
             index,
@@ -107,6 +161,9 @@ fn snapshot(page: &PdfPage<'_>) -> EngineResult<Vec<RunSnapshot>> {
             mode,
             bounds,
             reason,
+            embedded,
+            program,
+            proof,
         });
     }
     Ok(result)
@@ -153,8 +210,11 @@ fn close_values(a: &[f32], b: &[f32]) -> bool {
 }
 
 fn same_style(a: &RunSnapshot, b: &RunSnapshot) -> bool {
+    a.font == b.font && a.program == b.program && same_layout_style(a, b)
+}
+
+fn same_layout_style(a: &RunSnapshot, b: &RunSnapshot) -> bool {
     a.index == b.index
-        && a.font == b.font
         && (a.font_size - b.font_size).abs() <= EPSILON
         && close_values(&a.matrix, &b.matrix)
         && a.color == b.color
@@ -279,9 +339,193 @@ fn replace_in_page(
     Ok(())
 }
 
+fn substitute_in_bytes(
+    bytes: &[u8],
+    selected: &RunSnapshot,
+    ordinal: usize,
+    run_count: usize,
+    replacement: &str,
+    asset: &FontAsset,
+) -> EngineResult<Vec<u8>> {
+    use lopdf::{
+        content::{Content, Operation},
+        dictionary, Document, Object, Stream, StringFormat,
+    };
+    let mut pdf = Document::load_mem_with_options(
+        bytes,
+        lopdf::LoadOptions::with_max_decompressed_size(16 * 1024 * 1024),
+    )
+    .map_err(|_| invalid("The copied page could not be inspected for font substitution."))?;
+    let page_id = *pdf
+        .get_pages()
+        .values()
+        .next()
+        .ok_or_else(|| invalid("The copied page is missing."))?;
+    let content = pdf
+        .get_page_content_with_limit(page_id, 16 * 1024 * 1024)
+        .map_err(|_| invalid("The page content is too complex for font substitution."))?;
+    let mut content = Content::decode(&content)
+        .map_err(|_| invalid("The page content could not be decoded for font substitution."))?;
+    let mut current = page_id;
+    let mut resources = None;
+    for _ in 0..64 {
+        let page = pdf
+            .get_dictionary(current)
+            .map_err(|_| invalid("The page resources are malformed."))?;
+        if let Ok(value) = page.get(b"Resources") {
+            resources = Some(
+                pdf.dereference(value)
+                    .and_then(|(_, value)| value.as_dict())
+                    .map_err(|_| invalid("The page resources are malformed."))?
+                    .clone(),
+            );
+            break;
+        }
+        current = page
+            .get(b"Parent")
+            .and_then(Object::as_reference)
+            .map_err(|_| invalid("The page font resources are missing."))?;
+    }
+    let mut resources =
+        resources.ok_or_else(|| invalid("The page resource nesting exceeds the limit."))?;
+    let mut fonts = pdf
+        .dereference(
+            resources
+                .get(b"Font")
+                .map_err(|_| invalid("The page has no fonts."))?,
+        )
+        .and_then(|(_, value)| value.as_dict())
+        .map_err(|_| invalid("The font resources are malformed."))?
+        .clone();
+    let mut active_font = None;
+    let mut font_stack = Vec::new();
+    let mut target = None;
+    let mut seen = 0;
+    for (index, operation) in content.operations.iter().enumerate() {
+        match operation.operator.as_str() {
+            "q" => font_stack.push(active_font.clone()),
+            "Q" => {
+                active_font = font_stack
+                    .pop()
+                    .ok_or_else(|| invalid("The page graphics state is unbalanced."))?;
+            }
+            "Tf" => {
+                if operation.operands.len() != 2
+                    || operation.operands[0].as_name().is_err()
+                    || operation.operands[1].as_float().is_err()
+                {
+                    return Err(invalid("The text font selection is malformed."));
+                }
+                active_font = Some(operation.operands.clone());
+            }
+            "Tj" | "TJ" | "'" | "\"" => {
+                if seen == ordinal {
+                    let encoded =
+                        match (operation.operator.as_str(), operation.operands.as_slice()) {
+                            ("Tj", [value]) => value.as_str().ok(),
+                            ("TJ", [Object::Array(values)]) if values.len() == 1 => {
+                                values[0].as_str().ok()
+                            }
+                            _ => None,
+                        }
+                        .ok_or_else(|| {
+                            invalid(
+                                "The selected text could not be isolated for font substitution.",
+                            )
+                        })?;
+                    let expected = if let Some(proof) = &selected.proof {
+                        proof.encode(&selected.text)?
+                    } else {
+                        selected.text.as_bytes().to_vec()
+                    };
+                    if encoded != expected.as_slice() {
+                        return Err(invalid(
+                            "The selected text has ambiguous content-stream positioning.",
+                        ));
+                    }
+                    let active = active_font
+                        .clone()
+                        .ok_or_else(|| invalid("The selected text has no active font."))?;
+                    let original = pdf
+                        .dereference(
+                            fonts
+                                .get(active[0].as_name().unwrap())
+                                .map_err(|_| invalid("The selected font resource is missing."))?,
+                        )
+                        .and_then(|(_, value)| value.as_dict())
+                        .map_err(|_| invalid("The selected font resource is malformed."))?;
+                    let resource_name = original
+                        .get(b"BaseFont")
+                        .and_then(Object::as_name)
+                        .ok()
+                        .and_then(|name| std::str::from_utf8(name).ok())
+                        .unwrap_or_default();
+                    if embedded_font::base_name(resource_name)
+                        != embedded_font::base_name(&selected.font)
+                        || (active[1].as_float().unwrap() - selected.font_size).abs() > EPSILON
+                    {
+                        return Err(invalid(
+                            "The selected text font resource does not match its rendered run.",
+                        ));
+                    }
+                    target = Some((index, active));
+                }
+                seen += 1;
+            }
+            _ => {}
+        }
+    }
+    if seen != run_count || !font_stack.is_empty() {
+        return Err(invalid(
+            "The text content cannot be mapped uniquely to page objects.",
+        ));
+    }
+    let (target, original_font) =
+        target.ok_or_else(|| invalid("The selected text operator is missing."))?;
+    let mut name = String::from("FolioReplacement");
+    while fonts.has(name.as_bytes()) {
+        name.push('_');
+    }
+    let resource = persistence::install_font_resource(&mut pdf, asset)?;
+    fonts.set(name.as_bytes(), resource);
+    resources.set("Font", fonts);
+    pdf.get_dictionary_mut(page_id)
+        .map_err(|_| invalid("The page resources are malformed."))?
+        .set("Resources", resources);
+    let replacement = vec![
+        Operation::new(
+            "Tf",
+            vec![Object::Name(name.into_bytes()), original_font[1].clone()],
+        ),
+        Operation::new(
+            "Tj",
+            vec![Object::String(
+                replacement
+                    .encode_utf16()
+                    .flat_map(u16::to_be_bytes)
+                    .collect(),
+                StringFormat::Hexadecimal,
+            )],
+        ),
+        Operation::new("Tf", original_font),
+    ];
+    content.operations.splice(target..=target, replacement);
+    let content = content
+        .encode()
+        .map_err(|_| invalid("The edited text could not be encoded."))?;
+    let content_id = pdf.add_object(Stream::new(dictionary! {}, content));
+    pdf.get_dictionary_mut(page_id)
+        .map_err(|_| invalid("The copied page is malformed."))?
+        .set("Contents", content_id);
+    let mut output = Vec::new();
+    pdf.save_to(&mut output)
+        .map_err(|_| invalid("The edited page could not be saved."))?;
+    Ok(output)
+}
+
 // Conservative page-level exclusions: these features can hide glyphs, change
 // their meaning, or affect other graphics when PDFium regenerates the stream.
-fn preflight(bytes: &[u8]) -> EngineResult<()> {
+fn preflight(bytes: &[u8], proofs: &FontProofs, substitution: bool) -> EngineResult<()> {
     let pdf = lopdf::Document::load_mem(bytes)
         .map_err(|_| invalid("The page content could not be inspected safely."))?;
     let page = *pdf
@@ -295,6 +539,11 @@ fn preflight(bytes: &[u8]) -> EngineResult<()> {
     let content = lopdf::content::Content::decode(&content)
         .map_err(|_| invalid("The page content could not be inspected safely."))?;
     for operation in content.operations {
+        if substitution && matches!(operation.operator.as_str(), "BMC" | "BDC") {
+            return Err(invalid(
+                "Font substitution on marked-content or tagged text is not supported.",
+            ));
+        }
         // PDFium's fill-color accessor returns RGB/alpha even for a pattern.
         // A named scn/SCN operand selects a pattern, so its rectangle cannot be
         // positively identified as a solid background by inspecting that color.
@@ -319,7 +568,7 @@ fn preflight(bytes: &[u8]) -> EngineResult<()> {
             return Err(invalid("This page uses custom character positioning (kerning). Its text cannot be edited safely."));
         }
     }
-    for object in pdf.objects.values() {
+    for (id, object) in &pdf.objects {
         let Ok(dict) = object.as_dict() else {
             continue;
         };
@@ -328,12 +577,14 @@ fn preflight(bytes: &[u8]) -> EngineResult<()> {
                 let (_, encoding) = pdf
                     .dereference(encoding)
                     .map_err(|_| invalid("This page has an unsupported font encoding."))?;
-                if !encoding.as_name().is_ok_and(|name| {
-                    matches!(
-                        name,
-                        b"StandardEncoding" | b"WinAnsiEncoding" | b"MacRomanEncoding"
-                    )
-                }) {
+                if !proofs.allows_resource(*id)
+                    && !encoding.as_name().is_ok_and(|name| {
+                        matches!(
+                            name,
+                            b"StandardEncoding" | b"WinAnsiEncoding" | b"MacRomanEncoding"
+                        )
+                    })
+                {
                     return Err(invalid(
                         "This page uses a custom font encoding that cannot be preserved safely.",
                     ));
@@ -426,7 +677,7 @@ impl WorkerRuntime {
         let bytes = copy.save_to_bytes()?;
         let reopened = self.pdfium.load_pdf_from_byte_slice(&bytes, None)?;
         let page = reopened.pages().get(0)?;
-        let after = snapshot(&page)?;
+        let after = snapshot(&page, None)?;
         let glyphs = glyph_snapshot(&page)?;
         if before.len() != after.len() || !before.iter().zip(&after).all(|(a, b)| same_run(a, b)) {
             return Err(invalid(
@@ -464,9 +715,11 @@ impl WorkerRuntime {
         let copy = self.editable_page_copy(source_id, page_index)?;
         let page = copy.pages().get(0)?;
         let geometry = page_geometry(&page)?;
-        let before = snapshot(&page)?;
         let baseline = copy.save_to_bytes()?;
-        let page_reason = preflight(&baseline).err().map(|e| match e {
+        let proofs = FontProofs::read(&baseline)?;
+        let before = snapshot(&page, Some(&proofs))?;
+        let can_substitute_page = preflight(&baseline, &proofs, true).is_ok();
+        let page_reason = preflight(&baseline, &proofs, false).err().map(|e| match e {
             EngineError::InvalidRequest(s) => s,
             _ => "This page could not be validated for editing.".into(),
         });
@@ -487,6 +740,8 @@ impl WorkerRuntime {
                     height: (p1.y - p2.y).abs(),
                 },
                 supported: reason.is_none(),
+                is_embedded: run.embedded,
+                can_substitute: reason.is_none() && can_substitute_page,
                 reason,
             });
         }
@@ -505,15 +760,15 @@ impl WorkerRuntime {
         object_index: usize,
         expected_text: &str,
         replacement: &str,
+        font_id: Option<&str>,
     ) -> EngineResult<DocumentInfo> {
         if let Some(reason) = self.source_text_edit_restriction(source_id)? {
             return Err(invalid(&reason));
         }
-        if !printable(replacement) {
-            return Err(invalid("Enter 1–4096 printable ASCII characters on one line. Empty text and unsupported characters cannot be saved."));
-        }
         let copy = self.editable_page_copy(source_id, page_index)?;
-        let before = snapshot(&copy.pages().get(0)?)?;
+        let baseline = copy.save_to_bytes()?;
+        let proofs = FontProofs::read(&baseline)?;
+        let before = snapshot(&copy.pages().get(0)?, Some(&proofs))?;
         let selected = before
             .iter()
             .find(|r| r.index == object_index)
@@ -523,8 +778,20 @@ impl WorkerRuntime {
                 "The text changed since it was selected. Select the run again.",
             ));
         }
-        let baseline = copy.save_to_bytes()?;
-        preflight(&baseline)?;
+        if !(if selected.embedded || font_id.is_some() {
+            embedded_font::latin(replacement)
+        } else {
+            printable(replacement)
+        }) {
+            return Err(invalid("Enter nonempty printable Latin text on one line, within 4096 UTF-8 bytes. Combining text, ligatures, and other scripts are not supported."));
+        }
+        let substitute = font_id.map(|id| self.fonts.get(id)).transpose()?;
+        if let Some(font) = &substitute {
+            font.validate_text(replacement)?;
+        } else if let Some(proof) = &selected.proof {
+            proof.supports(replacement)?;
+        }
+        preflight(&baseline, &proofs, substitute.is_some())?;
         self.prove_editable(&baseline, &before, object_index)?;
         let original_raster = raster(
             &self
@@ -538,19 +805,50 @@ impl WorkerRuntime {
                 "Copying this page would change its appearance. Its text cannot be edited safely.",
             ));
         }
-        replace_in_page(&copy, object_index, replacement)?;
-        let bytes: Arc<[u8]> = copy.save_to_bytes()?.into();
+        let bytes: Arc<[u8]> = if let Some(font) = &substitute {
+            // Normalize the selected stream through the already-proven no-op.
+            // New PDFium text objects save into a new trailing stream and can
+            // reorder content; retain the original operator slot instead.
+            replace_in_page(&copy, object_index, &selected.text)?;
+            let ordinal = before
+                .iter()
+                .position(|run| run.index == object_index)
+                .unwrap();
+            substitute_in_bytes(
+                &copy.save_to_bytes()?,
+                selected,
+                ordinal,
+                before.len(),
+                replacement,
+                font,
+            )?
+            .into()
+        } else {
+            replace_in_page(&copy, object_index, replacement)?;
+            copy.save_to_bytes()?.into()
+        };
         let document = self
             .pdfium
             .load_pdf_from_reader(Cursor::new(bytes.clone()), None)?;
         let page = document.pages().get(0)?;
-        let after = snapshot(&page)?;
+        let after_proofs = FontProofs::read(&bytes)?;
+        let after = snapshot(&page, Some(&after_proofs))?;
         let changed = after
             .iter()
             .find(|r| r.index == object_index)
             .ok_or_else(|| invalid("The edited text could not be reopened."))?;
+        let style_preserved = if let Some(font) = &substitute {
+            same_layout_style(selected, changed)
+                && changed.program.as_deref() == Some(font.info.id.as_str())
+        } else {
+            same_style(selected, changed)
+        };
+        if let Some(reason) = &changed.reason {
+            return Err(invalid(reason));
+        }
         if changed.text != replacement
-            || !same_style(selected, changed)
+            || !style_preserved
+            || changed.reason.is_some()
             || before.len() != after.len()
             || !before
                 .iter()
@@ -560,6 +858,9 @@ impl WorkerRuntime {
             return Err(invalid(
                 "The replacement could not preserve the font, placement, or surrounding text.",
             ));
+        }
+        if substitute.is_some() {
+            self.prove_editable(&bytes, &after, object_index)?;
         }
         // The style check retains the font size and baseline. Width can grow
         // wherever the visible page has room without covering nearby content.

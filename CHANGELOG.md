@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.9.0
+
+- Redesign More fonts with a searchable font list, exact-font preview and explicit Apply font action; match the print dialog in light/dark themes and smaller windows.
+- Edit verified embedded TrueType fonts, including supported simple subsets and Type0 CID fonts, while preserving source placement and surrounding content.
+- Preview and explicitly choose a substitute when the original subset lacks a character. Embed the substitute in the changed PDF source for export, reopening and recovery.
+- Protect font previews during canceled/late loads, dialog switching and subsequent PDF imports.
+- Record the complex-text shaping and reader investigation, with separate tracked stages for shaped text, positioned runs/forms and bounded wrapping. Complex-script editing remains future work.
+
 ## 0.8.0
 
 - Choose installed fonts or import local static TrueType-outline TTF/OTF files for added text boxes through More fonts… in Properties.

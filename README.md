@@ -12,16 +12,16 @@ Extract it and open **Folio.exe**. Keep the resources folder beside the executab
 Microsoft Edge WebView2 Runtime is required.
 
 In this development checkout, double-click **Launch Folio.cmd** after building.
-Version 0.8.0 lives in **artifacts/Folio-v0.8.0/Folio.exe**.
-The ZIP is **artifacts/Folio-v0.8.0-windows-x64.zip**.
+Version 0.9.0 lives in **artifacts/Folio-v0.9.0/Folio.exe**.
+The ZIP is **artifacts/Folio-v0.9.0-windows-x64.zip**.
 
 ## Everyday editing
 
 - **Documents:** Open adds a PDF in a new top tab. Each document retains its edits,
   undo/redo history, selected page, zoom and scroll position when you switch tabs.
-- **Edit existing text:** choose **Edit text**, click an outlined run, change **Replacement text**, and apply. This first version supports standard Helvetica, Times and Courier fonts with printable ASCII text. Longer replacements can use available space without covering nearby source content; embedded/subset fonts and complex layouts are not supported yet. [Support details](docs/existing-text-editing.md).
+- **Edit existing text:** choose **Edit text**, click an outlined run, change **Replacement text**, and apply. Supported horizontal runs use standard Helvetica, Times and Courier or verified embedded TrueType fonts, including subsets. Longer replacements can use available space. If the subset lacks a letter, choose and preview an explicit substitute font. Complex layouts remain unsupported. [Support details](docs/existing-text-editing.md).
 - **Text:** choose Text and click a page. The Content field selects the placeholder
-  immediately, so typing replaces it. Choose a font and style, adjust size/color, and drag the note to move it. **More fonts…** searches installed fonts or imports a local TTF/OTF. Supported fonts are embedded so recipients do not need to install them. [Font support](docs/font-support-roadmap.md).
+  immediately, so typing replaces it. Choose a font and style, adjust size/color, and drag the note to move it. **More fonts…** searches installed fonts or imports a local TTF/OTF. Preview your text, then choose **Apply font**. Supported fonts are embedded so recipients do not need to install them. [Font support](docs/font-support-roadmap.md).
 - **Select and copy:** drag across embedded PDF text in Select mode, then press
   **Ctrl+C** to copy it, including spaces and line breaks. Scanned pages without
   embedded text require OCR, which is not included.
@@ -72,7 +72,7 @@ Dark mode changes the interface; PDF pages retain their original colors.
 
 ## Prototype boundaries
 
-- Existing-text editing supports the standard-font runs described above; embedded/subset fonts and complex layouts remain future work.
+- Existing-text editing requires a verified encoding, glyph mapping and simple horizontal layout. Ambiguous embedded fonts, complex scripts, individually positioned text and nested forms remain unsupported.
 - Drawn signatures are visual marks, not certificate-based digital signatures.
 - Editable additions use standard PDF annotations with self-contained appearances and
   versioned Folio metadata. Other readers can display them; edits made by another
@@ -148,7 +148,7 @@ Real PDF editing runs in the desktop app.
 
 The native smoke opens a real PDF through Windows dialogs, edits it, draws,
 drags thumbnails, checks both close-confirmation decisions, saves and reopens.
-Its launcher uses an isolated test profile. See [v0.8.0 text-edit verification](docs/verification-v0.8.0.md), [v0.6.1 performance verification](docs/performance-v0.6.1.md), the [compatibility corpus](docs/corpus/README.md), and [earlier verification notes](docs/verification.md).
+Its launcher uses an isolated test profile. See [v0.9.0 text-edit verification](docs/verification-v0.9.0.md), [v0.6.1 performance verification](docs/performance-v0.6.1.md), the [compatibility corpus](docs/corpus/README.md), and [earlier verification notes](docs/verification.md).
 
 ## Internals and license
 

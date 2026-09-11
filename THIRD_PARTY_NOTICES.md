@@ -16,6 +16,7 @@ Folio does not claim ownership of the third-party components.
 
 The development compatibility corpus includes the unmodified DejaVu Serif font
 and its full license in `tests/fixtures/corpus/fonts/LICENSE_DEJAVU.txt`.
+Embedded-text fixtures also contain DejaVu Serif subsets; their generation and license are recorded in `tests/fixtures/embedded-text/README.md`. The complex-text research probe embeds only this redistributable DejaVu fixture; Windows fonts are read for local shaping experiments and are not distributed.
 Fixture provenance and checksums are recorded in the adjacent manifest. Corpus
 PDFs contain synthetic test data; Python generation/inspection tools are development
 dependencies and are not embedded in the desktop application.

@@ -8,3 +8,9 @@ it("sends immutable source/run identity and expected original text to native edi
  const result=await nativeAdapter.replaceText!("source",2,7,"Before","After");
  expect(ipc).toHaveBeenNthCalledWith(2,"replace_text",{sourceId:"source",pageIndex:2,objectIndex:7,expectedText:"Before",replacement:"After"});expect(result.id).toBe("derived");
 });
+
+it("sends a substitute only when the user explicitly chooses its font resource",async()=>{
+ const fontId="a".repeat(64);ipc.mockClear();ipc.mockResolvedValue({id:"derived",name:"Page.pdf",pages:[{width:300,height:400}]});
+ await nativeAdapter.replaceText!("source",2,7,"Before","café",fontId);
+ expect(ipc).toHaveBeenCalledWith("replace_text",{sourceId:"source",pageIndex:2,objectIndex:7,expectedText:"Before",replacement:"café",fontId});
+});

@@ -14,6 +14,7 @@ export interface FontState { status: "loading" | "ready" | "error"; family: stri
 interface Entry { state: FontState; promise: Promise<FontInfo>; face?: FontFace }
 const entries = new Map<string, Entry>();
 let retained = new Set<string>();
+const leases = new Map<string, number>();
 const listeners = new Set<() => void>();
 let revision = 0;
 const releasing = new Set<Promise<void>>();
@@ -23,6 +24,23 @@ export const fontRevision = () => revision;
 export const customFontState = (id: string) => entries.get(id)?.state;
 export const fontFamily = (id: string) => `FolioFont_${id}`;
 export async function flushFontReleases() { await Promise.allSettled([...releasing]); }
+
+// Native registration happens before its JS response arrives. Serialize the
+// whole acquisition across dialogs so an older canceled response cannot delete
+// a newer registration before that dialog has installed its preview lease.
+let acquisitionQueue: Promise<void> = Promise.resolve();
+export function acquireFontInOrder(work: () => Promise<void>) {
+  const result = acquisitionQueue.then(work, work);
+  acquisitionQueue = result.catch(() => {});
+  return result;
+}
+export async function drainFontAcquisitions() {
+  let pending: Promise<void>;
+  do {
+    pending = acquisitionQueue;
+    await pending;
+  } while (pending !== acquisitionQueue);
+}
 
 export function ensureCustomFont(id: string, knownInfo?: FontInfo): Promise<FontInfo> {
   if (!/^[a-f0-9]{64}$/.test(id)) return Promise.reject(new Error("Invalid font resource identifier."));
@@ -55,7 +73,7 @@ export function ensureCustomFont(id: string, knownInfo?: FontInfo): Promise<Font
 }
 
 export function releaseUnownedFont(id: string): Promise<void> {
-  if (retained.has(id)) return Promise.resolve();
+  if (retained.has(id) || leases.has(id)) return Promise.resolve();
   const entry = entries.get(id);
   entries.delete(id);
   if (entry?.face) document.fonts.delete(entry.face);
@@ -85,4 +103,17 @@ export function customTextError(info: FontInfo, text: string): string | null {
     if (!found) return `Folio cannot use “${character}” (U+${value.toString(16).toUpperCase().padStart(4,"0")}) with ${info.name}. Choose another font or change this character.`;
   }
   return null;
+}
+
+/** Keep a dialog preview alive independently of committed workspace history. */
+export function holdCustomFont(id: string): (releaseIfUnowned?: boolean) => Promise<void> {
+  leases.set(id, (leases.get(id) ?? 0) + 1);
+  let active = true;
+  return (releaseIfUnowned = true) => {
+    if (!active) return Promise.resolve();
+    active = false;
+    const count = leases.get(id) ?? 1;
+    if (count > 1) leases.set(id, count - 1); else leases.delete(id);
+    return releaseIfUnowned ? releaseUnownedFont(id) : Promise.resolve();
+  };
 }

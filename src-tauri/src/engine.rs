@@ -71,6 +71,25 @@ impl PdfEngine {
         expected_text: &str,
         replacement: &str,
     ) -> EngineResult<DocumentInfo> {
+        self.replace_text_with_font(
+            source_id,
+            page_index,
+            object_index,
+            expected_text,
+            replacement,
+            None,
+        )
+    }
+
+    pub fn replace_text_with_font(
+        &self,
+        source_id: &str,
+        page_index: usize,
+        object_index: usize,
+        expected_text: &str,
+        replacement: &str,
+        font_id: Option<&str>,
+    ) -> EngineResult<DocumentInfo> {
         let (reply, receive) = mpsc::channel();
         self.send(WorkerRequest::ReplaceText {
             source_id: source_id.into(),
@@ -78,6 +97,7 @@ impl PdfEngine {
             object_index,
             expected_text: expected_text.into(),
             replacement: replacement.into(),
+            font_id: font_id.map(str::to_owned),
             reply,
         })?;
         receive.recv().map_err(|_| EngineError::WorkerStopped)?
@@ -274,6 +294,7 @@ enum WorkerRequest {
         object_index: usize,
         expected_text: String,
         replacement: String,
+        font_id: Option<String>,
         reply: mpsc::Sender<EngineResult<DocumentInfo>>,
     },
     Open {
@@ -432,6 +453,7 @@ impl WorkerRuntime {
                     object_index,
                     expected_text,
                     replacement,
+                    font_id,
                     reply,
                 } => {
                     let _ = reply.send(self.replace_text(
@@ -440,6 +462,7 @@ impl WorkerRuntime {
                         object_index,
                         &expected_text,
                         &replacement,
+                        font_id.as_deref(),
                     ));
                 }
                 WorkerRequest::Open {

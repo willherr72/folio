@@ -26,6 +26,10 @@ pub struct EditableTextRun {
     pub font_size: f32,
     pub bounds: AnnotationRect,
     pub supported: bool,
+    #[serde(default)]
+    pub is_embedded: bool,
+    #[serde(default)]
+    pub can_substitute: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reason: Option<String>,
 }

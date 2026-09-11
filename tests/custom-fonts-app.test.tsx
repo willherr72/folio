@@ -31,6 +31,8 @@ async function openAndChoose() {
   fireEvent.change(screen.getByRole("textbox", {name: "Content"}), {target: {value: "A café"}});
   fireEvent.click(screen.getByRole("button", {name: "More fonts…"}));
   fireEvent.click(await screen.findByRole("button", {name: info.name}));
+  await waitFor(() => expect(screen.getByRole("button", {name: "Apply font"})).toBeEnabled());
+  fireEvent.click(screen.getByRole("button", {name: "Apply font"}));
   await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
 }
 it("exports custom font references and retains bytes through undo/redo until the tab closes", async () => {
@@ -66,4 +68,32 @@ it("keeps shared bytes while another open PDF owns the same embedded font", asyn
   await waitFor(()=>expect(nativeAdapter.closeDocument).toHaveBeenCalledWith("other"));
   expect(fontApi.release).not.toHaveBeenCalled();
   expect(fontApi.bytes).toHaveBeenCalledOnce();
+});
+
+it("previews the current font without adding an undo step when reapplied",async()=>{
+ await openAndChoose();
+ fireEvent.click(screen.getByRole("button",{name:"More fonts…"}));
+ await waitFor(()=>expect(screen.getByRole("button",{name:"Apply font"})).toBeEnabled());
+ fireEvent.click(screen.getByRole("button",{name:"Apply font"}));
+ await waitFor(()=>expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+ fireEvent.click(screen.getByRole("button",{name:"Undo"}));
+ expect(screen.getByRole("combobox",{name:"Font"})).toHaveValue("Helvetica");
+});
+it.each(["Open PDF in new tab", "Add PDF"])("drains a canceled font acquisition before %s imports the same font",async(action)=>{
+ let finish!:(value:typeof info)=>void;
+ vi.mocked(fontApi.loadInstalled).mockImplementation(()=>new Promise(resolve=>finish=resolve));
+ render(<App initialDemo={false}/>);
+ fireEvent.click(screen.getByRole("button",{name:"Open a PDF"}));await screen.findByRole("tab",{name:"Fonts.pdf"});
+ fireEvent.click(screen.getByRole("button",{name:"Text"}));fireEvent.click(screen.getByRole("button",{name:"Place added text"}));
+ fireEvent.click(screen.getByRole("button",{name:"More fonts…"}));fireEvent.click(await screen.findByRole("button",{name:info.name}));await waitFor(()=>expect(fontApi.loadInstalled).toHaveBeenCalledOnce());
+ fireEvent.click(screen.getByRole("button",{name:"Cancel"}));
+ vi.mocked(nativeAdapter.openPdf).mockClear().mockResolvedValue({id:"imported",name:"Imported.pdf",pages:[{width:500,height:600,overlays:[{type:"text",id:"imported-text",x:30,y:40,text:"Imported",fontSize:12,color:"#123456",fontId:id}]}]});
+ fireEvent.click(screen.getByRole("button",{name:action}));
+ await act(async()=>{await new Promise(resolve=>setTimeout(resolve,10));});
+ const openedBeforeCleanup=vi.mocked(nativeAdapter.openPdf).mock.calls.length;
+ await act(async()=>finish(info));
+ await waitFor(()=>expect(nativeAdapter.openPdf).toHaveBeenCalledOnce());
+ await waitFor(()=>expect(customFontState(id)?.status).toBe("ready"));
+ expect(openedBeforeCleanup).toBe(0);
+ expect(vi.mocked(fontApi.release).mock.invocationCallOrder[0]).toBeLessThan(vi.mocked(nativeAdapter.openPdf).mock.invocationCallOrder[0]);
 });

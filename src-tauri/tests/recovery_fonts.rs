@@ -214,3 +214,76 @@ fn current_recovery_does_not_register_obsolete_source_fonts_at_capacity() {
         engine.fonts().remove(&id).unwrap();
     }
 }
+
+#[test]
+fn substituted_source_recovers_without_original_font_file_or_registry_asset() {
+    let _lock = TEST_LOCK.lock().unwrap();
+    let temp = tempfile::tempdir().unwrap();
+    let engine = engine();
+    let original_path = temp.path().join("subset.pdf");
+    fs::copy(
+        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("../tests/fixtures/embedded-text/reportlab-subset.pdf"),
+        &original_path,
+    )
+    .unwrap();
+    let original = engine.open_document(&original_path).unwrap();
+    let imported_path = temp.path().join("font.ttf");
+    fs::write(&imported_path, font_bytes()).unwrap();
+    let font = engine
+        .fonts()
+        .register(fs::read(&imported_path).unwrap())
+        .unwrap();
+    let edited = engine
+        .replace_text_with_font(&original.id, 0, 0, "Café old", "Cafè edit", Some(&font.id))
+        .unwrap();
+    engine.fonts().remove(&font.id).unwrap();
+    fs::remove_file(&imported_path).unwrap();
+    fs::remove_file(&original_path).unwrap();
+    let mut plan = workspace(&edited, None);
+    plan["tabs"][0]["document"]["pages"][0]["overlays"] = json!([]);
+    plan["tabs"][0]["document"]["selectedOverlayId"] = Value::Null;
+    let root = temp.path().join("recovery");
+    let store = RecoveryStore::new(root.clone()).unwrap();
+    store.save(&engine, plan).unwrap();
+    let manifest: Value = serde_json::from_slice(&fs::read(&manifests(&root)[0]).unwrap()).unwrap();
+    assert!(
+        manifest["fonts"].as_object().unwrap().is_empty(),
+        "source fonts travel in source bytes, not overlay sidecars"
+    );
+    engine.close_document(&original.id).unwrap();
+    engine.close_document(&edited.id).unwrap();
+    drop(store);
+    let store = RecoveryStore::new(root).unwrap();
+    let recovered = store.load(&engine).unwrap().unwrap();
+    let page = recovered["tabs"][0]["document"]["pages"][0].clone();
+    let source_id = page["sourceId"].as_str().unwrap();
+    assert!(engine
+        .extract_text(source_id, 0)
+        .unwrap()
+        .contains("Cafè edit"));
+    assert!(engine.fonts().get(&font.id).is_err());
+    let changed = engine
+        .replace_text(source_id, 0, 0, "Cafè edit", "Cafè safe")
+        .unwrap();
+    assert!(engine
+        .extract_text(&changed.id, 0)
+        .unwrap()
+        .contains("Cafè safe"));
+    let output = temp.path().join("recovered-substitution.pdf");
+    engine
+        .export_pdf(
+            serde_json::from_value(json!({"pages":[page],"flatten":false})).unwrap(),
+            &output,
+        )
+        .unwrap();
+    let reopened = engine.open_document(&output).unwrap();
+    assert!(engine
+        .extract_text(&reopened.id, 0)
+        .unwrap()
+        .contains("Cafè edit"));
+    for id in [source_id, changed.id.as_str(), reopened.id.as_str()] {
+        engine.close_document(id).unwrap();
+    }
+    store.clear().unwrap();
+}
