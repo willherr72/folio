@@ -1,0 +1,326 @@
+{
+  "browser": {
+    "passed": true,
+    "checks": [
+      {
+        "font": "Helvetica",
+        "rotation": 0,
+        "advance": 286.7003479003906,
+        "selectionExtent": 294.69921875
+      },
+      {
+        "font": "Helvetica-Bold",
+        "rotation": 0,
+        "advance": 309.3106384277344,
+        "selectionExtent": 317.3046875
+      },
+      {
+        "font": "Helvetica-Oblique",
+        "rotation": 0,
+        "advance": 286.7003479003906,
+        "selectionExtent": 294.69921875
+      },
+      {
+        "font": "Helvetica-BoldOblique",
+        "rotation": 0,
+        "advance": 309.3106384277344,
+        "selectionExtent": 317.3046875
+      },
+      {
+        "font": "Times-Roman",
+        "rotation": 0,
+        "advance": 289.23712158203125,
+        "selectionExtent": 297.23046875
+      },
+      {
+        "font": "Times-Bold",
+        "rotation": 0,
+        "advance": 294.6231384277344,
+        "selectionExtent": 302.62109375
+      },
+      {
+        "font": "Times-Italic",
+        "rotation": 0,
+        "advance": 270.6158142089844,
+        "selectionExtent": 278.609375
+      },
+      {
+        "font": "Times-BoldItalic",
+        "rotation": 0,
+        "advance": 282.6470642089844,
+        "selectionExtent": 290.64453125
+      },
+      {
+        "font": "Courier",
+        "rotation": 0,
+        "advance": 403.27203369140625,
+        "selectionExtent": 411.265625
+      },
+      {
+        "font": "Courier-Bold",
+        "rotation": 0,
+        "advance": 403.27203369140625,
+        "selectionExtent": 411.265625
+      },
+      {
+        "font": "Courier-Oblique",
+        "rotation": 0,
+        "advance": 403.27203369140625,
+        "selectionExtent": 411.265625
+      },
+      {
+        "font": "Courier-BoldOblique",
+        "rotation": 0,
+        "advance": 403.27203369140625,
+        "selectionExtent": 411.265625
+      },
+      {
+        "font": "Helvetica",
+        "rotation": 90,
+        "advance": 286.7003479003906,
+        "selectionExtent": 294.69921875
+      },
+      {
+        "font": "Helvetica-Bold",
+        "rotation": 90,
+        "advance": 309.3106384277344,
+        "selectionExtent": 317.3046875
+      },
+      {
+        "font": "Helvetica-Oblique",
+        "rotation": 90,
+        "advance": 286.7003479003906,
+        "selectionExtent": 294.69921875
+      },
+      {
+        "font": "Helvetica-BoldOblique",
+        "rotation": 90,
+        "advance": 309.3106384277344,
+        "selectionExtent": 317.3046875
+      },
+      {
+        "font": "Times-Roman",
+        "rotation": 90,
+        "advance": 289.23712158203125,
+        "selectionExtent": 297.23046875
+      },
+      {
+        "font": "Times-Bold",
+        "rotation": 90,
+        "advance": 294.6231384277344,
+        "selectionExtent": 302.62109375
+      },
+      {
+        "font": "Times-Italic",
+        "rotation": 90,
+        "advance": 270.6158142089844,
+        "selectionExtent": 278.609375
+      },
+      {
+        "font": "Times-BoldItalic",
+        "rotation": 90,
+        "advance": 282.6470642089844,
+        "selectionExtent": 290.64453125
+      },
+      {
+        "font": "Courier",
+        "rotation": 90,
+        "advance": 403.27203369140625,
+        "selectionExtent": 411.265625
+      },
+      {
+        "font": "Courier-Bold",
+        "rotation": 90,
+        "advance": 403.27203369140625,
+        "selectionExtent": 411.265625
+      },
+      {
+        "font": "Courier-Oblique",
+        "rotation": 90,
+        "advance": 403.27203369140625,
+        "selectionExtent": 411.265625
+      },
+      {
+        "font": "Courier-BoldOblique",
+        "rotation": 90,
+        "advance": 403.27203369140625,
+        "selectionExtent": 411.265625
+      },
+      {
+        "font": "Helvetica",
+        "rotation": 180,
+        "advance": 286.7003479003906,
+        "selectionExtent": 294.69921875
+      },
+      {
+        "font": "Helvetica-Bold",
+        "rotation": 180,
+        "advance": 309.3106384277344,
+        "selectionExtent": 317.3046875
+      },
+      {
+        "font": "Helvetica-Oblique",
+        "rotation": 180,
+        "advance": 286.7003479003906,
+        "selectionExtent": 294.69921875
+      },
+      {
+        "font": "Helvetica-BoldOblique",
+        "rotation": 180,
+        "advance": 309.3106384277344,
+        "selectionExtent": 317.3046875
+      },
+      {
+        "font": "Times-Roman",
+        "rotation": 180,
+        "advance": 289.23712158203125,
+        "selectionExtent": 297.23046875
+      },
+      {
+        "font": "Times-Bold",
+        "rotation": 180,
+        "advance": 294.6231384277344,
+        "selectionExtent": 302.62109375
+      },
+      {
+        "font": "Times-Italic",
+        "rotation": 180,
+        "advance": 270.6158142089844,
+        "selectionExtent": 278.609375
+      },
+      {
+        "font": "Times-BoldItalic",
+        "rotation": 180,
+        "advance": 282.6470642089844,
+        "selectionExtent": 290.64453125
+      },
+      {
+        "font": "Courier",
+        "rotation": 180,
+        "advance": 403.27203369140625,
+        "selectionExtent": 411.265625
+      },
+      {
+        "font": "Courier-Bold",
+        "rotation": 180,
+        "advance": 403.27203369140625,
+        "selectionExtent": 411.265625
+      },
+      {
+        "font": "Courier-Oblique",
+        "rotation": 180,
+        "advance": 403.27203369140625,
+        "selectionExtent": 411.265625
+      },
+      {
+        "font": "Courier-BoldOblique",
+        "rotation": 180,
+        "advance": 403.27203369140625,
+        "selectionExtent": 411.265625
+      },
+      {
+        "font": "Helvetica",
+        "rotation": 270,
+        "advance": 286.7003479003906,
+        "selectionExtent": 294.69921875
+      },
+      {
+        "font": "Helvetica-Bold",
+        "rotation": 270,
+        "advance": 309.3106384277344,
+        "selectionExtent": 317.3046875
+      },
+      {
+        "font": "Helvetica-Oblique",
+        "rotation": 270,
+        "advance": 286.7003479003906,
+        "selectionExtent": 294.69921875
+      },
+      {
+        "font": "Helvetica-BoldOblique",
+        "rotation": 270,
+        "advance": 309.3106384277344,
+        "selectionExtent": 317.3046875
+      },
+      {
+        "font": "Times-Roman",
+        "rotation": 270,
+        "advance": 289.23712158203125,
+        "selectionExtent": 297.23046875
+      },
+      {
+        "font": "Times-Bold",
+        "rotation": 270,
+        "advance": 294.6231384277344,
+        "selectionExtent": 302.62109375
+      },
+      {
+        "font": "Times-Italic",
+        "rotation": 270,
+        "advance": 270.6158142089844,
+        "selectionExtent": 278.609375
+      },
+      {
+        "font": "Times-BoldItalic",
+        "rotation": 270,
+        "advance": 282.6470642089844,
+        "selectionExtent": 290.64453125
+      },
+      {
+        "font": "Courier",
+        "rotation": 270,
+        "advance": 403.27203369140625,
+        "selectionExtent": 411.265625
+      },
+      {
+        "font": "Courier-Bold",
+        "rotation": 270,
+        "advance": 403.27203369140625,
+        "selectionExtent": 411.265625
+      },
+      {
+        "font": "Courier-Oblique",
+        "rotation": 270,
+        "advance": 403.27203369140625,
+        "selectionExtent": 411.265625
+      },
+      {
+        "font": "Courier-BoldOblique",
+        "rotation": 270,
+        "advance": 403.27203369140625,
+        "selectionExtent": 411.265625
+      }
+    ],
+    "errors": []
+  },
+  "desktop": {
+    "passed": true,
+    "resumedFromOverflow": false,
+    "resumedAtSave": false,
+    "originalSha256": "ca2f42e295345a59afa2bfe228ebcf98503a039afe28b57c769a699c2265b6b2",
+    "outputSha256": "ee3bcb2422594dd1ed8478eb9e2132d9ce5fbbfede3ae132cffdb7807b351c4a",
+    "checks": [
+      "overflow rejection preserves input",
+      "longer actual content replacement",
+      "Courier bold italic annotation preserved",
+      "undo/redo",
+      "search invalidation",
+      "native mouse selection and Ctrl+C",
+      "original unchanged",
+      "saved/reopened without original path",
+      "reopened run editable",
+      "embedded-font refusal"
+    ],
+    "errors": []
+  },
+  "independent": {
+    "passed": true,
+    "pypdfText": "New sentence with more detail\nKeep this neighbor",
+    "annotationFont": "/Courier-BoldOblique",
+    "originalRightEdge": 174.49600219726562,
+    "replacementRightEdge": 267.8559875488281,
+    "changedPixels": 1683,
+    "changesOutsideTextBounds": 0,
+    "originalUnchanged": true
+  }
+}

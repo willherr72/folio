@@ -165,6 +165,99 @@ fn same_run(a: &RunSnapshot, b: &RunSnapshot) -> bool {
     same_style(a, b) && a.text == b.text && close_values(&a.bounds, &b.bounds)
 }
 
+// Existing overlap is permitted only within the original intersection. Comparing
+// intersection edges also catches growth when two objects already overlap.
+fn adds_overlap(before: &[f32; 4], after: &[f32; 4], other: &[f32; 4]) -> bool {
+    let intersection = |bounds: &[f32; 4]| {
+        [
+            bounds[0].max(other[0]),
+            bounds[1].max(other[1]),
+            bounds[2].min(other[2]),
+            bounds[3].min(other[3]),
+        ]
+    };
+    let old = intersection(before);
+    let new = intersection(after);
+    new[2] - new[0] > EPSILON
+        && new[3] - new[1] > EPSILON
+        && (old[2] - old[0] <= EPSILON
+            || old[3] - old[1] <= EPSILON
+            || new[0] < old[0] - EPSILON
+            || new[1] < old[1] - EPSILON
+            || new[2] > old[2] + EPSILON
+            || new[3] > old[3] + EPSILON)
+}
+
+fn solid_page_background(object: &PdfPageObject<'_>, geometry: PageGeometry) -> EngineResult<bool> {
+    let Some(path) = object.as_path_object() else {
+        // Image and form bounds cannot prove that their content is uniform.
+        return Ok(false);
+    };
+    if path.is_stroked()?
+        || path.fill_mode()? == PdfPathFillMode::None
+        || path.fill_color()?.alpha() != 255
+    {
+        return Ok(false);
+    }
+    let segments = path.segments().transform(path.matrix()?);
+    // A rectangle has a move and three sides, optionally an explicit final
+    // line back to its start. Reject compound paths, curves, and open paths.
+    if !matches!(segments.len(), 4 | 5) {
+        return Ok(false);
+    }
+    let mut points = Vec::new();
+    for index in 0..segments.len() {
+        let segment = segments.get(index)?;
+        let expected_type = if index == 0 {
+            PdfPathSegmentType::MoveTo
+        } else {
+            PdfPathSegmentType::LineTo
+        };
+        if segment.segment_type() != expected_type
+            || segment.is_close() != (index == segments.len() - 1)
+        {
+            return Ok(false);
+        }
+        let (x, y) = segment.point();
+        if !x.value.is_finite() || !y.value.is_finite() {
+            return Ok(false);
+        }
+        points.push([x.value, y.value]);
+    }
+    if points.len() == 5 && !close_values(&points[0], &points[4]) {
+        return Ok(false);
+    }
+    // Every side must be nonzero, axis aligned, and alternate direction.
+    let mut horizontal = [false; 4];
+    for index in 0..4 {
+        let a = points[index];
+        let b = points[(index + 1) % 4];
+        let same_x = (a[0] - b[0]).abs() <= EPSILON;
+        let same_y = (a[1] - b[1]).abs() <= EPSILON;
+        if same_x == same_y {
+            return Ok(false);
+        }
+        horizontal[index] = same_y;
+    }
+    if (0..4).any(|index| horizontal[index] == horizontal[(index + 1) % 4]) {
+        return Ok(false);
+    }
+    let left = points.iter().map(|p| p[0]).fold(f32::INFINITY, f32::min);
+    let bottom = points.iter().map(|p| p[1]).fold(f32::INFINITY, f32::min);
+    let right = points
+        .iter()
+        .map(|p| p[0])
+        .fold(f32::NEG_INFINITY, f32::max);
+    let top = points
+        .iter()
+        .map(|p| p[1])
+        .fold(f32::NEG_INFINITY, f32::max);
+    Ok(left <= geometry.left + EPSILON
+        && bottom <= geometry.bottom + EPSILON
+        && right >= geometry.right - EPSILON
+        && top >= geometry.top - EPSILON)
+}
+
 fn replace_in_page(
     document: &PdfDocument<'_>,
     index: usize,
@@ -202,6 +295,14 @@ fn preflight(bytes: &[u8]) -> EngineResult<()> {
     let content = lopdf::content::Content::decode(&content)
         .map_err(|_| invalid("The page content could not be inspected safely."))?;
     for operation in content.operations {
+        // PDFium's fill-color accessor returns RGB/alpha even for a pattern.
+        // A named scn/SCN operand selects a pattern, so its rectangle cannot be
+        // positively identified as a solid background by inspecting that color.
+        if matches!(operation.operator.as_str(), "scn" | "SCN")
+            && operation.operands.iter().any(|o| o.as_name().is_ok())
+        {
+            return Err(invalid("Pages with pattern fills cannot be edited safely."));
+        }
         if matches!(operation.operator.as_str(), "W" | "W*") {
             return Err(invalid(
                 "Pages with clipping paths cannot be edited safely.",
@@ -460,11 +561,8 @@ impl WorkerRuntime {
                 "The replacement could not preserve the font, placement, or surrounding text.",
             ));
         }
-        // Retain the original baseline and maximum right edge; glyphs may have
-        // different ascenders/descenders, but never expand into the next run.
-        if changed.bounds[2] > selected.bounds[2] + EPSILON {
-            return Err(invalid("The replacement is too wide for this text run. Use shorter text; font size and neighboring content are preserved."));
-        }
+        // The style check retains the font size and baseline. Width can grow
+        // wherever the visible page has room without covering nearby content.
         let geometry = page_geometry(&page)?;
         if changed.bounds[0] < geometry.left
             || changed.bounds[2] > geometry.right
@@ -479,15 +577,28 @@ impl WorkerRuntime {
             if other.index == object_index {
                 continue;
             }
-            let overlap = |a: &[f32; 4], b: &[f32; 4]| {
-                a[0] < b[2] - EPSILON
-                    && a[2] > b[0] + EPSILON
-                    && a[1] < b[3] - EPSILON
-                    && a[3] > b[1] + EPSILON
-            };
-            if overlap(&changed.bounds, &other.bounds) && !overlap(&selected.bounds, &other.bounds)
-            {
+            if adds_overlap(&selected.bounds, &changed.bounds, &other.bounds) {
                 return Err(invalid("The replacement would overlap neighboring text."));
+            }
+        }
+        for (index, object) in page.objects().iter().enumerate() {
+            if object.as_text_object().is_some() {
+                continue;
+            }
+            let rect = object.bounds()?;
+            let bounds = [
+                rect.left().value,
+                rect.bottom().value,
+                rect.right().value,
+                rect.top().value,
+            ];
+            // Only a proven solid rectangle behind the selected run is exempt.
+            // Page-covering bounds alone can hide interior artwork or holes.
+            let background = index < object_index && solid_page_background(&object, geometry)?;
+            if !background && adds_overlap(&selected.bounds, &changed.bounds, &bounds) {
+                return Err(invalid(
+                    "The replacement would overlap neighboring graphics.",
+                ));
             }
         }
         let changed_raster = raster(&page)?;

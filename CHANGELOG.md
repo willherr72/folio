@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.7.1
+
+- Allow longer existing-text replacements to grow into available page space, preserving font size and baseline. Reject page overflow and new or expanded overlap with neighboring source text and graphics.
+- Add a text-box Font picker with Helvetica, Times and Courier in regular, bold, italic and bold italic styles. Preserve font choice in undo/redo, recovery, editable export/reopen and flattened copies.
+- Measure added-text selection/search geometry with the selected preview font. Preserve compatibility with older Helvetica annotations.
+- Document the next steps for installed, embedded/subset and complex-font support.
+
 ## 0.7.0
 
 - Edit supported existing PDF text runs through the new Edit text tool.

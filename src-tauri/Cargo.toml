@@ -1,6 +1,6 @@
 [package]
 name = "folio"
-version = "0.7.0"
+version = "0.7.1"
 description = "Native backend for the Folio desktop PDF editor"
 edition = "2021"
 

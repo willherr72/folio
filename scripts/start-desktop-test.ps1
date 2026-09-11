@@ -1,4 +1,4 @@
-param([string]$Binary = 'artifacts/Folio-v0.7.0/Folio.exe', [int]$Port = 9228)
+param([string]$Binary = 'artifacts/Folio-v0.7.1/Folio.exe', [int]$Port = 9228)
 $ErrorActionPreference = 'Stop'
 $folioRoot = Split-Path -Parent $PSScriptRoot
 $exe = (Resolve-Path -LiteralPath (Join-Path $folioRoot $Binary)).Path

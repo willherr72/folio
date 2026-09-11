@@ -18,3 +18,15 @@ and its full license in `tests/fixtures/corpus/fonts/LICENSE_DEJAVU.txt`.
 Fixture provenance and checksums are recorded in the adjacent manifest. Corpus
 PDFs contain synthetic test data; Python generation/inspection tools are development
 dependencies and are not embedded in the desktop application.
+
+## Standard font metric data
+
+The WinAnsi advance tables in `src-tauri/src/persistence.rs` are adapted from
+ReportLab 4.5.1's `pdfbase/_fontdata_enc_winansi.py` and
+`_fontdata_widths_{helvetica,helveticabold,timesroman,timesbold,timesitalic,timesbolditalic}.py`,
+loaded through `_fontdata.py`. Helvetica oblique shares upright widths; Courier
+uses a fixed advance. No ReportLab font binaries are included.
+
+ReportLab's three-clause BSD license is reproduced in [docs/licenses/REPORTLAB.txt](docs/licenses/REPORTLAB.txt).
+Additional notices in the distribution: Copyright (c) 2000-2025, ReportLab Inc.;
+Copyright ReportLab Europe Ltd. 2000-2017. Source: https://www.reportlab.com/.

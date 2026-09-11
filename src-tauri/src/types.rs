@@ -75,9 +75,58 @@ pub struct TextOverlay {
     pub y: f32,
     pub text: String,
     pub font_size: f32,
+    #[serde(default)]
+    pub font_name: TextFont,
     pub color: String,
     #[serde(default)]
     pub rotation: u16,
+}
+
+/// Portable PDF standard fonts; unknown wire values are rejected by serde.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum TextFont {
+    #[default]
+    Helvetica,
+    #[serde(rename = "Helvetica-Bold")]
+    HelveticaBold,
+    #[serde(rename = "Helvetica-Oblique")]
+    HelveticaOblique,
+    #[serde(rename = "Helvetica-BoldOblique")]
+    HelveticaBoldOblique,
+    #[serde(rename = "Times-Roman")]
+    TimesRoman,
+    #[serde(rename = "Times-Bold")]
+    TimesBold,
+    #[serde(rename = "Times-Italic")]
+    TimesItalic,
+    #[serde(rename = "Times-BoldItalic")]
+    TimesBoldItalic,
+    Courier,
+    #[serde(rename = "Courier-Bold")]
+    CourierBold,
+    #[serde(rename = "Courier-Oblique")]
+    CourierOblique,
+    #[serde(rename = "Courier-BoldOblique")]
+    CourierBoldOblique,
+}
+
+impl TextFont {
+    pub(crate) fn pdf_name(self) -> &'static str {
+        match self {
+            Self::Helvetica => "Helvetica",
+            Self::HelveticaBold => "Helvetica-Bold",
+            Self::HelveticaOblique => "Helvetica-Oblique",
+            Self::HelveticaBoldOblique => "Helvetica-BoldOblique",
+            Self::TimesRoman => "Times-Roman",
+            Self::TimesBold => "Times-Bold",
+            Self::TimesItalic => "Times-Italic",
+            Self::TimesBoldItalic => "Times-BoldItalic",
+            Self::Courier => "Courier",
+            Self::CourierBold => "Courier-Bold",
+            Self::CourierOblique => "Courier-Oblique",
+            Self::CourierBoldOblique => "Courier-BoldOblique",
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

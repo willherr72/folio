@@ -671,7 +671,39 @@ impl WorkerRuntime {
         self.validate_export(&request)?;
 
         let mut output = self.pdfium.create_new_pdf()?;
-        let font = output.fonts_mut().helvetica();
+        let mut fonts = HashMap::new();
+        if request.flatten {
+            for text in request
+                .pages
+                .iter()
+                .flat_map(|page| &page.overlays)
+                .filter_map(|overlay| {
+                    if let Overlay::Text(text) = overlay {
+                        Some(text)
+                    } else {
+                        None
+                    }
+                })
+            {
+                fonts.entry(text.font_name).or_insert_with(|| {
+                    let fonts = output.fonts_mut();
+                    match text.font_name {
+                        TextFont::Helvetica => fonts.helvetica(),
+                        TextFont::HelveticaBold => fonts.helvetica_bold(),
+                        TextFont::HelveticaOblique => fonts.helvetica_oblique(),
+                        TextFont::HelveticaBoldOblique => fonts.helvetica_bold_oblique(),
+                        TextFont::TimesRoman => fonts.times_roman(),
+                        TextFont::TimesBold => fonts.times_bold(),
+                        TextFont::TimesItalic => fonts.times_italic(),
+                        TextFont::TimesBoldItalic => fonts.times_bold_italic(),
+                        TextFont::Courier => fonts.courier(),
+                        TextFont::CourierBold => fonts.courier_bold(),
+                        TextFont::CourierOblique => fonts.courier_oblique(),
+                        TextFont::CourierBoldOblique => fonts.courier_bold_oblique(),
+                    }
+                });
+            }
+        }
         let mut geometries = Vec::with_capacity(request.pages.len());
 
         for plan in &request.pages {
@@ -692,7 +724,7 @@ impl WorkerRuntime {
                 match overlay {
                     Overlay::Text(text) => {
                         if request.flatten {
-                            add_text_overlay(&mut page, geometry, text, font)?;
+                            add_text_overlay(&mut page, geometry, text, fonts[&text.font_name])?;
                         }
                     }
                     Overlay::Ink(ink) => {
@@ -1403,7 +1435,8 @@ fn validate_text(overlay: &TextOverlay, width: f32, height: f32) -> EngineResult
         .find(|character| !helvetica_supports(*character))
     {
         return Err(EngineError::InvalidRequest(format!(
-            "Helvetica does not support character U+{:04X}; use Latin text and common punctuation",
+            "{} does not support character U+{:04X}; use Latin text and common punctuation",
+            overlay.font_name.pdf_name(),
             character as u32
         )));
     }

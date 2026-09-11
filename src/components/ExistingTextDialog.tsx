@@ -34,7 +34,7 @@ export function ExistingTextDialog({ run, busy, error, onApply, onCancel }: Exis
             onChange={event => { if (!busy) { setReplacement(event.target.value); setPasteError(null); } }}
             onPaste={event => { if (/[\u0000-\u001f\u007f-\u009f]/.test(event.clipboardData.getData("text/plain"))) { event.preventDefault(); setPasteError("Use a single line without control characters."); } }} />
           </label>
-          <p id={hintId}>The replacement must fit the existing text run. Folio preserves the original font and position; it does not substitute fonts or reflow the page.</p>
+          <p id={hintId}>Longer text can extend into available space. Folio keeps the original font, size and position, and checks page edges and nearby source text and graphics. It does not reflow the page.</p>
         </> : <><p className="existing-text-original">{run.text}</p><p>{run.reason ?? "This text cannot be edited safely with its original font and layout."}</p></>}
         {message && <p id={errorId} className="existing-text-error" role="alert">{message}</p>}
       </div>

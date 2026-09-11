@@ -46,6 +46,332 @@ fn plan(source: &folio_engine::DocumentInfo) -> ExportRequest {
 }
 
 #[test]
+fn longer_replacements_use_free_space_preserving_style_and_source_for_all_rotations() {
+    let temp = tempfile::tempdir().unwrap();
+    let engine = engine();
+    for rotation in [0, 90, 180, 270] {
+        let path = temp.path().join(format!("longer-{rotation}.pdf"));
+        fixture(
+            &path,
+            "Helvetica",
+            "BT /F1 16 Tf 60 300 Td (Old) Tj 0 -40 Td (Neighbor) Tj ET",
+            rotation,
+        );
+        let file_bytes = std::fs::read(&path).unwrap();
+        let source = engine.open_document(&path).unwrap();
+        let bytes = engine.source_bytes(&source.id).unwrap();
+        let before = engine.list_text_runs(&source.id, 0).unwrap();
+        let run = &before.runs[0];
+        let edited = engine
+            .replace_text(&source.id, 0, run.object_index, "Old", "Longer replacement")
+            .unwrap();
+        let after = engine.list_text_runs(&edited.id, 0).unwrap();
+        let changed = &after.runs[0];
+        assert_eq!(changed.text, "Longer replacement");
+        assert_eq!(changed.font_name, run.font_name);
+        assert_eq!(changed.font_size, run.font_size);
+        assert!(
+            changed.bounds.width * changed.bounds.height > run.bounds.width * run.bounds.height
+        );
+        assert_eq!(after.runs[1].text, before.runs[1].text);
+        assert_eq!(engine.source_bytes(&source.id).unwrap(), bytes);
+        assert_eq!(std::fs::read(&path).unwrap(), file_bytes);
+        assert!(engine.extract_text(&source.id, 0).unwrap().contains("Old"));
+        let output = temp.path().join(format!("longer-export-{rotation}.pdf"));
+        engine.export_pdf(plan(&edited), &output).unwrap();
+        let reopened = engine.open_document(&output).unwrap();
+        assert!(engine
+            .extract_text(&reopened.id, 0)
+            .unwrap()
+            .contains("Longer replacement"));
+        for id in [source.id, edited.id, reopened.id] {
+            engine.close_document(&id).unwrap();
+        }
+    }
+}
+
+#[test]
+fn replacement_rejects_new_or_increased_text_overlap_and_crop_overflow() {
+    let temp = tempfile::tempdir().unwrap();
+    let engine = engine();
+    for rotation in [0, 90, 180, 270] {
+        for (name, stream, old, replacement, reason) in [
+            (
+                "same-line-neighbor",
+                "BT /F1 16 Tf 60 300 Td (Old ) Tj ET BT /F1 16 Tf 120 300 Td (Neighbor) Tj ET",
+                "Old",
+                "Longer replacement ",
+                "overlap neighboring text",
+            ),
+            (
+                "neighbor",
+                "BT /F1 16 Tf 0 1 -1 0 120 295 Tm (II) Tj ET BT /F1 16 Tf 60 300 Td (Old) Tj ET",
+                "Old",
+                "Longer replacement",
+                "overlap neighboring text",
+            ),
+            (
+                "existing-overlap",
+                "BT /F1 16 Tf 0 1 -1 0 90 295 Tm (II) Tj ET BT /F1 16 Tf 60 300 Td (Old ) Tj ET",
+                "Old",
+                "Old extended ",
+                "overlap neighboring text",
+            ),
+            (
+                "crop",
+                "BT /F1 16 Tf 200 300 Td (Old) Tj ET",
+                "Old",
+                "Longer replacement",
+                "outside the visible page",
+            ),
+        ] {
+            let path = temp.path().join(format!("{name}-{rotation}.pdf"));
+            fixture(&path, "Helvetica", stream, rotation);
+            let source = engine.open_document(&path).unwrap();
+            let bytes = engine.source_bytes(&source.id).unwrap();
+            let run = engine
+                .list_text_runs(&source.id, 0)
+                .unwrap()
+                .runs
+                .into_iter()
+                .find(|run| run.text.trim() == old)
+                .unwrap();
+            let error = engine
+                .replace_text(&source.id, 0, run.object_index, &run.text, replacement)
+                .unwrap_err()
+                .to_string();
+            assert!(error.contains(reason), "{name} {rotation}: {error}");
+            assert_eq!(engine.source_bytes(&source.id).unwrap(), bytes);
+            engine.close_document(&source.id).unwrap();
+        }
+    }
+}
+
+fn graphic_fixture(path: &Path, graphic: &str, before_text: bool, image: bool) {
+    let text = "BT /F1 16 Tf 60 300 Td (Old) Tj ET";
+    let stream = if before_text {
+        format!("{graphic} {text}")
+    } else {
+        format!("{text} {graphic}")
+    };
+    fixture(path, "Helvetica", &stream, 0);
+    if image {
+        let mut pdf = lopdf::Document::load(path).unwrap();
+        let image = pdf.add_object(lopdf::Stream::new(
+            lopdf::dictionary! {
+                "Type" => "XObject", "Subtype" => "Image", "Width" => 2, "Height" => 1,
+                "ColorSpace" => "DeviceRGB", "BitsPerComponent" => 8
+            },
+            vec![200, 210, 220, 30, 40, 50],
+        ));
+        let page = *pdf.get_pages().values().next().unwrap();
+        pdf.get_object_mut(page)
+            .unwrap()
+            .as_dict_mut()
+            .unwrap()
+            .get_mut(b"Resources")
+            .unwrap()
+            .as_dict_mut()
+            .unwrap()
+            .set("XObject", lopdf::dictionary! {"Im1" => image});
+        pdf.save(path).unwrap();
+    }
+}
+
+#[test]
+fn pattern_filled_page_rectangle_in_a_separate_stream_is_rejected() {
+    let temp = tempfile::tempdir().unwrap();
+    let path = temp.path().join("pattern-background.pdf");
+    fixture(&path, "Helvetica", "BT /F1 16 Tf 60 300 Td (Old) Tj ET", 0);
+    let mut pdf = lopdf::Document::load(&path).unwrap();
+    let pattern = pdf.add_object(lopdf::Stream::new(
+        lopdf::dictionary! {
+            "Type" => "Pattern", "PatternType" => 1, "PaintType" => 1, "TilingType" => 1,
+            "BBox" => vec![0.into(), 0.into(), 300.into(), 400.into()],
+            "XStep" => 300, "YStep" => 400, "Resources" => lopdf::dictionary! {}
+        },
+        b"1 0 0 rg 120 299 30 20 re f".to_vec(),
+    ));
+    let background = pdf.add_object(lopdf::Stream::new(
+        lopdf::dictionary! {},
+        b"q /Pattern cs /P1 scn 0 0 300 400 re f Q".to_vec(),
+    ));
+    let page = *pdf.get_pages().values().next().unwrap();
+    let page = pdf.get_object_mut(page).unwrap().as_dict_mut().unwrap();
+    let text = page.get(b"Contents").unwrap().clone();
+    page.set("Contents", vec![background.into(), text]);
+    page.get_mut(b"Resources")
+        .unwrap()
+        .as_dict_mut()
+        .unwrap()
+        .set("Pattern", lopdf::dictionary! {"P1" => pattern});
+    pdf.save(&path).unwrap();
+    let engine = engine();
+    let source = engine.open_document(&path).unwrap();
+    let bytes = engine.source_bytes(&source.id).unwrap();
+    let run = engine.list_text_runs(&source.id, 0).unwrap().runs.remove(0);
+    let error = engine
+        .replace_text(&source.id, 0, run.object_index, "Old", "Longer replacement")
+        .unwrap_err()
+        .to_string();
+    assert!(error.contains("pattern"), "{error}");
+    assert_eq!(engine.source_bytes(&source.id).unwrap(), bytes);
+    engine.close_document(&source.id).unwrap();
+}
+
+#[test]
+fn replacement_respects_graphics_and_allows_page_backgrounds() {
+    let temp = tempfile::tempdir().unwrap();
+    let engine = engine();
+    let mut unexpected_successes = Vec::new();
+    for (name, graphic, before_text, image, allowed) in [
+        (
+            "page-border-with-interior-box",
+            "0 0 300 400 re 120 299 30 20 re S",
+            true,
+            false,
+            false,
+        ),
+        (
+            "page-with-filled-interior-hole",
+            "0 0 300 400 re 120 299 30 20 re f*",
+            true,
+            false,
+            false,
+        ),
+        (
+            "page-sized-trapezoid",
+            "0 0 m 300 0 l 240 400 l 0 400 l h f",
+            true,
+            false,
+            false,
+        ),
+        (
+            "background-implicitly-closed-rectangle",
+            "0 0 m 300 0 l 300 400 l 0 400 l f",
+            true,
+            false,
+            true,
+        ),
+        (
+            "background-explicit-closed-rectangle",
+            "0 0 m 300 0 l 300 400 l 0 400 l h f",
+            true,
+            false,
+            true,
+        ),
+        (
+            "background-transformed-rectangle",
+            "q 200 0 0 300 40 50 cm 0 0 1 1 re f Q",
+            true,
+            false,
+            true,
+        ),
+        (
+            "page-sized-skewed-rectangle",
+            "q 1 0 0.2 1 0 0 cm 0 0 300 400 re f Q",
+            true,
+            false,
+            false,
+        ),
+        (
+            "thin-line",
+            "0.2 w 120 299 m 120 320 l S",
+            false,
+            false,
+            false,
+        ),
+        (
+            "existing-graphic-overlap",
+            "0.2 0.3 0.4 rg 80 299 40 20 re f",
+            false,
+            false,
+            false,
+        ),
+        (
+            "drawing",
+            "0.2 0.3 0.4 rg 120 299 30 20 re f",
+            false,
+            false,
+            false,
+        ),
+        (
+            "drawing-before",
+            "0.2 0.3 0.4 rg 120 299 30 20 re f",
+            true,
+            false,
+            false,
+        ),
+        (
+            "image",
+            "q 30 0 0 20 120 299 cm /Im1 Do Q",
+            false,
+            true,
+            false,
+        ),
+        (
+            "image-before",
+            "q 30 0 0 20 120 299 cm /Im1 Do Q",
+            true,
+            true,
+            false,
+        ),
+        (
+            "background-drawing",
+            "0.8 0.9 1 rg 0 0 300 400 re f 0 0 0 rg",
+            true,
+            false,
+            true,
+        ),
+        (
+            "page-sized-nonuniform-image",
+            "q 300 0 0 400 0 0 cm /Im1 Do Q",
+            true,
+            true,
+            false,
+        ),
+        (
+            "foreground-page",
+            "0.8 0.9 1 rg 0 0 300 400 re f",
+            false,
+            false,
+            false,
+        ),
+    ] {
+        let path = temp.path().join(format!("{name}.pdf"));
+        graphic_fixture(&path, graphic, before_text, image);
+        let source = engine.open_document(&path).unwrap();
+        let bytes = engine.source_bytes(&source.id).unwrap();
+        let run = engine.list_text_runs(&source.id, 0).unwrap().runs.remove(0);
+        let result =
+            engine.replace_text(&source.id, 0, run.object_index, "Old", "Longer replacement");
+        if allowed {
+            let edited = result.unwrap_or_else(|error| panic!("{name}: {error}"));
+            assert!(engine
+                .extract_text(&edited.id, 0)
+                .unwrap()
+                .contains("Longer replacement"));
+            engine.close_document(&edited.id).unwrap();
+        } else if let Ok(edited) = result {
+            unexpected_successes.push(name);
+            engine.close_document(&edited.id).unwrap();
+        } else {
+            let error = result.unwrap_err().to_string();
+            assert!(
+                error.contains("overlap neighboring graphics"),
+                "{name}: {error}"
+            );
+        }
+        assert_eq!(engine.source_bytes(&source.id).unwrap(), bytes);
+        engine.close_document(&source.id).unwrap();
+    }
+    assert!(
+        unexpected_successes.is_empty(),
+        "Allowed graphics collisions: {unexpected_successes:?}"
+    );
+}
+
+#[test]
 fn replacement_changes_real_pdf_text_and_preserves_source_for_all_latin_base_fonts_and_rotations() {
     let temp = tempfile::tempdir().unwrap();
     let engine = engine();

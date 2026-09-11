@@ -1,3 +1,4 @@
+import type { TextFontName } from "./text-fonts";
 export type Rotation = 0 | 90 | 180 | 270;
 
 export interface TextOverlay {
@@ -7,6 +8,8 @@ export interface TextOverlay {
   y: number;
   text: string;
   fontSize: number;
+  /** Absent in older documents; defaults to Helvetica. */
+  fontName?: TextFontName;
   color: string;
   /** Clockwise orientation about the local top-left x/y anchor. */
   rotation?: Rotation;

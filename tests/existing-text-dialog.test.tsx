@@ -17,7 +17,7 @@ describe("existing text dialog", () => {
     expect(input.selectionEnd).toBe(run.text.length);
     expect(input).toHaveAttribute("maxlength", "1000");
     expect(screen.getByText(/Helvetica.*12/)).toBeInTheDocument();
-    expect(screen.getByText(/must fit/i)).toBeInTheDocument();
+    expect(screen.getByText(/extend into available space/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Apply changes" })).toBeDisabled();
     fireEvent.change(input, { target: { value: "Updated text" } });
     fireEvent.submit(input.closest("form")!);
