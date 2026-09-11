@@ -1,13 +1,18 @@
+import { useCustomFont } from "../editor/use-font-resources";
+import { customTextError } from "../editor/custom-fonts";
 import { useLayoutEffect, useRef } from "react";
 import { Trash2 } from "lucide-react";
 import type { Overlay } from "../editor/types";
 import { TEXT_FONTS, textFont, type TextFontName } from "../editor/text-fonts";
 import { resizeInk } from "../editor/geometry";
 
-export function OverlayProperties({ overlay, onChange, onDelete, autoEdit, onAutoEdited, pageWidth, pageHeight }: {
+export function OverlayProperties({ overlay, onChange, onDelete, autoEdit, onAutoEdited, pageWidth, pageHeight, onChooseFont }: {
   overlay: Overlay; onChange(update: (value: Overlay) => Overlay): void; onDelete(): void;
+  onChooseFont?: () => void;
   autoEdit: boolean; onAutoEdited(): void; pageWidth:number; pageHeight:number;
 }) {
+  const custom = useCustomFont(overlay.type === "text" ? overlay.fontId : undefined);
+  const fontError = overlay.type === "text" && overlay.fontId ? custom?.status === "ready" ? customTextError(custom.info!, overlay.text) : custom?.error : null;
   const contentRef = useRef<HTMLTextAreaElement>(null);
   useLayoutEffect(() => {
     if (autoEdit && contentRef.current) { contentRef.current.focus(); contentRef.current.select(); onAutoEdited(); }
@@ -21,9 +26,12 @@ export function OverlayProperties({ overlay, onChange, onDelete, autoEdit, onAut
       {overlay.type !== "ink" && <label className="field-label">{overlay.type === "text" ? "Content" : overlay.type === "highlight" ? "Highlight note" : "Comment"}
         <textarea ref={contentRef} maxLength={32768} value={overlay.text??""} rows={4} placeholder={overlay.type === "highlight" ? "Add an optional note…" : "Write a comment…"} onChange={event=>onChange(value=>value.type!=="ink" ? {...value,text:event.target.value} : value)}/>
       </label>}
-      {overlay.type === "text" && <label className="field-label">Font<select value={overlay.fontName ?? "Helvetica"} onChange={event => onChange(value => value.type === "text" ? { ...value, fontName: event.target.value as TextFontName } : value)}>
+      {overlay.type === "text" && <label className="field-label">Font<select value={overlay.fontId ? "custom" : overlay.fontName ?? "Helvetica"} onChange={event => onChange(value => value.type === "text" ? { ...value, fontId: undefined, fontName: event.target.value as TextFontName } : value)}>
+        {overlay.fontId && <option value="custom">{custom?.info?.name ?? "Custom font"}</option>}
         {TEXT_FONTS.map(font => <option key={font.name} value={font.name}>{font.label}</option>)}
       </select></label>}
+      {overlay.type === "text" && onChooseFont && <button className="button" onClick={onChooseFont}>More fonts…</button>}
+      {fontError && <p role="alert">{fontError}</p>}
       {overlay.type === "text" && <label className="field-label">Size<input type="number" min="6" max="96" value={overlay.fontSize} onChange={event=>onChange(value=>value.type==="text" ? {...value,fontSize:Math.max(6,Math.min(96,Number(event.target.value)))} : value)}/></label>}
       <label className="field-label">{overlay.type === "ink" ? "Ink color" : "Color"}<span className="color-input"><input type="color" value={overlay.color} onChange={event=>onChange(value=>({...value,color:event.target.value.toUpperCase()}))}/><code>{overlay.color}</code></span></label>
       {overlay.type === "ink" && <>
@@ -31,7 +39,7 @@ export function OverlayProperties({ overlay, onChange, onDelete, autoEdit, onAut
         <label className="field-label">Width (pt)<input aria-label="Ink width" type="number" min="1" max={pageWidth} disabled={width<=0} value={Math.round(width*10)/10} onChange={event=>onChange(value=>value.type==="ink" ? resizeInk(value,Number(event.target.value),pageWidth,pageHeight) : value)}/></label>
         <p>Width keeps the proportions and fits the page.</p>
       </>}
-      {overlay.type === "text" && <p>{textFont(overlay.fontName).label} · {overlay.text.split("\n").length} {overlay.text.includes("\n") ? "lines" : "line"}</p>}
+      {overlay.type === "text" && <p>{overlay.fontId ? custom?.info?.name ?? "Custom font" : textFont(overlay.fontName).label} · {overlay.text.split("\n").length} {overlay.text.includes("\n") ? "lines" : "line"}</p>}
     </section>
     <section className="property-section"><h3>{overlay.type === "highlight" ? "Text anchor" : "Position"}</h3>
       <p>{overlay.type === "highlight" ? "This highlight stays anchored to its text. Select it from the review list to edit its note or color." : "Drag this item directly on the page to move it."}</p>

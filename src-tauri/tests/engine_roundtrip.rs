@@ -136,6 +136,7 @@ fn export_roundtrip_preserves_pages_and_places_overlays_on_rotated_crop() {
                         rotation: 0,
                         overlays: vec![
                             Overlay::Text(TextOverlay {
+                                font_id: None,
                                 font_name: Default::default(),
                                 rotation: 0,
                                 id: "text-1".into(),
@@ -286,6 +287,7 @@ fn render_width_is_clamped_and_export_validation_rejects_unsafe_payloads() {
 
     let mut bad_color = valid_page.clone();
     bad_color.overlays.push(Overlay::Text(TextOverlay {
+        font_id: None,
         font_name: Default::default(),
         rotation: 0,
         id: "bad-color".into(),
@@ -337,6 +339,7 @@ fn render_width_is_clamped_and_export_validation_rejects_unsafe_payloads() {
         fs::write(&unsupported_output, prior_output).unwrap();
         let mut unsupported_page = valid_page.clone();
         unsupported_page.overlays.push(Overlay::Text(TextOverlay {
+            font_id: None,
             font_name: Default::default(),
             rotation: 0,
             id: format!("unsupported-{name}"),
@@ -367,6 +370,7 @@ fn render_width_is_clamped_and_export_validation_rejects_unsafe_payloads() {
     let mut clipped_page = valid_page;
     clipped_page.overlays = vec![
         Overlay::Text(TextOverlay {
+            font_id: None,
             font_name: Default::default(),
             rotation: 0,
             id: "cleared-text".into(),
@@ -412,6 +416,7 @@ fn duplicated_annotated_pages_may_reuse_overlay_ids() {
     let document = engine.open_document(&source).unwrap();
     fs::write(&output, b"previous export").unwrap();
     let overlay = Overlay::Text(TextOverlay {
+        font_id: None,
         font_name: Default::default(),
         rotation: 0,
         id: "same-overlay-after-clone".into(),

@@ -18,6 +18,65 @@ where
 }
 
 #[tauri::command]
+async fn list_installed_fonts(
+    engine: State<'_, PdfEngine>,
+) -> Result<Vec<crate::InstalledFont>, String> {
+    let fonts = engine.fonts();
+    on_worker(move || fonts.list_installed()).await
+}
+#[tauri::command]
+async fn load_installed_font(
+    engine: State<'_, PdfEngine>,
+    id: String,
+) -> Result<crate::FontInfo, String> {
+    let fonts = engine.fonts();
+    on_worker(move || fonts.load_installed(&id)).await
+}
+#[tauri::command]
+async fn font_info(engine: State<'_, PdfEngine>, id: String) -> Result<crate::FontInfo, String> {
+    let fonts = engine.fonts();
+    on_worker(move || Ok(fonts.get(&id)?.info.clone())).await
+}
+#[tauri::command]
+async fn font_bytes(engine: State<'_, PdfEngine>, id: String) -> Result<Response, String> {
+    let fonts = engine.fonts();
+    on_worker(move || Ok(fonts.get(&id)?.bytes.to_vec()))
+        .await
+        .map(Response::new)
+}
+#[tauri::command]
+async fn release_font(engine: State<'_, PdfEngine>, id: String) -> Result<(), String> {
+    let fonts = engine.fonts();
+    on_worker(move || fonts.remove(&id)).await
+}
+#[tauri::command]
+async fn import_font(engine: State<'_, PdfEngine>) -> Result<Option<crate::FontInfo>, String> {
+    use std::io::Read;
+    let fonts = engine.fonts();
+    tauri::async_runtime::spawn_blocking(move || {
+        let Some(path) = rfd::FileDialog::new()
+            .set_title("Import a font")
+            .add_filter("Font files", &["ttf", "otf"])
+            .pick_file()
+        else {
+            return Ok(None);
+        };
+        let mut bytes = Vec::new();
+        std::fs::File::open(path)
+            .map_err(|error| error.to_string())?
+            .take(16 * 1024 * 1024 + 1)
+            .read_to_end(&mut bytes)
+            .map_err(|error| error.to_string())?;
+        fonts
+            .register(bytes)
+            .map(Some)
+            .map_err(|error| error.to_string())
+    })
+    .await
+    .map_err(|error| format!("Font dialog failed: {error}"))?
+}
+
+#[tauri::command]
 async fn open_pdf(engine: State<'_, PdfEngine>) -> Result<Option<DocumentInfo>, String> {
     let engine = engine.inner().clone();
     tauri::async_runtime::spawn_blocking(move || {
@@ -216,6 +275,12 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             open_pdf,
+            list_installed_fonts,
+            load_installed_font,
+            import_font,
+            font_info,
+            font_bytes,
+            release_font,
             render_page,
             page_text,
             list_text_runs,

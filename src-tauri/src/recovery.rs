@@ -11,6 +11,7 @@ use std::sync::Mutex;
 use uuid::Uuid;
 
 const MAX_MANIFEST_BYTES: u64 = 32 * 1024 * 1024;
+const MAX_FONT_BYTES: u64 = 16 * 1024 * 1024;
 const CLEAR_MARKER: &str = "cleared";
 
 pub struct RecoveryStore {
@@ -31,6 +32,14 @@ struct SourceSnapshot {
     original_path: PathBuf,
 }
 
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct FontSnapshot {
+    file: String,
+    length: u64,
+    checksum: String,
+}
+
 #[derive(Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct Manifest {
@@ -39,6 +48,8 @@ struct Manifest {
     annotation_import_version: u32,
     workspace: Value,
     sources: BTreeMap<String, SourceSnapshot>,
+    #[serde(default)]
+    fonts: BTreeMap<String, FontSnapshot>,
 }
 
 impl RecoveryStore {
@@ -57,6 +68,10 @@ impl RecoveryStore {
         let sources = fs::canonicalize(root.join("sources")).map_err(io_error)?;
         if sources.parent() != Some(root.as_path()) {
             return Err("Recovery source folder must be inside the recovery folder".into());
+        }
+        fs::create_dir_all(root.join("fonts")).map_err(io_error)?;
+        if fs::canonicalize(root.join("fonts")).map_err(io_error)? != root.join("fonts") {
+            return Err("Recovery font folder must be inside the recovery folder".into());
         }
         Ok(Self {
             root,
@@ -78,6 +93,7 @@ impl RecoveryStore {
                 remove_if_exists(&path)?;
             }
             self.remove_source_files(&BTreeSet::new())?;
+            self.remove_font_files(&BTreeSet::new())?;
             cached.clear();
         }
         let mut sources = BTreeMap::new();
@@ -109,11 +125,29 @@ impl RecoveryStore {
             };
             sources.insert(id, snapshot);
         }
+        let mut fonts = BTreeMap::new();
+        let font_directory = self.font_directory()?;
+        for id in font_reference_ids(&workspace)? {
+            let asset = engine
+                .fonts()
+                .get(&id)
+                .map_err(|error| format!("Cannot save recovery font: {error}"))?;
+            let snapshot = FontSnapshot {
+                file: format!("{id}.font"),
+                length: asset.bytes.len() as u64,
+                checksum: id.clone(),
+            };
+            if self.font_path(&id, &snapshot).is_err() {
+                atomic_write(&font_directory.join(&snapshot.file), &asset.bytes)?;
+            }
+            fonts.insert(id, snapshot);
+        }
         let manifest = Manifest {
             version: 1,
             annotation_import_version: 2,
             workspace,
             sources,
+            fonts,
         };
         let bytes = serde_json::to_vec(&manifest).map_err(|error| error.to_string())?;
         if bytes.len() as u64 > MAX_MANIFEST_BYTES {
@@ -178,6 +212,7 @@ impl RecoveryStore {
             remove_if_exists(&path)?;
         }
         self.remove_source_files(&BTreeSet::new())?;
+        self.remove_font_files(&BTreeSet::new())?;
         cached.clear();
         Ok(())
     }
@@ -215,10 +250,76 @@ impl RecoveryStore {
         if referenced != manifest.sources.keys().cloned().collect() {
             return Err("Recovery source mapping does not match the workspace".into());
         }
+        if font_reference_ids(&manifest.workspace)? != manifest.fonts.keys().cloned().collect()
+            || manifest.fonts.len() > 64
+            || manifest
+                .fonts
+                .values()
+                .map(|font| font.length)
+                .try_fold(0u64, |sum, length| sum.checked_add(length))
+                .is_none_or(|sum| sum > 128 * 1024 * 1024)
+        {
+            return Err(
+                "Recovery font mapping does not match the workspace or exceeds its limit".into(),
+            );
+        }
+        for (id, font) in &manifest.fonts {
+            self.font_path(id, font)?;
+        }
         for snapshot in manifest.sources.values() {
             self.source_path(snapshot)?;
         }
         Ok(manifest)
+    }
+
+    fn font_directory(&self) -> Result<PathBuf, String> {
+        let path = self.root.join("fonts");
+        if fs::canonicalize(&path).map_err(io_error)? != path {
+            return Err("Recovery font folder is redirected".into());
+        }
+        Ok(path)
+    }
+    fn font_path(&self, id: &str, snapshot: &FontSnapshot) -> Result<PathBuf, String> {
+        if !valid_font_id(id)
+            || snapshot.file != format!("{id}.font")
+            || snapshot.checksum != id
+            || snapshot.length == 0
+            || snapshot.length > MAX_FONT_BYTES
+        {
+            return Err("Recovery font metadata is invalid".into());
+        }
+        let path = self.font_directory()?.join(&snapshot.file);
+        let metadata = fs::symlink_metadata(&path).map_err(io_error)?;
+        if !metadata.is_file()
+            || metadata.len() != snapshot.length
+            || fs::canonicalize(&path).map_err(io_error)? != path
+        {
+            return Err("Recovery font is incomplete or redirected".into());
+        }
+        Ok(path)
+    }
+    fn read_font(&self, id: &str, snapshot: &FontSnapshot) -> Result<Vec<u8>, String> {
+        use sha2::Digest;
+        let bytes = read_bounded(&self.font_path(id, snapshot)?, MAX_FONT_BYTES)?;
+        if sha2::Sha256::digest(&bytes)
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect::<String>()
+            != id
+        {
+            return Err("Recovery font checksum does not match".into());
+        }
+        Ok(bytes)
+    }
+    fn remove_font_files(&self, retained: &BTreeSet<String>) -> Result<(), String> {
+        for entry in fs::read_dir(self.font_directory()?).map_err(io_error)? {
+            let entry = entry.map_err(io_error)?;
+            let name = entry.file_name().to_string_lossy().into_owned();
+            if name.strip_suffix(".font").is_some_and(valid_font_id) && !retained.contains(&name) {
+                fs::remove_file(entry.path()).map_err(io_error)?;
+            }
+        }
+        Ok(())
     }
 
     fn source_path(&self, snapshot: &SourceSnapshot) -> Result<PathBuf, String> {
@@ -268,7 +369,22 @@ impl RecoveryStore {
         mut manifest: Manifest,
     ) -> Result<(Value, HashMap<String, SourceSnapshot>), String> {
         let mut opened = HashMap::new();
+        let registry = engine.fonts();
+        let original_fonts: BTreeSet<String> = registry
+            .ids()
+            .map_err(|error| error.to_string())?
+            .into_iter()
+            .collect();
         let result = (|| {
+            for (id, snapshot) in &manifest.fonts {
+                let bytes = self.read_font(id, snapshot)?;
+                let info = registry
+                    .register(bytes)
+                    .map_err(|error| format!("Recovery font could not be loaded: {error}"))?;
+                if info.id != *id {
+                    return Err("Recovery font identity mismatch".into());
+                }
+            }
             for (old_id, snapshot) in &manifest.sources {
                 // Full source reads and checksums happen only when restoring;
                 // routine autosaves reuse immutable snapshots using metadata.
@@ -277,6 +393,7 @@ impl RecoveryStore {
                     .open_recovery_document(
                         self.root.join("sources").join(&snapshot.file),
                         &snapshot.original_path,
+                        manifest.annotation_import_version < 2,
                     )
                     .map_err(|error| format!("Recovery source could not be opened: {error}"))?;
                 opened.insert(old_id.clone(), source);
@@ -335,10 +452,21 @@ impl RecoveryStore {
             Ok(())
         })();
         if let Err(error) = result {
+            for id in registry.ids().map_err(|error| error.to_string())? {
+                if !original_fonts.contains(&id) {
+                    let _ = registry.remove(&id);
+                }
+            }
             for source in opened.values() {
                 let _ = engine.close_document(&source.id);
             }
             return Err(error);
+        }
+        let referenced_fonts = font_reference_ids(&manifest.workspace)?;
+        for id in registry.ids().map_err(|error| error.to_string())? {
+            if !original_fonts.contains(&id) && !referenced_fonts.contains(&id) {
+                let _ = registry.remove(&id);
+            }
         }
         let remapped = opened
             .into_iter()
@@ -350,10 +478,12 @@ impl RecoveryStore {
     fn collect_garbage(&self, latest: &Path) -> Result<(), String> {
         let mut retained = Vec::new();
         let mut sources = BTreeSet::new();
+        let mut fonts = BTreeSet::new();
         for (_, path) in self.generations()?.into_iter().rev() {
             if retained.len() < 2 {
                 if let Ok(manifest) = self.read_manifest(&path) {
                     sources.extend(manifest.sources.into_values().map(|source| source.file));
+                    fonts.extend(manifest.fonts.into_values().map(|font| font.file));
                     retained.push(path.clone());
                     continue;
                 }
@@ -367,7 +497,8 @@ impl RecoveryStore {
                 remove_if_exists(&path)?;
             }
         }
-        self.remove_source_files(&sources)
+        self.remove_source_files(&sources)?;
+        self.remove_font_files(&fonts)
     }
 
     fn remove_source_files(&self, retained: &BTreeSet<String>) -> Result<(), String> {
@@ -381,6 +512,42 @@ impl RecoveryStore {
         }
         Ok(())
     }
+}
+
+fn valid_font_id(id: &str) -> bool {
+    id.len() == 64
+        && id
+            .bytes()
+            .all(|c| c.is_ascii_digit() || (b'a'..=b'f').contains(&c))
+}
+fn font_reference_ids(workspace: &Value) -> Result<BTreeSet<String>, String> {
+    let mut ids = BTreeSet::new();
+    for tab in workspace["tabs"]
+        .as_array()
+        .ok_or("Invalid recovery tabs")?
+    {
+        for page in tab["document"]["pages"]
+            .as_array()
+            .ok_or("Invalid recovery pages")?
+        {
+            for overlay in page["overlays"]
+                .as_array()
+                .ok_or("Invalid recovery overlays")?
+            {
+                if overlay["type"] == "text" && !overlay["fontId"].is_null() {
+                    let id = overlay["fontId"]
+                        .as_str()
+                        .filter(|id| valid_font_id(id))
+                        .ok_or("Invalid recovery font reference")?;
+                    ids.insert(id.to_owned());
+                }
+            }
+        }
+    }
+    if ids.len() > 64 {
+        return Err("Recovery workspace has too many fonts".into());
+    }
+    Ok(ids)
 }
 
 fn validate_workspace(workspace: &Value) -> Result<BTreeSet<String>, String> {

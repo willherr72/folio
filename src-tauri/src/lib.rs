@@ -1,6 +1,8 @@
 mod app;
 mod engine;
+mod fonts;
 mod types;
+pub use fonts::{FontAsset, FontInfo, FontRegistry, InstalledFont};
 
 pub use engine::{EngineError, EngineResult, PdfEngine};
 pub use types::{

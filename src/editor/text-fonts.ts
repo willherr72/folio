@@ -1,3 +1,4 @@
+import { customFontState } from "./custom-fonts";
 /** PDF standard Latin faces and their Windows preview fonts. */
 export const TEXT_FONTS = [
   {"name": "Helvetica", "label": "Helvetica", "family": "Arial, Helvetica, sans-serif", "weight": 400, "style": "normal", "advance": 0.56},
@@ -19,8 +20,10 @@ export function textFont(name?: string) { return TEXT_FONTS.find(font => font.na
 let context: CanvasRenderingContext2D | null | undefined;
 const advances = new Map<string, number>();
 /** Measure at a fixed size, caching glyph advances independently of annotation size. */
-export function textAdvance(character: string, size: number, name?: TextFontName): number {
-  const font = textFont(name);
+export function textAdvance(character: string, size: number, name?: TextFontName, fontId?: string): number {
+  const custom = fontId ? customFontState(fontId) : undefined;
+  const font = custom?.status === "ready" ? { name: fontId!, family: custom.family, weight: 400, style: "normal", advance: 0.56 } : textFont(name);
+  // Do not cache fallback measurements under a custom font identifier.
   if (typeof CanvasRenderingContext2D === "undefined") return font.advance * size;
   if (context === undefined) context = document.createElement("canvas").getContext("2d");
   if (!context) return font.advance * size;

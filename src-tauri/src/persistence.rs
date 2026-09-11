@@ -1,11 +1,16 @@
 //! Portable editable text/ink annotations. Their PDF appearances are independent
 //! of Folio, while bounded, versioned metadata restores exact editor geometry.
 use super::{EngineError, EngineResult, PageGeometry, MAX_SOURCE_BYTES};
+use crate::fonts::{FontAsset, FontRegistry};
 use crate::types::*;
 use lopdf::{dictionary, Dictionary, Document, Object, Stream, StringFormat};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
-use std::{io::Read, path::Path};
+use std::{collections::HashMap, io::Read, path::Path, sync::Arc};
+
+#[path = "custom_font_pdf.rs"]
+mod custom_font_pdf;
+pub(super) use custom_font_pdf::ImportCache;
 
 const MAX_METADATA_BYTES: usize = 32 * 1024 * 1024;
 const MAX_AP_BYTES: usize = 64 * 1024 * 1024;
@@ -59,6 +64,8 @@ pub(super) struct PortableRecord {
     frame: CoordinateFrame,
     overlay: Overlay,
     appearance_hash: String,
+    #[serde(skip)]
+    pub(super) custom_font: Option<Arc<FontAsset>>,
 }
 
 impl PortableRecord {
@@ -82,6 +89,7 @@ impl PortableRecord {
                     text,
                     current.displayed_size().width,
                     current.displayed_size().height,
+                    self.custom_font.as_deref(),
                 )
                 .ok()?;
             }
@@ -317,6 +325,7 @@ fn appearance(
     overlay: &Overlay,
     geometry: PageGeometry,
     legacy_text: bool,
+    custom: Option<&FontAsset>,
 ) -> EngineResult<Appearance> {
     use lopdf::content::{Content, Operation};
     let mut operations = vec![Operation::new("q", vec![])];
@@ -341,9 +350,16 @@ fn appearance(
                 text,
                 geometry.displayed_size().width,
                 geometry.displayed_size().height,
+                custom,
             )?;
             let color = rgb(&text.color)?;
-            resources.set("Font", dictionary! {"FolioFont"=>font(text.font_name)});
+            resources.set(
+                "Font",
+                dictionary! {"FolioFont"=>match custom {
+                    Some(asset) => custom_font_pdf::font(asset)?,
+                    None => font(text.font_name),
+                }},
+            );
             fields.set("Subtype", "FreeText");
             fields.set("Contents", pdf_string(&text.text));
             fields.set(
@@ -398,7 +414,18 @@ fn appearance(
                     ),
                     Operation::new(
                         "Tj",
-                        vec![Object::String(win_ansi(line)?, StringFormat::Literal)],
+                        vec![Object::String(
+                            if custom.is_some() {
+                                line.encode_utf16().flat_map(u16::to_be_bytes).collect()
+                            } else {
+                                win_ansi(line)?
+                            },
+                            if custom.is_some() {
+                                StringFormat::Hexadecimal
+                            } else {
+                                StringFormat::Literal
+                            },
+                        )],
                     ),
                     Operation::new("ET", vec![]),
                 ]);
@@ -416,18 +443,35 @@ fn appearance(
             } else {
                 lines
                     .iter()
-                    .map(|line| text_advance(line, text.font_name))
+                    .map(|line| match custom {
+                        Some(font) => line.chars().map(|c| font.advance(c)).sum(),
+                        None => text_advance(line, text.font_name),
+                    })
                     .collect::<EngineResult<Vec<_>>>()?
                     .into_iter()
                     .fold(0.0, f32::max)
                     * text.font_size
             };
             let height = lines.len().max(1) as f32 * text.font_size * 1.2;
+            let pad = custom
+                .map(|font| {
+                    let face = font.face()?;
+                    let bounds = face.global_bounding_box();
+                    Ok::<f32, EngineError>(
+                        [bounds.x_min, bounds.x_max, bounds.y_min, bounds.y_max]
+                            .into_iter()
+                            .map(|n| (n as f32).abs() / face.units_per_em() as f32)
+                            .fold(1.0, f32::max)
+                            * text.font_size,
+                    )
+                })
+                .transpose()?
+                .unwrap_or(text.font_size);
             for (x, y) in [
-                (-text.font_size, -text.font_size),
-                (width + text.font_size, -text.font_size),
-                (-text.font_size, height + text.font_size),
-                (width + text.font_size, height + text.font_size),
+                (-pad, -pad),
+                (width + pad, -pad),
+                (-pad, height + pad),
+                (width + pad, height + pad),
             ] {
                 let p = rotated_point(Point { x, y }, text.rotation);
                 let (x, y) = geometry.displayed_to_pdf(Point {
@@ -510,6 +554,7 @@ pub(super) fn finalize(
     path: &Path,
     request: &ExportRequest,
     geometries: &[PageGeometry],
+    registry: &FontRegistry,
 ) -> EngineResult<()> {
     let file = std::fs::File::open(path).map_err(io_error)?;
     if file.metadata().map_err(io_error)?.len() > MAX_SOURCE_BYTES {
@@ -530,7 +575,14 @@ pub(super) fn finalize(
             "portable page mapping mismatch".into(),
         ));
     }
+    let mut embedded_fonts = HashMap::new();
     for (index, page_id) in page_ids.into_iter().enumerate() {
+        let mut wrapped_contents = false;
+        let flatten_portable = request.flatten
+            && request.pages[index]
+                .overlays
+                .iter()
+                .any(|overlay| matches!(overlay, Overlay::Text(text) if text.font_id.is_some()));
         let original = document
             .get_dictionary(page_id)
             .map_err(pdf_error)?
@@ -554,14 +606,26 @@ pub(super) fn finalize(
                 *annotation = Object::Reference(document.add_object(dictionary));
             }
         }
-        if !request.flatten {
+        {
             for overlay in &request.pages[index].overlays {
                 if !matches!(overlay, Overlay::Text(_) | Overlay::Ink(_)) {
                     continue;
                 }
-                let rendered = appearance(overlay, geometries[index], false)?;
+                let custom = match overlay {
+                    Overlay::Text(text) => text
+                        .font_id
+                        .as_deref()
+                        .map(|id| registry.get(id))
+                        .transpose()?,
+                    _ => None,
+                };
+                if request.flatten && !flatten_portable {
+                    continue;
+                }
+                let rendered = appearance(overlay, geometries[index], false, custom.as_deref())?;
                 let record = PortableRecord {
-                    version: 1,
+                    version: if custom.is_some() { 2 } else { 1 },
+                    custom_font: None,
                     frame: geometries[index].into(),
                     overlay: overlay.clone(),
                     appearance_hash: hash(&rendered.content),
@@ -575,11 +639,29 @@ pub(super) fn finalize(
                 }
                 let mut resources = rendered.resources;
                 if let Ok(fonts) = resources.get_mut(b"Font").and_then(Object::as_dict_mut) {
-                    let font_id =
-                        document.add_object(fonts.get(b"FolioFont").map_err(pdf_error)?.clone());
-                    fonts.set("FolioFont", Object::Reference(font_id));
+                    let resource = if let Some(asset) = &custom {
+                        embedded_fonts
+                            .entry(asset.info.id.clone())
+                            .or_insert_with(|| {
+                                custom_font_pdf::install(
+                                    &mut document,
+                                    fonts.get(b"FolioFont").expect("generated font").clone(),
+                                )
+                            })
+                            .clone()
+                    } else {
+                        Object::Reference(
+                            document
+                                .add_object(fonts.get(b"FolioFont").map_err(pdf_error)?.clone()),
+                        )
+                    };
+                    fonts.set("FolioFont", resource);
                 }
                 let ap_id=document.add_object(Stream::new(dictionary!{"Type"=>"XObject","Subtype"=>"Form","BBox"=>numbers(&rendered.bounds),"Resources"=>resources},rendered.content));
+                if request.flatten {
+                    append_appearance(&mut document, page_id, ap_id, &mut wrapped_contents)?;
+                    continue;
+                }
                 let mut annotation = rendered.fields;
                 annotation.set("Type", "Annot");
                 annotation.set("Rect", numbers(&rendered.bounds));
@@ -604,51 +686,202 @@ pub(super) fn finalize(
         }
     }
     document.save(path).map_err(io_error)?;
+    if std::fs::metadata(path).map_err(io_error)?.len() > MAX_SOURCE_BYTES {
+        return Err(EngineError::InvalidRequest(
+            "annotated export exceeds the 512 MiB limit".into(),
+        ));
+    }
     Ok(())
 }
 
-fn canonical(document: &Document, object: &Object, depth: usize) -> Option<Object> {
-    if depth > 16 {
-        return None;
-    }
-    let object = document.dereference(object).ok()?.1;
-    Some(match object {
-        Object::Integer(value) => Object::Real(*value as f32),
-        Object::String(bytes, _) => Object::String(bytes.clone(), StringFormat::Literal),
-        Object::Array(values) => Object::Array(
-            values
-                .iter()
-                .map(|value| canonical(document, value, depth + 1))
-                .collect::<Option<Vec<_>>>()?,
-        ),
-        Object::Dictionary(values) => {
-            let mut dictionary = Dictionary::new();
-            for (key, value) in values.iter() {
-                dictionary.set(key.clone(), canonical(document, value, depth + 1)?);
-            }
-            Object::Dictionary(dictionary)
+fn append_appearance(
+    document: &mut Document,
+    page_id: lopdf::ObjectId,
+    ap_id: lopdf::ObjectId,
+    wrapped: &mut bool,
+) -> EngineResult<()> {
+    let mut current = page_id;
+    let mut resources = Dictionary::new();
+    for _ in 0..64 {
+        let page = document.get_dictionary(current).map_err(pdf_error)?;
+        if let Ok(value) = page.get(b"Resources") {
+            resources = document
+                .dereference(value)
+                .map_err(pdf_error)?
+                .1
+                .as_dict()
+                .map_err(pdf_error)?
+                .clone();
+            break;
         }
-        Object::Stream(_) => return None,
-        object => object.clone(),
-    })
+        let Ok(parent) = page.get(b"Parent").and_then(Object::as_reference) else {
+            break;
+        };
+        current = parent;
+    }
+    let mut xobjects = match resources.get(b"XObject") {
+        Ok(value) => document
+            .dereference(value)
+            .map_err(pdf_error)?
+            .1
+            .as_dict()
+            .map_err(pdf_error)?
+            .clone(),
+        Err(_) => Dictionary::new(),
+    };
+    let mut name = format!("FolioText{}", ap_id.0);
+    while xobjects.has(name.as_bytes()) {
+        name.push('_');
+    }
+    xobjects.set(name.as_bytes(), Object::Reference(ap_id));
+    resources.set("XObject", xobjects);
+    document
+        .get_dictionary_mut(page_id)
+        .map_err(pdf_error)?
+        .set("Resources", resources);
+    if !*wrapped {
+        let mut contents = vec![Object::Reference(
+            document.add_object(Stream::new(dictionary! {}, b"q\n".to_vec())),
+        )];
+        contents.extend(
+            document
+                .get_page_contents(page_id)
+                .into_iter()
+                .map(Object::Reference),
+        );
+        contents.push(Object::Reference(
+            document.add_object(Stream::new(dictionary! {}, b"\nQ\n".to_vec())),
+        ));
+        document
+            .get_dictionary_mut(page_id)
+            .map_err(pdf_error)?
+            .set("Contents", contents);
+        *wrapped = true;
+    }
+    document
+        .add_page_contents(page_id, format!("q /{name} Do Q\n").into_bytes())
+        .map_err(pdf_error)
+}
+
+fn stream_content(stream: &Stream, limit: usize) -> Option<Vec<u8>> {
+    if stream.dict.has(b"Filter") {
+        stream.decompressed_content_with_limit(limit).ok()
+    } else if stream.content.len() <= limit {
+        Some(stream.content.clone())
+    } else {
+        None
+    }
+}
+
+/// Compare only the expected resource shape. Reject extra keys/array elements
+/// before descending, and never expand an attacker-controlled object graph into
+/// a canonical tree. Stream decompression is bounded by the expected byte count.
+fn same_object(document: &Document, actual: &Object, expected: &Object) -> bool {
+    fn compare(
+        document: &Document,
+        actual: &Object,
+        expected: &Object,
+        depth: usize,
+        remaining: &mut usize,
+    ) -> Option<bool> {
+        if depth > 16 || *remaining == 0 {
+            return None;
+        }
+        *remaining -= 1;
+        let actual = document.dereference(actual).ok()?.1;
+        let expected = document.dereference(expected).ok()?.1;
+        Some(match (actual, expected) {
+            (Object::Integer(_) | Object::Real(_), Object::Integer(_) | Object::Real(_)) => {
+                actual.as_float().ok()? == expected.as_float().ok()?
+            }
+            (Object::String(a, _), Object::String(b, _)) => a == b,
+            (Object::Array(a), Object::Array(b)) => {
+                if a.len() != b.len() {
+                    return Some(false);
+                }
+                for (a, b) in a.iter().zip(b) {
+                    if !compare(document, a, b, depth + 1, remaining)? {
+                        return Some(false);
+                    }
+                }
+                true
+            }
+            (Object::Dictionary(a), Object::Dictionary(b)) => {
+                if a.len() != b.len() || a.iter().any(|(key, _)| !b.has(key)) {
+                    return Some(false);
+                }
+                for (key, b) in b.iter() {
+                    if !compare(document, a.get(key).ok()?, b, depth + 1, remaining)? {
+                        return Some(false);
+                    }
+                }
+                true
+            }
+            (Object::Stream(a), Object::Stream(b)) => {
+                let transport = |key: &[u8]| matches!(key, b"Length" | b"Filter" | b"DecodeParms");
+                let a_len = a.dict.iter().filter(|(key, _)| !transport(key)).count();
+                let b_len = b.dict.iter().filter(|(key, _)| !transport(key)).count();
+                if a_len != b_len
+                    || a.dict
+                        .iter()
+                        .any(|(key, _)| !transport(key) && !b.dict.has(key))
+                {
+                    return Some(false);
+                }
+                for (key, b) in b.dict.iter().filter(|(key, _)| !transport(key)) {
+                    if !compare(document, a.dict.get(key).ok()?, b, depth + 1, remaining)? {
+                        return Some(false);
+                    }
+                }
+                // Expected streams are generated locally and are uncompressed.
+                stream_content(a, b.content.len())? == b.content
+            }
+            (Object::Name(a), Object::Name(b)) => a == b,
+            (Object::Boolean(a), Object::Boolean(b)) => a == b,
+            (Object::Null, Object::Null) => true,
+            _ => false,
+        })
+    }
+    compare(document, actual, expected, 0, &mut 100_000).unwrap_or(false)
 }
 
 /// Import only metadata that still describes both the appearance and the public
 /// annotation fields. An edited/missing AP or third-party change stays native.
-pub(super) fn decode(document: &Document, annotation: &Dictionary) -> Option<PortableRecord> {
+pub(super) fn decode(
+    document: &Document,
+    annotation: &Dictionary,
+    fonts: &mut ImportCache,
+) -> Option<PortableRecord> {
     let bytes = annotation.get(b"Folio").ok()?.as_str().ok()?;
     if bytes.len() > MAX_METADATA_BYTES {
         return None;
     }
     let metadata: serde_json::Value = serde_json::from_slice(bytes).ok()?;
     let legacy_text = metadata.get("overlay")?.get("fontName").is_none();
-    let record: PortableRecord = serde_json::from_value(metadata).ok()?;
-    if record.version != 1 {
+    let mut record: PortableRecord = serde_json::from_value(metadata).ok()?;
+    let font_id = match &record.overlay {
+        Overlay::Text(text) => text.font_id.as_deref(),
+        _ => None,
+    };
+    if let Some(id) = font_id {
+        if record.version != 2 {
+            return None;
+        }
+        record.custom_font = Some(custom_font_pdf::embedded_asset(
+            document, annotation, id, fonts,
+        )?);
+    } else if record.version != 1 {
         return None;
     }
     // Preserve third-party rich text, optional visibility, alternate appearances,
     // and other semantics that this editor cannot reproduce.
-    let rendered = appearance(&record.overlay, record.frame.geometry()?, legacy_text).ok()?;
+    let rendered = appearance(
+        &record.overlay,
+        record.frame.geometry()?,
+        legacy_text,
+        record.custom_font.as_deref(),
+    )
+    .ok()?;
     let allowed = [
         "Type",
         "Rect",
@@ -683,13 +916,15 @@ pub(super) fn decode(document: &Document, annotation: &Dictionary) -> Option<Por
         return None;
     }
     for (key, value) in rendered.fields.iter() {
-        if canonical(document, annotation.get(key).ok()?, 0)? != canonical(document, value, 0)? {
+        if !same_object(document, annotation.get(key).ok()?, value) {
             return None;
         }
     }
-    if canonical(document, annotation.get(b"Rect").ok()?, 0)?
-        != canonical(document, &numbers(&rendered.bounds), 0)?
-    {
+    if !same_object(
+        document,
+        annotation.get(b"Rect").ok()?,
+        &numbers(&rendered.bounds),
+    ) {
         return None;
     }
     let ap = document
@@ -749,20 +984,26 @@ pub(super) fn decode(document: &Document, annotation: &Dictionary) -> Option<Por
     if hash(&contents) != record.appearance_hash {
         return None;
     }
-    if canonical(document, stream.dict.get(b"BBox").ok()?, 0)?
-        != canonical(document, &numbers(&rendered.bounds), 0)?
+    if !same_object(
+        document,
+        stream.dict.get(b"BBox").ok()?,
+        &numbers(&rendered.bounds),
+    ) {
+        return None;
+    }
+    if stream
+        .dict
+        .get(b"Matrix")
+        .ok()
+        .is_some_and(|matrix| !same_object(document, matrix, &numbers(&[1., 0., 0., 1., 0., 0.])))
     {
         return None;
     }
-    if stream.dict.get(b"Matrix").ok().is_some_and(|matrix| {
-        canonical(document, matrix, 0)
-            != canonical(document, &numbers(&[1., 0., 0., 1., 0., 0.]), 0)
-    }) {
-        return None;
-    }
-    if canonical(document, stream.dict.get(b"Resources").ok()?, 0)?
-        != canonical(document, &Object::Dictionary(rendered.resources), 0)?
-    {
+    if !same_object(
+        document,
+        stream.dict.get(b"Resources").ok()?,
+        &Object::Dictionary(rendered.resources),
+    ) {
         return None;
     }
     Some(record)

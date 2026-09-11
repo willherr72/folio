@@ -20,7 +20,7 @@ export function textOverlayBounds(overlay: TextOverlay): AnnotationRect {
   const lines = overlay.text.split("\n");
   return rotateTextRect(overlay, {
     x: -4, y: -3,
-    width: Math.max(36, ...lines.map(line => Array.from(line).reduce((width, character) => width + textAdvance(character, overlay.fontSize, overlay.fontName), 0))) + 8,
+    width: Math.max(36, ...lines.map(line => Array.from(line).reduce((width, character) => width + textAdvance(character, overlay.fontSize, overlay.fontName, overlay.fontId), 0))) + 8,
     height: Math.max(overlay.fontSize * 1.2, lines.length * overlay.fontSize * 1.2) + 5,
   });
 }
@@ -30,7 +30,7 @@ export function textOverlayCharacters(overlay: TextOverlay): PageText {
   const characters: PdfTextCharacter[] = [];
   let x = 0, line = 0;
   for (const text of overlay.text) {
-    const width = text === "\n" ? 0 : textAdvance(text, overlay.fontSize, overlay.fontName);
+    const width = text === "\n" ? 0 : textAdvance(text, overlay.fontSize, overlay.fontName, overlay.fontId);
     const rect = rotateTextRect(overlay, { x, y: line * overlay.fontSize * 1.2, width, height: overlay.fontSize * 1.2 });
     characters.push({ text, ...rect });
     if (text === "\n") { line++; x = 0; } else x += width;

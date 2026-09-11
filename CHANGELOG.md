@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.8.0
+
+- Choose installed fonts or import local static TrueType-outline TTF/OTF files for added text boxes through More fonts… in Properties.
+- Use the exact same font bytes in previews and embedded PDF appearances; retain custom fonts through undo/redo, multiple tabs, editable save/reopen, flattened export and recovery without the original font file.
+- Check embedding permissions and character coverage. Explain unsupported fonts or characters without silently substituting glyphs; complex shaping remains separate work.
+- Bound font resources, share repeated font programs, release unused resources, and validate imported PDF font resources before restoring editable controls.
+- Preserve overlapping text/ink order in custom-font flattened copies and clean up discarded recovery font resources.
+
 ## 0.7.1
 
 - Allow longer existing-text replacements to grow into available page space, preserving font size and baseline. Reject page overflow and new or expanded overlap with neighboring source text and graphics.

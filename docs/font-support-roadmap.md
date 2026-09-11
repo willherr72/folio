@@ -2,11 +2,17 @@
 
 Folio currently offers twelve standard Latin PDF faces for added text: Helvetica, Times and Courier, each regular, bold, italic and bold italic. Existing-text edits retain the original supported font. Choosing a font for an added text box does not yet enable changing the font of an existing run.
 
-## Installed and imported fonts
+## Installed and imported fonts — available in v0.8.0
 
-The next useful step is a document font registry. Load an installed or user-selected TrueType/OpenType font, check supported characters and embedding permissions, and retain its bytes with the document. Use those same bytes for the WebView preview and native export so appearance does not depend on a substitute installed on the reader's machine. Recovery must retain the font resource, and unused resources need bounded ownership and cleanup.
+Select a text box, click **More fonts…** under Font, then search installed faces or choose **Import font…** for a local file. Each installed style is a separate face. The twelve standard PDF faces remain available directly in the Font dropdown.
 
-PDFium provides font-data extraction and font-loading APIs, including loading a Type 2 CID font with caller-provided Unicode and glyph mappings. We need to verify the exact APIs available in our bundled library and implement the registry, mapping and persistence around them. These APIs are useful building blocks; they do not supply a complete editing workflow. [PDFium public editing API](https://pdfium.googlesource.com/pdfium/+/refs/heads/main/public/fpdf_edit.h).
+Folio accepts static TrueType-outline TTF and compatible OTF files with installable or editable embedding permissions. It rejects CFF/CFF2 outlines, variable/color fonts, collections (TTC/OTC), malformed files and restricted or preview/print-only fonts with an explanation. Full font embedding preserves no-subsetting permissions. Fonts are read locally; nothing is uploaded or installed into Windows.
+
+Covered BMP Latin, extended Latin, Greek, Cyrillic and selected punctuation/symbols are supported. Newlines create explicit lines. Combining sequences, bidirectional/shaping scripts, CJK and emoji remain outside this first stage, even when the font contains those glyphs. Prefer precomposed accents such as é. Missing or unsupported characters remain in Content with an error so you can correct them; PDF export refuses them rather than substituting another font.
+
+The native registry retains immutable font bytes by SHA-256. WebView FontFace preview and PDF Type0/CIDFontType2 embedding use those same bytes, with Unicode mappings for copying/search. Custom fonts travel inside editable and flattened PDFs; reopening needs neither an installed font nor the imported file. Undo/redo and open tabs share resources; recovery keeps exact font sidecars. The registry permits 64 distinct fonts, 16 MiB per font and 128 MiB total. Closing the last owning tab releases its resources; undo history can continue to own a previously selected font until that history is removed.
+
+This picker changes added text boxes. Reusing fonts from existing PDF content is the next separate stage below.
 
 ## Existing embedded and subset fonts
 
@@ -20,4 +26,4 @@ Arabic, Indic scripts, combining marks and ligatures require shaping: converting
 
 PDF layout complexity is a separate concern. A visible word can be divided among individually positioned objects, and a paragraph need not exist as a paragraph in the file. Support those cases incrementally: character spacing and transforms, groups of adjacent runs, nested form objects, then explicit text areas with line wrapping and reflow. Preserve shared-object ownership so changing one occurrence does not accidentally alter other pages.
 
-Recommended order: installed/imported font resources for added text; simple embedded-font reuse with glyph checks; explicit substitution when a subset is insufficient; then complex shaping and layout. Each stage needs exported/reopened PDFs checked by independent readers, including selection, search, rotation, undo/redo and recovery. This roadmap does not claim these features are implemented yet.
+Next: simple embedded-font reuse with glyph checks (#12), explicit substitution when a subset is insufficient, then complex shaping and layout (#13). Each stage needs exported/reopened PDFs checked by independent readers, including selection, search, rotation, undo/redo and recovery. Only the installed/imported stage is implemented here.

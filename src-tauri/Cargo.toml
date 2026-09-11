@@ -1,6 +1,6 @@
 [package]
 name = "folio"
-version = "0.7.1"
+version = "0.8.0"
 description = "Native backend for the Folio desktop PDF editor"
 edition = "2021"
 
@@ -27,7 +27,8 @@ same-file = "1"
 tempfile = "3"
 tauri = { version = "2", features = [] }
 thiserror = "2"
+ttf-parser = "=0.25.1"
 uuid = { version = "1", features = ["v4"] }
 
 [target.'cfg(windows)'.dependencies]
-windows-sys = { version = "0.61.2", features = ["Win32_Foundation", "Win32_Graphics_Gdi", "Win32_Storage_Xps", "Win32_System_Memory", "Win32_UI_Controls_Dialogs", "Win32_System_Threading", "Win32_UI_WindowsAndMessaging"] }
+windows-sys = { version = "0.61.2", features = ["Win32_Foundation", "Win32_Graphics_Gdi", "Win32_Storage_Xps", "Win32_System_Memory", "Win32_System_Registry", "Win32_UI_Controls_Dialogs", "Win32_System_Threading", "Win32_UI_WindowsAndMessaging"] }

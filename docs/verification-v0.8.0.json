@@ -1,0 +1,245 @@
+{
+  "version": "0.8.0",
+  "date": "2026-09-11",
+  "frontend": {
+    "passed": 187,
+    "files": 41
+  },
+  "native": {
+    "passed": 81,
+    "ignored": 3
+  },
+  "browser": {
+    "passed": true,
+    "checks": [
+      {
+        "rotation": 0,
+        "pageRotation": 0,
+        "advance": 233.25721740722656,
+        "box": {
+          "width": 241.25,
+          "height": 33.79999923706055
+        },
+        "faces": [
+          "FolioFont_cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        ]
+      },
+      {
+        "rotation": 0,
+        "pageRotation": 90,
+        "advance": 233.25721740722656,
+        "box": {
+          "width": 241.25,
+          "height": 33.79999923706055
+        },
+        "faces": [
+          "FolioFont_cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        ]
+      },
+      {
+        "rotation": 0,
+        "pageRotation": 180,
+        "advance": 233.25721740722656,
+        "box": {
+          "width": 241.25,
+          "height": 33.79999923706055
+        },
+        "faces": [
+          "FolioFont_cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        ]
+      },
+      {
+        "rotation": 0,
+        "pageRotation": 270,
+        "advance": 233.25721740722656,
+        "box": {
+          "width": 241.25,
+          "height": 33.79999923706055
+        },
+        "faces": [
+          "FolioFont_cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        ]
+      },
+      {
+        "rotation": 90,
+        "pageRotation": 0,
+        "advance": 233.25721740722656,
+        "box": {
+          "width": 33.79999923706055,
+          "height": 241.25
+        },
+        "faces": [
+          "FolioFont_cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        ]
+      },
+      {
+        "rotation": 90,
+        "pageRotation": 90,
+        "advance": 233.25721740722656,
+        "box": {
+          "width": 33.79999923706055,
+          "height": 241.25
+        },
+        "faces": [
+          "FolioFont_cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        ]
+      },
+      {
+        "rotation": 90,
+        "pageRotation": 180,
+        "advance": 233.25721740722656,
+        "box": {
+          "width": 33.79999923706055,
+          "height": 241.25
+        },
+        "faces": [
+          "FolioFont_cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        ]
+      },
+      {
+        "rotation": 90,
+        "pageRotation": 270,
+        "advance": 233.25721740722656,
+        "box": {
+          "width": 33.79999923706055,
+          "height": 241.25
+        },
+        "faces": [
+          "FolioFont_cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        ]
+      },
+      {
+        "rotation": 180,
+        "pageRotation": 0,
+        "advance": 233.25721740722656,
+        "box": {
+          "width": 241.25,
+          "height": 33.79999923706055
+        },
+        "faces": [
+          "FolioFont_cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        ]
+      },
+      {
+        "rotation": 180,
+        "pageRotation": 90,
+        "advance": 233.25721740722656,
+        "box": {
+          "width": 241.25,
+          "height": 33.79999923706055
+        },
+        "faces": [
+          "FolioFont_cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        ]
+      },
+      {
+        "rotation": 180,
+        "pageRotation": 180,
+        "advance": 233.25721740722656,
+        "box": {
+          "width": 241.25,
+          "height": 33.79999923706055
+        },
+        "faces": [
+          "FolioFont_cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        ]
+      },
+      {
+        "rotation": 180,
+        "pageRotation": 270,
+        "advance": 233.25721740722656,
+        "box": {
+          "width": 241.25,
+          "height": 33.79999923706055
+        },
+        "faces": [
+          "FolioFont_cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        ]
+      },
+      {
+        "rotation": 270,
+        "pageRotation": 0,
+        "advance": 233.25721740722656,
+        "box": {
+          "width": 33.79999923706055,
+          "height": 241.25
+        },
+        "faces": [
+          "FolioFont_cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        ]
+      },
+      {
+        "rotation": 270,
+        "pageRotation": 90,
+        "advance": 233.25721740722656,
+        "box": {
+          "width": 33.79999923706055,
+          "height": 241.25
+        },
+        "faces": [
+          "FolioFont_cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        ]
+      },
+      {
+        "rotation": 270,
+        "pageRotation": 180,
+        "advance": 233.25721740722656,
+        "box": {
+          "width": 33.79999923706055,
+          "height": 241.25
+        },
+        "faces": [
+          "FolioFont_cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        ]
+      },
+      {
+        "rotation": 270,
+        "pageRotation": 270,
+        "advance": 233.25721740722656,
+        "box": {
+          "width": 33.79999923706055,
+          "height": 241.25
+        },
+        "faces": [
+          "FolioFont_cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        ]
+      }
+    ],
+    "errors": []
+  },
+  "desktop": {
+    "passed": true,
+    "originalSha256": "fca4266917e7e1374cb7a300589306e91a504a7219d2943a447309ee41e84376",
+    "fontSha256": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+    "editableSha256": "51d7650fc953003529c41bd0e2dd6a356ff80f648eb609ebf280c009be050ba0",
+    "flattenedSha256": "f062062fa6ae2cc9ace7c81f775788ba80a9b55e26ddcbdfea511a83f277a37f",
+    "checks": [
+      "installed Arial Italic picker",
+      "font undo/redo",
+      "local import",
+      "exact font family",
+      "missing glyph message",
+      "editable and flat export",
+      "original unchanged",
+      "reopen without original PDF/font",
+      "custom font controls restored",
+      "search",
+      "flattened selectable text"
+    ],
+    "errors": []
+  },
+  "independent": {
+    "passed": true,
+    "readers": [
+      "pypdf",
+      "PyMuPDF"
+    ],
+    "embeddedFontSha256": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+    "embeddedBytes": 379740,
+    "pypdfText": "BASE CONTENT\nCustom café Ω Ж",
+    "mupdfText": "BASE CONTENT\nCustom café Ω Ж\n",
+    "differentPixelsEditableVsFlattened": 0,
+    "originalUnchanged": true
+  },
+  "executableSha256": "14c57a54267d898e17ce3c52857af8ce053825edf2b13d9f7dbb3511dedb8468"
+}

@@ -1,3 +1,6 @@
+import { FontPicker } from "./components/FontPicker";
+import { flushFontReleases, type FontInfo } from "./editor/custom-fonts";
+import { useWorkspaceFonts } from "./editor/use-font-resources";
 import { useCallback, useEffect, useRef, useState, type SetStateAction } from "react";
 import {
   ArrowDown, ArrowUp, ChevronLeft, ChevronRight, Copy, FilePlus2, FolderOpen,
@@ -40,6 +43,7 @@ function errorMessage(error: unknown) { return error instanceof Error ? error.me
 export function App({ initialDemo = new URLSearchParams(location.search).get("demo") === "1" }: AppProps) {
   const { preferences, setPreferences, resetPreferences } = usePreferences();
   const [workspace, setWorkspace] = useState(emptyWorkspace);
+  useWorkspaceFonts(workspace);
   const workspaceCurrent = useRef(workspace); workspaceCurrent.current = workspace;
   const mounted = useRef(true);
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
@@ -77,6 +81,7 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
   const setNavigationRequest = useCallback((action: SetStateAction<DocumentSession["navigationRequest"]>) => setWorkspace(value => updateSession(value, workspace.activeId, tab => ({...tab,navigationRequest:typeof action === "function" ? action(tab.navigationRequest) : action}))), [workspace.activeId]);
   const [tool, setTool] = useState<Tool>("select");
   const [pendingSignature, setPendingSignature] = useState<InkPoint[][] | null>(null);
+  const [fontPicker, setFontPicker] = useState<{tabId: string; pageId: string; overlayId: string; text: string} | null>(null);
   const [textEdit,setTextEdit] = useState<{tabId:string;page:PagePlan;run:EditableTextRun}|null>(null);
   const [textEditError,setTextEditError] = useState<string|null>(null);
   const [signatureOpen, setSignatureOpen] = useState(false);
@@ -94,7 +99,7 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
   const dirty = current ? planDigest(current) !== savedDigest : false;
   const selectedPage = current?.pages.find((page) => page.id === current.selectedPageId) ?? current?.pages[0] ?? null;
   const selectedOverlay = selectedPage?.overlays.find((overlay) => overlay.id === current?.selectedOverlayId) ?? null;
-  const modalOpen = !!textEdit || signatureOpen || settingsOpen || printOpen || !!confirmation || !recovery.ready;
+  const modalOpen = !!fontPicker || !!textEdit || signatureOpen || settingsOpen || printOpen || !!confirmation || !recovery.ready;
   const blocked = modalOpen || !!busy;
   const dirtyTabs = workspace.tabs.filter(tab => planDigest(tab.history.present) !== tab.savedDigest);
   const closeState = useRef({ dirty:dirtyTabs.length > 0, blocked, dirtyCount:dirtyTabs.length });
@@ -150,7 +155,7 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
     scrollPositions.current.delete(tab.id);
   }, []);
   const clearTransient = useCallback(() => {
-    setTool("select"); setPendingSignature(null); setNewTextId(null); setTextEdit(null); setTextEditError(null);
+    setTool("select"); setPendingSignature(null); setNewTextId(null); setTextEdit(null); setTextEditError(null); setFontPicker(null);
     setNotice(null); setFailure(null); setDraggedPageId(null); setDropTarget(null);
     window.getSelection()?.removeAllRanges();
   }, []);
@@ -228,7 +233,7 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
     operation.current = true;
     try {
       setBusy("Opening PDF…"); setFailure(null);
-      installDocument(await nativeAdapter.openPdf(), nativeAdapter);
+      await flushFontReleases(); installDocument(await nativeAdapter.openPdf(), nativeAdapter);
     } catch (error) { setFailure("Couldn’t open PDF: " + errorMessage(error)); }
     finally { operation.current = false; setBusy(null); }
   }, [installDocument, modalOpen]);
@@ -237,7 +242,7 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
     if (operation.current || modalOpen || !current || adapter.kind !== "native") return;
     operation.current = true;
     setBusy("Adding PDF…"); setFailure(null);
-    try { installDocument(await nativeAdapter.openPdf(), nativeAdapter, true); }
+    try { await flushFontReleases(); installDocument(await nativeAdapter.openPdf(), nativeAdapter, true); }
     catch (error) { setFailure(`Couldn’t add PDF: ${errorMessage(error)}`); }
     finally { operation.current = false; setBusy(null); }
   }, [adapter.kind, current, installDocument, modalOpen]);
@@ -449,7 +454,18 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
   };
   const selectedIndex = selectedPage ? current?.pages.findIndex((page) => page.id === selectedPage.id) ?? -1 : -1;
   const displaySize = selectedPage ? displayDimensions(selectedPage.width, selectedPage.height, selectedPage.rotation) : null;
+  const chooseFont = (info: FontInfo) => {
+    const request = fontPicker;
+    const tab = workspaceCurrent.current.tabs.find(tab => tab.id === request?.tabId);
+    const overlay = tab?.history.present.pages.find(page => page.id === request?.pageId)?.overlays.find(overlay => overlay.id === request?.overlayId);
+    if (!mounted.current || !request || !tab || overlay?.type !== "text") throw new Error("This text box is no longer available.");
+    setWorkspace(value => updateSession(value, request.tabId, session => ({ ...session,
+      history: commit(session.history, document => updateOverlay(document, request.pageId, request.overlayId, value => value.type === "text" ? { ...value, fontId: info.id } : value)),
+    })));
+    setFontPicker(null);
+  };
   const dialogs = <>
+    {fontPicker && <FontPicker text={fontPicker.text} onChoose={chooseFont} onClose={() => setFontPicker(null)}/>}
     {textEdit && <ExistingTextDialog run={textEdit.run} busy={!!busy} error={textEditError} onApply={replacement=>void applyTextEdit(replacement)} onCancel={()=>{if(!operation.current){setTextEdit(null);setTextEditError(null);}}}/> }
     {(recovery.pending||recovery.error)&&<RecoveryDialog count={recovery.pending?.tabs.length??0} error={recovery.error} busy={recovery.working} onRestore={()=>void recovery.restore()} onDiscard={()=>void recovery.discard()} onSkip={recovery.skip}/>}
     {printOpen&&current&&<PrintDialog pages={current.pages} currentPageId={selectedPage?.id??null} onClose={()=>setPrintOpen(false)} onPrint={(pages,options)=>void startPrint(pages,options)}/>}
@@ -546,7 +562,7 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
           <label className="field-label">Pen color<span className="color-input"><input aria-label="Pen color" type="color" value={preferences.penColor} onChange={(event) => setPreferences({ ...preferences, penColor: event.target.value.toUpperCase() })}/><code>{preferences.penColor}</code></span></label>
           <label className="field-label">Pen width · {preferences.penWidth} pt<input aria-label="Pen width" type="range" min="0.5" max="20" step="0.5" value={preferences.penWidth} onChange={(event) => setPreferences({ ...preferences, penWidth: Number(event.target.value) })}/></label>
           <p>Draw directly on any page. Each stroke can be undone. Switch to Select to move or delete a stroke.</p>
-        </section> : selectedOverlay && selectedPage ? <OverlayProperties pageWidth={selectedPage.width} pageHeight={selectedPage.height} autoEdit={selectedOverlay.id === newTextId} onAutoEdited={() => setNewTextId(null)} overlay={selectedOverlay} onChange={(update) => edit((document) => updateOverlay(document, selectedPage.id, selectedOverlay.id, update))} onDelete={() => edit((document) => removeOverlay(document, selectedPage.id, selectedOverlay.id))}/> : selectedPage && <>
+        </section> : selectedOverlay && selectedPage ? <OverlayProperties onChooseFont={adapter.kind === "native" ? () => { if (!blocked && selectedOverlay.type === "text") setFontPicker({tabId: activeTab!.id, pageId: selectedPage.id, overlayId: selectedOverlay.id, text: selectedOverlay.text}); } : undefined} pageWidth={selectedPage.width} pageHeight={selectedPage.height} autoEdit={selectedOverlay.id === newTextId} onAutoEdited={() => setNewTextId(null)} overlay={selectedOverlay} onChange={(update) => edit((document) => updateOverlay(document, selectedPage.id, selectedOverlay.id, update))} onDelete={() => edit((document) => removeOverlay(document, selectedPage.id, selectedOverlay.id))}/> : selectedPage && <>
           <section className="property-section"><h3>Page</h3><div className="page-summary"><div className="mini-page" style={{ aspectRatio: `${displaySize!.width}/${displaySize!.height}` }}/><div><strong>Page {selectedIndex + 1}</strong><span>{Math.round(selectedPage.width)} × {Math.round(selectedPage.height)} pt</span><small>{selectedPage.rotation ? `${selectedPage.rotation}° clockwise` : "Original orientation"}</small></div></div></section>
           <section className="property-section"><h3>Arrange</h3><div className="property-grid"><button disabled={blocked || selectedIndex <= 0} onClick={() => edit((document) => movePage(document, selectedPage.id, selectedIndex - 1))}><ArrowUp size={16}/>Move up</button><button disabled={blocked || selectedIndex >= current.pages.length - 1} onClick={() => edit((document) => movePage(document, selectedPage.id, selectedIndex + 1))}><ArrowDown size={16}/>Move down</button><button disabled={blocked} onClick={() => edit((document) => rotatePage(document, selectedPage.id))}><RotateCw size={16}/>Rotate</button><button disabled={blocked} onClick={() => { const id = uniqueId("page"); edit((document) => duplicatePage(document, selectedPage.id, id)); setNavigationRequest((request) => ({ pageId: id, revision: (request?.revision ?? 0) + 1 })); }}><Copy size={16}/>Duplicate</button></div></section>
           <section className="property-section"><h3>Page actions</h3><button className="danger-action" disabled={blocked || current.pages.length <= 1} onClick={() => edit((document) => deletePage(document, selectedPage.id))}><Trash2 size={16}/>Delete page</button><p>Source files are never changed.</p></section>

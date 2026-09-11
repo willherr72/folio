@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { fontRevision, subscribeFonts } from "./custom-fonts";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import type { FolioAdapter } from "./adapter";
 import { textOverlayCharacters } from "./text-overlay-geometry";
 import type { PagePlan, PageText, PdfTextCharacter } from "./types";
@@ -122,6 +123,7 @@ interface SearchResult { matches: SearchMatch[]; searching: boolean; error: stri
 interface SearchState extends SearchResult { adapter: FolioAdapter; pages: PagePlan[]; query: string }
 
 export function useDocumentSearch(adapter: FolioAdapter, pages: PagePlan[], query: string, enabled: boolean): SearchResult {
+  const fonts = useSyncExternalStore(subscribeFonts, fontRevision);
   const needle = normalizeSearchQuery(query);
   const [state, setState] = useState<SearchState | null>(null);
   useEffect(() => {
@@ -149,7 +151,7 @@ export function useDocumentSearch(adapter: FolioAdapter, pages: PagePlan[], quer
       })();
     }, 120);
     return () => { cancelled = true; clearTimeout(timer); };
-  }, [adapter, pages, needle, enabled]);
+  }, [adapter, pages, needle, enabled, fonts]);
 
   if (!enabled || !needle) return { matches: [], searching: false, error: null, hasText: false };
   if (!state || state.adapter !== adapter || state.pages !== pages || state.query !== needle) return { matches: [], searching: true, error: null, hasText: false };

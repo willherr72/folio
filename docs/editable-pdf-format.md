@@ -1,4 +1,4 @@
-# Editable PDF additions (Folio 0.6)
+# Editable PDF additions (Folio 0.8)
 
 **Save a copy** and Ctrl+S create an ordinary PDF with editable additions. The PDF
 contains all the data Folio needs to reopen those additions; it does not depend on
@@ -9,8 +9,8 @@ Source page content remains vector content where the source provides vectors.
 
 Added text uses PDF FreeText annotations. Drawings and drawn signatures use Ink
 annotations. Each has a self-contained vector appearance stream, so readers can
-display it without understanding Folio metadata. Text appearances use Helvetica
-and the verified Latin/WinAnsi character repertoire supported by Folio's exporter.
+display it without understanding Folio metadata. Text appearances use a selected standard PDF font with verified WinAnsi text,
+or a fully embedded custom TrueType font with explicit CID/glyph/Unicode mappings.
 Unsupported characters produce an export error instead of disappearing.
 
 Highlights and comments continue to use standard Highlight/Text annotations.
@@ -31,11 +31,13 @@ Use ordinary Save a copy to keep a portable editable version of those additions.
 ## Metadata and coordinates
 
 Owned FreeText/Ink annotation dictionaries have a `/Folio` JSON string containing
-format `version: 1`, an overlay, the original page coordinate frame, and a SHA-256
+format `version: 1` (standard fonts/ink) or `version: 2` (custom-font text), an overlay, the original page coordinate frame, and a SHA-256
 appearance fingerprint. Standard `/AP /N` streams contain the actual drawing;
 standard annotation geometry, content, color and stroke fields accompany them.
 The metadata is ordinary document data, not a cryptographic signature or an
 independent trust guarantee.
+
+Custom text records a SHA-256 `fontId`; font bytes are embedded once per distinct font in the PDF appearance resources. Import validates the program identity, permissions, coverage, widths, glyph map and Unicode map against regenerated resources before restoring editable controls. Resource comparison rejects unexpected structure before traversing it and bounds depth, nodes and decompressed bytes.
 
 The coordinate frame records the source crop bounds and intrinsic rotation.
 Folio converts geometry through raw PDF coordinates when reopening. Text also

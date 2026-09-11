@@ -12,8 +12,8 @@ Extract it and open **Folio.exe**. Keep the resources folder beside the executab
 Microsoft Edge WebView2 Runtime is required.
 
 In this development checkout, double-click **Launch Folio.cmd** after building.
-Version 0.7.1 lives in **artifacts/Folio-v0.7.1/Folio.exe**.
-The ZIP is **artifacts/Folio-v0.7.1-windows-x64.zip**.
+Version 0.8.0 lives in **artifacts/Folio-v0.8.0/Folio.exe**.
+The ZIP is **artifacts/Folio-v0.8.0-windows-x64.zip**.
 
 ## Everyday editing
 
@@ -21,7 +21,7 @@ The ZIP is **artifacts/Folio-v0.7.1-windows-x64.zip**.
   undo/redo history, selected page, zoom and scroll position when you switch tabs.
 - **Edit existing text:** choose **Edit text**, click an outlined run, change **Replacement text**, and apply. This first version supports standard Helvetica, Times and Courier fonts with printable ASCII text. Longer replacements can use available space without covering nearby source content; embedded/subset fonts and complex layouts are not supported yet. [Support details](docs/existing-text-editing.md).
 - **Text:** choose Text and click a page. The Content field selects the placeholder
-  immediately, so typing replaces it. Choose a font and style, adjust size/color, and drag the note to move it.
+  immediately, so typing replaces it. Choose a font and style, adjust size/color, and drag the note to move it. **More fonts…** searches installed fonts or imports a local TTF/OTF. Supported fonts are embedded so recipients do not need to install them. [Font support](docs/font-support-roadmap.md).
 - **Select and copy:** drag across embedded PDF text in Select mode, then press
   **Ctrl+C** to copy it, including spaces and line breaks. Scanned pages without
   embedded text require OCR, which is not included.
@@ -54,7 +54,7 @@ The ZIP is **artifacts/Folio-v0.7.1-windows-x64.zip**.
   paper and copies. Printing does not mark your edits saved.
 - **Recovery:** local checkpoints preserve native tabs, edits, page arrangement,
   zoom and scroll after an unexpected exit. On restart, restore or discard the workspace.
-  Source snapshots allow recovery even if the original PDFs moved. Undo history starts fresh.
+  Source and font snapshots allow recovery even if the original PDFs or imported font files moved. Undo history starts fresh.
 - **Save a copy:** save a portable PDF with editable text, drawings and signatures,
   alongside highlights and comments. Reopening in Folio restores their controls,
   including on rotated or reorganized pages. No original files or sidecars are needed.
@@ -72,16 +72,14 @@ Dark mode changes the interface; PDF pages retain their original colors.
 
 ## Prototype boundaries
 
-- Existing words in a PDF are not editable.
+- Existing-text editing supports the standard-font runs described above; embedded/subset fonts and complex layouts remain future work.
 - Drawn signatures are visual marks, not certificate-based digital signatures.
 - Editable additions use standard PDF annotations with self-contained appearances and
   versioned Folio metadata. Other readers can display them; edits made by another
   reader may prevent Folio from restoring handles. Unsupported or changed metadata
   leaves the annotation in the PDF with its native appearance. See
   [editable PDF format](docs/editable-pdf-format.md).
-- Added text uses Helvetica with a verified Latin character set and common punctuation.
-  Unsupported characters, including CJK, emoji, nonbreaking spaces and soft hyphens,
-  produce an export error instead of silently disappearing.
+- Added text supports twelve standard PDF faces and installed/imported static TrueType-outline fonts with editable embedding permissions. Custom fonts support covered Latin, Greek, Cyrillic and selected punctuation/symbols; CFF, variable/color fonts, collections, complex scripts and combining sequences are not supported yet. Unsupported characters produce a clear error.
 - OCR, redaction, form editing and password-protected PDFs are not implemented.
 - Printing uses bounded raster images (up to 2400 pixels wide), so it does not preserve
   selectable/vector text in virtual-printer output. Save a copy preserves source vectors.
@@ -150,7 +148,7 @@ Real PDF editing runs in the desktop app.
 
 The native smoke opens a real PDF through Windows dialogs, edits it, draws,
 drags thumbnails, checks both close-confirmation decisions, saves and reopens.
-Its launcher uses an isolated test profile. See [v0.7.1 text-edit verification](docs/verification-v0.7.1.md), [v0.6.1 performance verification](docs/performance-v0.6.1.md), the [compatibility corpus](docs/corpus/README.md), and [earlier verification notes](docs/verification.md).
+Its launcher uses an isolated test profile. See [v0.8.0 text-edit verification](docs/verification-v0.8.0.md), [v0.6.1 performance verification](docs/performance-v0.6.1.md), the [compatibility corpus](docs/corpus/README.md), and [earlier verification notes](docs/verification.md).
 
 ## Internals and license
 

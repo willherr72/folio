@@ -1,3 +1,4 @@
+import {fontApi} from "../src/editor/custom-fonts";
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { App } from "../src/App";
@@ -11,6 +12,7 @@ vi.mock("@tauri-apps/api/window", () => ({ getCurrentWindow: () => ({ onCloseReq
 beforeEach(() => {
   localStorage.clear();
   Object.defineProperty(window, "__TAURI_INTERNALS__", { configurable: true, value: {} });
+  vi.spyOn(fontApi,"release").mockResolvedValue();
   vi.spyOn(recoveryApi, "load").mockResolvedValue(null);
   vi.spyOn(recoveryApi, "save").mockResolvedValue();
   vi.spyOn(recoveryApi, "clear").mockResolvedValue();
@@ -154,4 +156,17 @@ it("keeps the still-open dirty tab in recovery after a failed close checkpoint a
   expect(snapshots.length).toBeGreaterThan(1);
   expect(snapshots.at(-1)?.tabs).toHaveLength(1);
   expect(snapshots.at(-1)?.tabs[0].dirty).toBe(true);
+});
+
+it("releases custom fonts when pending recovery is discarded or unmounted", async () => {
+  const snapshot=recovered();const id="d".repeat(64);
+  snapshot.tabs[0].document.pages[0].overlays.push({type:"text",id:"custom",x:20,y:30,text:"Text",fontSize:12,color:"#000000",fontId:id});
+  vi.mocked(recoveryApi.load).mockResolvedValue(snapshot);
+  const view=render(<App initialDemo={false}/>);
+  fireEvent.click(await screen.findByRole("button",{name:"Discard recovery"}));
+  await waitFor(()=>expect(fontApi.release).toHaveBeenCalledWith(id));
+  view.unmount();vi.mocked(fontApi.release).mockClear();
+  const second=render(<App initialDemo={false}/>);
+  await screen.findByRole("button",{name:"Discard recovery"});second.unmount();
+  await waitFor(()=>expect(fontApi.release).toHaveBeenCalledWith(id));
 });

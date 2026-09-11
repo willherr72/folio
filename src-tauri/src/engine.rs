@@ -1,3 +1,4 @@
+use crate::fonts::{FontAsset, FontRegistry};
 use crate::types::*;
 use image::ImageFormat;
 use pdfium_render::prelude::*;
@@ -42,11 +43,16 @@ pub struct PdfEngine {
 
 struct EngineInner {
     sender: mpsc::Sender<WorkerRequest>,
+    fonts: Arc<FontRegistry>,
 }
 
 static SHARED_ENGINE: OnceLock<Result<PdfEngine, String>> = OnceLock::new();
 
 impl PdfEngine {
+    pub fn fonts(&self) -> Arc<FontRegistry> {
+        self.inner.fonts.clone()
+    }
+
     pub fn list_text_runs(&self, source_id: &str, page_index: usize) -> EngineResult<TextRuns> {
         let (reply, receive) = mpsc::channel();
         self.send(WorkerRequest::ListTextRuns {
@@ -91,22 +97,28 @@ impl PdfEngine {
             path: path.as_ref().to_path_buf(),
             original_path: None,
             editable_annotations: true,
+            register_fonts: true,
             reply,
         })?;
         receive.recv().map_err(|_| EngineError::WorkerStopped)?
     }
 
     /// Read only the private snapshot; retain the original path as an export guard.
+    /// Current recovery plans already supply their fonts. They strip verified
+    /// source annotations without retaining fonts that the user later removed.
+    /// Legacy annotation migration passes `register_fonts = true`.
     pub(crate) fn open_recovery_document(
         &self,
         snapshot: impl AsRef<Path>,
         original_path: impl AsRef<Path>,
+        register_fonts: bool,
     ) -> EngineResult<DocumentInfo> {
         let (reply, receive) = mpsc::channel();
         self.send(WorkerRequest::Open {
             path: snapshot.as_ref().to_path_buf(),
             original_path: Some(original_path.as_ref().to_path_buf()),
             editable_annotations: true,
+            register_fonts,
             reply,
         })?;
         receive.recv().map_err(|_| EngineError::WorkerStopped)?
@@ -122,6 +134,7 @@ impl PdfEngine {
             path: path.as_ref().to_path_buf(),
             original_path: None,
             editable_annotations: false,
+            register_fonts: false,
             reply,
         })?;
         receive.recv().map_err(|_| EngineError::WorkerStopped)?
@@ -222,18 +235,22 @@ impl PdfEngine {
 fn start_worker(engine_path: PathBuf) -> Result<PdfEngine, String> {
     let (sender, receiver) = mpsc::channel();
     let (init_sender, init_receiver) = mpsc::sync_channel(1);
+    let fonts = Arc::new(FontRegistry::default());
+    let worker_fonts = fonts.clone();
 
     std::thread::Builder::new()
         .name("folio-pdfium-worker".into())
-        .spawn(move || match WorkerRuntime::new(&engine_path) {
-            Ok(mut runtime) => {
-                let _ = init_sender.send(Ok(runtime.status.clone()));
-                runtime.run(receiver);
-            }
-            Err(error) => {
-                let _ = init_sender.send(Err(error.to_string()));
-            }
-        })
+        .spawn(
+            move || match WorkerRuntime::new(&engine_path, worker_fonts) {
+                Ok(mut runtime) => {
+                    let _ = init_sender.send(Ok(runtime.status.clone()));
+                    runtime.run(receiver);
+                }
+                Err(error) => {
+                    let _ = init_sender.send(Err(error.to_string()));
+                }
+            },
+        )
         .map_err(|error| error.to_string())?;
 
     init_receiver
@@ -241,7 +258,7 @@ fn start_worker(engine_path: PathBuf) -> Result<PdfEngine, String> {
         .map_err(|_| "PDFium worker exited during initialization".to_string())??;
 
     Ok(PdfEngine {
-        inner: Arc::new(EngineInner { sender }),
+        inner: Arc::new(EngineInner { sender, fonts }),
     })
 }
 
@@ -263,6 +280,7 @@ enum WorkerRequest {
         path: PathBuf,
         original_path: Option<PathBuf>,
         editable_annotations: bool,
+        register_fonts: bool,
         reply: mpsc::Sender<EngineResult<DocumentInfo>>,
     },
     Render {
@@ -316,6 +334,7 @@ struct WorkerRuntime {
     pdfium: &'static Pdfium,
     documents: HashMap<String, OpenDocument>,
     status: String,
+    fonts: Arc<FontRegistry>,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -376,7 +395,7 @@ impl PageGeometry {
 }
 
 impl WorkerRuntime {
-    fn new(engine_path: &Path) -> EngineResult<Self> {
+    fn new(engine_path: &Path, fonts: Arc<FontRegistry>) -> EngineResult<Self> {
         if !engine_path.is_file() {
             return Err(EngineError::Initialization(format!(
                 "PDFium library was not found at {}",
@@ -393,6 +412,7 @@ impl WorkerRuntime {
             pdfium,
             documents: HashMap::new(),
             status,
+            fonts,
         })
     }
 
@@ -426,10 +446,15 @@ impl WorkerRuntime {
                     path,
                     original_path,
                     editable_annotations,
+                    register_fonts,
                     reply,
                 } => {
-                    let _ =
-                        reply.send(self.open_document(path, original_path, editable_annotations));
+                    let _ = reply.send(self.open_document(
+                        path,
+                        original_path,
+                        editable_annotations,
+                        register_fonts,
+                    ));
                 }
                 WorkerRequest::Render {
                     source_id,
@@ -487,6 +512,7 @@ impl WorkerRuntime {
         path: PathBuf,
         original_path: Option<PathBuf>,
         editable_annotations: bool,
+        register_fonts: bool,
     ) -> EngineResult<DocumentInfo> {
         let canonical = std::fs::canonicalize(&path)
             .map_err(|error| EngineError::Io(format!("{}: {error}", path.display())))?;
@@ -531,6 +557,7 @@ impl WorkerRuntime {
             .load_pdf_from_reader(Cursor::new(source_bytes.clone()), None)?;
         let mut pages = Vec::with_capacity(document.pages().len() as usize);
         let mut annotation_metadata = None;
+        let mut imported_fonts = Vec::new();
         for index in 0..document.pages().len() {
             let mut page = document.pages().get(index)?;
             let geometry = page_geometry(&page)?;
@@ -542,6 +569,7 @@ impl WorkerRuntime {
                     index as usize,
                     &source_bytes,
                     &mut annotation_metadata,
+                    &mut imported_fonts,
                 )?;
             }
             pages.push(info);
@@ -557,6 +585,11 @@ impl WorkerRuntime {
             name,
             pages,
         };
+        // No global font registration occurs until every page has opened and
+        // imported successfully. The batch is atomic even when capacity is exceeded.
+        if register_fonts {
+            self.fonts.register_assets(&imported_fonts)?;
+        }
         self.documents.insert(
             id,
             OpenDocument {
@@ -676,9 +709,17 @@ impl WorkerRuntime {
             for text in request
                 .pages
                 .iter()
+                .filter(|page| {
+                    !page.overlays.iter().any(
+                        |overlay| matches!(overlay, Overlay::Text(text) if text.font_id.is_some()),
+                    )
+                })
                 .flat_map(|page| &page.overlays)
                 .filter_map(|overlay| {
                     if let Overlay::Text(text) = overlay {
+                        if text.font_id.is_some() {
+                            return None;
+                        }
                         Some(text)
                     } else {
                         None
@@ -707,6 +748,12 @@ impl WorkerRuntime {
         let mut geometries = Vec::with_capacity(request.pages.len());
 
         for plan in &request.pages {
+            // A page containing custom text paints every text/ink overlay through
+            // the portable appearance path, retaining their relative order.
+            let portable_flatten = request.flatten
+                && plan.overlays.iter().any(
+                    |overlay| matches!(overlay, Overlay::Text(text) if text.font_id.is_some()),
+                );
             let destination_index = output.pages().len();
             {
                 let source = self.document(&plan.source_id)?;
@@ -723,12 +770,12 @@ impl WorkerRuntime {
             for overlay in &plan.overlays {
                 match overlay {
                     Overlay::Text(text) => {
-                        if request.flatten {
+                        if request.flatten && !portable_flatten && text.font_id.is_none() {
                             add_text_overlay(&mut page, geometry, text, fonts[&text.font_name])?;
                         }
                     }
                     Overlay::Ink(ink) => {
-                        if request.flatten {
+                        if request.flatten && !portable_flatten {
                             add_ink_overlay(&mut page, geometry, ink)?;
                         }
                     }
@@ -758,10 +805,12 @@ impl WorkerRuntime {
         output.save_to_file(&temporary)?;
         if request.pages.iter().any(|page| {
             page.overlays.iter().any(|overlay| {
-                !request.flatten || matches!(overlay, Overlay::Highlight(_) | Overlay::Comment(_))
+                !request.flatten
+                    || matches!(overlay, Overlay::Highlight(_) | Overlay::Comment(_))
+                    || matches!(overlay, Overlay::Text(text) if text.font_id.is_some())
             })
         }) {
-            persistence::finalize(&temporary, &request, &geometries)?;
+            persistence::finalize(&temporary, &request, &geometries, &self.fonts)?;
         }
         std::fs::OpenOptions::new()
             .write(true)
@@ -880,7 +929,14 @@ impl WorkerRuntime {
                     )));
                 }
                 match overlay {
-                    Overlay::Text(text) => validate_text(text, size.width, size.height)?,
+                    Overlay::Text(text) => {
+                        let custom = text
+                            .font_id
+                            .as_deref()
+                            .map(|id| self.fonts.get(id))
+                            .transpose()?;
+                        validate_text(text, size.width, size.height, custom.as_deref())?;
+                    }
                     Overlay::Ink(ink) => validate_ink(ink, size.width, size.height)?,
                     Overlay::Highlight(highlight) => validate_highlight(highlight)?,
                     Overlay::Comment(comment) => validate_comment(comment)?,
@@ -921,6 +977,7 @@ fn parse_annotation_metadata(bytes: &[u8]) -> Result<SourceAnnotationMetadata, l
         lopdf::LoadOptions::with_max_decompressed_size(64 * 1024 * 1024),
     )?;
     let mut pages = HashMap::new();
+    let mut fonts = persistence::ImportCache::default();
     for (number, page_id) in document.get_pages() {
         let page = document.get_dictionary(page_id)?;
         let Ok(annotations) = page.get(b"Annots") else {
@@ -982,7 +1039,7 @@ fn parse_annotation_metadata(bytes: &[u8]) -> Result<SourceAnnotationMetadata, l
                 Err(_) => Some(1.0),
             };
             metadata.push(AnnotationMetadata {
-                owned: persistence::decode(&document, dictionary),
+                owned: persistence::decode(&document, dictionary, &mut fonts),
                 id,
                 subtype,
                 color,
@@ -1025,6 +1082,7 @@ fn import_annotations(
     page_index: usize,
     bytes: &[u8],
     metadata: &mut Option<Result<SourceAnnotationMetadata, ()>>,
+    imported_fonts: &mut Vec<Arc<FontAsset>>,
 ) -> EngineResult<Vec<Overlay>> {
     let mut imported = Vec::new();
     let annotations = page.annotations_mut();
@@ -1157,6 +1215,18 @@ fn import_annotations(
             imported_ids.insert(id.clone());
         }
         deleted.insert(index);
+        if let Some(font) = metadata_item
+            .owned
+            .as_ref()
+            .and_then(|record| record.custom_font.as_ref())
+        {
+            if !imported_fonts
+                .iter()
+                .any(|existing| existing.info.id == font.info.id)
+            {
+                imported_fonts.push(font.clone());
+            }
+        }
         for (popup_index, popup) in metadata.iter().enumerate() {
             if popup.subtype == b"Popup"
                 && ((metadata_item.id.is_some() && popup.parent == metadata_item.id)
@@ -1409,7 +1479,12 @@ fn add_ink_overlay(
     Ok(())
 }
 
-fn validate_text(overlay: &TextOverlay, width: f32, height: f32) -> EngineResult<()> {
+fn validate_text(
+    overlay: &TextOverlay,
+    width: f32,
+    height: f32,
+    custom: Option<&FontAsset>,
+) -> EngineResult<()> {
     if !matches!(overlay.rotation, 0 | 90 | 180 | 270) {
         return Err(EngineError::InvalidRequest("invalid text rotation".into()));
     }
@@ -1429,7 +1504,12 @@ fn validate_text(overlay: &TextOverlay, width: f32, height: f32) -> EngineResult
             "text contains a null character".into(),
         ));
     }
-    if let Some(character) = overlay
+    if let Some(id) = &overlay.font_id {
+        let font = custom.filter(|font| &font.info.id == id).ok_or_else(|| {
+            EngineError::InvalidRequest(format!("custom font {id} is unavailable"))
+        })?;
+        font.validate_text(&overlay.text)?;
+    } else if let Some(character) = overlay
         .text
         .chars()
         .find(|character| !helvetica_supports(*character))

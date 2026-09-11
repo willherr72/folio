@@ -1,0 +1,11 @@
+.font-picker { width: min(580px, calc(100vw - 32px)); }
+.font-picker > p { color: var(--muted); font-size: 13px; line-height: 1.5; }
+.font-picker input[type="search"] { padding: 9px; border: 1px solid var(--line); border-radius: 6px; background: var(--control); color: var(--ink); }
+.font-picker-list { max-height: 340px; min-height: 120px; overflow: auto; border: 1px solid var(--line); border-radius: 6px; }
+.font-picker-item { padding: 5px 10px; border-bottom: 1px solid var(--line); }
+.font-picker-item:last-child { border-bottom: 0; }
+.font-picker-item button { width: 100%; text-align: left; padding: 8px; border: 0; background: transparent; color: var(--ink); cursor: pointer; }
+.font-picker-item button:hover:enabled { background: var(--accent-soft); }
+.font-picker-item button:disabled { opacity: .55; cursor: default; }
+.font-picker-item p, .font-picker-list > p { margin: 4px 8px 8px; color: var(--muted); font-size: 12px; }
+.custom-font-action { width: 100%; margin: -3px 0 12px; }

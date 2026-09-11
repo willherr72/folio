@@ -77,6 +77,8 @@ pub struct TextOverlay {
     pub font_size: f32,
     #[serde(default)]
     pub font_name: TextFont,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub font_id: Option<String>,
     pub color: String,
     #[serde(default)]
     pub rotation: u16,

@@ -3,6 +3,7 @@
 Folio's original application code is MIT licensed. Dependencies retain their own licenses.
 
 - Tauri: MIT OR Apache-2.0 — https://github.com/tauri-apps/tauri
+- ttf-parser 0.25.1: MIT OR Apache-2.0 — https://github.com/harfbuzz/ttf-parser; full notices are included under licenses/rust/ttf-parser-0.25.1 in the portable distribution.
 - pdfium-render: MIT OR Apache-2.0 — https://github.com/ajrcarey/pdfium-render
 - PDFium and bundled dependencies: see the licenses distributed in resources/pdfium. Source: https://pdfium.googlesource.com/pdfium/
 - Windows PDFium binary distributor: https://github.com/bblanchon/pdfium-binaries

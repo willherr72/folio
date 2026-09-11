@@ -10,6 +10,8 @@ export interface TextOverlay {
   fontSize: number;
   /** Absent in older documents; defaults to Helvetica. */
   fontName?: TextFontName;
+  /** Content-addressed, embedded custom font program. */
+  fontId?: string;
   color: string;
   /** Clockwise orientation about the local top-left x/y anchor. */
   rotation?: Rotation;
