@@ -1,5 +1,6 @@
 use folio_engine::{
-    create_semantic_pdf, ExportRequest, FontAsset, PagePlan, PdfEngine, TextDirection,
+    create_semantic_font_banks_probe, create_semantic_pdf, ExportRequest, FontAsset, PagePlan,
+    PdfEngine, TextDirection,
 };
 use std::{fs, path::PathBuf};
 
@@ -222,24 +223,82 @@ fn repeated_semantic_text_reuses_codes_without_truncating_copy_or_selection() {
 }
 
 #[test]
-fn semantic_code_capacity_refuses_overflow_instead_of_aliasing_unicode() {
+fn font_bank_negative_controls_keep_unsafe_reader_order_out_of_the_writer() {
     let font = font("corpus/fonts/DejaVuSerif.ttf");
     let face = font.face().unwrap();
-    let alphabet: String = (0x41..=0x2ff)
+    let alphabet: String = (0x41..=0x52f)
         .filter_map(char::from_u32)
         .filter(|c| c.is_alphabetic() && face.glyph_index(*c).is_some())
-        .take(256)
+        .take(511)
         .collect();
-    assert_eq!(alphabet.chars().count(), 256);
-    let fitting: String = alphabet.chars().take(255).collect();
-    create_semantic_pdf(&font, &fitting, 4., TextDirection::Ltr, false, 0).unwrap();
-    let error = create_semantic_pdf(&font, &alphabet, 4., TextDirection::Ltr, false, 0)
-        .err()
-        .expect("An exhausted one-byte font must not reuse a different character's code");
-    assert!(
-        error.to_string().contains("distinct character definitions"),
-        "{error}"
-    );
+    assert_eq!(alphabet.chars().count(), 511);
+    let engine = PdfEngine::start(
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("resources/pdfium/pdfium.dll"),
+    )
+    .unwrap();
+    let temp = tempfile::tempdir().unwrap();
+    for count in [255usize, 256, 511] {
+        let prefix: String = alphabet.chars().take(count).collect();
+        // Return to earlier definitions after crossing one or two font banks.
+        let text = format!("{prefix}AB{}CD", prefix.chars().last().unwrap());
+        for rotation in [0, 90, 180, 270] {
+            assert!(
+                create_semantic_pdf(&font, &text, 4., TextDirection::Ltr, false, rotation).is_err()
+            );
+            let output = create_semantic_font_banks_probe(
+                &font,
+                &text,
+                4.,
+                TextDirection::Ltr,
+                false,
+                rotation,
+                false,
+            )
+            .unwrap();
+            let pdf = lopdf::Document::load_mem(&output.bytes).unwrap();
+            let banks: Vec<_> = pdf
+                .objects
+                .values()
+                .filter_map(|o| o.as_dict().ok())
+                .filter(|d| d.get(b"Subtype").ok().and_then(|o| o.as_name().ok()) == Some(b"Type3"))
+                .collect();
+            assert!(banks.len() >= count.div_ceil(255));
+            for bank in banks {
+                assert!((1..=255).contains(&bank.get(b"LastChar").unwrap().as_i64().unwrap()));
+            }
+            let path = temp.path().join(format!("banks-{count}-{rotation}.pdf"));
+            fs::write(&path, &output.bytes).unwrap();
+            let source = engine.open_document(&path).unwrap();
+            let copied = engine.extract_text(&source.id, 0).unwrap();
+            let geometry = engine.page_text(&source.id, 0).unwrap();
+            if rotation == 180 {
+                assert_ne!(
+                    copied, text,
+                    "Negative fixture must expose the reader-order failure"
+                );
+                engine.close_document(&source.id).unwrap();
+                continue;
+            }
+            assert_eq!(copied, text);
+            assert_eq!(
+                geometry
+                    .characters
+                    .iter()
+                    .map(|c| c.text.as_str())
+                    .collect::<String>(),
+                text
+            );
+            let first = &geometry.characters[0];
+            let last = geometry.characters.last().unwrap();
+            let span = if rotation % 180 == 0 {
+                (last.x - first.x).abs()
+            } else {
+                (last.y - first.y).abs()
+            };
+            assert!(span > output.layout.width * 0.95);
+            engine.close_document(&source.id).unwrap();
+        }
+    }
 }
 
 #[test]
@@ -333,4 +392,72 @@ fn a_malformed_nonempty_outline_is_not_silently_omitted() {
         create_semantic_pdf(&malformed, "AB", 24., TextDirection::Ltr, true, 0).is_err(),
         "An unreadable A outline must not silently become a PDF that only paints B"
     );
+}
+
+#[test]
+fn semantic_code_capacity_refuses_overflow_instead_of_aliasing_unicode() {
+    let font = font("corpus/fonts/DejaVuSerif.ttf");
+    let face = font.face().unwrap();
+    let alphabet: String = (0x41..=0x2ff)
+        .filter_map(char::from_u32)
+        .filter(|c| c.is_alphabetic() && face.glyph_index(*c).is_some())
+        .take(256)
+        .collect();
+    assert_eq!(alphabet.chars().count(), 256);
+    let fitting: String = alphabet.chars().take(255).collect();
+    create_semantic_pdf(&font, &fitting, 4., TextDirection::Ltr, false, 0).unwrap();
+    let error = create_semantic_pdf(&font, &alphabet, 4., TextDirection::Ltr, false, 0)
+        .err()
+        .expect("An exhausted one-byte font must not reuse a different character's code");
+    assert!(
+        error.to_string().contains("distinct character definitions"),
+        "{error}"
+    );
+}
+
+#[test]
+fn whole_line_actualtext_repairs_copy_but_collapses_banked_selection() {
+    let font = font("corpus/fonts/DejaVuSerif.ttf");
+    let face = font.face().unwrap();
+    let prefix: String = (0x41..=0x52f)
+        .filter_map(char::from_u32)
+        .filter(|c| c.is_alphabetic() && face.glyph_index(*c).is_some())
+        .take(511)
+        .collect();
+    assert_eq!(prefix.chars().count(), 511);
+    let text = format!("{prefix}AB{}CD", prefix.chars().last().unwrap());
+    let engine = PdfEngine::start(
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("resources/pdfium/pdfium.dll"),
+    )
+    .unwrap();
+    let temp = tempfile::tempdir().unwrap();
+    for rotation in [0, 90, 180, 270] {
+        let output = create_semantic_font_banks_probe(
+            &font,
+            &text,
+            4.,
+            TextDirection::Ltr,
+            false,
+            rotation,
+            true,
+        )
+        .unwrap();
+        let path = temp.path().join(format!("actual-{rotation}.pdf"));
+        fs::write(&path, &output.bytes).unwrap();
+        let source = engine.open_document(&path).unwrap();
+        assert_eq!(engine.extract_text(&source.id, 0).unwrap(), text);
+        let geometry = engine.page_text(&source.id, 0).unwrap();
+        let first = &geometry.characters[0];
+        let last = geometry.characters.last().unwrap();
+        let span = if rotation % 180 == 0 {
+            (last.x - first.x).abs()
+        } else {
+            (last.y - first.y).abs()
+        };
+        assert!(
+            span < output.layout.width * 0.75,
+            "Negative control must expose collapsed caret positions"
+        );
+        engine.close_document(&source.id).unwrap();
+    }
 }

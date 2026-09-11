@@ -1,7 +1,7 @@
 //! Experimental exact outlines plus a scalar Unicode layer with cluster boxes.
 //! Scalar origins divide cluster advances equally; they are not caret positions.
-//! Mixed directional runs and more than 255 distinct character definitions are
-//! deliberately refused. Identical definitions can serve repeated occurrences.
+//! Mixed directional runs and more than 255 distinct definitions are refused.
+//! The explicitly named font-bank probe retains known reader failures only.
 //! RTL separators and joiners await a proven reader-order strategy.
 use crate::{
     shape_text, shaping::OutlineBudget, EngineError, EngineResult, FontAsset, PositionedGlyph,
@@ -12,6 +12,7 @@ use std::{collections::BTreeMap, fmt::Write, io};
 use ttf_parser::{GlyphId, OutlineBuilder};
 use unicode_bidi::{bidi_class, BidiClass};
 
+const CODES_PER_FONT: usize = 255;
 const MAX_OUTLINE_OPS: usize = 100_000;
 const MAX_CONTENT_BYTES: usize = 8 * 1024 * 1024;
 const MAX_PDF_BYTES: usize = 32 * 1024 * 1024;
@@ -116,6 +117,45 @@ pub fn create_semantic_pdf(
     direction: TextDirection,
     ligatures: bool,
     rotation: u16,
+) -> EngineResult<ShapedPdf> {
+    semantic_pdf(
+        font, text, font_size, direction, ligatures, rotation, false, false,
+    )
+}
+
+/// Negative research control, NOT a supported writer. Font switches corrupt
+/// PDFium order on rotated pages; whole-line ActualText collapses selection.
+/// Kept solely to reproduce those failures under the nondefault shaped-text feature.
+pub fn create_semantic_font_banks_probe(
+    font: &FontAsset,
+    text: &str,
+    font_size: f32,
+    direction: TextDirection,
+    ligatures: bool,
+    rotation: u16,
+    actual_text: bool,
+) -> EngineResult<ShapedPdf> {
+    semantic_pdf(
+        font,
+        text,
+        font_size,
+        direction,
+        ligatures,
+        rotation,
+        true,
+        actual_text,
+    )
+}
+
+fn semantic_pdf(
+    font: &FontAsset,
+    text: &str,
+    font_size: f32,
+    direction: TextDirection,
+    ligatures: bool,
+    rotation: u16,
+    font_banks: bool,
+    actual_text: bool,
 ) -> EngineResult<ShapedPdf> {
     if !matches!(rotation, 0 | 90 | 180 | 270) {
         return Err(invalid("Semantic evidence supports quarter turns only."));
@@ -250,8 +290,8 @@ pub fn create_semantic_pdf(
     cells.sort_by(|a, b| a.x.total_cmp(&b.x));
     // A code describes Unicode and local metrics, not a page occurrence. Exact
     // keys preserve existing geometry; similar boxes must never be coalesced.
-    // Keep all occurrences in the same TJ object, including reused codes, so
-    // readers do not reorder independently positioned text objects on rotation.
+    // Keep all occurrences in one text object. Bank switches preserve the text
+    // matrix and the previous TJ adjustment, including on rotated pages.
     let mut definition_codes = BTreeMap::new();
     let mut definitions = Vec::new();
     let mut codes = Vec::with_capacity(cells.len());
@@ -264,12 +304,12 @@ pub fn create_semantic_pdf(
         let code = if let Some(&code) = definition_codes.get(&key) {
             code
         } else {
-            if definitions.len() == 255 {
+            if !font_banks && definitions.len() == CODES_PER_FONT {
                 return Err(invalid(
-                    "Semantic evidence supports at most 255 distinct character definitions (Unicode, advance and cluster bounds).",
+                    "Semantic evidence supports at most 255 distinct character definitions (Unicode, advance and cluster bounds); font-bank probes fail reader order and selection.",
                 ));
             }
-            let code = (definitions.len() + 1) as u8;
+            let code = definitions.len();
             definitions.push(cell);
             definition_codes.insert(key, code);
             code
@@ -287,49 +327,65 @@ pub fn create_semantic_pdf(
     let descriptor=pdf.add_object(dictionary!{"Type"=>"FontDescriptor","FontName"=>Object::Name(original_name.as_bytes().to_vec()),"Flags"=>32,"FontBBox"=>numbers(&[bbox.x_min as f32*font_scale,bbox.y_min as f32*font_scale,bbox.x_max as f32*font_scale,bbox.y_max as f32*font_scale]),"ItalicAngle"=>face.italic_angle(),"Ascent"=>face.ascender() as f32*font_scale,"Descent"=>face.descender() as f32*font_scale,"CapHeight"=>face.ascender() as f32*font_scale,"StemV"=>80,"FontFile2"=>program});
     let descendant=pdf.add_object(dictionary!{"Type"=>"Font","Subtype"=>"CIDFontType2","BaseFont"=>Object::Name(original_name.as_bytes().to_vec()),"CIDSystemInfo"=>dictionary!{"Registry"=>Object::string_literal("Adobe"),"Ordering"=>Object::string_literal("Identity"),"Supplement"=>0},"FontDescriptor"=>descriptor,"CIDToGIDMap"=>"Identity","DW"=>1000});
     let original=pdf.add_object(dictionary!{"Type"=>"Font","Subtype"=>"Type0","BaseFont"=>Object::Name(original_name.into_bytes()),"Encoding"=>"Identity-H","DescendantFonts"=>vec![Object::Reference(descendant)]});
-    let mut charprocs = lopdf::Dictionary::new();
-    let mut differences = vec![Object::Integer(1)];
-    let mut widths = Vec::new();
-    let mut font_bbox = [
-        f32::INFINITY,
-        f32::INFINITY,
-        f32::NEG_INFINITY,
-        f32::NEG_INFINITY,
-    ];
-    let mut mappings = Vec::new();
-    for (i, cell) in definitions.iter().enumerate() {
-        let name = format!("g{}", i + 1);
-        differences.push(Object::Name(name.as_bytes().to_vec()));
-        widths.push(Object::Real(cell.width));
-        let [x0, y0, x1, y1] = cell.bounds;
-        font_bbox[0] = font_bbox[0].min(x0);
-        font_bbox[1] = font_bbox[1].min(y0);
-        font_bbox[2] = font_bbox[2].max(x1);
-        font_bbox[3] = font_bbox[3].max(y1);
-        let proc = pdf.add_object(Stream::new(
-            dictionary! {},
-            format!("{} 0 {x0:.7} {y0:.7} {x1:.7} {y1:.7} d1\n", cell.width).into_bytes(),
-        ));
-        charprocs.set(name, proc);
-        let unicode: String = cell
-            .unicode
-            .to_string()
+    let mut font_resources = dictionary! {"Original" => original};
+    for (bank_index, bank) in definitions.chunks(CODES_PER_FONT).enumerate() {
+        let mut charprocs = lopdf::Dictionary::new();
+        let mut differences = vec![Object::Integer(1)];
+        let mut widths = Vec::new();
+        let mut font_bbox = [
+            f32::INFINITY,
+            f32::INFINITY,
+            f32::NEG_INFINITY,
+            f32::NEG_INFINITY,
+        ];
+        let mut mappings = Vec::new();
+        for (i, cell) in bank.iter().enumerate() {
+            let name = format!("g{}", i + 1);
+            differences.push(Object::Name(name.as_bytes().to_vec()));
+            widths.push(Object::Real(cell.width));
+            let [x0, y0, x1, y1] = cell.bounds;
+            font_bbox[0] = font_bbox[0].min(x0);
+            font_bbox[1] = font_bbox[1].min(y0);
+            font_bbox[2] = font_bbox[2].max(x1);
+            font_bbox[3] = font_bbox[3].max(y1);
+            let proc = pdf.add_object(Stream::new(
+                dictionary! {},
+                format!("{} 0 {x0:.7} {y0:.7} {x1:.7} {y1:.7} d1\n", cell.width).into_bytes(),
+            ));
+            charprocs.set(name, proc);
+            let unicode: String = cell
+                .unicode
+                .to_string()
+                .encode_utf16()
+                .map(|unit| format!("{unit:04X}"))
+                .collect();
+            mappings.push(format!("<{:02X}> <{unicode}>\n", i + 1));
+        }
+        let mut cmap=String::from("/CIDInit /ProcSet findresource begin 12 dict begin begincmap /CIDSystemInfo << /Registry (Adobe) /Ordering (UCS) /Supplement 0 >> def /CMapName /FolioSemantic def /CMapType 2 def 1 begincodespacerange <00> <FF> endcodespacerange\n");
+        for chunk in mappings.chunks(100) {
+            writeln!(&mut cmap, "{} beginbfchar", chunk.len()).unwrap();
+            for mapping in chunk {
+                cmap.push_str(mapping);
+            }
+            cmap.push_str("endbfchar\n");
+        }
+        cmap.push_str("endcmap CMapName currentdict /CMap defineresource pop end end\n");
+        let unicode = pdf.add_object(Stream::new(dictionary! {}, cmap.into_bytes()));
+        let semantic=pdf.add_object(dictionary!{"Type"=>"Font","Subtype"=>"Type3","FontBBox"=>numbers(&font_bbox),"FontMatrix"=>numbers(&[0.001,0.,0.,0.001,0.,0.]),"CharProcs"=>charprocs,"Encoding"=>dictionary!{"Type"=>"Encoding","Differences"=>differences},"FirstChar"=>1,"LastChar"=>bank.len() as i64,"Widths"=>widths,"Resources"=>dictionary!{},"ToUnicode"=>unicode});
+        let name = if bank_index == 0 {
+            "S".to_owned()
+        } else {
+            format!("S{bank_index}")
+        };
+        font_resources.set(name, semantic);
+    }
+    if actual_text {
+        let actual: String = text
             .encode_utf16()
             .map(|unit| format!("{unit:04X}"))
             .collect();
-        mappings.push(format!("<{:02X}> <{unicode}>\n", i + 1));
+        writeln!(&mut visible, "/Span << /ActualText <FEFF{actual}> >> BDC").unwrap();
     }
-    let mut cmap=String::from("/CIDInit /ProcSet findresource begin 12 dict begin begincmap /CIDSystemInfo << /Registry (Adobe) /Ordering (UCS) /Supplement 0 >> def /CMapName /FolioSemantic def /CMapType 2 def 1 begincodespacerange <00> <FF> endcodespacerange\n");
-    for chunk in mappings.chunks(100) {
-        writeln!(&mut cmap, "{} beginbfchar", chunk.len()).unwrap();
-        for mapping in chunk {
-            cmap.push_str(mapping);
-        }
-        cmap.push_str("endbfchar\n");
-    }
-    cmap.push_str("endcmap CMapName currentdict /CMap defineresource pop end end\n");
-    let unicode = pdf.add_object(Stream::new(dictionary! {}, cmap.into_bytes()));
-    let semantic=pdf.add_object(dictionary!{"Type"=>"Font","Subtype"=>"Type3","FontBBox"=>numbers(&font_bbox),"FontMatrix"=>numbers(&[0.001,0.,0.,0.001,0.,0.]),"CharProcs"=>charprocs,"Encoding"=>dictionary!{"Type"=>"Encoding","Differences"=>differences},"FirstChar"=>1,"LastChar"=>definitions.len() as i64,"Widths"=>widths,"Resources"=>dictionary!{},"ToUnicode"=>unicode});
     writeln!(
         &mut visible,
         "BT /S {font_size:.7} Tf 1 0 0 1 {:.7} {:.7} Tm [",
@@ -338,7 +394,16 @@ pub fn create_semantic_pdf(
     )
     .unwrap();
     for (i, cell) in cells.iter().enumerate() {
-        write!(&mut visible, "<{:02X}> ", codes[i]).unwrap();
+        let bank = codes[i] / CODES_PER_FONT;
+        if i > 0 && bank != codes[i - 1] / CODES_PER_FONT {
+            let name = if bank == 0 {
+                "S".to_owned()
+            } else {
+                format!("S{bank}")
+            };
+            writeln!(&mut visible, "] TJ /{name} {font_size:.7} Tf [").unwrap();
+        }
+        write!(&mut visible, "<{:02X}> ", codes[i] % CODES_PER_FONT + 1).unwrap();
         if let Some(next) = cells.get(i + 1) {
             write!(
                 &mut visible,
@@ -349,12 +414,15 @@ pub fn create_semantic_pdf(
         }
     }
     visible.push_str("] TJ ET\n");
+    if actual_text {
+        visible.push_str("EMC\n");
+    }
     if visible.len() > MAX_CONTENT_BYTES {
         return Err(invalid("The semantic content exceeds its byte limit."));
     }
     let content = pdf.add_object(Stream::new(dictionary! {}, visible.into_bytes()));
     let pages = pdf.new_object_id();
-    let page=pdf.add_object(dictionary!{"Type"=>"Page","Parent"=>pages,"MediaBox"=>numbers(&[0.,0.,width,height]),"Rotate"=>rotation as i64,"Resources"=>dictionary!{"Font"=>dictionary!{"S"=>semantic,"Original"=>original}},"Contents"=>content});
+    let page=pdf.add_object(dictionary!{"Type"=>"Page","Parent"=>pages,"MediaBox"=>numbers(&[0.,0.,width,height]),"Rotate"=>rotation as i64,"Resources"=>dictionary!{"Font"=>font_resources},"Contents"=>content});
     pdf.objects.insert(
         pages,
         Object::Dictionary(

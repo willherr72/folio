@@ -1,5 +1,6 @@
 """Reject broken semantic font definitions even when dictionary counts agree."""
 import hashlib
+import copy
 import importlib.util
 from pathlib import Path
 import tempfile
@@ -9,7 +10,7 @@ import sys
 sys.dont_write_bytecode = True
 
 from pypdf import PdfWriter
-from pypdf.generic import ArrayObject, DecodedStreamObject, DictionaryObject, NameObject, NumberObject, FloatObject
+from pypdf.generic import ArrayObject, ContentStream, DecodedStreamObject, DictionaryObject, NameObject, NumberObject, FloatObject
 
 SCRIPT = Path(__file__).parents[1] / "scripts/inspect-semantic-native.py"
 spec = importlib.util.spec_from_file_location("semantic_inspector", SCRIPT)
@@ -21,7 +22,7 @@ def dictionary(**values):
     return DictionaryObject({NameObject("/" + key): value for key, value in values.items()})
 
 
-def fixture(path, mutation=None):
+def fixture(path, mutation=None, banked=False, content=None):
     writer = PdfWriter()
     def stream(data):
         result = DecodedStreamObject()
@@ -45,16 +46,20 @@ def fixture(path, mutation=None):
     original = dictionary(Subtype=NameObject("/Type0"), DescendantFonts=ArrayObject([
         dictionary(FontDescriptor=dictionary(FontFile2=stream(original_data)))]))
     page[NameObject("/Resources")] = dictionary(Font=dictionary(S=semantic, Original=original))
-    page[NameObject("/Contents")] = stream(b"0 0 20 20 re f BT /S 24 Tf 1 0 0 1 48 48 Tm [<01> <02> <01>] TJ ET")
+    if banked:
+        second = copy.deepcopy(semantic)
+        second[NameObject("/ToUnicode")] = stream(semantic["/ToUnicode"].get_data().replace(b"0041", b"0043").replace(b"0042", b"D835DC34"))
+        page["/Resources"]["/Font"][NameObject("/S1")] = second
+    page[NameObject("/Contents")] = stream(content or b"0 0 20 20 re f BT /S 24 Tf 1 0 0 1 48 48 Tm [<01> <02> <01>] TJ ET")
     writer.write(path)
     return hashlib.sha256(original_data).hexdigest()
 
 
 class SemanticNativeInspectorTests(unittest.TestCase):
-    def inspect(self, mutation=None, expected_visual="ABA"):
+    def inspect(self, mutation=None, expected_visual="ABA", **options):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "candidate.pdf"
-            font_hash = fixture(path, mutation)
+            font_hash = fixture(path, mutation, **options)
             return inspector.inspect_pdf(path, font_hash, expected_visual)["structure"]
 
     def test_reused_codes_remain_valid(self):
@@ -62,6 +67,43 @@ class SemanticNativeInspectorTests(unittest.TestCase):
         self.assertTrue(result["passes"])
         self.assertEqual(result["semantic_codes"][0]["scalar_use_count"], 3)
         self.assertEqual(result["semantic_codes"][0]["unique_code_count"], 2)
+
+    def test_banked_codes_decode_in_emission_order_and_reuse_first_bank(self):
+        result = self.inspect(banked=True, expected_visual="ABC\U0001d434A", content=
+            b"0 0 20 20 re f BT /S 24 Tf 1 0 0 1 48 48 Tm [<0102> -2] TJ /S1 24 Tf [<0102> 2] TJ /S 24 Tf [<01>] TJ ET")
+        self.assertTrue(result["passes"], result)
+        self.assertEqual([c["scalar_use_count"] for c in result["semantic_codes"]], [3, 2])
+        self.assertEqual(result["semantic_text"]["decoded_visual_text"], "ABC\U0001d434A")
+        self.assertEqual(result["text_objects"], 1)
+        self.assertTrue(result["original_font_matches"])
+        self.assertTrue(result["original_font_unused"])
+
+    def test_banked_wrong_font_mapping_and_missing_occurrence_fail(self):
+        content = b"0 0 20 20 re f BT /S 24 Tf 1 0 0 1 48 48 Tm [<0102>] TJ /S1 24 Tf [<0102>] TJ /S 24 Tf [<01>] TJ ET"
+        for wrong in (content.replace(b"/S1 24", b"/S 24"), content.replace(b"[<01>] TJ", b"[] TJ")):
+            with self.subTest(content=wrong):
+                self.assertFalse(self.inspect(banked=True, expected_visual="ABC\U0001d434A", content=wrong)["passes"])
+
+    def test_malformed_text_operations_fail_closed(self):
+        prefix = b"0 0 20 20 re f BT /S 24 Tf 1 0 0 1 48 48 Tm "
+        for content in (
+            prefix + b"[<010201>] TJ",  # Missing ET.
+            prefix + b"[<010201>] TJ ET ET",
+            prefix + b"ET [<010201>] TJ",  # Draw outside BT/ET.
+            prefix + b"[<010201>] 7 TJ ET",  # Extra operand.
+            prefix + b"[<010201>] TJ 1 2 Unknown ET",
+            prefix + b"[<01>] TJ [<0201>] TJ ET",  # Split arrays without a bank switch.
+            prefix + b"[<010201>] TJ /S 24 Tf ET",  # Trailing unused selection.
+        ):
+            with self.subTest(content=content):
+                with tempfile.TemporaryDirectory() as directory:
+                    path = Path(directory) / "candidate.pdf"
+                    fixture(path, content=content)
+                    reader = inspector.PdfReader(path)
+                    page = reader.pages[0]
+                    _, result = inspector.semantic_text({"/S": page["/Resources"]["/Font"]["/S"]},
+                        ContentStream(page.get_contents(), reader).operations, reader, "ABA")
+                    self.assertFalse(result["passes"])
 
     def test_supplementary_mapping_is_one_scalar_per_byte(self):
         def mutate(font):

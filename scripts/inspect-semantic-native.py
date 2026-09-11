@@ -1,7 +1,7 @@
 """Independent inspection of actual native semantic-text evidence.
 
 Checks raw MuPDF/pypdf text, original font bytes, blank Type3 CharProcs, one
-semantic TJ object, vectors, save preservation, and engine display-coordinate
+semantic text object with banked TJ arrays, vectors, save preservation, and engine display-coordinate
 cluster boxes against native layout. Does not generate or modify source PDFs.
 """
 import argparse
@@ -14,13 +14,79 @@ import re
 
 import fitz
 from pypdf import PdfReader
-from pypdf.generic import ContentStream, ByteStringObject, TextStringObject
+from pypdf.generic import ArrayObject, ContentStream, ByteStringObject, TextStringObject
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
 def digest(data):
     return hashlib.sha256(data).hexdigest()
+
+
+def semantic_text(fonts, operations, reader, expected_visual=None):
+    """Track the selected bank for every byte within one native text object."""
+    result = dict(passes=False, scalar_use_count=0, decoded_visual_text="")
+    checks = []
+    try:
+        grouped = {name: [] for name in fonts}
+        order = []
+        active, begun, ended, positioned = False, False, False, False
+        current, size, pending_array = None, None, False
+        for values, operator in operations:
+            if operator == b"BT":
+                if values or begun:
+                    raise ValueError("Expected exactly one nonnested BT/ET text object")
+                active = begun = True
+            elif operator == b"ET":
+                if values or not active or pending_array:
+                    raise ValueError("Unmatched or malformed ET")
+                active, ended = False, True
+            elif operator == b"Tf":
+                if (not active or len(values) != 2 or str(values[0]) not in fonts
+                        or not isinstance(values[1], (int, float))
+                        or not math.isfinite(float(values[1])) or float(values[1]) <= 0):
+                    raise ValueError("Invalid semantic font selection")
+                if size is not None and float(values[1]) != size:
+                    raise ValueError("Semantic bank switch changed font size")
+                if pending_array or str(values[0]) == current:
+                    raise ValueError("Semantic font selection must introduce a bank's TJ array")
+                current, size = str(values[0]), float(values[1])
+                pending_array = True
+            elif operator == b"Tm":
+                if (not active or positioned or len(values) != 6
+                        or not all(isinstance(v, (int, float)) and math.isfinite(float(v)) for v in values)
+                        or list(map(float, values[:4])) != [1, 0, 0, 1]):
+                    raise ValueError("Invalid or repeated native text matrix")
+                positioned = True
+            elif operator == b"TJ":
+                if not active or current is None or not positioned or not pending_array or len(values) != 1 or not isinstance(values[0], ArrayObject):
+                    raise ValueError("Malformed or misplaced TJ array")
+                pending_array = False
+                grouped[current].append((values, operator))
+                for item in values[0]:
+                    if isinstance(item, ByteStringObject):
+                        order.extend([current] * len(bytes(item)))
+                    elif isinstance(item, TextStringObject):
+                        order.extend([current] * len(item.original_bytes))
+                    elif not isinstance(item, (int, float)) or not math.isfinite(float(item)):
+                        raise ValueError("Invalid TJ element")
+            elif active or operator not in (b"q", b"Q", b"cm", b"rg", b"g", b"m", b"l", b"c", b"h", b"re", b"f"):
+                raise ValueError("Unsupported native content operator")
+        if not begun or not ended or active or not order:
+            raise ValueError("Incomplete or empty semantic text object")
+        checks = [dict(resource=name, **semantic_codes(font, grouped[name], reader)) for name, font in fonts.items()]
+        if not all(check["passes"] for check in checks):
+            raise ValueError("Semantic bank definitions or emitted codes failed validation")
+        decoded_banks = {check["resource"]: iter(check["decoded_visual_text"]) for check in checks}
+        decoded = "".join(next(decoded_banks[name]) for name in order)
+        result.update(scalar_use_count=len(order), decoded_visual_text=decoded,
+                      source_visual_matches=expected_visual is None or decoded == expected_visual)
+        if not result["source_visual_matches"]:
+            raise ValueError("CMap text disagrees with native visual scalar order")
+        result["passes"] = True
+    except (KeyError, ValueError, TypeError, IndexError, UnicodeError, StopIteration) as error:
+        result["error"] = str(error)
+    return checks, result
 
 
 def semantic_codes(font, operations, reader, expected_visual=None):
@@ -121,8 +187,8 @@ def inspect_pdf(path, expected_font, expected_visual=None):
             original.append(dict(resource=name, bytes=len(data), sha256=digest(data)))
     operations = ContentStream(page.get_contents(), reader).operations
     operators = [operator for _, operator in operations]
-    code_checks = [semantic_codes(fonts[name].get_object(), operations, reader, expected_visual) for name in type3]
-    used_fonts = [str(values[0]) for values, operator in operations if operator == b"Tf"]
+    code_checks, text_check = semantic_text({name: fonts[name].get_object() for name in type3}, operations, reader, expected_visual)
+    used_fonts = [str(values[0]) for values, operator in operations if operator == b"Tf" and values]
     structure = dict(type3_fonts=type3, retained_original_fonts=original,
                      charproc_count=len(programs), all_charprocs_blank_d1=bool(programs) and all(p["blank_d1_only"] for p in programs),
                      text_objects=operators.count(b"BT"), tj_arrays=operators.count(b"TJ"),
@@ -130,12 +196,14 @@ def inspect_pdf(path, expected_font, expected_visual=None):
                      actualtext_spans=operators.count(b"BDC"), vector_fills=operators.count(b"f"),
                      used_fonts=used_fonts,
                      semantic_codes=code_checks,
+                     semantic_text=text_check,
                      original_font_matches=bool(original) and all(f["sha256"] == expected_font for f in original),
                      original_font_unused=bool(original) and all(f["resource"] not in used_fonts for f in original))
-    structure["passes"] = (len(type3) == 1 and len(original) == 1 and structure["all_charprocs_blank_d1"]
-                           and structure["text_objects"] == structure["tj_arrays"] == 1
+    structure["passes"] = (len(type3) >= 1 and len(original) == 1 and structure["all_charprocs_blank_d1"]
+                           and structure["text_objects"] == 1 and structure["tj_arrays"] >= 1
                            and structure["other_text_draws"] == structure["actualtext_spans"] == 0
-                           and structure["vector_fills"] > 0 and used_fonts == type3
+                           and structure["vector_fills"] > 0 and set(used_fonts) == set(type3)
+                           and text_check["passes"]
                            and all(check["passes"] for check in code_checks)
                            and structure["original_font_matches"] and structure["original_font_unused"])
     with fitz.open(path) as mupdf:
@@ -269,8 +337,7 @@ def main():
                    metadata_matches=entry["fontSha256"] == layout["fontId"] and
                        all(pdf["rotation"] == entry["rotation"] for pdf in (original, resaved)) and
                        all(entry[key]["intrinsicRotation"] == entry["rotation"] for key in ("originalGeometry", "resavedGeometry")),
-                   semantic_scalar_count_matches=all(len(pdf["structure"]["semantic_codes"]) == 1 and
-                       pdf["structure"]["semantic_codes"][0]["scalar_use_count"] == len(layout["text"]) for pdf in (original, resaved)),
+                   semantic_scalar_count_matches=all(pdf["structure"]["semantic_text"]["scalar_use_count"] == len(layout["text"]) for pdf in (original, resaved)),
                    original=original, resaved=resaved, raw=raw, raw_resaved=raw_after, exact_all_readers=exact,
                    engine_geometry=geometries, engine_geometry_within_tolerance=geometry_pass,
                    engine_geometry_unchanged=entry["originalGeometry"] == entry["resavedGeometry"],

@@ -189,3 +189,8 @@ experiment through exact character-definition reuse, including a 4,096-scalar
 fixture. It also records an RTL word-order failure that was hidden by repeated
 words. RTL separators and joiners now produce an explicit refusal; they still
 need a proven reader-order strategy before editor integration.
+
+[Font-resource boundary experiments](docs/semantic-font-banks.md) record why
+splitting definitions across fonts does not yet remove the 255-definition gate:
+PDFium can reorder copied text on rotated pages, and whole-line ActualText loses
+selection geometry. These negative probes remain outside the editor.

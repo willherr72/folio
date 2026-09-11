@@ -1,7 +1,7 @@
 //! Reproducible native serialization evidence; not an editor export option.
 use folio_engine::{
-    create_semantic_pdf, create_shaped_pdf, ExportRequest, FontAsset, PagePlan, PdfEngine,
-    TextDirection,
+    create_semantic_font_banks_probe, create_semantic_pdf, create_shaped_pdf, ExportRequest,
+    FontAsset, PagePlan, PdfEngine, TextDirection,
 };
 use serde_json::json;
 use sha2::{Digest, Sha256};
@@ -19,11 +19,18 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut arguments = std::env::args_os().skip(1);
     let first = arguments.next();
     let long_text = first.as_deref() == Some(std::ffi::OsStr::new("--semantic-long"));
-    let semantic = long_text || first.as_deref() == Some(std::ffi::OsStr::new("--semantic"));
+    let bank_actual = first.as_deref() == Some(std::ffi::OsStr::new("--semantic-banks-actualtext"));
+    let banked = bank_actual || first.as_deref() == Some(std::ffi::OsStr::new("--semantic-banks"));
+    let semantic =
+        banked || long_text || first.as_deref() == Some(std::ffi::OsStr::new("--semantic"));
     let output = (if semantic { arguments.next() } else { first })
         .map(PathBuf::from)
         .unwrap_or_else(|| {
-            root.join(if long_text {
+            root.join(if bank_actual {
+                "artifacts/shaped-text/semantic-banks-actualtext"
+            } else if banked {
+                "artifacts/shaped-text/semantic-banks-native"
+            } else if long_text {
                 "artifacts/shaped-text/semantic-long-native"
             } else if semantic {
                 "artifacts/shaped-text/semantic-native"
@@ -33,7 +40,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         });
     if arguments.next().is_some() {
         return Err(
-            "Usage: shaped-text-probe [--semantic|--semantic-long] [new-output-directory]".into(),
+            "Usage: shaped-text-probe [--semantic|--semantic-long|--semantic-banks|--semantic-banks-actualtext] [new-output-directory]".into(),
         );
     }
     // Evidence is immutable: use another directory for subsequent runs.
@@ -99,7 +106,32 @@ fn main() -> Result<(), Box<dyn Error>> {
             true,
         ),
     ];
-    let cases: Vec<_> = if long_text {
+    let cases: Vec<_> = if banked {
+        let fixture = "corpus/fonts/DejaVuSerif.ttf";
+        let font =
+            FontAsset::parse_for_shaping(fs::read(root.join("tests/fixtures").join(fixture))?)?;
+        let face = font.face()?;
+        let alphabet: String = (0x41..=0x52f)
+            .filter_map(char::from_u32)
+            .filter(|c| c.is_alphabetic() && face.glyph_index(*c).is_some())
+            .take(511)
+            .collect();
+        if alphabet.chars().count() != 511 {
+            return Err("Fixture alphabet coverage changed".into());
+        }
+        [
+            ("bank-boundary-255", 255),
+            ("bank-boundary-256", 256),
+            ("bank-boundary-511", 511),
+        ]
+        .into_iter()
+        .map(|(name, count)| {
+            let prefix: String = alphabet.chars().take(count).collect();
+            let text = format!("{prefix}AB{}CD", prefix.chars().last().unwrap());
+            (name, fixture, text, false, 4.)
+        })
+        .collect()
+    } else if long_text {
         vec![
             (
                 "long-ligatures-on",
@@ -180,7 +212,17 @@ fn main() -> Result<(), Box<dyn Error>> {
             FontAsset::parse_for_shaping(fs::read(root.join("tests/fixtures").join(fixture))?)?;
         for rotation in [0, 90, 180, 270] {
             let stem = format!("{name}-{rotation}");
-            let candidate = if semantic {
+            let candidate = if banked {
+                create_semantic_font_banks_probe(
+                    &font,
+                    &text,
+                    font_size,
+                    TextDirection::Auto,
+                    ligatures,
+                    rotation,
+                    bank_actual,
+                )
+            } else if semantic {
                 create_semantic_pdf(
                     &font,
                     &text,
@@ -220,7 +262,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             // thousands of pixels tall. Target 2,000px on the longest side;
             // the engine's 64px minimum width can raise that on narrow pages.
             // PDF geometry stays native.
-            let render_width = if long_text {
+            let render_width = if long_text || banked {
                 (2000. * page.width / page.height).floor().clamp(64., 2000.) as u32
             } else {
                 1000
@@ -267,7 +309,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     fs::write(
         output.join("results.json"),
         serde_json::to_vec_pretty(&json!({
-        "matrix": if long_text { "long-text" } else { "original" },
+        "matrix": if bank_actual { "font-banks-actualtext-negative" } else if banked { "font-banks" } else if long_text { "long-text" } else { "original" },
         "pdfiumSha256": hash(&fs::read(dll)?), "cases": evidence, "refused": refused,
         "representation": if semantic { "outlines-with-type3-semantic-text" } else { "allocated-cid-with-whole-line-actualtext" },
         "scope": "Experimental native representation. Reader Unicode, cluster geometry, rendering and resource limits require separate checks before editor support."
