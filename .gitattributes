@@ -17,3 +17,7 @@ tests/fixtures/corpus/fonts/LICENSE_DEJAVU.txt -text -whitespace
 tests/fixtures/shaped-text/*.ttf binary
 tests/fixtures/shaped-text/*.txt -text -whitespace
 tests/fixtures/shaped-text/unicode/*.txt -text -whitespace
+tests/fixtures/shaped-text/exhaustion/*.ttf binary
+tests/fixtures/shaped-text/exhaustion/*.txt -text -whitespace
+# Upstream inventory and patched-source hashes are checked without EOL conversion.
+src-tauri/vendor/** -text -whitespace

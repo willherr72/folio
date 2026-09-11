@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Preserve supplementary Unicode characters as single selectable characters, including their combined geometry at every page rotation.
+- Add an experimental native complex-text PDF representation with exact Unicode across PDFium, MuPDF and pypdf for 32 sample/rotation cases, retained source fonts and bounded outline generation. Mixed-direction text remains refused; editor integration and portable cluster selection are still pending.
+- Reject interrupted shaping and excessive or malformed composite outlines using a documented, pinned HarfRust patch and reproducible hostile-font regressions.
+
 ## 0.9.0
 
 - Redesign More fonts with a searchable font list, exact-font preview and explicit Apply font action; match the print dialog in light/dark themes and smaller windows.

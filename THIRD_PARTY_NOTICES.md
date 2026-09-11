@@ -30,6 +30,13 @@ Optional native shaping dependencies, versions and licenses are documented in
 [the dependency decision](docs/shaped-text-dependencies.md); they require the
 nondefault `shaped-text` build feature.
 
+The experimental shaper uses a locally patched HarfRust 0.13.3 snapshot. Its
+complete upstream MIT license, archive/source checksums, exact patch, and
+maintenance notes are in [src-tauri/vendor/harfrust-0.13.3](src-tauri/vendor/harfrust-0.13.3/FOLIO_VENDOR.md).
+The local changes expose and enforce shaping work limits; they do not imply
+upstream endorsement. Hostile-font regression inputs are modified DejaVu
+subsets with the original license and generation provenance alongside them.
+
 ## Standard font metric data
 
 The WinAnsi advance tables in `src-tauri/src/persistence.rs` are adapted from

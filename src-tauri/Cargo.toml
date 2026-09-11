@@ -16,6 +16,9 @@ path = "src/main.rs"
 default = []
 shaped-text = ["dep:harfrust", "dep:unicode-bidi", "dep:unicode-script", "dep:unicode-segmentation"]
 
+[patch.crates-io]
+harfrust = { path = "vendor/harfrust-0.13.3" }
+
 [[test]]
 name = "shaping"
 required-features = ["shaped-text"]
@@ -30,6 +33,10 @@ required-features = ["shaped-text"]
 
 [[test]]
 name = "shaped_pdfium_api"
+required-features = ["shaped-text"]
+
+[[test]]
+name = "semantic_pdf"
 required-features = ["shaped-text"]
 
 [[example]]

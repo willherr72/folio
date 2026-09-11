@@ -1,0 +1,125 @@
+--- a/src/hb/buffer.rs
++++ b/src/hb/buffer.rs
+@@ -511,6 +511,8 @@
+     pub scratch_flags: hb_buffer_scratch_flags_t,
+     /// Maximum allowed len.
+     pub max_len: usize,
++    // Optional caller limit, also enforced against preallocated capacity.
++    pub glyph_limit: Option<usize>,
+     /// Maximum allowed operations.
+     pub max_ops: i32,
+ }
+@@ -535,6 +537,7 @@
+             scratch_flags: HB_BUFFER_SCRATCH_FLAG_DEFAULT,
+             not_found_variation_selector: None,
+             max_len: Self::MAX_LEN_DEFAULT,
++            glyph_limit: None,
+             max_ops: Self::MAX_OPS_DEFAULT,
+             direction: Direction::Invalid,
+             script: None,
+@@ -1522,7 +1525,10 @@
+     #[must_use]
+     #[inline(always)]
+     pub fn ensure(&mut self, size: usize) -> bool {
+-        if size <= self.info.len() {
++        if self.glyph_limit.is_some_and(|limit| size > limit) {
++            self.successful = false;
++            false
++        } else if size <= self.info.len() {
+             true
+         } else {
+             self.enlarge(size)
+@@ -1649,6 +1655,7 @@
+ 
+     // Called around shape()
+     pub(crate) fn leave(&mut self) {
++        self.glyph_limit = None;
+         self.max_len = hb_buffer_t::MAX_LEN_DEFAULT;
+         self.max_ops = hb_buffer_t::MAX_OPS_DEFAULT;
+         self.serial = 0;
+@@ -2110,6 +2117,12 @@
+ pub struct GlyphBuffer(pub(crate) hb_buffer_t);
+ 
+ impl GlyphBuffer {
++    /// Whether shaping completed without hitting the buffer, operation, or
++    /// lookup-recursion limits. Failed output must not be used as a layout.
++    pub fn is_successful(&self) -> bool {
++        self.0.successful
++    }
++
+     /// Returns the length of the data of the buffer.
+     ///
+     /// When called before shaping this is the number of unicode codepoints
+--- a/src/hb/face.rs
++++ b/src/hb/face.rs
+@@ -266,12 +266,29 @@
+     point_size: Option<f32>,
+     features: &'a [Feature],
+     font_funcs: Option<&'a mut (dyn FontFuncs + 'a)>,
++    max_glyphs: Option<usize>,
++    max_operations: Option<i32>,
+ }
+ 
+ impl<'a> ShapeOptions<'a> {
+     /// Creates a default set of shape options ready for configuration.
+     pub fn new() -> Self {
+         Self::default()
++    }
++
++    /// Restricts the glyph buffer length, including intermediate substitutions.
++    /// This can only lower the built-in limit. Failure is reported by
++    /// [`GlyphBuffer::is_successful`]. No limit is overridden by default.
++    pub fn max_glyphs(mut self, limit: Option<usize>) -> Self {
++        self.max_glyphs = limit;
++        self
++    }
++
++    /// Restricts HarfRust's instrumented operation budget. This can only lower
++    /// the built-in limit. Exhaustion is reported by [`GlyphBuffer::is_successful`].
++    pub fn max_operations(mut self, limit: Option<i32>) -> Self {
++        self.max_operations = limit;
++        self
+     }
+ 
+     /// Sets the plan to use for shaping.
+@@ -585,6 +602,19 @@
+         options: ShapeOptions<'_>,
+     ) {
+         buffer.enter();
++        buffer.glyph_limit = options.max_glyphs;
++        if let Some(limit) = options.max_glyphs {
++            buffer.max_len = buffer.max_len.min(limit);
++            if buffer.len > buffer.max_len {
++                buffer.successful = false;
++            }
++        }
++        if let Some(limit) = options.max_operations {
++            buffer.max_ops = buffer.max_ops.min(limit);
++        }
++        if buffer.max_ops <= 0 {
++            buffer.successful = false;
++        }
+ 
+         assert_eq!(
+             buffer.direction, plan.direction,
+@@ -599,7 +629,7 @@
+             plan.script.unwrap_or(script::UNKNOWN)
+         );
+ 
+-        if buffer.len > 0 {
++        if buffer.len > 0 && buffer.successful {
+             // Save the original direction, we use it later.
+             let target_direction = buffer.direction;
+             let scale = Scale::new(options.scale, self.units_per_em as i32);
+@@ -616,6 +646,11 @@
+             .shape_internal();
+         }
+ 
++        // Some lookup paths stop at zero without setting successful=false.
++        // Preserve exhaustion before leave() resets the operation counter.
++        if buffer.max_ops <= 0 {
++            buffer.successful = false;
++        }
+         buffer.leave();
+     }
+ 

@@ -1,6 +1,7 @@
 //! Reproducible native serialization evidence; not an editor export option.
 use folio_engine::{
-    create_shaped_pdf, ExportRequest, FontAsset, PagePlan, PdfEngine, TextDirection,
+    create_semantic_pdf, create_shaped_pdf, ExportRequest, FontAsset, PagePlan, PdfEngine,
+    TextDirection,
 };
 use serde_json::json;
 use sha2::{Digest, Sha256};
@@ -15,10 +16,21 @@ fn hash(bytes: &[u8]) -> String {
 
 fn main() -> Result<(), Box<dyn Error>> {
     let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..");
-    let output = std::env::args_os()
-        .nth(1)
+    let mut arguments = std::env::args_os().skip(1);
+    let first = arguments.next();
+    let semantic = first.as_deref() == Some(std::ffi::OsStr::new("--semantic"));
+    let output = (if semantic { arguments.next() } else { first })
         .map(PathBuf::from)
-        .unwrap_or_else(|| root.join("artifacts/shaped-text/native"));
+        .unwrap_or_else(|| {
+            root.join(if semantic {
+                "artifacts/shaped-text/semantic-native"
+            } else {
+                "artifacts/shaped-text/native"
+            })
+        });
+    if arguments.next().is_some() {
+        return Err("Usage: shaped-text-probe [--semantic] [new-output-directory]".into());
+    }
     // Evidence is immutable: use another directory for subsequent runs.
     if output.exists() {
         return Err("The evidence directory already exists; choose a new output path.".into());
@@ -83,13 +95,25 @@ fn main() -> Result<(), Box<dyn Error>> {
         ),
     ];
     let mut evidence = Vec::new();
+    let mut refused = Vec::new();
     for (name, fixture, text, ligatures) in cases {
         let font =
             FontAsset::parse_for_shaping(fs::read(root.join("tests/fixtures").join(fixture))?)?;
         for rotation in [0, 90, 180, 270] {
             let stem = format!("{name}-{rotation}");
-            let result =
-                create_shaped_pdf(&font, text, 24.0, TextDirection::Auto, ligatures, rotation)?;
+            let candidate = if semantic {
+                create_semantic_pdf(&font, text, 24.0, TextDirection::Auto, ligatures, rotation)
+            } else {
+                create_shaped_pdf(&font, text, 24.0, TextDirection::Auto, ligatures, rotation)
+            };
+            if semantic && name == "mixed-bidi" {
+                let error = candidate
+                    .err()
+                    .ok_or("Mixed-direction support changed; reassess this evidence gate.")?;
+                refused.push(json!({"case":name,"rotation":rotation,"source":text,"reason":error.to_string()}));
+                continue;
+            }
+            let result = candidate?;
             let path = output.join(format!("{stem}.pdf"));
             fs::write(&path, &result.bytes)?;
             fs::write(
@@ -139,8 +163,9 @@ fn main() -> Result<(), Box<dyn Error>> {
     fs::write(
         output.join("results.json"),
         serde_json::to_vec_pretty(&json!({
-            "pdfiumSha256": hash(&fs::read(dll)?), "cases": evidence,
-            "scope": "Experimental allocated CID / whole-line ActualText representation. PDFium extraction success does not imply portable copy or accurate character geometry."
+        "pdfiumSha256": hash(&fs::read(dll)?), "cases": evidence, "refused": refused,
+        "representation": if semantic { "outlines-with-type3-semantic-text" } else { "allocated-cid-with-whole-line-actualtext" },
+        "scope": "Experimental native representation. Reader Unicode, cluster geometry, rendering and resource limits require separate checks before editor support."
         }))?,
     )?;
     println!(

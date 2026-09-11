@@ -174,3 +174,10 @@ shaping and PDF serialization experiments for issue #14. These require the
 nondefault `shaped-text` Cargo feature and are not enabled in application builds.
 Reader copy and selection compatibility must pass before broader script support
 is offered in the editor.
+
+The latest [native semantic PDF verification](docs/semantic-native-verification.md)
+passes exact Unicode in three readers for 32 unmixed sample/rotation cases.
+Mixed-direction text remains refused, and MuPDF cluster selection still differs.
+[Shaping resource checks](docs/shaping-resource-limits.md) document the pinned
+completion-status patch and bounded outline traversal. These development results
+do not enable complex-script input in the released editor.

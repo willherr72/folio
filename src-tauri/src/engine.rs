@@ -659,12 +659,12 @@ impl WorkerRuntime {
         let geometry = page_geometry(&page)?;
         let text = page.text()?;
         let chars = text.chars();
-        let mut characters = Vec::with_capacity(chars.len() as usize);
+        let mut characters: Vec<PdfTextCharacter> = Vec::with_capacity(chars.len() as usize);
+        let mut pending_high_surrogate: Option<u32> = None;
         let mut last_position = Point { x: 0.0, y: 0.0 };
         for character in chars.iter() {
-            let value = character
-                .unicode_char()
-                .unwrap_or(char::REPLACEMENT_CHARACTER);
+            let unicode = character.unicode_value();
+            let value = char::from_u32(unicode).unwrap_or(char::REPLACEMENT_CHARACTER);
             // Generated whitespace can lack glyph bounds. Keep it in reading order
             // so browser range copying retains word and line separators.
             let bounds = if value.is_whitespace() {
@@ -697,6 +697,32 @@ impl WorkerRuntime {
                     (position, 0.0, 0.0)
                 }
             };
+            last_position = position;
+            // PDFium can expose a ToUnicode/ActualText supplementary scalar as
+            // two UTF-16 entries. Selection must carry the same Unicode as
+            // extract_text(), with one box covering both entries. An isolated
+            // surrogate retains the replacement character; never skip a unit.
+            if let Some(high) = pending_high_surrogate.take() {
+                if (0xdc00..=0xdfff).contains(&unicode) {
+                    let previous = characters
+                        .last_mut()
+                        .expect("a pending surrogate has an entry");
+                    previous.text =
+                        char::from_u32(0x10000 + ((high - 0xd800) << 10) + unicode - 0xdc00)
+                            .expect("a surrogate pair encodes a Unicode scalar")
+                            .to_string();
+                    let right = (previous.x + previous.width).max(position.x + width);
+                    let bottom = (previous.y + previous.height).max(position.y + height);
+                    previous.x = previous.x.min(position.x);
+                    previous.y = previous.y.min(position.y);
+                    previous.width = right - previous.x;
+                    previous.height = bottom - previous.y;
+                    continue;
+                }
+            }
+            if (0xd800..=0xdbff).contains(&unicode) {
+                pending_high_surrogate = Some(unicode);
+            }
             characters.push(PdfTextCharacter {
                 text: value.to_string(),
                 x: position.x,
@@ -704,7 +730,6 @@ impl WorkerRuntime {
                 width,
                 height,
             });
-            last_position = position;
         }
         Ok(PageText {
             intrinsic_rotation: geometry.rotation,

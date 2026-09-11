@@ -2,7 +2,11 @@ mod app;
 mod engine;
 mod fonts;
 #[cfg(feature = "shaped-text")]
+mod semantic_pdf;
+#[cfg(feature = "shaped-text")]
 mod shaped_pdf;
+#[cfg(feature = "shaped-text")]
+pub use semantic_pdf::create_semantic_pdf;
 #[cfg(feature = "shaped-text")]
 mod shaping;
 #[cfg(feature = "shaped-text")]

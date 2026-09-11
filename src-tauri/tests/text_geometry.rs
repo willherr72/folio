@@ -36,6 +36,46 @@ fn write_pdf(path: &Path, stream: &str, rotation: u16) {
 }
 
 #[test]
+fn page_text_combines_pdfium_surrogate_pairs_into_selectable_scalars() {
+    let temp = tempfile::tempdir().unwrap();
+    let engine = engine();
+    for rotation in [0, 90, 180, 270] {
+        let path = temp.path().join(format!("supplementary-{rotation}.pdf"));
+        write_pdf(&path,
+            "/Span << /ActualText <FEFF0041D835DC340042> >> BDC BT /F1 20 Tf 60 300 Td (ABC) Tj ET EMC",
+            rotation);
+        let source = engine.open_document(&path).unwrap();
+        assert_eq!(engine.extract_text(&source.id, 0).unwrap(), "A\u{1d434}B");
+        let text = engine.page_text(&source.id, 0).unwrap();
+        let copied: String = text
+            .characters
+            .iter()
+            .map(|character| character.text.as_str())
+            .collect();
+        assert_eq!(copied, "A\u{1d434}B", "rotation {rotation}");
+        assert_eq!(text.characters.len(), 3);
+        let scalar = &text.characters[1];
+        assert!(scalar.width > 0.0 && scalar.height > 0.0);
+        let advance = if rotation % 180 == 0 {
+            scalar.width
+        } else {
+            scalar.height
+        };
+        let first = &text.characters[0];
+        let first_advance = if rotation % 180 == 0 {
+            first.width
+        } else {
+            first.height
+        };
+        assert!(
+            (advance - 2.0 * first_advance).abs() < 0.01,
+            "The scalar must retain both UTF-16 entries' bounds."
+        );
+        engine.close_document(&source.id).unwrap();
+    }
+}
+
+#[test]
 fn page_text_preserves_spaces_and_generated_line_breaks() {
     let temp = tempfile::tempdir().unwrap();
     let path = temp.path().join("words.pdf");

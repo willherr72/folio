@@ -1,0 +1,25 @@
+{
+  "generator": "scripts/generate-shaping-exhaustion-fixtures.py",
+  "fontTools": "4.62.1",
+  "source": "../../corpus/fonts/DejaVuSerif.ttf",
+  "source_sha256": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+  "license": "LICENSE_DEJAVU.txt",
+  "files": {
+    "budget.ttf": {
+      "sha256": "219aa73d081f4b184839a43ac6b80984197a48d755f0f67c97083fb77ce7d3e4",
+      "bytes": 36532
+    },
+    "composite.ttf": {
+      "sha256": "285c5e66b720922a8af29626e1f1360fa422213dd236ee1c8dcab0873a1073ab",
+      "bytes": 4604
+    },
+    "expansion.ttf": {
+      "sha256": "08f8ffde38ce381b5aa030a457f23ba4ba9fef0d8df982b6850f79357708d8c4",
+      "bytes": 3832
+    },
+    "recursive.ttf": {
+      "sha256": "8a7c4822a6bcff043f605a1766d5cce13f58052cdaf4062f21187154949b43e2",
+      "bytes": 3736
+    }
+  }
+}

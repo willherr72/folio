@@ -16,6 +16,162 @@ fn glyph_count(text: &ShapedText) -> usize {
 }
 
 #[test]
+fn shaping_exhaustion_returns_an_explicit_error() {
+    let mut accepted = Vec::new();
+    for (name, text) in [
+        ("recursive", "A".into()),
+        ("budget", "A".repeat(16)),
+        ("expansion", "A".repeat(64)),
+    ] {
+        let bytes = fs::read(PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!(
+            "../tests/fixtures/shaped-text/exhaustion/{name}.ttf"
+        )))
+        .unwrap();
+        let font = FontAsset::parse_for_shaping(bytes).unwrap();
+        let start = std::time::Instant::now();
+        let result = shape_text(&font, &text, 18.0, TextDirection::Ltr, true);
+        eprintln!(
+            "{name}: {:?}, output={:?}",
+            start.elapsed(),
+            result.as_ref().map(|layout| layout
+                .runs
+                .iter()
+                .flat_map(|run| run.glyphs.iter().map(|glyph| glyph.glyph_id))
+                .collect::<Vec<_>>())
+        );
+        if result.is_ok() {
+            accepted.push(name);
+        } else {
+            assert!(result.unwrap_err().to_string().contains("budget"));
+        }
+    }
+    assert!(
+        accepted.is_empty(),
+        "resource exhaustion produced successful partial layouts: {accepted:?}"
+    );
+}
+
+#[test]
+fn repeated_composite_outline_is_rejected_before_bounds_traversal() {
+    let asset = font("shaped-text/exhaustion/composite.ttf");
+    let start = std::time::Instant::now();
+    let result = shape_text(&asset, "A", 18.0, TextDirection::Ltr, true);
+    eprintln!(
+        "composite: {:?}, accepted={}",
+        start.elapsed(),
+        result.is_ok()
+    );
+    assert!(result.unwrap_err().to_string().contains("outline"));
+}
+
+#[test]
+fn point_matched_components_are_refused_before_the_outline_parser() {
+    let asset = font("shaped-text/exhaustion/composite.ttf");
+    let mut bytes = asset.bytes.to_vec();
+    let face = asset.face().unwrap();
+    let glyf = face
+        .raw_face()
+        .table(ttf_parser::Tag::from_bytes(b"glyf"))
+        .unwrap();
+    let loca = ttf_parser::loca::Table::parse(
+        face.tables().maxp.number_of_glyphs,
+        face.tables().head.index_to_location_format,
+        face.raw_face()
+            .table(ttf_parser::Tag::from_bytes(b"loca"))
+            .unwrap(),
+    )
+    .unwrap();
+    let offset = glyf.as_ptr() as usize - asset.bytes.as_ptr() as usize
+        + loca
+            .glyph_range(face.glyph_index('A').unwrap())
+            .unwrap()
+            .start
+        + 10;
+    // One simple B component, but point-matched args. ttf-parser does not consume
+    // those args, so a preflight must refuse them instead of advancing past them.
+    bytes[offset..offset + 2].copy_from_slice(&0u16.to_be_bytes());
+    bytes[offset + 2..offset + 4].copy_from_slice(&face.glyph_index('B').unwrap().0.to_be_bytes());
+    let asset = FontAsset::parse_for_shaping(bytes).unwrap();
+    let error = shape_text(&asset, "A", 18.0, TextDirection::Ltr, true).unwrap_err();
+    assert!(error.to_string().contains("point-matched"), "{error}");
+}
+
+#[test]
+fn malformed_glyph_locations_cannot_silently_remove_ink() {
+    let original = font("shaped-text/exhaustion/expansion.ttf");
+    let face = original.face().unwrap();
+    let loca = face
+        .raw_face()
+        .table(ttf_parser::Tag::from_bytes(b"loca"))
+        .unwrap();
+    let start = loca.as_ptr() as usize - original.bytes.as_ptr() as usize;
+    let glyph = face.glyph_index('A').unwrap().0 as usize;
+    let mut bytes = original.bytes.to_vec();
+    match face.tables().head.index_to_location_format {
+        ttf_parser::head::IndexToLocationFormat::Short => {
+            bytes[start + glyph * 2..start + glyph * 2 + 2].copy_from_slice(&u16::MAX.to_be_bytes())
+        }
+        ttf_parser::head::IndexToLocationFormat::Long => {
+            bytes[start + glyph * 4..start + glyph * 4 + 4].copy_from_slice(&u32::MAX.to_be_bytes())
+        }
+    }
+    let asset = FontAsset::parse_for_shaping(bytes).unwrap();
+    let error = shape_text(&asset, "AB", 18.0, TextDirection::Ltr, false).unwrap_err();
+    assert!(error.to_string().contains("outline"), "{error}");
+}
+
+#[test]
+fn harfrust_limits_detect_transient_growth_and_defaults_preserve_normal_shaping() {
+    let asset = font("shaped-text/exhaustion/expansion.ttf");
+    let font_ref = harfrust::FontRef::new(&asset.bytes).unwrap();
+    let data = harfrust::ShaperData::new(&font_ref);
+    let shaper = data.shaper(&font_ref).build();
+    let buffer = |reserve| {
+        let mut buffer = harfrust::UnicodeBuffer::new();
+        buffer.reserve(reserve);
+        buffer.push_str("A");
+        buffer.guess_segment_properties();
+        buffer
+    };
+    let default = shaper.shape(buffer(0), harfrust::ShapeOptions::new());
+    assert!(default.is_successful());
+    assert_eq!(default.len(), 1, "expansion is followed by contraction");
+    for reserve in [0, 1024] {
+        let limited = shaper.shape(
+            buffer(reserve),
+            harfrust::ShapeOptions::new().max_glyphs(Some(32)),
+        );
+        assert!(
+            !limited.is_successful(),
+            "must enforce intermediate length even with reserved capacity"
+        );
+        assert!(limited.len() <= 32);
+    }
+    let no_ops = shaper.shape(
+        buffer(0),
+        harfrust::ShapeOptions::new().max_operations(Some(0)),
+    );
+    assert!(!no_ops.is_successful());
+    let no_glyphs = shaper.shape(buffer(0), harfrust::ShapeOptions::new().max_glyphs(Some(0)));
+    assert!(!no_glyphs.is_successful());
+    for (name, text) in [("recursive", "A".into()), ("budget", "A".repeat(16))] {
+        let font = font(&format!("shaped-text/exhaustion/{name}.ttf"));
+        let face = harfrust::FontRef::new(&font.bytes).unwrap();
+        let data = harfrust::ShaperData::new(&face);
+        let shaper = data.shaper(&face).build();
+        let mut buffer = harfrust::UnicodeBuffer::new();
+        buffer.push_str(&text);
+        buffer.guess_segment_properties();
+        let output = shaper.shape(buffer, harfrust::ShapeOptions::new());
+        assert!(
+            !output.is_successful(),
+            "upstream default exhaustion status must be visible: {name}"
+        );
+    }
+    eprintln!("HarfRust glyph storage: info={}B positions={}B, 16384 slots={}B (excludes allocator capacity and other font caches)",std::mem::size_of::<harfrust::GlyphInfo>(),std::mem::size_of::<harfrust::GlyphPosition>(),16384*(std::mem::size_of::<harfrust::GlyphInfo>()+std::mem::size_of::<harfrust::GlyphPosition>()));
+}
+
+#[test]
 fn latin_ligatures_are_explicit_and_logical_unicode_is_retained() {
     let font = font("corpus/fonts/DejaVuSerif.ttf");
     let on = shape_text(&font, "office", 18.0, TextDirection::Auto, true).unwrap();

@@ -1,0 +1,811 @@
+{
+  "versions": {
+    "pymupdf": "1.27.1",
+    "pypdf": "6.14.2"
+  },
+  "pdfium_sha256": "04100c03e41cac1f979e36e5e26fb860bcb5a7461f53830d3c098716624a27a9",
+  "representation": "outlines-with-type3-semantic-text",
+  "geometry_tolerance_points": 0.06,
+  "refused": [
+    {
+      "case": "mixed-bidi",
+      "reason": "invalid request: Mixed directional runs are not supported by the semantic PDF experiment.",
+      "rotation": 0,
+      "source": "ABC \u0633\u0644\u0627\u0645 123 DEF"
+    },
+    {
+      "case": "mixed-bidi",
+      "reason": "invalid request: Mixed directional runs are not supported by the semantic PDF experiment.",
+      "rotation": 90,
+      "source": "ABC \u0633\u0644\u0627\u0645 123 DEF"
+    },
+    {
+      "case": "mixed-bidi",
+      "reason": "invalid request: Mixed directional runs are not supported by the semantic PDF experiment.",
+      "rotation": 180,
+      "source": "ABC \u0633\u0644\u0627\u0645 123 DEF"
+    },
+    {
+      "case": "mixed-bidi",
+      "reason": "invalid request: Mixed directional runs are not supported by the semantic PDF experiment.",
+      "rotation": 270,
+      "source": "ABC \u0633\u0644\u0627\u0645 123 DEF"
+    }
+  ],
+  "matrix_complete": true,
+  "mixed_refusal_gate": true,
+  "invariants_pass": true,
+  "limitation": "PDFium text/geometry/raster hashes are engine-produced evidence; MuPDF/pypdf and PDF structure independently read here. MuPDF horizontal cluster geometry is recorded separately and is not claimed equivalent to PDFium.",
+  "scope": "Native fixture verification only; PDFium cluster geometry passes measured tolerance, MuPDF horizontal cluster geometry remains different. No production or complete-script-support claim.",
+  "raw_comparison": "Only final CR/LF reader terminators ignored for exactness; raw original/exported strings below are unmodified.",
+  "cases": [
+    {
+      "case": "ligatures-on",
+      "rotation": 0,
+      "source": "office",
+      "raw": {
+        "pdfium": "office",
+        "mupdf": "office\n",
+        "pypdf": "office"
+      },
+      "raw_resaved": {
+        "pdfium": "office",
+        "mupdf": "office\n",
+        "pypdf": "office"
+      },
+      "original_pdf_sha256": "f7e32d7b55f3c03b50df3102c404b26e8522c24bf1e013b833e7d7cb94a3f97b",
+      "resaved_pdf_sha256": "4bf4d2414373f5699303f80b7e8c0760bed75d7c555926e4388cd3053a8ac7ce",
+      "retained_font_sha256": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "mupdf_original_raster_sha256": "9a9d0c82f5080a18bbc9ff650f9408f1d86088b359fb941c936b048597b480ac",
+      "mupdf_resaved_raster_sha256": "9a9d0c82f5080a18bbc9ff650f9408f1d86088b359fb941c936b048597b480ac",
+      "pdfium_max_cluster_edge_error_points": 0.011810552734374369,
+      "mupdf_max_cluster_edge_error_points": 10.764007568359375,
+      "exact_all_readers": true,
+      "invariants_pass": true
+    },
+    {
+      "case": "ligatures-on",
+      "rotation": 90,
+      "source": "office",
+      "raw": {
+        "pdfium": "office",
+        "mupdf": "office\n",
+        "pypdf": "office"
+      },
+      "raw_resaved": {
+        "pdfium": "office",
+        "mupdf": "office\n",
+        "pypdf": "office"
+      },
+      "original_pdf_sha256": "96c01832606450db695c29740ac158c0eb71894d091829e4f585be6e815bd69e",
+      "resaved_pdf_sha256": "0a5422630eb045f3d654e41d8f107c381fe5aa9a2827d35ece85cd4ef34513d5",
+      "retained_font_sha256": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "mupdf_original_raster_sha256": "6e868de5535c830ab9ed1c7bec4bc9ac19a472b1e677e4c13ae0acb6824f17c8",
+      "mupdf_resaved_raster_sha256": "6e868de5535c830ab9ed1c7bec4bc9ac19a472b1e677e4c13ae0acb6824f17c8",
+      "pdfium_max_cluster_edge_error_points": 0.011810552734374369,
+      "mupdf_max_cluster_edge_error_points": 10.764007568359375,
+      "exact_all_readers": true,
+      "invariants_pass": true
+    },
+    {
+      "case": "ligatures-on",
+      "rotation": 180,
+      "source": "office",
+      "raw": {
+        "pdfium": "office",
+        "mupdf": "office\n",
+        "pypdf": "office"
+      },
+      "raw_resaved": {
+        "pdfium": "office",
+        "mupdf": "office\n",
+        "pypdf": "office"
+      },
+      "original_pdf_sha256": "3345174500821631c996aa2fb74a4800a8a7a2a21e07c15ba86a397d80fcb637",
+      "resaved_pdf_sha256": "2dc25b533f244773b9e760d524b2869f4bf229a7d434337f9bd7357636a89718",
+      "retained_font_sha256": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "mupdf_original_raster_sha256": "e611615e06f561d60e8a182e5acf902a75a1660f42abb1dc38f0254ad7caa07e",
+      "mupdf_resaved_raster_sha256": "e611615e06f561d60e8a182e5acf902a75a1660f42abb1dc38f0254ad7caa07e",
+      "pdfium_max_cluster_edge_error_points": 0.011810552734374369,
+      "mupdf_max_cluster_edge_error_points": 10.764007568359375,
+      "exact_all_readers": true,
+      "invariants_pass": true
+    },
+    {
+      "case": "ligatures-on",
+      "rotation": 270,
+      "source": "office",
+      "raw": {
+        "pdfium": "office",
+        "mupdf": "office\n",
+        "pypdf": "office"
+      },
+      "raw_resaved": {
+        "pdfium": "office",
+        "mupdf": "office\n",
+        "pypdf": "office"
+      },
+      "original_pdf_sha256": "42f1e5e18435094c2bc1ce31d4b46d1cdd2166b279ad9597c3cf7454b178e4bc",
+      "resaved_pdf_sha256": "9491922175d030ab947edcbf905b3d554f04205442ddcbf347fca338e2d8f123",
+      "retained_font_sha256": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "mupdf_original_raster_sha256": "196f2d6852399e947bc3deb1ca45ab7451b3b0385b585b05901b263d0e22d808",
+      "mupdf_resaved_raster_sha256": "196f2d6852399e947bc3deb1ca45ab7451b3b0385b585b05901b263d0e22d808",
+      "pdfium_max_cluster_edge_error_points": 0.011810552734374369,
+      "mupdf_max_cluster_edge_error_points": 10.764007568359375,
+      "exact_all_readers": true,
+      "invariants_pass": true
+    },
+    {
+      "case": "ligatures-off",
+      "rotation": 0,
+      "source": "office",
+      "raw": {
+        "pdfium": "office",
+        "mupdf": "office\n",
+        "pypdf": "office"
+      },
+      "raw_resaved": {
+        "pdfium": "office",
+        "mupdf": "office\n",
+        "pypdf": "office"
+      },
+      "original_pdf_sha256": "782da488f3c775ef63689b09edc7724636fcb7cf93d6aa2c25a3836e2b760574",
+      "resaved_pdf_sha256": "0a49e7b9dc9c042ff8462148122d4120fcfe05441683a54a64ef0db5dd6dcc7d",
+      "retained_font_sha256": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "mupdf_original_raster_sha256": "9028684b9ed5968b9f387f335b386ddbf8690afa03e62b8b1620d256248bbbdd",
+      "mupdf_resaved_raster_sha256": "9028684b9ed5968b9f387f335b386ddbf8690afa03e62b8b1620d256248bbbdd",
+      "pdfium_max_cluster_edge_error_points": 0.00562286376953125,
+      "mupdf_max_cluster_edge_error_points": 10.764007568359375,
+      "exact_all_readers": true,
+      "invariants_pass": true
+    },
+    {
+      "case": "ligatures-off",
+      "rotation": 90,
+      "source": "office",
+      "raw": {
+        "pdfium": "office",
+        "mupdf": "office\n",
+        "pypdf": "office"
+      },
+      "raw_resaved": {
+        "pdfium": "office",
+        "mupdf": "office\n",
+        "pypdf": "office"
+      },
+      "original_pdf_sha256": "6e95cdec6c95acdb3b5d97a0ce69e76980ea89446c90592ca9109f601b1c8f84",
+      "resaved_pdf_sha256": "8fc8ff75c054324603f930e46bd7853c63ceea38e46f566363eafd9ca0a66e78",
+      "retained_font_sha256": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "mupdf_original_raster_sha256": "d0b0b3c3ac7c9b913c9dec219a6f11749aa7f1a2c4c4669b093b4bbe477cac1f",
+      "mupdf_resaved_raster_sha256": "d0b0b3c3ac7c9b913c9dec219a6f11749aa7f1a2c4c4669b093b4bbe477cac1f",
+      "pdfium_max_cluster_edge_error_points": 0.00562286376953125,
+      "mupdf_max_cluster_edge_error_points": 10.764007568359375,
+      "exact_all_readers": true,
+      "invariants_pass": true
+    },
+    {
+      "case": "ligatures-off",
+      "rotation": 180,
+      "source": "office",
+      "raw": {
+        "pdfium": "office",
+        "mupdf": "office\n",
+        "pypdf": "office"
+      },
+      "raw_resaved": {
+        "pdfium": "office",
+        "mupdf": "office\n",
+        "pypdf": "office"
+      },
+      "original_pdf_sha256": "d343b88d58d1fc52dfb636683f5acfc1a4522880e9bd4ca78d026e5e39b73191",
+      "resaved_pdf_sha256": "0a4d2573af06d47b49434b43706e13c09e69ddc647cf297333a301e93aaf1bc7",
+      "retained_font_sha256": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "mupdf_original_raster_sha256": "0532df5902c114903f8ab3ace2a6bd2e4a1be0b62cae9a8afa85854f7930be78",
+      "mupdf_resaved_raster_sha256": "0532df5902c114903f8ab3ace2a6bd2e4a1be0b62cae9a8afa85854f7930be78",
+      "pdfium_max_cluster_edge_error_points": 0.00562286376953125,
+      "mupdf_max_cluster_edge_error_points": 10.764007568359375,
+      "exact_all_readers": true,
+      "invariants_pass": true
+    },
+    {
+      "case": "ligatures-off",
+      "rotation": 270,
+      "source": "office",
+      "raw": {
+        "pdfium": "office",
+        "mupdf": "office\n",
+        "pypdf": "office"
+      },
+      "raw_resaved": {
+        "pdfium": "office",
+        "mupdf": "office\n",
+        "pypdf": "office"
+      },
+      "original_pdf_sha256": "8ba64ce269c959c4c71a9e0e8a4cfab0987cf6a64d3065a84403c5b565f6487a",
+      "resaved_pdf_sha256": "9c0c4c8457dee21d2ad441527772a9b9a4cff72157b1fa5f2c2399d0331a936b",
+      "retained_font_sha256": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "mupdf_original_raster_sha256": "835ddff5743d6d2d28a4fc6a4ed2cad0093e9f1a4374d6fcc15ff92939badd9c",
+      "mupdf_resaved_raster_sha256": "835ddff5743d6d2d28a4fc6a4ed2cad0093e9f1a4374d6fcc15ff92939badd9c",
+      "pdfium_max_cluster_edge_error_points": 0.00562286376953125,
+      "mupdf_max_cluster_edge_error_points": 10.764007568359375,
+      "exact_all_readers": true,
+      "invariants_pass": true
+    },
+    {
+      "case": "composed",
+      "rotation": 0,
+      "source": "caf\u00e9",
+      "raw": {
+        "pdfium": "caf\u00e9",
+        "mupdf": "caf\u00e9\n",
+        "pypdf": "caf\u00e9"
+      },
+      "raw_resaved": {
+        "pdfium": "caf\u00e9",
+        "mupdf": "caf\u00e9\n",
+        "pypdf": "caf\u00e9"
+      },
+      "original_pdf_sha256": "e0e1b39dedf423c09193649429643bb8165c9bf759f74f81b9cd042547d7daf7",
+      "resaved_pdf_sha256": "5c6e343515aa8299c5c86a93a2c8ff3b6f9782a0c1da4e46e82fc30643c34f8c",
+      "retained_font_sha256": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "mupdf_original_raster_sha256": "bc0d73ee10e643cf1985c130cc50975cea4b120edb9ba03b5a6c41fc066c518b",
+      "mupdf_resaved_raster_sha256": "bc0d73ee10e643cf1985c130cc50975cea4b120edb9ba03b5a6c41fc066c518b",
+      "pdfium_max_cluster_edge_error_points": 0.00562286376953125,
+      "mupdf_max_cluster_edge_error_points": 10.785606384277344,
+      "exact_all_readers": true,
+      "invariants_pass": true
+    },
+    {
+      "case": "composed",
+      "rotation": 90,
+      "source": "caf\u00e9",
+      "raw": {
+        "pdfium": "caf\u00e9",
+        "mupdf": "caf\u00e9\n",
+        "pypdf": "caf\u00e9"
+      },
+      "raw_resaved": {
+        "pdfium": "caf\u00e9",
+        "mupdf": "caf\u00e9\n",
+        "pypdf": "caf\u00e9"
+      },
+      "original_pdf_sha256": "1d656864562fdfb5ef22a643ca31fb07acd18be62b1eda41480b4f953e38e5ba",
+      "resaved_pdf_sha256": "9737958cb5e7450242a34458f41308223c64c2b88582ce66a1f67d73e35b5d1d",
+      "retained_font_sha256": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "mupdf_original_raster_sha256": "61308f4594114764a6ab43f5573e4a38e33d6c9ec1f16ffbe6e038e08caa87b0",
+      "mupdf_resaved_raster_sha256": "61308f4594114764a6ab43f5573e4a38e33d6c9ec1f16ffbe6e038e08caa87b0",
+      "pdfium_max_cluster_edge_error_points": 0.00562286376953125,
+      "mupdf_max_cluster_edge_error_points": 10.785606384277344,
+      "exact_all_readers": true,
+      "invariants_pass": true
+    },
+    {
+      "case": "composed",
+      "rotation": 180,
+      "source": "caf\u00e9",
+      "raw": {
+        "pdfium": "caf\u00e9",
+        "mupdf": "caf\u00e9\n",
+        "pypdf": "caf\u00e9"
+      },
+      "raw_resaved": {
+        "pdfium": "caf\u00e9",
+        "mupdf": "caf\u00e9\n",
+        "pypdf": "caf\u00e9"
+      },
+      "original_pdf_sha256": "8d0d2f20495001de739337c99cbc4e2fecf7653da096a4cfb2b8a476a75babe3",
+      "resaved_pdf_sha256": "08f8529c3d82418fb326ed2f586689fc1aa7c8a13169fdd97b985582afe08cc3",
+      "retained_font_sha256": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "mupdf_original_raster_sha256": "f09d51aef9bfc7d8f7e035da78b1e735ff5d3d61cf6121ded207a1862dc8c572",
+      "mupdf_resaved_raster_sha256": "f09d51aef9bfc7d8f7e035da78b1e735ff5d3d61cf6121ded207a1862dc8c572",
+      "pdfium_max_cluster_edge_error_points": 0.00562286376953125,
+      "mupdf_max_cluster_edge_error_points": 10.785606384277344,
+      "exact_all_readers": true,
+      "invariants_pass": true
+    },
+    {
+      "case": "composed",
+      "rotation": 270,
+      "source": "caf\u00e9",
+      "raw": {
+        "pdfium": "caf\u00e9",
+        "mupdf": "caf\u00e9\n",
+        "pypdf": "caf\u00e9"
+      },
+      "raw_resaved": {
+        "pdfium": "caf\u00e9",
+        "mupdf": "caf\u00e9\n",
+        "pypdf": "caf\u00e9"
+      },
+      "original_pdf_sha256": "19bf511397bcbec6cd579692eacbe8d8e520bcdf6ae4a9f2e09cd15c3ced98e8",
+      "resaved_pdf_sha256": "e041cece5fcc7baf35a0da30422e966f85b612598925c700493dd56f41ffd5d9",
+      "retained_font_sha256": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "mupdf_original_raster_sha256": "05efaf2aeae9fcae488baa50a40c51ec3a76d8addafe1cf945f7890d612b3514",
+      "mupdf_resaved_raster_sha256": "05efaf2aeae9fcae488baa50a40c51ec3a76d8addafe1cf945f7890d612b3514",
+      "pdfium_max_cluster_edge_error_points": 0.00562286376953125,
+      "mupdf_max_cluster_edge_error_points": 10.785606384277344,
+      "exact_all_readers": true,
+      "invariants_pass": true
+    },
+    {
+      "case": "decomposed",
+      "rotation": 0,
+      "source": "cafe\u0301",
+      "raw": {
+        "pdfium": "cafe\u0301",
+        "mupdf": "cafe\u0301\n",
+        "pypdf": "cafe\u0301"
+      },
+      "raw_resaved": {
+        "pdfium": "cafe\u0301",
+        "mupdf": "cafe\u0301\n",
+        "pypdf": "cafe\u0301"
+      },
+      "original_pdf_sha256": "1553eb3b0eba5be3da86a3ad169f0e7b70e4d447e3cf5349916591651c8c848e",
+      "resaved_pdf_sha256": "967ba4504f5c671f85b7b51cf568e4bd15a79ceec0703ee2a3283a3f0f018e41",
+      "retained_font_sha256": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "mupdf_original_raster_sha256": "bc0d73ee10e643cf1985c130cc50975cea4b120edb9ba03b5a6c41fc066c518b",
+      "mupdf_resaved_raster_sha256": "bc0d73ee10e643cf1985c130cc50975cea4b120edb9ba03b5a6c41fc066c518b",
+      "pdfium_max_cluster_edge_error_points": 0.00562286376953125,
+      "mupdf_max_cluster_edge_error_points": 10.785606384277344,
+      "exact_all_readers": true,
+      "invariants_pass": true
+    },
+    {
+      "case": "decomposed",
+      "rotation": 90,
+      "source": "cafe\u0301",
+      "raw": {
+        "pdfium": "cafe\u0301",
+        "mupdf": "cafe\u0301\n",
+        "pypdf": "cafe\u0301"
+      },
+      "raw_resaved": {
+        "pdfium": "cafe\u0301",
+        "mupdf": "cafe\u0301\n",
+        "pypdf": "cafe\u0301"
+      },
+      "original_pdf_sha256": "24ae8f60e755cb89aa0b029bf81ad90f02fc5bdfe9f0cd61c3c817641c310116",
+      "resaved_pdf_sha256": "98a6aa3a4170e95beb3f8530da8302cdff7217572c350f25250a838fbef65d85",
+      "retained_font_sha256": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "mupdf_original_raster_sha256": "61308f4594114764a6ab43f5573e4a38e33d6c9ec1f16ffbe6e038e08caa87b0",
+      "mupdf_resaved_raster_sha256": "61308f4594114764a6ab43f5573e4a38e33d6c9ec1f16ffbe6e038e08caa87b0",
+      "pdfium_max_cluster_edge_error_points": 0.00562286376953125,
+      "mupdf_max_cluster_edge_error_points": 10.785606384277344,
+      "exact_all_readers": true,
+      "invariants_pass": true
+    },
+    {
+      "case": "decomposed",
+      "rotation": 180,
+      "source": "cafe\u0301",
+      "raw": {
+        "pdfium": "cafe\u0301",
+        "mupdf": "cafe\u0301\n",
+        "pypdf": "cafe\u0301"
+      },
+      "raw_resaved": {
+        "pdfium": "cafe\u0301",
+        "mupdf": "cafe\u0301\n",
+        "pypdf": "cafe\u0301"
+      },
+      "original_pdf_sha256": "6fec11ae2e5b0fbbdcbd145a234e5f2853debf9f470a5229675c71e252093b92",
+      "resaved_pdf_sha256": "d45cf58d21776cce86601c85aa95fb10f98f16f57a6a94796399ac2840c40699",
+      "retained_font_sha256": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "mupdf_original_raster_sha256": "f09d51aef9bfc7d8f7e035da78b1e735ff5d3d61cf6121ded207a1862dc8c572",
+      "mupdf_resaved_raster_sha256": "f09d51aef9bfc7d8f7e035da78b1e735ff5d3d61cf6121ded207a1862dc8c572",
+      "pdfium_max_cluster_edge_error_points": 0.00562286376953125,
+      "mupdf_max_cluster_edge_error_points": 10.785606384277344,
+      "exact_all_readers": true,
+      "invariants_pass": true
+    },
+    {
+      "case": "decomposed",
+      "rotation": 270,
+      "source": "cafe\u0301",
+      "raw": {
+        "pdfium": "cafe\u0301",
+        "mupdf": "cafe\u0301\n",
+        "pypdf": "cafe\u0301"
+      },
+      "raw_resaved": {
+        "pdfium": "cafe\u0301",
+        "mupdf": "cafe\u0301\n",
+        "pypdf": "cafe\u0301"
+      },
+      "original_pdf_sha256": "3ec940f7a6d3f5903ed4c8159ac4879ccff2ffa29e9308b106bc4eab376c576e",
+      "resaved_pdf_sha256": "85a7a16c36b084a8277ac560e63cea9e279cd0b25bc075cda4f6831a924d230d",
+      "retained_font_sha256": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "mupdf_original_raster_sha256": "05efaf2aeae9fcae488baa50a40c51ec3a76d8addafe1cf945f7890d612b3514",
+      "mupdf_resaved_raster_sha256": "05efaf2aeae9fcae488baa50a40c51ec3a76d8addafe1cf945f7890d612b3514",
+      "pdfium_max_cluster_edge_error_points": 0.00562286376953125,
+      "mupdf_max_cluster_edge_error_points": 10.785606384277344,
+      "exact_all_readers": true,
+      "invariants_pass": true
+    },
+    {
+      "case": "two-axis-marks",
+      "rotation": 0,
+      "source": "q\u0307\u0323",
+      "raw": {
+        "pdfium": "q\u0307\u0323",
+        "mupdf": "q\u0307\u0323\n",
+        "pypdf": "q\u0307\u0323"
+      },
+      "raw_resaved": {
+        "pdfium": "q\u0307\u0323",
+        "mupdf": "q\u0307\u0323\n",
+        "pypdf": "q\u0307\u0323"
+      },
+      "original_pdf_sha256": "03de0e5fabb4ea9c2a42b81b69069a1148e19c777802eadb0b474bac9f520364",
+      "resaved_pdf_sha256": "3c58082ed44c8a119437ec9fd45d85c2b663bad8c60aafeea0e92899c9d65946",
+      "retained_font_sha256": "3fdf69cabf06049ea70a00b5919340e2ce1e6d02b0cc3c4b44fb6801bd1e0d22",
+      "mupdf_original_raster_sha256": "8dd8664bd1fa1967c19ca9a723c3db792fd385dadc71aeecc753ff7047e80dca",
+      "mupdf_resaved_raster_sha256": "8dd8664bd1fa1967c19ca9a723c3db792fd385dadc71aeecc753ff7047e80dca",
+      "pdfium_max_cluster_edge_error_points": 0.01012420654296875,
+      "mupdf_max_cluster_edge_error_points": 10.15625,
+      "exact_all_readers": true,
+      "invariants_pass": true
+    },
+    {
+      "case": "two-axis-marks",
+      "rotation": 90,
+      "source": "q\u0307\u0323",
+      "raw": {
+        "pdfium": "q\u0307\u0323",
+        "mupdf": "q\u0307\u0323\n",
+        "pypdf": "q\u0307\u0323"
+      },
+      "raw_resaved": {
+        "pdfium": "q\u0307\u0323",
+        "mupdf": "q\u0307\u0323\n",
+        "pypdf": "q\u0307\u0323"
+      },
+      "original_pdf_sha256": "03439b61e8022cc5274e739ddd90b71e03795228257678ad08f0c745d63a84c0",
+      "resaved_pdf_sha256": "6e9f6921bc97ea8fb8f41205fbbfacbe908939ebc5c7503a6be05d6ecf3bfa15",
+      "retained_font_sha256": "3fdf69cabf06049ea70a00b5919340e2ce1e6d02b0cc3c4b44fb6801bd1e0d22",
+      "mupdf_original_raster_sha256": "eb2d634871eeefa1455d114e6a64c1b08375e51aa7f5fb0226c2b7b742241ff4",
+      "mupdf_resaved_raster_sha256": "eb2d634871eeefa1455d114e6a64c1b08375e51aa7f5fb0226c2b7b742241ff4",
+      "pdfium_max_cluster_edge_error_points": 0.01012420654296875,
+      "mupdf_max_cluster_edge_error_points": 10.15625,
+      "exact_all_readers": true,
+      "invariants_pass": true
+    },
+    {
+      "case": "two-axis-marks",
+      "rotation": 180,
+      "source": "q\u0307\u0323",
+      "raw": {
+        "pdfium": "q\u0307\u0323",
+        "mupdf": "q\u0307\u0323\n",
+        "pypdf": "q\u0307\u0323"
+      },
+      "raw_resaved": {
+        "pdfium": "q\u0307\u0323",
+        "mupdf": "q\u0307\u0323\n",
+        "pypdf": "q\u0307\u0323"
+      },
+      "original_pdf_sha256": "f88a309ec5fc032097943a5be8d72b0a0b46486c44aa1740ef794a5829fbec59",
+      "resaved_pdf_sha256": "36855cab0091e7665c97ff0520999dd8ade0facfdc103efa03b292b811f2a510",
+      "retained_font_sha256": "3fdf69cabf06049ea70a00b5919340e2ce1e6d02b0cc3c4b44fb6801bd1e0d22",
+      "mupdf_original_raster_sha256": "f94aa41e3dcfad266d385b14020d816b8184f39d5ed86990c16d1591b9cc369a",
+      "mupdf_resaved_raster_sha256": "f94aa41e3dcfad266d385b14020d816b8184f39d5ed86990c16d1591b9cc369a",
+      "pdfium_max_cluster_edge_error_points": 0.01012420654296875,
+      "mupdf_max_cluster_edge_error_points": 10.15625,
+      "exact_all_readers": true,
+      "invariants_pass": true
+    },
+    {
+      "case": "two-axis-marks",
+      "rotation": 270,
+      "source": "q\u0307\u0323",
+      "raw": {
+        "pdfium": "q\u0307\u0323",
+        "mupdf": "q\u0307\u0323\n",
+        "pypdf": "q\u0307\u0323"
+      },
+      "raw_resaved": {
+        "pdfium": "q\u0307\u0323",
+        "mupdf": "q\u0307\u0323\n",
+        "pypdf": "q\u0307\u0323"
+      },
+      "original_pdf_sha256": "5d3e3f5d264f3ac8f2b6200db6c095e31bfc6ffcf3af7026f21b7db8a2f4015c",
+      "resaved_pdf_sha256": "9c59fffefaf8a31e9a604585ce8c0574dee99daf3f45d7e335ae58c4dda6b124",
+      "retained_font_sha256": "3fdf69cabf06049ea70a00b5919340e2ce1e6d02b0cc3c4b44fb6801bd1e0d22",
+      "mupdf_original_raster_sha256": "c751a72ed4732142a8d108f234792918a58d8bdb4ef59672440dbb6fe2de2b69",
+      "mupdf_resaved_raster_sha256": "c751a72ed4732142a8d108f234792918a58d8bdb4ef59672440dbb6fe2de2b69",
+      "pdfium_max_cluster_edge_error_points": 0.01012420654296875,
+      "mupdf_max_cluster_edge_error_points": 10.15625,
+      "exact_all_readers": true,
+      "invariants_pass": true
+    },
+    {
+      "case": "arabic",
+      "rotation": 0,
+      "source": "\u0633\u0644\u0627\u0645",
+      "raw": {
+        "pdfium": "\u0633\u0644\u0627\u0645",
+        "mupdf": "\u0633\u0644\u0627\u0645\n",
+        "pypdf": "\u0633\u0644\u0627\u0645"
+      },
+      "raw_resaved": {
+        "pdfium": "\u0633\u0644\u0627\u0645",
+        "mupdf": "\u0633\u0644\u0627\u0645\n",
+        "pypdf": "\u0633\u0644\u0627\u0645"
+      },
+      "original_pdf_sha256": "4338fe936b185aef68b2f5d599fc2eb784fa76432d541f2fd6dafcc52e1cc731",
+      "resaved_pdf_sha256": "227d18bad44fc7f1aa75d7af94188cc3ad6d95f5f5f54ce5f18b9494b230f5d4",
+      "retained_font_sha256": "ceea25b464a656dc3b26849bab9356740401af62aedf1bfa8b7f0d9b75925b1b",
+      "mupdf_original_raster_sha256": "1951ef4d7a69a845787f9ba34ae41ae195c38ce6980536ff6f731a3d9609843b",
+      "mupdf_resaved_raster_sha256": "1951ef4d7a69a845787f9ba34ae41ae195c38ce6980536ff6f731a3d9609843b",
+      "pdfium_max_cluster_edge_error_points": 0.012001380371088999,
+      "mupdf_max_cluster_edge_error_points": 9.311999995,
+      "exact_all_readers": true,
+      "invariants_pass": true
+    },
+    {
+      "case": "arabic",
+      "rotation": 90,
+      "source": "\u0633\u0644\u0627\u0645",
+      "raw": {
+        "pdfium": "\u0633\u0644\u0627\u0645",
+        "mupdf": "\u0633\u0644\u0627\u0645\n",
+        "pypdf": "\u0633\u0644\u0627\u0645"
+      },
+      "raw_resaved": {
+        "pdfium": "\u0633\u0644\u0627\u0645",
+        "mupdf": "\u0633\u0644\u0627\u0645\n",
+        "pypdf": "\u0633\u0644\u0627\u0645"
+      },
+      "original_pdf_sha256": "2071d961decfcedbe24426e1494cc7cfb48dd57b8207cd3005cb374f26f11c5d",
+      "resaved_pdf_sha256": "2fff5f1a4c3a35a16a4cad251277b666621ae36ecef8fe785170ddf14fb6f6e0",
+      "retained_font_sha256": "ceea25b464a656dc3b26849bab9356740401af62aedf1bfa8b7f0d9b75925b1b",
+      "mupdf_original_raster_sha256": "f8fca8301d62877c5e8a51032f696bca533481a8c0c412597da2464b28a64197",
+      "mupdf_resaved_raster_sha256": "f8fca8301d62877c5e8a51032f696bca533481a8c0c412597da2464b28a64197",
+      "pdfium_max_cluster_edge_error_points": 0.012001380371088999,
+      "mupdf_max_cluster_edge_error_points": 9.311999995,
+      "exact_all_readers": true,
+      "invariants_pass": true
+    },
+    {
+      "case": "arabic",
+      "rotation": 180,
+      "source": "\u0633\u0644\u0627\u0645",
+      "raw": {
+        "pdfium": "\u0633\u0644\u0627\u0645",
+        "mupdf": "\u0633\u0644\u0627\u0645\n",
+        "pypdf": "\u0633\u0644\u0627\u0645"
+      },
+      "raw_resaved": {
+        "pdfium": "\u0633\u0644\u0627\u0645",
+        "mupdf": "\u0633\u0644\u0627\u0645\n",
+        "pypdf": "\u0633\u0644\u0627\u0645"
+      },
+      "original_pdf_sha256": "8b650c082f0a9cca8635c4188e3d80affa39489bebbb31538b79e7227f02854b",
+      "resaved_pdf_sha256": "c71bcf4437435566ca51b5282f928df5b5cdc186fe7460018ac674816ac1e008",
+      "retained_font_sha256": "ceea25b464a656dc3b26849bab9356740401af62aedf1bfa8b7f0d9b75925b1b",
+      "mupdf_original_raster_sha256": "7fe1808f7b976be4dce5b9eec8df1bc7c6100a074f9c19c700cf82aad27b808f",
+      "mupdf_resaved_raster_sha256": "7fe1808f7b976be4dce5b9eec8df1bc7c6100a074f9c19c700cf82aad27b808f",
+      "pdfium_max_cluster_edge_error_points": 0.012009009765620249,
+      "mupdf_max_cluster_edge_error_points": 9.311999995,
+      "exact_all_readers": true,
+      "invariants_pass": true
+    },
+    {
+      "case": "arabic",
+      "rotation": 270,
+      "source": "\u0633\u0644\u0627\u0645",
+      "raw": {
+        "pdfium": "\u0633\u0644\u0627\u0645",
+        "mupdf": "\u0633\u0644\u0627\u0645\n",
+        "pypdf": "\u0633\u0644\u0627\u0645"
+      },
+      "raw_resaved": {
+        "pdfium": "\u0633\u0644\u0627\u0645",
+        "mupdf": "\u0633\u0644\u0627\u0645\n",
+        "pypdf": "\u0633\u0644\u0627\u0645"
+      },
+      "original_pdf_sha256": "bd57349f7df1c1782cf7462f0b6f3aeaa439eb32d10289ea69e529babf487ebd",
+      "resaved_pdf_sha256": "cc36a9678a13d558932f49e4705bd909b734d5414650556316187caea50ba74b",
+      "retained_font_sha256": "ceea25b464a656dc3b26849bab9356740401af62aedf1bfa8b7f0d9b75925b1b",
+      "mupdf_original_raster_sha256": "31ee42439e4f6b4194515c1f3f594879b064b9a3fd0ee4b4514bbbcae345b1a6",
+      "mupdf_resaved_raster_sha256": "31ee42439e4f6b4194515c1f3f594879b064b9a3fd0ee4b4514bbbcae345b1a6",
+      "pdfium_max_cluster_edge_error_points": 0.012009009765620249,
+      "mupdf_max_cluster_edge_error_points": 9.311999995,
+      "exact_all_readers": true,
+      "invariants_pass": true
+    },
+    {
+      "case": "indic",
+      "rotation": 0,
+      "source": "\u0915\u093f\u0924\u093e\u092c",
+      "raw": {
+        "pdfium": "\u0915\u093f\u0924\u093e\u092c",
+        "mupdf": "\u0915\u093f\u0924\u093e\u092c\n",
+        "pypdf": "\u0915\u093f\u0924\u093e\u092c"
+      },
+      "raw_resaved": {
+        "pdfium": "\u0915\u093f\u0924\u093e\u092c",
+        "mupdf": "\u0915\u093f\u0924\u093e\u092c\n",
+        "pypdf": "\u0915\u093f\u0924\u093e\u092c"
+      },
+      "original_pdf_sha256": "7f9dad710ad59814ad1d74efc22af2efb03560b7ec003f09604888dc39b9f37f",
+      "resaved_pdf_sha256": "dc8d2f63da3c49a07996a2c4e8a2531a53e502d770fa2b09b7bc393679c5078b",
+      "retained_font_sha256": "385e78e6359a9d88a0f243d53b1209d7548361ba2194e2b9ec779bcaa7e8949d",
+      "mupdf_original_raster_sha256": "abf5391ca3f204b49ca5901745b40b1615d05d0d058b85cfe8bad7bc5032e139",
+      "mupdf_resaved_raster_sha256": "abf5391ca3f204b49ca5901745b40b1615d05d0d058b85cfe8bad7bc5032e139",
+      "pdfium_max_cluster_edge_error_points": 0.012001098632822504,
+      "mupdf_max_cluster_edge_error_points": 12.60000006103516,
+      "exact_all_readers": true,
+      "invariants_pass": true
+    },
+    {
+      "case": "indic",
+      "rotation": 90,
+      "source": "\u0915\u093f\u0924\u093e\u092c",
+      "raw": {
+        "pdfium": "\u0915\u093f\u0924\u093e\u092c",
+        "mupdf": "\u0915\u093f\u0924\u093e\u092c\n",
+        "pypdf": "\u0915\u093f\u0924\u093e\u092c"
+      },
+      "raw_resaved": {
+        "pdfium": "\u0915\u093f\u0924\u093e\u092c",
+        "mupdf": "\u0915\u093f\u0924\u093e\u092c\n",
+        "pypdf": "\u0915\u093f\u0924\u093e\u092c"
+      },
+      "original_pdf_sha256": "06600ecc52c58a8e4bc5990753afed8e192cffb4385a68ade63e708d42fa2726",
+      "resaved_pdf_sha256": "f97d9a45a3ebd4244fc13c7287869d78a02010350f1344a582e284ef8ccba38f",
+      "retained_font_sha256": "385e78e6359a9d88a0f243d53b1209d7548361ba2194e2b9ec779bcaa7e8949d",
+      "mupdf_original_raster_sha256": "79d2d14e99ea1ca71c79f13be7c477153efb65550ecf239995a914daa87dd460",
+      "mupdf_resaved_raster_sha256": "79d2d14e99ea1ca71c79f13be7c477153efb65550ecf239995a914daa87dd460",
+      "pdfium_max_cluster_edge_error_points": 0.012001098632822504,
+      "mupdf_max_cluster_edge_error_points": 12.60000006103516,
+      "exact_all_readers": true,
+      "invariants_pass": true
+    },
+    {
+      "case": "indic",
+      "rotation": 180,
+      "source": "\u0915\u093f\u0924\u093e\u092c",
+      "raw": {
+        "pdfium": "\u0915\u093f\u0924\u093e\u092c",
+        "mupdf": "\u0915\u093f\u0924\u093e\u092c\n",
+        "pypdf": "\u0915\u093f\u0924\u093e\u092c"
+      },
+      "raw_resaved": {
+        "pdfium": "\u0915\u093f\u0924\u093e\u092c",
+        "mupdf": "\u0915\u093f\u0924\u093e\u092c\n",
+        "pypdf": "\u0915\u093f\u0924\u093e\u092c"
+      },
+      "original_pdf_sha256": "a2c478a8447e0d612bdd128b92e3468837710620dbede3e73861ec2d867c0382",
+      "resaved_pdf_sha256": "a3b362ce07cf48d30ff55e9fc52584f0ab3e53f72690615c09d0be5ac0702423",
+      "retained_font_sha256": "385e78e6359a9d88a0f243d53b1209d7548361ba2194e2b9ec779bcaa7e8949d",
+      "mupdf_original_raster_sha256": "6ae5c8bc55eff4d8d3e27c6316efe7669491e3c3848bd0ca123fb00d42454a1e",
+      "mupdf_resaved_raster_sha256": "6ae5c8bc55eff4d8d3e27c6316efe7669491e3c3848bd0ca123fb00d42454a1e",
+      "pdfium_max_cluster_edge_error_points": 0.01200708007812068,
+      "mupdf_max_cluster_edge_error_points": 12.60000006103516,
+      "exact_all_readers": true,
+      "invariants_pass": true
+    },
+    {
+      "case": "indic",
+      "rotation": 270,
+      "source": "\u0915\u093f\u0924\u093e\u092c",
+      "raw": {
+        "pdfium": "\u0915\u093f\u0924\u093e\u092c",
+        "mupdf": "\u0915\u093f\u0924\u093e\u092c\n",
+        "pypdf": "\u0915\u093f\u0924\u093e\u092c"
+      },
+      "raw_resaved": {
+        "pdfium": "\u0915\u093f\u0924\u093e\u092c",
+        "mupdf": "\u0915\u093f\u0924\u093e\u092c\n",
+        "pypdf": "\u0915\u093f\u0924\u093e\u092c"
+      },
+      "original_pdf_sha256": "e697020d24af9476143302a9d9521d4b5ba77a1a9640392a6d0557a0e4960ec3",
+      "resaved_pdf_sha256": "92696f10b9a2fa5f38a34c9e7f84bfd6e3682fd59ed3cf8ffa708e92fbe891bd",
+      "retained_font_sha256": "385e78e6359a9d88a0f243d53b1209d7548361ba2194e2b9ec779bcaa7e8949d",
+      "mupdf_original_raster_sha256": "b54b50b2c674e3703436eacf174775eb0690d84638ebef743a481088485fae21",
+      "mupdf_resaved_raster_sha256": "b54b50b2c674e3703436eacf174775eb0690d84638ebef743a481088485fae21",
+      "pdfium_max_cluster_edge_error_points": 0.01200708007812068,
+      "mupdf_max_cluster_edge_error_points": 12.60000006103516,
+      "exact_all_readers": true,
+      "invariants_pass": true
+    },
+    {
+      "case": "supplementary",
+      "rotation": 0,
+      "source": "A \ud835\udc34 B",
+      "raw": {
+        "pdfium": "A \ud835\udc34 B",
+        "mupdf": "A \ud835\udc34 B\n",
+        "pypdf": "A \ud835\udc34 B"
+      },
+      "raw_resaved": {
+        "pdfium": "A \ud835\udc34 B",
+        "mupdf": "A \ud835\udc34 B\n",
+        "pypdf": "A \ud835\udc34 B"
+      },
+      "original_pdf_sha256": "c783c931ade61e64c78da93a8d5caa8e802f70accde618f6f34ccbbf9de72492",
+      "resaved_pdf_sha256": "e268eae7b8c7e599078bf536e56fe816df592c43ea3047d99452fe6ef3a4e2dd",
+      "retained_font_sha256": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "mupdf_original_raster_sha256": "7340977c97edf535cc67aa64a9e78e17667d57a4d4aed380d4e2e29a7e9b6d55",
+      "mupdf_resaved_raster_sha256": "7340977c97edf535cc67aa64a9e78e17667d57a4d4aed380d4e2e29a7e9b6d55",
+      "pdfium_max_cluster_edge_error_points": 0.008156072753905619,
+      "mupdf_max_cluster_edge_error_points": 4.8000030517578125,
+      "exact_all_readers": true,
+      "invariants_pass": true
+    },
+    {
+      "case": "supplementary",
+      "rotation": 90,
+      "source": "A \ud835\udc34 B",
+      "raw": {
+        "pdfium": "A \ud835\udc34 B",
+        "mupdf": "A \ud835\udc34 B\n",
+        "pypdf": "A \ud835\udc34 B"
+      },
+      "raw_resaved": {
+        "pdfium": "A \ud835\udc34 B",
+        "mupdf": "A \ud835\udc34 B\n",
+        "pypdf": "A \ud835\udc34 B"
+      },
+      "original_pdf_sha256": "281fdba88d56364d883d99d62c2289bdffa6e0b07ac58165345e5e545b21da6a",
+      "resaved_pdf_sha256": "fee42c2a8e94001be26882e25a3de239d49819de9a6eeee99cc1aa1a85f5e4b5",
+      "retained_font_sha256": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "mupdf_original_raster_sha256": "35602429a7a9dcd666ac282970def537becc22ff50a82687136fcb1cd743c7aa",
+      "mupdf_resaved_raster_sha256": "35602429a7a9dcd666ac282970def537becc22ff50a82687136fcb1cd743c7aa",
+      "pdfium_max_cluster_edge_error_points": 0.008156072753905619,
+      "mupdf_max_cluster_edge_error_points": 4.8000030517578125,
+      "exact_all_readers": true,
+      "invariants_pass": true
+    },
+    {
+      "case": "supplementary",
+      "rotation": 180,
+      "source": "A \ud835\udc34 B",
+      "raw": {
+        "pdfium": "A \ud835\udc34 B",
+        "mupdf": "A \ud835\udc34 B\n",
+        "pypdf": "A \ud835\udc34 B"
+      },
+      "raw_resaved": {
+        "pdfium": "A \ud835\udc34 B",
+        "mupdf": "A \ud835\udc34 B\n",
+        "pypdf": "A \ud835\udc34 B"
+      },
+      "original_pdf_sha256": "1c47ae793388fed0d51260e1b4a3fd5622684cdc5704510d13fbe4e9e9af0ada",
+      "resaved_pdf_sha256": "7fe9cec19121c53c312e12b3c55c999a43532c4211a1d4115f2354147e0dc643",
+      "retained_font_sha256": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "mupdf_original_raster_sha256": "101b80f248c5f7829405f1841db7f2be12f3a5b38ef83dd5d5130280a5369421",
+      "mupdf_resaved_raster_sha256": "101b80f248c5f7829405f1841db7f2be12f3a5b38ef83dd5d5130280a5369421",
+      "pdfium_max_cluster_edge_error_points": 0.008148443359374369,
+      "mupdf_max_cluster_edge_error_points": 4.8000030517578125,
+      "exact_all_readers": true,
+      "invariants_pass": true
+    },
+    {
+      "case": "supplementary",
+      "rotation": 270,
+      "source": "A \ud835\udc34 B",
+      "raw": {
+        "pdfium": "A \ud835\udc34 B",
+        "mupdf": "A \ud835\udc34 B\n",
+        "pypdf": "A \ud835\udc34 B"
+      },
+      "raw_resaved": {
+        "pdfium": "A \ud835\udc34 B",
+        "mupdf": "A \ud835\udc34 B\n",
+        "pypdf": "A \ud835\udc34 B"
+      },
+      "original_pdf_sha256": "c86b28ab4578ab4d9780cb8ed6cc1ff27af2c3060ce9c9dc60baa865d4a0975f",
+      "resaved_pdf_sha256": "2f92243922417ae4b10e2df910e3a4b5764d5f48e170cec69bbe439f7108aef5",
+      "retained_font_sha256": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "mupdf_original_raster_sha256": "0f5ba4d97b9b480e9f3506391d74c9cdbeaddc68933f9a9c0ff375cecf1d9a94",
+      "mupdf_resaved_raster_sha256": "0f5ba4d97b9b480e9f3506391d74c9cdbeaddc68933f9a9c0ff375cecf1d9a94",
+      "pdfium_max_cluster_edge_error_points": 0.008148443359374369,
+      "mupdf_max_cluster_edge_error_points": 4.8000030517578125,
+      "exact_all_readers": true,
+      "invariants_pass": true
+    }
+  ]
+}
