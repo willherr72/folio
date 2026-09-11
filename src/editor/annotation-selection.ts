@@ -41,7 +41,12 @@ export function selectedHighlightRects(layer: HTMLElement, characters: PdfTextCh
       if (!node || !range.intersectsNode(node)) return;
       const start = range.startContainer === node ? range.startOffset : 0;
       const end = range.endContainer === node ? range.endOffset : (node.textContent?.length ?? 0);
-      if (end > start) selected.add(Number(span.dataset.pdfCharacter));
+      if (end > start) {
+        const first = Number(span.dataset.pdfCharacter);
+        const after = Number(span.dataset.pdfCharacterEnd ?? first + 1);
+        // A range inside a ligature selects its full shared source rectangle.
+        for (let character = first; character < after; character++) selected.add(character);
+      }
     });
   }
   return mergeHighlightCharacters(characters.filter((_, index) => selected.has(index)), rotation);

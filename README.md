@@ -144,7 +144,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1
 Browser checks: install Playwright Chromium, start the Vite server, then run
 **scripts/smoke-ui.mjs** and **scripts/smoke-upgrades.mjs** with Node.
 Explicit browser demo mode uses generated pages and exports a JSON edit plan.
-Real PDF editing runs in the desktop app.
+Real PDF editing runs in the desktop app. The [v0.9.1 reader-selection checks](docs/verification-v0.9.1.md)
+cover shared character boxes, exact copying and highlights, and record the
+packaged desktop automation limitation.
 
 The native smoke opens a real PDF through Windows dialogs, edits it, draws,
 drags thumbnails, checks both close-confirmation decisions, saves and reopens.

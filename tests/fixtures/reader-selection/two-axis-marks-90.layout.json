@@ -1,0 +1,102 @@
+{
+  "version": 1,
+  "fontId": "3fdf69cabf06049ea70a00b5919340e2ce1e6d02b0cc3c4b44fb6801bd1e0d22",
+  "text": "q̣̇",
+  "fontSize": 24.0,
+  "direction": "ltr",
+  "ligatures": true,
+  "width": 15.234375,
+  "bounds": {
+    "xMin": 1.3242188,
+    "yMin": -9.421875,
+    "xMax": 13.0546875,
+    "yMax": 18.234375
+  },
+  "runs": [
+    {
+      "direction": "ltr",
+      "script": "Latn",
+      "range": {
+        "utf8Start": 0,
+        "utf8End": 5,
+        "utf16Start": 0,
+        "utf16End": 3
+      },
+      "glyphs": [
+        {
+          "glyphId": 84,
+          "x": 0.0,
+          "y": 0.0,
+          "xAdvance": 15.234375,
+          "yAdvance": 0.0,
+          "xOffset": 0.0,
+          "yOffset": 0.0,
+          "cluster": {
+            "utf8Start": 0,
+            "utf8End": 5,
+            "utf16Start": 0,
+            "utf16End": 3
+          },
+          "bounds": {
+            "xMin": 1.3242188,
+            "yMin": -4.9921875,
+            "xMax": 13.0546875,
+            "yMax": 13.441406
+          }
+        },
+        {
+          "glyphId": 724,
+          "x": 13.59375,
+          "y": -5.0273438,
+          "xAdvance": 0.0,
+          "yAdvance": 0.0,
+          "xOffset": -1.640625,
+          "yOffset": -5.0273438,
+          "cluster": {
+            "utf8Start": 0,
+            "utf8End": 5,
+            "utf16Start": 0,
+            "utf16End": 3
+          },
+          "bounds": {
+            "xMin": 6.4921875,
+            "yMin": -9.421875,
+            "xMax": 8.6484375,
+            "yMax": -6.6796875
+          }
+        },
+        {
+          "glyphId": 696,
+          "x": 13.300781,
+          "y": 0.0,
+          "xAdvance": 0.0,
+          "yAdvance": 0.0,
+          "xOffset": -1.9335938,
+          "yOffset": 0.0,
+          "cluster": {
+            "utf8Start": 0,
+            "utf8End": 5,
+            "utf16Start": 0,
+            "utf16End": 3
+          },
+          "bounds": {
+            "xMin": 6.1992188,
+            "yMin": 13.441406,
+            "xMax": 8.355469,
+            "yMax": 18.234375
+          }
+        }
+      ]
+    }
+  ],
+  "graphemeBoundaries": [
+    {
+      "utf8": 0,
+      "utf16": 0
+    },
+    {
+      "utf8": 5,
+      "utf16": 3
+    }
+  ]
+}

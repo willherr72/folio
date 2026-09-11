@@ -1,0 +1,164 @@
+{
+  "version": 1,
+  "fontId": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+  "text": "office",
+  "fontSize": 24.0,
+  "direction": "ltr",
+  "ligatures": true,
+  "width": 66.82031,
+  "bounds": {
+    "xMin": 1.1953125,
+    "yMin": -0.33984375,
+    "xMax": 65.625,
+    "yMax": 18.234375
+  },
+  "runs": [
+    {
+      "direction": "ltr",
+      "script": "Latn",
+      "range": {
+        "utf8Start": 0,
+        "utf8End": 6,
+        "utf16Start": 0,
+        "utf16End": 6
+      },
+      "glyphs": [
+        {
+          "glyphId": 82,
+          "x": 0.0,
+          "y": 0.0,
+          "xAdvance": 14.449219,
+          "yAdvance": 0.0,
+          "xOffset": 0.0,
+          "yOffset": 0.0,
+          "cluster": {
+            "utf8Start": 0,
+            "utf8End": 1,
+            "utf16Start": 0,
+            "utf16End": 1
+          },
+          "bounds": {
+            "xMin": 1.1953125,
+            "yMin": -0.33984375,
+            "xMax": 13.2421875,
+            "yMax": 12.796875
+          }
+        },
+        {
+          "glyphId": 3311,
+          "x": 14.449219,
+          "y": 0.0,
+          "xAdvance": 17.050781,
+          "yAdvance": 0.0,
+          "xOffset": 0.0,
+          "yOffset": 0.0,
+          "cluster": {
+            "utf8Start": 1,
+            "utf8End": 3,
+            "utf16Start": 1,
+            "utf16End": 3
+          },
+          "bounds": {
+            "xMin": 15.316406,
+            "yMin": -0.01171875,
+            "xMax": 32.941406,
+            "yMax": 18.234375
+          }
+        },
+        {
+          "glyphId": 76,
+          "x": 31.5,
+          "y": 0.0,
+          "xAdvance": 7.6757812,
+          "yAdvance": 0.0,
+          "xOffset": 0.0,
+          "yOffset": 0.0,
+          "cluster": {
+            "utf8Start": 3,
+            "utf8End": 4,
+            "utf16Start": 3,
+            "utf16End": 4
+          },
+          "bounds": {
+            "xMin": 32.367188,
+            "yMin": 0.0,
+            "xMax": 38.625,
+            "yMax": 17.660156
+          }
+        },
+        {
+          "glyphId": 70,
+          "x": 39.17578,
+          "y": 0.0,
+          "xAdvance": 13.441406,
+          "yAdvance": 0.0,
+          "xOffset": 0.0,
+          "yOffset": 0.0,
+          "cluster": {
+            "utf8Start": 4,
+            "utf8End": 5,
+            "utf16Start": 4,
+            "utf16End": 5
+          },
+          "bounds": {
+            "xMin": 40.371094,
+            "yMin": -0.33984375,
+            "xMax": 51.515625,
+            "yMax": 12.796875
+          }
+        },
+        {
+          "glyphId": 72,
+          "x": 52.617188,
+          "y": 0.0,
+          "xAdvance": 14.203125,
+          "yAdvance": 0.0,
+          "xOffset": 0.0,
+          "yOffset": 0.0,
+          "cluster": {
+            "utf8Start": 5,
+            "utf8End": 6,
+            "utf16Start": 5,
+            "utf16End": 6
+          },
+          "bounds": {
+            "xMin": 53.8125,
+            "yMin": -0.33984375,
+            "xMax": 65.625,
+            "yMax": 12.796875
+          }
+        }
+      ]
+    }
+  ],
+  "graphemeBoundaries": [
+    {
+      "utf8": 0,
+      "utf16": 0
+    },
+    {
+      "utf8": 1,
+      "utf16": 1
+    },
+    {
+      "utf8": 2,
+      "utf16": 2
+    },
+    {
+      "utf8": 3,
+      "utf16": 3
+    },
+    {
+      "utf8": 4,
+      "utf16": 4
+    },
+    {
+      "utf8": 5,
+      "utf16": 5
+    },
+    {
+      "utf8": 6,
+      "utf16": 6
+    }
+  ]
+}

@@ -1,0 +1,615 @@
+{
+  "source": "artifacts/shaped-text/semantic-native-reused-codes",
+  "resultsSha256": "8eadd2acf34ab31a48c31add08b07ee193c90b689898286c7558630ff00d947c",
+  "pdfiumSha256": "04100c03e41cac1f979e36e5e26fb860bcb5a7461f53830d3c098716624a27a9",
+  "cases": [
+    {
+      "case": "ligatures-on",
+      "rotation": 0,
+      "text": "office",
+      "pageText": {
+        "characters": [
+          {
+            "height": 13.127998352050781,
+            "text": "o",
+            "width": 14.447998046875,
+            "x": 48,
+            "y": 98.86815643310547
+          },
+          {
+            "height": 18.23999786376953,
+            "text": "f",
+            "width": 18.503997802734375,
+            "x": 62.44921875,
+            "y": 93.42015838623047
+          },
+          {
+            "height": 18.23999786376953,
+            "text": "f",
+            "width": 18.479999542236328,
+            "x": 62.45460891723633,
+            "y": 93.42015838623047
+          },
+          {
+            "height": 17.66400146484375,
+            "text": "i",
+            "width": 7.680000305175781,
+            "x": 79.5,
+            "y": 93.99615478515625
+          },
+          {
+            "height": 13.127998352050781,
+            "text": "c",
+            "width": 13.44000244140625,
+            "x": 87.17578125,
+            "y": 98.86815643310547
+          },
+          {
+            "height": 13.127998352050781,
+            "text": "e",
+            "width": 14.208000183105469,
+            "x": 100.6171875,
+            "y": 98.86815643310547
+          }
+        ],
+        "intrinsicRotation": 0
+      },
+      "width": 300,
+      "height": 160,
+      "png": "ligatures-on-0.png",
+      "layout": "ligatures-on-0.layout.json",
+      "sourcePdfSha256": "f7e32d7b55f3c03b50df3102c404b26e8522c24bf1e013b833e7d7cb94a3f97b",
+      "pngSha256": "4cf45d5c4d18f26de23ea2a1780724215a536d5b3073f3c1cd6b3df64cbadf8b",
+      "layoutSha256": "094f0575ccf24cdffc1cf8ab8797da175fb69f1a92d8aa9edc0b3f07cfa6cef1",
+      "fontSha256": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa"
+    },
+    {
+      "case": "ligatures-on",
+      "rotation": 90,
+      "text": "office",
+      "pageText": {
+        "characters": [
+          {
+            "height": 14.447998046875,
+            "text": "o",
+            "width": 13.127998352050781,
+            "x": 48.00384521484375,
+            "y": 48
+          },
+          {
+            "height": 18.503997802734375,
+            "text": "f",
+            "width": 18.23999786376953,
+            "x": 48.33984375,
+            "y": 62.44921875
+          },
+          {
+            "height": 18.479999542236328,
+            "text": "f",
+            "width": 18.23999786376953,
+            "x": 48.33984375,
+            "y": 62.45460891723633
+          },
+          {
+            "height": 7.680000305175781,
+            "text": "i",
+            "width": 17.66400146484375,
+            "x": 48.33984375,
+            "y": 79.5
+          },
+          {
+            "height": 13.44000244140625,
+            "text": "c",
+            "width": 13.127998352050781,
+            "x": 48.00384521484375,
+            "y": 87.17578125
+          },
+          {
+            "height": 14.208000183105469,
+            "text": "e",
+            "width": 13.127998352050781,
+            "x": 48.00384521484375,
+            "y": 100.6171875
+          }
+        ],
+        "intrinsicRotation": 90
+      },
+      "width": 160,
+      "height": 300,
+      "png": "ligatures-on-90.png",
+      "layout": "ligatures-on-90.layout.json",
+      "sourcePdfSha256": "96c01832606450db695c29740ac158c0eb71894d091829e4f585be6e815bd69e",
+      "pngSha256": "0c55ea786705049e50baff195e5905d7f0185c8bf1b1ea5e1885013c197e87b3",
+      "layoutSha256": "094f0575ccf24cdffc1cf8ab8797da175fb69f1a92d8aa9edc0b3f07cfa6cef1",
+      "fontSha256": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa"
+    },
+    {
+      "case": "ligatures-on",
+      "rotation": 180,
+      "text": "office",
+      "pageText": {
+        "characters": [
+          {
+            "height": 13.127998352050781,
+            "text": "o",
+            "width": 14.447998046875,
+            "x": 237.552001953125,
+            "y": 48.00384521484375
+          },
+          {
+            "height": 18.23999786376953,
+            "text": "f",
+            "width": 18.503997802734375,
+            "x": 219.04678344726562,
+            "y": 48.33984375
+          },
+          {
+            "height": 18.23999786376953,
+            "text": "f",
+            "width": 18.479995727539062,
+            "x": 219.06539916992188,
+            "y": 48.33984375
+          },
+          {
+            "height": 17.66400146484375,
+            "text": "i",
+            "width": 7.67999267578125,
+            "x": 212.82000732421875,
+            "y": 48.33984375
+          },
+          {
+            "height": 13.127998352050781,
+            "text": "c",
+            "width": 13.44000244140625,
+            "x": 199.38421630859375,
+            "y": 48.00384521484375
+          },
+          {
+            "height": 13.127998352050781,
+            "text": "e",
+            "width": 14.2080078125,
+            "x": 185.1748046875,
+            "y": 48.00384521484375
+          }
+        ],
+        "intrinsicRotation": 180
+      },
+      "width": 300,
+      "height": 160,
+      "png": "ligatures-on-180.png",
+      "layout": "ligatures-on-180.layout.json",
+      "sourcePdfSha256": "3345174500821631c996aa2fb74a4800a8a7a2a21e07c15ba86a397d80fcb637",
+      "pngSha256": "31be693b0aa77eaff1f4369b7339b80e69bc0cd92b9cccbfa270415cc87c22fa",
+      "layoutSha256": "094f0575ccf24cdffc1cf8ab8797da175fb69f1a92d8aa9edc0b3f07cfa6cef1",
+      "fontSha256": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa"
+    },
+    {
+      "case": "ligatures-on",
+      "rotation": 270,
+      "text": "office",
+      "pageText": {
+        "characters": [
+          {
+            "height": 14.447998046875,
+            "text": "o",
+            "width": 13.127998352050781,
+            "x": 98.86815643310547,
+            "y": 237.552001953125
+          },
+          {
+            "height": 18.503997802734375,
+            "text": "f",
+            "width": 18.23999786376953,
+            "x": 93.42015838623047,
+            "y": 219.04678344726562
+          },
+          {
+            "height": 18.479995727539062,
+            "text": "f",
+            "width": 18.23999786376953,
+            "x": 93.42015838623047,
+            "y": 219.06539916992188
+          },
+          {
+            "height": 7.67999267578125,
+            "text": "i",
+            "width": 17.66400146484375,
+            "x": 93.99615478515625,
+            "y": 212.82000732421875
+          },
+          {
+            "height": 13.44000244140625,
+            "text": "c",
+            "width": 13.127998352050781,
+            "x": 98.86815643310547,
+            "y": 199.38421630859375
+          },
+          {
+            "height": 14.2080078125,
+            "text": "e",
+            "width": 13.127998352050781,
+            "x": 98.86815643310547,
+            "y": 185.1748046875
+          }
+        ],
+        "intrinsicRotation": 270
+      },
+      "width": 160,
+      "height": 300,
+      "png": "ligatures-on-270.png",
+      "layout": "ligatures-on-270.layout.json",
+      "sourcePdfSha256": "42f1e5e18435094c2bc1ce31d4b46d1cdd2166b279ad9597c3cf7454b178e4bc",
+      "pngSha256": "9bd8c1a712c1ecfb76420da5496abf122f0ddbc17542f71229e60385bc94321f",
+      "layoutSha256": "094f0575ccf24cdffc1cf8ab8797da175fb69f1a92d8aa9edc0b3f07cfa6cef1",
+      "fontSha256": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa"
+    },
+    {
+      "case": "two-axis-marks",
+      "rotation": 0,
+      "text": "q̣̇",
+      "pageText": {
+        "characters": [
+          {
+            "height": 27.6719970703125,
+            "text": "q",
+            "width": 15.239997863769531,
+            "x": 48,
+            "y": 84.33812713623047
+          },
+          {
+            "height": 27.6719970703125,
+            "text": "̇",
+            "width": 15.240001678466797,
+            "x": 47.9901237487793,
+            "y": 84.33812713623047
+          },
+          {
+            "height": 27.6719970703125,
+            "text": "̣",
+            "width": 15.239997863769531,
+            "x": 48.004249572753906,
+            "y": 84.33812713623047
+          }
+        ],
+        "intrinsicRotation": 0
+      },
+      "width": 300,
+      "height": 160,
+      "png": "two-axis-marks-0.png",
+      "layout": "two-axis-marks-0.layout.json",
+      "sourcePdfSha256": "03de0e5fabb4ea9c2a42b81b69069a1148e19c777802eadb0b474bac9f520364",
+      "pngSha256": "5efdbc1e9e4ef177bb5420df7f775273cf207322e8263b43877ecc05b476a7c6",
+      "layoutSha256": "d9309f5ded78cd1c860969092adde785db04a0c4abea3ef77f5161c08d0b8504",
+      "fontSha256": "3fdf69cabf06049ea70a00b5919340e2ce1e6d02b0cc3c4b44fb6801bd1e0d22"
+    },
+    {
+      "case": "two-axis-marks",
+      "rotation": 90,
+      "text": "q̣̇",
+      "pageText": {
+        "characters": [
+          {
+            "height": 15.239997863769531,
+            "text": "q",
+            "width": 27.6719970703125,
+            "x": 47.98987579345703,
+            "y": 48
+          },
+          {
+            "height": 15.240001678466797,
+            "text": "̇",
+            "width": 27.6719970703125,
+            "x": 47.98987579345703,
+            "y": 47.9901237487793
+          },
+          {
+            "height": 15.239997863769531,
+            "text": "̣",
+            "width": 27.6719970703125,
+            "x": 47.98987579345703,
+            "y": 48.004249572753906
+          }
+        ],
+        "intrinsicRotation": 90
+      },
+      "width": 160,
+      "height": 300,
+      "png": "two-axis-marks-90.png",
+      "layout": "two-axis-marks-90.layout.json",
+      "sourcePdfSha256": "03439b61e8022cc5274e739ddd90b71e03795228257678ad08f0c745d63a84c0",
+      "pngSha256": "9ed40d315aec8cbeb01fd79c2655027d766643c22b13d18fd6967bb893fc125e",
+      "layoutSha256": "d9309f5ded78cd1c860969092adde785db04a0c4abea3ef77f5161c08d0b8504",
+      "fontSha256": "3fdf69cabf06049ea70a00b5919340e2ce1e6d02b0cc3c4b44fb6801bd1e0d22"
+    },
+    {
+      "case": "two-axis-marks",
+      "rotation": 180,
+      "text": "q̣̇",
+      "pageText": {
+        "characters": [
+          {
+            "height": 27.6719970703125,
+            "text": "q",
+            "width": 15.239990234375,
+            "x": 236.760009765625,
+            "y": 47.98987579345703
+          },
+          {
+            "height": 27.6719970703125,
+            "text": "̇",
+            "width": 15.240005493164062,
+            "x": 236.76986694335938,
+            "y": 47.98987579345703
+          },
+          {
+            "height": 27.6719970703125,
+            "text": "̣",
+            "width": 15.240005493164062,
+            "x": 236.75575256347656,
+            "y": 47.98987579345703
+          }
+        ],
+        "intrinsicRotation": 180
+      },
+      "width": 300,
+      "height": 160,
+      "png": "two-axis-marks-180.png",
+      "layout": "two-axis-marks-180.layout.json",
+      "sourcePdfSha256": "f88a309ec5fc032097943a5be8d72b0a0b46486c44aa1740ef794a5829fbec59",
+      "pngSha256": "1e74467d6e26891cf048f74f456a440e9a51fe32ce493a0f91d639a6507f16e6",
+      "layoutSha256": "d9309f5ded78cd1c860969092adde785db04a0c4abea3ef77f5161c08d0b8504",
+      "fontSha256": "3fdf69cabf06049ea70a00b5919340e2ce1e6d02b0cc3c4b44fb6801bd1e0d22"
+    },
+    {
+      "case": "two-axis-marks",
+      "rotation": 270,
+      "text": "q̣̇",
+      "pageText": {
+        "characters": [
+          {
+            "height": 15.239990234375,
+            "text": "q",
+            "width": 27.6719970703125,
+            "x": 84.33812713623047,
+            "y": 236.760009765625
+          },
+          {
+            "height": 15.240005493164062,
+            "text": "̇",
+            "width": 27.6719970703125,
+            "x": 84.33812713623047,
+            "y": 236.76986694335938
+          },
+          {
+            "height": 15.240005493164062,
+            "text": "̣",
+            "width": 27.6719970703125,
+            "x": 84.33812713623047,
+            "y": 236.75575256347656
+          }
+        ],
+        "intrinsicRotation": 270
+      },
+      "width": 160,
+      "height": 300,
+      "png": "two-axis-marks-270.png",
+      "layout": "two-axis-marks-270.layout.json",
+      "sourcePdfSha256": "5d3e3f5d264f3ac8f2b6200db6c095e31bfc6ffcf3af7026f21b7db8a2f4015c",
+      "pngSha256": "401f684aa78013993bf5913ce20bb773b223497017d14f3446f55feaef3dad9d",
+      "layoutSha256": "d9309f5ded78cd1c860969092adde785db04a0c4abea3ef77f5161c08d0b8504",
+      "fontSha256": "3fdf69cabf06049ea70a00b5919340e2ce1e6d02b0cc3c4b44fb6801bd1e0d22"
+    },
+    {
+      "case": "supplementary",
+      "rotation": 0,
+      "text": "A 𝐴 B",
+      "pageText": {
+        "characters": [
+          {
+            "height": 17.496002197265625,
+            "text": "A",
+            "width": 17.71200180053711,
+            "x": 47.99662399291992,
+            "y": 94.50399780273438
+          },
+          {
+            "height": 24,
+            "text": " ",
+            "width": 7.6320037841796875,
+            "x": 65.47265625,
+            "y": 92.80000305175781
+          },
+          {
+            "height": 17.496002197265625,
+            "text": "𝐴",
+            "width": 19.176002502441406,
+            "x": 71.2535629272461,
+            "y": 94.50399780273438
+          },
+          {
+            "height": 24,
+            "text": " ",
+            "width": 7.6320037841796875,
+            "x": 90.43359375,
+            "y": 92.80000305175781
+          },
+          {
+            "height": 17.496002197265625,
+            "text": "B",
+            "width": 17.639999389648438,
+            "x": 98.0625,
+            "y": 94.50399780273438
+          }
+        ],
+        "intrinsicRotation": 0
+      },
+      "width": 300,
+      "height": 160,
+      "png": "supplementary-0.png",
+      "layout": "supplementary-0.layout.json",
+      "sourcePdfSha256": "f2d81c51588ca7103b3e73e1908df9720ceaff17566b210c544d121ff144db87",
+      "pngSha256": "a7458ea2c1db759c6c78afd5a6dc8fad2d8e99a77028183781495925404a42ef",
+      "layoutSha256": "7b40bc4b4399cad608a1d20093524ac6ffa1f3b982c6a3a1ded59169b600d720",
+      "fontSha256": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa"
+    },
+    {
+      "case": "supplementary",
+      "rotation": 90,
+      "text": "A 𝐴 B",
+      "pageText": {
+        "characters": [
+          {
+            "height": 17.71200180053711,
+            "text": "A",
+            "width": 17.496002197265625,
+            "x": 48,
+            "y": 47.99662399291992
+          },
+          {
+            "height": 7.6320037841796875,
+            "text": " ",
+            "width": 23.999996185302734,
+            "x": 43.20000076293945,
+            "y": 65.47265625
+          },
+          {
+            "height": 19.176002502441406,
+            "text": "𝐴",
+            "width": 17.496002197265625,
+            "x": 48,
+            "y": 71.2535629272461
+          },
+          {
+            "height": 7.6320037841796875,
+            "text": " ",
+            "width": 23.999996185302734,
+            "x": 43.20000076293945,
+            "y": 90.43359375
+          },
+          {
+            "height": 17.639999389648438,
+            "text": "B",
+            "width": 17.496002197265625,
+            "x": 48,
+            "y": 98.0625
+          }
+        ],
+        "intrinsicRotation": 90
+      },
+      "width": 160,
+      "height": 300,
+      "png": "supplementary-90.png",
+      "layout": "supplementary-90.layout.json",
+      "sourcePdfSha256": "3fe2eaaa07d66b681fa08cc285dd7c39a531d92c97183f4e55c114607faee104",
+      "pngSha256": "85de88bb366dbf874272071a19c66b29bf2e0d438cfa0ee416403facf75e855b",
+      "layoutSha256": "7b40bc4b4399cad608a1d20093524ac6ffa1f3b982c6a3a1ded59169b600d720",
+      "fontSha256": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa"
+    },
+    {
+      "case": "supplementary",
+      "rotation": 180,
+      "text": "A 𝐴 B",
+      "pageText": {
+        "characters": [
+          {
+            "height": 17.496002197265625,
+            "text": "A",
+            "width": 17.711990356445312,
+            "x": 234.2913818359375,
+            "y": 48
+          },
+          {
+            "height": 23.999996185302734,
+            "text": " ",
+            "width": 7.6320037841796875,
+            "x": 226.8953399658203,
+            "y": 43.20000076293945
+          },
+          {
+            "height": 17.496002197265625,
+            "text": "𝐴",
+            "width": 19.175994873046875,
+            "x": 209.5704345703125,
+            "y": 48
+          },
+          {
+            "height": 23.999996185302734,
+            "text": " ",
+            "width": 7.6320037841796875,
+            "x": 201.9344024658203,
+            "y": 43.20000076293945
+          },
+          {
+            "height": 17.496002197265625,
+            "text": "B",
+            "width": 17.639999389648438,
+            "x": 184.29750061035156,
+            "y": 48
+          }
+        ],
+        "intrinsicRotation": 180
+      },
+      "width": 300,
+      "height": 160,
+      "png": "supplementary-180.png",
+      "layout": "supplementary-180.layout.json",
+      "sourcePdfSha256": "7c52e2c6180295417a63cfd2de4eff316926f3403a038511c6b15e790ba3b5b1",
+      "pngSha256": "327fe3788d4c31d196105a539df515dbfa77f8435772da887d1e6710c90e037c",
+      "layoutSha256": "7b40bc4b4399cad608a1d20093524ac6ffa1f3b982c6a3a1ded59169b600d720",
+      "fontSha256": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa"
+    },
+    {
+      "case": "supplementary",
+      "rotation": 270,
+      "text": "A 𝐴 B",
+      "pageText": {
+        "characters": [
+          {
+            "height": 17.711990356445312,
+            "text": "A",
+            "width": 17.496002197265625,
+            "x": 94.50399780273438,
+            "y": 234.2913818359375
+          },
+          {
+            "height": 7.6320037841796875,
+            "text": " ",
+            "width": 24,
+            "x": 92.80000305175781,
+            "y": 226.8953399658203
+          },
+          {
+            "height": 19.175994873046875,
+            "text": "𝐴",
+            "width": 17.496002197265625,
+            "x": 94.50399780273438,
+            "y": 209.5704345703125
+          },
+          {
+            "height": 7.6320037841796875,
+            "text": " ",
+            "width": 24,
+            "x": 92.80000305175781,
+            "y": 201.9344024658203
+          },
+          {
+            "height": 17.639999389648438,
+            "text": "B",
+            "width": 17.496002197265625,
+            "x": 94.50399780273438,
+            "y": 184.29750061035156
+          }
+        ],
+        "intrinsicRotation": 270
+      },
+      "width": 160,
+      "height": 300,
+      "png": "supplementary-270.png",
+      "layout": "supplementary-270.layout.json",
+      "sourcePdfSha256": "ce6928214fa0e2550638f5d8116ab08846c47f02bd0cd54c7c29482d56630537",
+      "pngSha256": "fde9803d9fbeff81b24c02b0b35d4806c1dfdff04c5a53096461f79d7e940ee2",
+      "layoutSha256": "7b40bc4b4399cad608a1d20093524ac6ffa1f3b982c6a3a1ded59169b600d720",
+      "fontSha256": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa"
+    }
+  ]
+}
