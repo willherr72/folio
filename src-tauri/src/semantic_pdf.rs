@@ -1,6 +1,8 @@
 //! Experimental exact outlines plus a scalar Unicode layer with cluster boxes.
 //! Scalar origins divide cluster advances equally; they are not caret positions.
-//! Mixed directional runs and more than 255 scalars are deliberately refused.
+//! Mixed directional runs and more than 255 distinct character definitions are
+//! deliberately refused. Identical definitions can serve repeated occurrences.
+//! RTL separators and joiners await a proven reader-order strategy.
 use crate::{
     shape_text, shaping::OutlineBudget, EngineError, EngineResult, FontAsset, PositionedGlyph,
     ShapedPdf, TextDirection,
@@ -8,6 +10,7 @@ use crate::{
 use lopdf::{dictionary, Document, Object, Stream};
 use std::{collections::BTreeMap, fmt::Write, io};
 use ttf_parser::{GlyphId, OutlineBuilder};
+use unicode_bidi::{bidi_class, BidiClass};
 
 const MAX_OUTLINE_OPS: usize = 100_000;
 const MAX_CONTENT_BYTES: usize = 8 * 1024 * 1024;
@@ -114,11 +117,8 @@ pub fn create_semantic_pdf(
     ligatures: bool,
     rotation: u16,
 ) -> EngineResult<ShapedPdf> {
-    if !matches!(rotation, 0 | 90 | 180 | 270) || text.len() > 16_384 || text.chars().count() > 255
-    {
-        return Err(invalid(
-            "Semantic evidence supports quarter turns and at most 255 Unicode scalars.",
-        ));
+    if !matches!(rotation, 0 | 90 | 180 | 270) {
+        return Err(invalid("Semantic evidence supports quarter turns only."));
     }
     let layout = shape_text(font, text, font_size, direction, ligatures)?;
     if layout
@@ -128,6 +128,19 @@ pub fn create_semantic_pdf(
     {
         return Err(invalid(
             "Mixed directional runs are not supported by the semantic PDF experiment.",
+        ));
+    }
+    // PDFium can reverse each RTL word while retaining left-to-right word
+    // geometry. Repeated identical words hide that corruption in copied text.
+    // Neutral separators and joiners need a proven reader-order strategy before
+    // this representation can accept them; native shaping still supports them.
+    if layout.runs[0].direction == TextDirection::Rtl
+        && text
+            .chars()
+            .any(|c| !matches!(bidi_class(c), BidiClass::R | BidiClass::AL | BidiClass::NSM))
+    {
+        return Err(invalid(
+            "RTL semantic text currently supports strong RTL characters and combining marks only; separators and joiners require reader-order support.",
         ));
     }
     let face = font.face()?;
@@ -235,6 +248,34 @@ pub fn create_semantic_pdf(
         ));
     }
     cells.sort_by(|a, b| a.x.total_cmp(&b.x));
+    // A code describes Unicode and local metrics, not a page occurrence. Exact
+    // keys preserve existing geometry; similar boxes must never be coalesced.
+    // Keep all occurrences in the same TJ object, including reused codes, so
+    // readers do not reorder independently positioned text objects on rotation.
+    let mut definition_codes = BTreeMap::new();
+    let mut definitions = Vec::new();
+    let mut codes = Vec::with_capacity(cells.len());
+    for cell in &cells {
+        let key = (
+            cell.unicode,
+            cell.width.to_bits(),
+            cell.bounds.map(f32::to_bits),
+        );
+        let code = if let Some(&code) = definition_codes.get(&key) {
+            code
+        } else {
+            if definitions.len() == 255 {
+                return Err(invalid(
+                    "Semantic evidence supports at most 255 distinct character definitions (Unicode, advance and cluster bounds).",
+                ));
+            }
+            let code = (definitions.len() + 1) as u8;
+            definitions.push(cell);
+            definition_codes.insert(key, code);
+            code
+        };
+        codes.push(code);
+    }
     let mut pdf = Document::with_version("1.7");
     let program = pdf.add_object(Stream::new(
         dictionary! {"Length1"=>font.bytes.len() as i64},
@@ -256,7 +297,7 @@ pub fn create_semantic_pdf(
         f32::NEG_INFINITY,
     ];
     let mut mappings = Vec::new();
-    for (i, cell) in cells.iter().enumerate() {
+    for (i, cell) in definitions.iter().enumerate() {
         let name = format!("g{}", i + 1);
         differences.push(Object::Name(name.as_bytes().to_vec()));
         widths.push(Object::Real(cell.width));
@@ -288,7 +329,7 @@ pub fn create_semantic_pdf(
     }
     cmap.push_str("endcmap CMapName currentdict /CMap defineresource pop end end\n");
     let unicode = pdf.add_object(Stream::new(dictionary! {}, cmap.into_bytes()));
-    let semantic=pdf.add_object(dictionary!{"Type"=>"Font","Subtype"=>"Type3","FontBBox"=>numbers(&font_bbox),"FontMatrix"=>numbers(&[0.001,0.,0.,0.001,0.,0.]),"CharProcs"=>charprocs,"Encoding"=>dictionary!{"Type"=>"Encoding","Differences"=>differences},"FirstChar"=>1,"LastChar"=>cells.len() as i64,"Widths"=>widths,"Resources"=>dictionary!{},"ToUnicode"=>unicode});
+    let semantic=pdf.add_object(dictionary!{"Type"=>"Font","Subtype"=>"Type3","FontBBox"=>numbers(&font_bbox),"FontMatrix"=>numbers(&[0.001,0.,0.,0.001,0.,0.]),"CharProcs"=>charprocs,"Encoding"=>dictionary!{"Type"=>"Encoding","Differences"=>differences},"FirstChar"=>1,"LastChar"=>definitions.len() as i64,"Widths"=>widths,"Resources"=>dictionary!{},"ToUnicode"=>unicode});
     writeln!(
         &mut visible,
         "BT /S {font_size:.7} Tf 1 0 0 1 {:.7} {:.7} Tm [",
@@ -297,7 +338,7 @@ pub fn create_semantic_pdf(
     )
     .unwrap();
     for (i, cell) in cells.iter().enumerate() {
-        write!(&mut visible, "<{:02X}> ", i + 1).unwrap();
+        write!(&mut visible, "<{:02X}> ", codes[i]).unwrap();
         if let Some(next) = cells.get(i + 1) {
             write!(
                 &mut visible,

@@ -175,9 +175,15 @@ nondefault `shaped-text` Cargo feature and are not enabled in application builds
 Reader copy and selection compatibility must pass before broader script support
 is offered in the editor.
 
-The latest [native semantic PDF verification](docs/semantic-native-verification.md)
+The [native semantic PDF verification](docs/semantic-native-verification.md)
 passes exact Unicode in three readers for 32 unmixed sample/rotation cases.
 Mixed-direction text remains refused, and MuPDF cluster selection still differs.
 [Shaping resource checks](docs/shaping-resource-limits.md) document the pinned
 completion-status patch and bounded outline traversal. These development results
 do not enable complex-script input in the released editor.
+
+[Long-text verification](docs/semantic-long-native-verification.md) extends this
+experiment through exact character-definition reuse, including a 4,096-scalar
+fixture. It also records an RTL word-order failure that was hidden by repeated
+words. RTL separators and joiners now produce an explicit refusal; they still
+need a proven reader-order strategy before editor integration.

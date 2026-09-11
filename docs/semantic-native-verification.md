@@ -1,5 +1,11 @@
 # Native semantic PDF: bounded verification
 
+This report records the first 32-case milestone. The subsequent
+[long-text verification](semantic-long-native-verification.md) replaces the
+per-occurrence 255-scalar cap with a 255-distinct-definition limit, verifies
+the original matrix again, and adds explicit RTL separator/joiner refusals.
+The measurements and JSON below remain the original milestone's evidence.
+
 The actual native outline-plus-Type3 representation passes exact logical Unicode
 and approximate PDFium cluster bounds for the tested unmixed fixtures. It still
 does not provide identical cluster selection geometry in MuPDF. Mixed-direction

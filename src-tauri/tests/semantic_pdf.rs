@@ -164,12 +164,108 @@ fn semantic_single_byte_codes_and_geometry_limits_are_explicit() {
         .iter()
         .all(|font| font.get(b"LastChar").unwrap().as_i64().unwrap() <= 255));
     assert!(
-        create_semantic_pdf(&font, &"i".repeat(256), 12., TextDirection::Ltr, false, 0).is_err()
+        create_semantic_pdf(&font, &"i".repeat(4097), 4., TextDirection::Ltr, false, 0).is_err()
     );
     assert!(create_semantic_pdf(&font, "A", 24., TextDirection::Ltr, true, 45).is_err());
     assert!(
         create_semantic_pdf(&font, &"W".repeat(100), 1000., TextDirection::Ltr, true, 0).is_err()
     );
+}
+
+#[test]
+fn repeated_semantic_text_reuses_codes_without_truncating_copy_or_selection() {
+    let font = font("corpus/fonts/DejaVuSerif.ttf");
+    let text = "i".repeat(4096);
+    let engine = PdfEngine::start(
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("resources/pdfium/pdfium.dll"),
+    )
+    .unwrap();
+    let temp = tempfile::tempdir().unwrap();
+    for rotation in [0, 90, 180, 270] {
+        let output = create_semantic_pdf(&font, &text, 4., TextDirection::Ltr, false, rotation)
+            .expect("Repeated text must not consume one PDF code per occurrence");
+        let pdf = lopdf::Document::load_mem(&output.bytes).unwrap();
+        let semantic = pdf
+            .objects
+            .values()
+            .filter_map(|obj| obj.as_dict().ok())
+            .find(|dict| {
+                dict.get(b"Subtype").ok().and_then(|obj| obj.as_name().ok()) == Some(b"Type3")
+            })
+            .unwrap();
+        assert!(semantic.get(b"LastChar").unwrap().as_i64().unwrap() <= 255);
+        let path = temp.path().join(format!("long-{rotation}.pdf"));
+        fs::write(&path, &output.bytes).unwrap();
+        let source = engine.open_document(&path).unwrap();
+        assert_eq!(engine.extract_text(&source.id, 0).unwrap(), text);
+        let geometry = engine.page_text(&source.id, 0).unwrap();
+        assert_eq!(geometry.characters.len(), 4096);
+        assert_eq!(
+            geometry
+                .characters
+                .iter()
+                .map(|c| c.text.as_str())
+                .collect::<String>(),
+            text
+        );
+        // Reusing a code must retain each occurrence's distinct page position.
+        let first = &geometry.characters[0];
+        let last = &geometry.characters[4095];
+        let span = if rotation % 180 == 0 {
+            (last.x - first.x).abs()
+        } else {
+            (last.y - first.y).abs()
+        };
+        assert!(span > output.layout.width * 0.99);
+        engine.close_document(&source.id).unwrap();
+    }
+}
+
+#[test]
+fn semantic_code_capacity_refuses_overflow_instead_of_aliasing_unicode() {
+    let font = font("corpus/fonts/DejaVuSerif.ttf");
+    let face = font.face().unwrap();
+    let alphabet: String = (0x41..=0x2ff)
+        .filter_map(char::from_u32)
+        .filter(|c| c.is_alphabetic() && face.glyph_index(*c).is_some())
+        .take(256)
+        .collect();
+    assert_eq!(alphabet.chars().count(), 256);
+    let fitting: String = alphabet.chars().take(255).collect();
+    create_semantic_pdf(&font, &fitting, 4., TextDirection::Ltr, false, 0).unwrap();
+    let error = create_semantic_pdf(&font, &alphabet, 4., TextDirection::Ltr, false, 0)
+        .err()
+        .expect("An exhausted one-byte font must not reuse a different character's code");
+    assert!(
+        error.to_string().contains("distinct character definitions"),
+        "{error}"
+    );
+}
+
+#[test]
+fn rtl_word_boundaries_are_refused_before_reader_order_can_corrupt_selection() {
+    let font = font("shaped-text/NotoSansArabic-Regular.ttf");
+    let engine = PdfEngine::start(
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("resources/pdfium/pdfium.dll"),
+    )
+    .unwrap();
+    let temp = tempfile::tempdir().unwrap();
+    for text in ["سلام عالم", "سلام\u{a0}عالم", "سلام،عالم", "سلام\u{200c}عالم"]
+    {
+        for rotation in [0, 90, 180, 270] {
+            match create_semantic_pdf(&font, text, 24., TextDirection::Auto, true, rotation) {
+                Err(_) => (),
+                Ok(output) => {
+                    let path = temp.path().join("rtl-words.pdf");
+                    fs::write(&path, output.bytes).unwrap();
+                    let source = engine.open_document(&path).unwrap();
+                    let copied = engine.extract_text(&source.id, 0).unwrap();
+                    let geometry = engine.page_text(&source.id, 0).unwrap();
+                    panic!("Unsupported RTL word boundaries must be refused: source={text:?}, copied={copied:?}, rotation={rotation}, first={:?}, last={:?}", geometry.characters.first(), geometry.characters.last());
+                }
+            }
+        }
+    }
 }
 
 #[test]

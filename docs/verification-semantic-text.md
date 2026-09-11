@@ -1,5 +1,9 @@
 # Semantic text development verification, 2026-09-11
 
+This is the initial semantic serializer milestone. See the subsequent
+[long-text verification](semantic-long-native-verification.md) for character
+definition reuse, the RTL word-order regression, and current limits.
+
 This continues issue #14 behind the nondefault `shaped-text` feature. It does
 not enable complex-script input in the editor or create a release. The default
 engine change combines adjacent PDFium UTF-16 surrogate entries into one

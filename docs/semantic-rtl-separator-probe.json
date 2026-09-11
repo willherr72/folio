@@ -1,0 +1,62 @@
+{
+  "source_pdf_sha256": "fc5d33c537e14738a68717c6312f2b2a1a90a4e53a9220b131725ec67ffaadfc",
+  "pdfium_sha256": "04100c03e41cac1f979e36e5e26fb860bcb5a7461f53830d3c098716624a27a9",
+  "scope": "CMap-only substitutions; no reshaping or substituted-glyph geometry claim.",
+  "probes": [
+    {
+      "separator": "space",
+      "source_scalar_count": 319,
+      "first_character": "\u0633",
+      "first_character_x": 73.99200439453125
+    },
+    {
+      "separator": "nbsp",
+      "source_scalar_count": 319,
+      "first_character": "\u0633",
+      "first_character_x": 73.99200439453125
+    },
+    {
+      "separator": "arabic-comma",
+      "source_scalar_count": 319,
+      "first_character": "\u0633",
+      "first_character_x": 73.99200439453125
+    },
+    {
+      "separator": "comma",
+      "source_scalar_count": 319,
+      "first_character": "\u0633",
+      "first_character_x": 73.99200439453125
+    },
+    {
+      "separator": "hyphen",
+      "source_scalar_count": 319,
+      "first_character": "\u0633",
+      "first_character_x": 73.99200439453125
+    },
+    {
+      "separator": "arabic-semicolon",
+      "source_scalar_count": 319,
+      "first_character": "\u0633",
+      "first_character_x": 3290.011962890625
+    },
+    {
+      "separator": "arabic-letter",
+      "source_scalar_count": 319,
+      "first_character": "\u0633",
+      "first_character_x": 3290.011962890625
+    },
+    {
+      "separator": "zwnj",
+      "source_scalar_count": 319,
+      "first_character": "\u0633",
+      "first_character_x": 73.99200439453125
+    },
+    {
+      "separator": "arabic-question",
+      "source_scalar_count": 319,
+      "first_character": "\u0633",
+      "first_character_x": 3290.011962890625
+    }
+  ],
+  "expected_first_source_x": 3290.012
+}
