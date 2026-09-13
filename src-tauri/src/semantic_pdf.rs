@@ -128,7 +128,15 @@ pub fn create_semantic_pdf(
     rotation: u16,
 ) -> EngineResult<ShapedPdf> {
     semantic_pdf(
-        font, text, font_size, direction, ligatures, rotation, false, false,
+        font,
+        text,
+        font_size,
+        direction,
+        ligatures,
+        rotation,
+        false,
+        false,
+        [0.1, 0.2, 0.3],
     )
     .map(PreparedSemanticText::into_pdf)
 }
@@ -154,6 +162,7 @@ pub fn create_semantic_font_banks_probe(
         rotation,
         true,
         actual_text,
+        [0.1, 0.2, 0.3],
     )
     .map(PreparedSemanticText::into_pdf)
 }
@@ -163,6 +172,8 @@ pub fn create_semantic_font_banks_probe(
 pub struct PreparedSemanticText {
     pdf: ShapedPdf,
     preview: NativeTextPreview,
+    origin: [f32; 2],
+    characters: Vec<crate::PdfTextCharacter>,
 }
 impl PreparedSemanticText {
     pub fn pdf(&self) -> &ShapedPdf {
@@ -210,7 +221,15 @@ pub fn prepare_semantic_text(
     rotation: u16,
 ) -> EngineResult<PreparedSemanticText> {
     semantic_pdf(
-        font, text, font_size, direction, ligatures, rotation, false, false,
+        font,
+        text,
+        font_size,
+        direction,
+        ligatures,
+        rotation,
+        false,
+        false,
+        [0.1, 0.2, 0.3],
     )
 }
 
@@ -238,6 +257,7 @@ fn semantic_pdf(
     rotation: u16,
     font_banks: bool,
     actual_text: bool,
+    color: [f32; 3],
 ) -> EngineResult<PreparedSemanticText> {
     if !matches!(rotation, 0 | 90 | 180 | 270) {
         return Err(invalid("Semantic evidence supports quarter turns only."));
@@ -279,7 +299,7 @@ fn semantic_pdf(
     let mut outline_budget = OutlineBudget::new(&face)?;
     let mut cache = BTreeMap::<u16, Pen>::new();
     let mut clusters = BTreeMap::<(usize, usize), (bool, Vec<&PositionedGlyph>)>::new();
-    let mut visible = String::from("q 0.1 0.2 0.3 rg\n");
+    let mut visible = format!("q {} {} {} rg\n", color[0], color[1], color[2]);
     let mut placements = Vec::new();
     let mut ops = 0;
     for run in &layout.runs {
@@ -383,6 +403,16 @@ fn semantic_pdf(
             "Semantic clusters do not cover each source scalar exactly once.",
         ));
     }
+    let characters = cells
+        .iter()
+        .map(|cell| crate::PdfTextCharacter {
+            text: cell.unicode.to_string(),
+            x: cell.x + cell.bounds[0] * font_size / 1000.,
+            y: font_size - cell.bounds[3] * font_size / 1000.,
+            width: (cell.bounds[2] - cell.bounds[0]) * font_size / 1000.,
+            height: (cell.bounds[3] - cell.bounds[1]) * font_size / 1000.,
+        })
+        .collect();
     cells.sort_by(|a, b| a.x.total_cmp(&b.x));
     // A code describes Unicode and local metrics, not a page occurrence. Exact
     // keys preserve existing geometry; similar boxes must never be coalesced.
@@ -537,7 +567,7 @@ fn semantic_pdf(
         width,
         height,
         rotation,
-        color: [0.1, 0.2, 0.3],
+        color,
         outlines: cache
             .into_iter()
             .filter(|(_, pen)| !pen.path.is_empty())
@@ -557,5 +587,154 @@ fn semantic_pdf(
             bytes: bytes.0,
         },
         preview,
+        origin: [origin.0, origin.1],
+        characters,
+    })
+}
+
+/// Trusted native result. Resources/content are regenerated, never deserialized.
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PreparedTextOverlay {
+    pub preview: NativeTextPreview,
+    pub origin: [f32; 2],
+    pub bounds: crate::AnnotationRect,
+    pub characters: Vec<crate::PdfTextCharacter>,
+    #[serde(skip)]
+    pub(crate) content: Vec<u8>,
+    #[serde(skip)]
+    pub(crate) resources: lopdf::Dictionary,
+}
+
+pub fn prepare_text_overlay(
+    font: &FontAsset,
+    overlay: &crate::TextOverlay,
+) -> EngineResult<PreparedTextOverlay> {
+    let options = overlay
+        .shaping
+        .as_ref()
+        .ok_or_else(|| invalid("Text shaping is not enabled for this overlay."))?;
+    if options.version != 1 || overlay.font_id.as_deref() != Some(&font.info.id) {
+        return Err(invalid(
+            "Shaped text requires version 1 and the exact registered custom font.",
+        ));
+    }
+    if !overlay.font_size.is_finite()
+        || overlay.font_size <= 0.
+        || overlay.font_size > 512.
+        || !matches!(overlay.rotation, 0 | 90 | 180 | 270)
+    {
+        return Err(invalid("Invalid shaped text size or rotation."));
+    }
+    let value = overlay
+        .color
+        .strip_prefix('#')
+        .filter(|s| s.len() == 6 && s.is_ascii())
+        .ok_or_else(|| invalid("Invalid text color."))?;
+    let mut color = [0.; 3];
+    for (index, c) in color.iter_mut().enumerate() {
+        *c = u8::from_str_radix(&value[index * 2..index * 2 + 2], 16)
+            .map_err(|_| invalid("Invalid text color."))? as f32
+            / 255.;
+    }
+    if overlay.text.is_empty() {
+        return Ok(PreparedTextOverlay {
+            preview: NativeTextPreview {
+                version: 1,
+                font_id: font.info.id.clone(),
+                text: String::new(),
+                width: 300.,
+                height: 160.,
+                rotation: 0,
+                color,
+                outlines: vec![],
+                glyphs: vec![],
+            },
+            origin: [48., 48.],
+            bounds: crate::AnnotationRect {
+                x: 0.,
+                y: 0.,
+                width: 1.,
+                height: overlay.font_size,
+            },
+            characters: vec![],
+            content: b"q Q\n".to_vec(),
+            resources: lopdf::Dictionary::new(),
+        });
+    }
+    let direction = match options.direction {
+        crate::ShapingDirection::Auto => TextDirection::Auto,
+        crate::ShapingDirection::Ltr => TextDirection::Ltr,
+        crate::ShapingDirection::Rtl => TextDirection::Rtl,
+    };
+    let prepared = semantic_pdf(
+        font,
+        &overlay.text,
+        overlay.font_size,
+        direction,
+        options.ligatures,
+        0,
+        false,
+        false,
+        color,
+    )?;
+    let pdf = Document::load_mem(&prepared.pdf.bytes)
+        .map_err(|_| invalid("Could not prepare text appearance."))?;
+    let page_id = *pdf
+        .get_pages()
+        .get(&1)
+        .ok_or_else(|| invalid("Missing prepared page."))?;
+    let page = pdf
+        .get_dictionary(page_id)
+        .map_err(|_| invalid("Missing prepared page."))?;
+    // Only a locally generated acyclic resource tree is expanded here.
+    fn direct(pdf: &Document, object: &Object) -> Object {
+        match object {
+            Object::Reference(id) => direct(pdf, pdf.get_object(*id).expect("native resource")),
+            Object::Dictionary(dict) => {
+                let mut out = lopdf::Dictionary::new();
+                for (k, v) in dict.iter() {
+                    out.set(k.clone(), direct(pdf, v));
+                }
+                Object::Dictionary(out)
+            }
+            Object::Array(a) => Object::Array(a.iter().map(|o| direct(pdf, o)).collect()),
+            Object::Stream(stream) => {
+                let mut out = stream.clone();
+                out.dict = direct(pdf, &Object::Dictionary(stream.dict.clone()))
+                    .as_dict()
+                    .unwrap()
+                    .clone();
+                Object::Stream(out)
+            }
+            o => o.clone(),
+        }
+    }
+    let mut resources = direct(&pdf, page.get(b"Resources").expect("native resources"))
+        .as_dict()
+        .unwrap()
+        .clone();
+    resources
+        .get_mut(b"Font")
+        .unwrap()
+        .as_dict_mut()
+        .unwrap()
+        .remove(b"Original");
+    let b = prepared.pdf.layout.bounds.expect("visible layout");
+    let left = b.x_min.min(0.);
+    let top = (overlay.font_size - b.y_max).min(0.);
+    let bounds = crate::AnnotationRect {
+        x: left,
+        y: top,
+        width: b.x_max.max(prepared.pdf.layout.width) - left,
+        height: (overlay.font_size - b.y_min).max(overlay.font_size) - top,
+    };
+    Ok(PreparedTextOverlay {
+        preview: prepared.preview,
+        origin: prepared.origin,
+        bounds,
+        characters: prepared.characters,
+        content: pdf.get_page_content(page_id),
+        resources,
     })
 }

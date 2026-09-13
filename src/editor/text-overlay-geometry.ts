@@ -1,3 +1,4 @@
+import { shapedTextState } from "./shaped-text";
 import { textAdvance } from "./text-fonts";
 import type { AnnotationRect, PageText, PdfTextCharacter, TextOverlay } from "./types";
 
@@ -17,6 +18,10 @@ export function textOverlayTransform(overlay: TextOverlay): string | undefined {
 }
 
 export function textOverlayBounds(overlay: TextOverlay): AnnotationRect {
+  if (overlay.shaping) {
+    const box = shapedTextState(overlay)?.result?.bounds;
+    return rotateTextRect(overlay, box ? {x:box.x-4,y:box.y-4,width:Math.max(16,box.width)+8,height:Math.max(overlay.fontSize,box.height)+8} : {x:-4,y:-3,width:100,height:overlay.fontSize+8});
+  }
   const lines = overlay.text.split("\n");
   return rotateTextRect(overlay, {
     x: -4, y: -3,
@@ -27,6 +32,8 @@ export function textOverlayBounds(overlay: TextOverlay): AnnotationRect {
 
 /** Added text has approximate font advances, consistently rotated before page zoom. */
 export function textOverlayCharacters(overlay: TextOverlay): PageText {
+  if (overlay.shaping) return {intrinsicRotation: overlay.rotation ?? 0,
+    characters: (shapedTextState(overlay)?.result?.characters ?? []).map(character => ({text:character.text,...rotateTextRect(overlay,character)}))};
   const characters: PdfTextCharacter[] = [];
   let x = 0, line = 0;
   for (const text of overlay.text) {

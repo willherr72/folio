@@ -18,6 +18,32 @@ where
 }
 
 #[tauri::command]
+async fn prepare_text_overlay(
+    engine: State<'_, PdfEngine>,
+    overlay: crate::TextOverlay,
+) -> Result<serde_json::Value, String> {
+    #[cfg(feature = "shaped-text")]
+    {
+        // Acquire exact immutable ownership before queuing background preparation.
+        let id = overlay
+            .font_id
+            .as_deref()
+            .ok_or("Shaped text requires a custom font.")?;
+        let font = engine.fonts().get(id).map_err(|e| e.to_string())?;
+        on_worker(move || {
+            serde_json::to_value(crate::prepare_text_overlay(&font, &overlay)?)
+                .map_err(|e| EngineError::InvalidRequest(e.to_string()))
+        })
+        .await
+    }
+    #[cfg(not(feature = "shaped-text"))]
+    {
+        let _ = (engine, overlay);
+        Err("Shaped text is unavailable in this build.".into())
+    }
+}
+
+#[tauri::command]
 async fn list_installed_fonts(
     engine: State<'_, PdfEngine>,
 ) -> Result<Vec<crate::InstalledFont>, String> {
@@ -278,6 +304,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             open_pdf,
             list_installed_fonts,
+            prepare_text_overlay,
             load_installed_font,
             import_font,
             font_info,

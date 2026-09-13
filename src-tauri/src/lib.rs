@@ -8,7 +8,8 @@ mod shaped_pdf;
 #[cfg(feature = "shaped-text")]
 pub use semantic_pdf::{
     create_semantic_font_banks_probe, create_semantic_pdf, prepare_semantic_text,
-    NativeGlyphOutline, NativeGlyphPlacement, NativeTextPreview, PreparedSemanticText,
+    prepare_text_overlay, NativeGlyphOutline, NativeGlyphPlacement, NativeTextPreview,
+    PreparedSemanticText, PreparedTextOverlay,
 };
 #[cfg(feature = "shaped-text")]
 mod shaping;
@@ -25,8 +26,8 @@ pub use fonts::{FontAsset, FontInfo, FontRegistry, InstalledFont};
 pub use engine::{EngineError, EngineResult, PdfEngine};
 pub use types::{
     AnnotationRect, CommentOverlay, DocumentInfo, EditableTextRun, ExportRequest, HighlightOverlay,
-    InkOverlay, Overlay, PageInfo, PagePlan, PageText, PdfTextCharacter, Point, TextFont,
-    TextOverlay, TextRuns,
+    InkOverlay, Overlay, PageInfo, PagePlan, PageText, PdfTextCharacter, Point, ShapingDirection,
+    TextFont, TextOverlay, TextRuns, TextShaping,
 };
 
 pub use app::run;

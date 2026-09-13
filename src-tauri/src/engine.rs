@@ -49,6 +49,17 @@ struct EngineInner {
 static SHARED_ENGINE: OnceLock<Result<PdfEngine, String>> = OnceLock::new();
 
 impl PdfEngine {
+    #[cfg(feature = "shaped-text")]
+    pub fn prepare_text_overlay(
+        &self,
+        overlay: &TextOverlay,
+    ) -> EngineResult<crate::PreparedTextOverlay> {
+        let id = overlay.font_id.as_deref().ok_or_else(|| {
+            EngineError::InvalidRequest("Shaped text requires a custom font.".into())
+        })?;
+        let font = self.inner.fonts.get(id)?;
+        crate::prepare_text_overlay(&font, overlay)
+    }
     pub fn fonts(&self) -> Arc<FontRegistry> {
         self.inner.fonts.clone()
     }
@@ -1629,6 +1640,11 @@ fn validate_text(
     height: f32,
     custom: Option<&FontAsset>,
 ) -> EngineResult<()> {
+    if overlay.shaping.is_some() && overlay.font_id.is_none() {
+        return Err(EngineError::InvalidRequest(
+            "Shaped text requires a custom font.".into(),
+        ));
+    }
     if !matches!(overlay.rotation, 0 | 90 | 180 | 270) {
         return Err(EngineError::InvalidRequest("invalid text rotation".into()));
     }
@@ -1652,7 +1668,16 @@ fn validate_text(
         let font = custom.filter(|font| &font.info.id == id).ok_or_else(|| {
             EngineError::InvalidRequest(format!("custom font {id} is unavailable"))
         })?;
-        font.validate_text(&overlay.text)?;
+        if overlay.shaping.is_some() {
+            #[cfg(feature = "shaped-text")]
+            crate::prepare_text_overlay(font, overlay)?;
+            #[cfg(not(feature = "shaped-text"))]
+            return Err(EngineError::InvalidRequest(
+                "Shaped text is unavailable in this build.".into(),
+            ));
+        } else {
+            font.validate_text(&overlay.text)?;
+        }
     } else if let Some(character) = overlay
         .text
         .chars()

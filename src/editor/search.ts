@@ -1,7 +1,8 @@
+import { acquireShapedText } from "./shaped-text";
 import { fontRevision, subscribeFonts } from "./custom-fonts";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import type { FolioAdapter } from "./adapter";
-import { textOverlayCharacters } from "./text-overlay-geometry";
+import { textOverlayCharacters, rotateTextRect } from "./text-overlay-geometry";
 import type { PagePlan, PageText, PdfTextCharacter } from "./types";
 
 /** Coordinates are page units, after source rotation and before editor rotation. */
@@ -129,6 +130,7 @@ export function useDocumentSearch(adapter: FolioAdapter, pages: PagePlan[], quer
   useEffect(() => {
     if (!enabled || !needle) return;
     let cancelled = false;
+    let activePreparation: ReturnType<typeof acquireShapedText> | undefined;
     const timer = setTimeout(() => {
       void (async () => {
         const matches: SearchMatch[] = [];
@@ -141,8 +143,23 @@ export function useDocumentSearch(adapter: FolioAdapter, pages: PagePlan[], quer
           try { text = await readSearchPageText(adapter, page.sourceId, page.pageIndex); }
           catch (error) { errors.push(`Page ${index + 1}: ${error instanceof Error ? error.message : String(error)}`); }
           if (cancelled) return;
+          matches.push(...findTextMatches(page.id, "source", text, needle));
+          for (const overlay of page.overlays) {
+            if (overlay.type !== "text") continue;
+            if (overlay.shaping) {
+              const lease = acquireShapedText(overlay);
+              activePreparation = lease;
+              try {
+                const prepared = await lease.promise;
+                if (cancelled) return;
+                const text = {intrinsicRotation: overlay.rotation ?? 0, characters: prepared.characters.map(character=>({text:character.text,...rotateTextRect(overlay,character)}))};
+                matches.push(...findTextMatches(page.id, `overlay:${overlay.id}`, text, needle));
+              } catch (error) { errors.push(`Page ${index+1}: ${String(error)}`); }
+              finally { lease.release(); if(activePreparation === lease) activePreparation=undefined; }
+            } else matches.push(...findTextMatches(page.id, `overlay:${overlay.id}`, textOverlayCharacters(overlay), needle));
+            if (cancelled) return;
+          }
           hasText ||= text.characters.some((character) => !!character.text.trim()) || page.overlays.some((overlay) => overlay.type === "text" && !!overlay.text.trim());
-          matches.push(...findPageMatches(page, text, needle));
           setState({ adapter, pages, query: needle, matches: [...matches], hasText, error: errors.length ? `Some pages could not be searched. ${errors[0]}` : null, searching: index < pages.length - 1 });
           // Let rendering and input run even when every extraction is cached.
           if (index < pages.length - 1) await new Promise<void>((resolve) => setTimeout(resolve, 0));
@@ -150,7 +167,7 @@ export function useDocumentSearch(adapter: FolioAdapter, pages: PagePlan[], quer
         if (!pages.length && !cancelled) setState({ adapter, pages, query: needle, matches: [], hasText: false, error: null, searching: false });
       })();
     }, 120);
-    return () => { cancelled = true; clearTimeout(timer); };
+    return () => { cancelled = true; clearTimeout(timer); activePreparation?.release(); };
   }, [adapter, pages, needle, enabled, fonts]);
 
   if (!enabled || !needle) return { matches: [], searching: false, error: null, hasText: false };

@@ -13,7 +13,7 @@ name = "folio"
 path = "src/main.rs"
 
 [features]
-default = []
+default = ["shaped-text"]
 shaped-text = ["dep:harfrust", "dep:unicode-bidi", "dep:unicode-script", "dep:unicode-segmentation"]
 
 [patch.crates-io]

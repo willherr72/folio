@@ -12,6 +12,8 @@ export interface TextOverlay {
   fontName?: TextFontName;
   /** Content-addressed, embedded custom font program. */
   fontId?: string;
+  /** Explicit native single-line layout; absence preserves legacy rendering. */
+  shaping?: { version: 1; direction: "auto" | "ltr" | "rtl"; ligatures: boolean };
   color: string;
   /** Clockwise orientation about the local top-left x/y anchor. */
   rotation?: Rotation;

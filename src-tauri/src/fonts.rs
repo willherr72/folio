@@ -98,6 +98,100 @@ pub(crate) fn checked_face(bytes: &[u8]) -> EngineResult<ttf_parser::Face<'_>> {
     Ok(face)
 }
 
+fn bounded_cmap_coverage(data: &[u8]) -> EngineResult<()> {
+    let bad = || invalid("Font cmap coverage exceeds its work limit or is malformed.");
+    let u16_at = |i: usize| {
+        data.get(i..i + 2)
+            .map(|b| u16::from_be_bytes([b[0], b[1]]) as usize)
+            .ok_or_else(bad)
+    };
+    let u32_at = |i: usize| {
+        data.get(i..i + 4)
+            .map(|b| u32::from_be_bytes([b[0], b[1], b[2], b[3]]) as usize)
+            .ok_or_else(bad)
+    };
+    let count = u16_at(2)?;
+    if count > 32 {
+        return Err(bad());
+    }
+    let mut work = 0usize;
+    let mut linear_groups = 0usize;
+    for i in 0..count {
+        let offset = u32_at(4 + i * 8 + 4)?;
+        match u16_at(offset)? {
+            0 => work += 256,
+            2 => {
+                for j in 0..256 {
+                    let key = u16_at(offset + 6 + j * 2)?;
+                    if key % 8 != 0 {
+                        return Err(bad());
+                    }
+                    let first = u16_at(offset + 518 + key)?;
+                    let count = u16_at(offset + 520 + key)?;
+                    if first + count > 256 {
+                        return Err(bad());
+                    }
+                }
+                work += 65536;
+            }
+            4 => {
+                let n = u16_at(offset + 6)? / 2;
+                for j in 0..n {
+                    let end = u16_at(offset + 14 + j * 2)?;
+                    let start = u16_at(offset + 16 + n * 2 + j * 2)?;
+                    if end < start {
+                        return Err(bad());
+                    }
+                    work = work.saturating_add(end - start + 1);
+                    if work > 2_000_000 {
+                        return Err(bad());
+                    }
+                }
+            }
+            6 => work += u16_at(offset + 8)?,
+            10 => {
+                let start = u32_at(offset + 12)?;
+                let count = u32_at(offset + 16)?;
+                if start > 0x10ffff || count > 0x110000 - start {
+                    return Err(bad());
+                }
+                work = work.saturating_add(count);
+            }
+            12 | 13 => {
+                let n = u32_at(offset + 12)?;
+                if u16_at(offset)? == 13 {
+                    linear_groups = linear_groups.saturating_add(n);
+                }
+                if linear_groups > 64 {
+                    return Err(bad());
+                }
+                if n > data.len() / 12 {
+                    return Err(bad());
+                }
+                for j in 0..n {
+                    let start = u32_at(offset + 16 + j * 12)?;
+                    let end = u32_at(offset + 20 + j * 12)?;
+                    if end < start || end > 0x10ffff {
+                        return Err(bad());
+                    }
+                    work = work.saturating_add(end - start + 1);
+                    if work > 2_000_000 {
+                        return Err(bad());
+                    }
+                }
+            }
+            _ => {}
+        }
+        if work > 2_000_000 {
+            return Err(bad());
+        }
+    }
+    if (work + 45_000).saturating_mul(linear_groups) > 4_000_000 {
+        return Err(bad());
+    }
+    Ok(())
+}
+
 fn display_name(face: &ttf_parser::Face<'_>) -> String {
     for english in [true, false] {
         for name in face.names() {
@@ -121,6 +215,8 @@ pub struct FontInfo {
     pub weight: u16,
     pub italic: bool,
     pub coverage: Vec<[u32; 2]>,
+    #[serde(default)]
+    pub shaped_coverage: Vec<[u32; 2]>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -140,7 +236,7 @@ pub struct FontAsset {
 
 impl FontAsset {
     pub fn parse(bytes: Vec<u8>) -> EngineResult<Self> {
-        Self::parse_profile(bytes, false)
+        Self::parse_profile(bytes, cfg!(feature = "shaped-text"))
     }
 
     /// Validate an exact font program for the experimental shaping gate. The
@@ -152,6 +248,13 @@ impl FontAsset {
 
     fn parse_profile(bytes: Vec<u8>, shaping: bool) -> EngineResult<Self> {
         let face = checked_face(&bytes)?;
+        // Bound cmap callback work, including malicious overlapping/oversized
+        // format 4/12/13 ranges, before enumerating any character coverage.
+        bounded_cmap_coverage(
+            face.raw_face()
+                .table(ttf_parser::Tag::from_bytes(b"cmap"))
+                .ok_or_else(|| invalid("Missing font cmap."))?,
+        )?;
         let mut coverage: Vec<[u32; 2]> = Vec::new();
         for codepoint in 0x20..=0xab6f {
             let Some(character) = char::from_u32(codepoint) else {
@@ -172,12 +275,35 @@ impl FontAsset {
         if coverage.is_empty() && !shaping {
             return Err(invalid("This font has no supported Latin, Greek, Cyrillic, punctuation, or symbol characters."));
         }
+        let mut codepoints = BTreeSet::new();
+        if let Some(cmap) = face.tables().cmap {
+            for table in cmap.subtables.into_iter().filter(|t| t.is_unicode()) {
+                table.codepoints(|code| {
+                    if char::from_u32(code).is_some_and(|c| {
+                        !c.is_control()
+                            && face
+                                .glyph_index(c)
+                                .is_some_and(|g| g.0 != 0 && face.glyph_hor_advance(g).is_some())
+                    }) {
+                        codepoints.insert(code);
+                    }
+                });
+            }
+        }
+        let mut shaped_coverage: Vec<[u32; 2]> = Vec::new();
+        for code in codepoints {
+            match shaped_coverage.last_mut() {
+                Some(range) if range[1] + 1 == code => range[1] = code,
+                _ => shaped_coverage.push([code, code]),
+            }
+        }
         let info = FontInfo {
             id: digest(&bytes),
             name: display_name(&face),
             weight: face.weight().to_number(),
             italic: face.is_italic() || face.is_oblique(),
             coverage,
+            shaped_coverage,
         };
         Ok(Self {
             info,
@@ -500,5 +626,42 @@ fn registered_font_paths(system_fonts: &Path, paths: &mut BTreeSet<PathBuf>) {
         unsafe {
             RegCloseKey(key);
         }
+    }
+}
+
+#[cfg(test)]
+mod coverage_budget_tests {
+    use super::bounded_cmap_coverage;
+    fn cmap(format: u16, size: usize) -> Vec<u8> {
+        let mut bytes = vec![0; 12 + size];
+        bytes[2..4].copy_from_slice(&1u16.to_be_bytes());
+        bytes[8..12].copy_from_slice(&12u32.to_be_bytes());
+        bytes[12..14].copy_from_slice(&format.to_be_bytes());
+        bytes
+    }
+    #[test]
+    fn inflated_format2_subheader_counts_are_refused_before_callbacks() {
+        let mut bytes = cmap(2, 526);
+        bytes[12 + 520..12 + 522].copy_from_slice(&256u16.to_be_bytes());
+        assert!(bounded_cmap_coverage(&bytes).is_ok());
+        bytes[12 + 520..12 + 522].copy_from_slice(&257u16.to_be_bytes());
+        assert!(bounded_cmap_coverage(&bytes).is_err());
+    }
+    #[test]
+    fn format13_many_singleton_groups_are_refused_before_linear_lookups() {
+        let mut bytes = cmap(13, 16 + 65 * 12);
+        bytes[24..28].copy_from_slice(&65u32.to_be_bytes());
+        for i in 0..65 {
+            let value = (i as u32).to_be_bytes();
+            let offset = 28 + i * 12;
+            bytes[offset..offset + 4].copy_from_slice(&value);
+            bytes[offset + 4..offset + 8].copy_from_slice(&value);
+        }
+        assert!(bounded_cmap_coverage(&bytes).is_err());
+        bytes[24..28].copy_from_slice(&64u32.to_be_bytes());
+        assert!(bounded_cmap_coverage(&bytes).is_ok());
+        // Few groups still need a bound on coverage-times-linear-lookup work.
+        bytes[32..36].copy_from_slice(&100_000u32.to_be_bytes());
+        assert!(bounded_cmap_coverage(&bytes).is_err());
     }
 }

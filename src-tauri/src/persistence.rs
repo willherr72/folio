@@ -338,6 +338,12 @@ fn appearance(
     legacy_text: bool,
     custom: Option<&FontAsset>,
 ) -> EngineResult<Appearance> {
+    #[cfg(feature = "shaped-text")]
+    if let Overlay::Text(text) = overlay {
+        if text.shaping.is_some() {
+            return shaped_appearance(text, geometry, custom);
+        }
+    }
     use lopdf::content::{Content, Operation};
     let mut operations = vec![Operation::new("q", vec![])];
     let mut bounds = [
@@ -635,7 +641,13 @@ pub(super) fn finalize(
                 }
                 let rendered = appearance(overlay, geometries[index], false, custom.as_deref())?;
                 let record = PortableRecord {
-                    version: if custom.is_some() { 2 } else { 1 },
+                    version: if matches!(overlay,Overlay::Text(t) if t.shaping.is_some()) {
+                        3
+                    } else if custom.is_some() {
+                        2
+                    } else {
+                        1
+                    },
                     custom_font: None,
                     frame: geometries[index].into(),
                     overlay: overlay.clone(),
@@ -667,6 +679,14 @@ pub(super) fn finalize(
                         )
                     };
                     fonts.set("FolioFont", resource);
+                    let semantic: Vec<_> = fonts
+                        .iter()
+                        .filter(|(key, _)| key.as_slice() != b"FolioFont")
+                        .map(|(k, v)| (k.clone(), v.clone()))
+                        .collect();
+                    for (key, value) in semantic {
+                        fonts.set(key, custom_font_pdf::install(&mut document, value));
+                    }
                 }
                 let ap_id=document.add_object(Stream::new(dictionary!{"Type"=>"XObject","Subtype"=>"Form","BBox"=>numbers(&rendered.bounds),"Resources"=>resources},rendered.content));
                 if request.flatten {
@@ -875,7 +895,13 @@ pub(super) fn decode(
         _ => None,
     };
     if let Some(id) = font_id {
-        if record.version != 2 {
+        if record.version
+            != if matches!(&record.overlay,Overlay::Text(t) if t.shaping.is_some()) {
+                3
+            } else {
+                2
+            }
+        {
             return None;
         }
         record.custom_font = Some(custom_font_pdf::embedded_asset(
@@ -1025,4 +1051,78 @@ fn io_error(error: std::io::Error) -> EngineError {
 }
 fn pdf_error(error: lopdf::Error) -> EngineError {
     EngineError::Io(format!("portable PDF persistence: {error}"))
+}
+
+#[cfg(feature = "shaped-text")]
+fn shaped_appearance(
+    text: &TextOverlay,
+    geometry: PageGeometry,
+    custom: Option<&FontAsset>,
+) -> EngineResult<Appearance> {
+    super::validate_id("text id", &text.id)?;
+    super::validate_point(
+        text.x,
+        text.y,
+        geometry.displayed_size().width,
+        geometry.displayed_size().height,
+    )?;
+    let font = custom
+        .ok_or_else(|| EngineError::InvalidRequest("Shaped text requires a custom font.".into()))?;
+    let prepared = crate::prepare_text_overlay(font, text)?;
+    let color = prepared.preview.color;
+    let mut resources = prepared.resources;
+    if !resources.has(b"Font") {
+        resources.set("Font", Dictionary::new());
+    }
+    resources
+        .get_mut(b"Font")
+        .unwrap()
+        .as_dict_mut()
+        .unwrap()
+        .set("FolioFont", custom_font_pdf::font(font)?);
+    let point = |x, y| {
+        let p = rotated_point(Point { x, y }, text.rotation);
+        let (x, y) = geometry.displayed_to_pdf(Point {
+            x: text.x + p.x,
+            y: text.y + p.y,
+        });
+        (x.value, y.value)
+    };
+    let (e, f) = point(-prepared.origin[0], text.font_size + prepared.origin[1]);
+    let angle = (geometry.rotation + 360 - text.rotation) % 360;
+    let (a, b, c, d) = match angle {
+        0 => (1., 0., 0., 1.),
+        90 => (0., 1., -1., 0.),
+        180 => (-1., 0., 0., -1.),
+        _ => (0., -1., 1., 0.),
+    };
+    let mut content = format!("q {a} {b} {c} {d} {e:.7} {f:.7} cm\n").into_bytes();
+    content.extend_from_slice(&prepared.content);
+    content.extend_from_slice(b"\nQ\n");
+    let rect = prepared.bounds;
+    let mut bounds = [
+        f32::INFINITY,
+        f32::INFINITY,
+        f32::NEG_INFINITY,
+        f32::NEG_INFINITY,
+    ];
+    for (x, y) in [
+        (rect.x, rect.y),
+        (rect.x + rect.width, rect.y),
+        (rect.x, rect.y + rect.height),
+        (rect.x + rect.width, rect.y + rect.height),
+    ] {
+        let (x, y) = point(x, y);
+        bounds[0] = bounds[0].min(x);
+        bounds[1] = bounds[1].min(y);
+        bounds[2] = bounds[2].max(x);
+        bounds[3] = bounds[3].max(y);
+    }
+    let fields = dictionary! {"Subtype"=>"FreeText","Contents"=>pdf_string(&text.text),"DA"=>Object::string_literal(format!("/FolioFont {} Tf {} {} {} rg",text.font_size,color[0],color[1],color[2])),"C"=>numbers(&color),"Q"=>0};
+    Ok(Appearance {
+        content,
+        bounds,
+        resources,
+        fields,
+    })
 }

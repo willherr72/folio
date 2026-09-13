@@ -192,3 +192,36 @@ fn installed_catalog_uses_bound_opaque_ids_and_loads_only_selected_fonts() {
         .iter()
         .all(|entry| entry.supported == entry.reason.is_none()));
 }
+
+#[test]
+fn shaped_coverage_refuses_oversized_cmap_ranges_before_enumeration() {
+    let mut bytes = std::fs::read(
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../tests/fixtures/corpus/fonts/DejaVuSerif.ttf"),
+    )
+    .unwrap();
+    let count = u16::from_be_bytes(bytes[4..6].try_into().unwrap()) as usize;
+    let record = (0..count)
+        .map(|i| 12 + i * 16)
+        .find(|&i| &bytes[i..i + 4] == b"cmap")
+        .unwrap();
+    let cmap = u32::from_be_bytes(bytes[record + 8..record + 12].try_into().unwrap()) as usize;
+    let n = u16::from_be_bytes(bytes[cmap + 2..cmap + 4].try_into().unwrap()) as usize;
+    let subtable = (0..n)
+        .map(|i| {
+            cmap + u32::from_be_bytes(
+                bytes[cmap + 8 + i * 8..cmap + 12 + i * 8]
+                    .try_into()
+                    .unwrap(),
+            ) as usize
+        })
+        .find(|&i| u16::from_be_bytes(bytes[i..i + 2].try_into().unwrap()) == 12)
+        .unwrap();
+    // One tiny format-12 group must never initiate four billion callbacks.
+    bytes[subtable + 16..subtable + 20].copy_from_slice(&0u32.to_be_bytes());
+    bytes[subtable + 20..subtable + 24].copy_from_slice(&u32::MAX.to_be_bytes());
+    let registry = FontRegistry::new();
+    let error = registry.register(bytes).unwrap_err().to_string();
+    assert!(error.contains("cmap coverage"), "{error}");
+    assert!(registry.ids().unwrap().is_empty());
+}

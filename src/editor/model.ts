@@ -35,6 +35,7 @@ export function redo<T>(history: History<T>): History<T> {
 export function cloneOverlay(overlay: Overlay): Overlay {
   if (overlay.type === "ink") return {...overlay, paths: overlay.paths.map(path => path.map(point => ({...point})))};
   if (overlay.type === "highlight") return {...overlay, rects: overlay.rects.map(rect => ({...rect}))};
+  if (overlay.type === "text" && overlay.shaping) return {...overlay,shaping:{...overlay.shaping}};
   return {...overlay};
 }
 

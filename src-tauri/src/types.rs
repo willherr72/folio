@@ -83,9 +83,34 @@ pub struct TextOverlay {
     pub font_name: TextFont,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub font_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub shaping: Option<TextShaping>,
     pub color: String,
     #[serde(default)]
     pub rotation: u16,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TextShaping {
+    #[serde(deserialize_with = "shaping_version")]
+    pub version: u8,
+    pub direction: ShapingDirection,
+    pub ligatures: bool,
+}
+fn shaping_version<'de, D: serde::Deserializer<'de>>(d: D) -> Result<u8, D::Error> {
+    let version = u8::deserialize(d)?;
+    if version != 1 {
+        return Err(serde::de::Error::custom("unsupported text shaping version"));
+    }
+    Ok(version)
+}
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum ShapingDirection {
+    Auto,
+    Ltr,
+    Rtl,
 }
 
 /// Portable PDF standard fonts; unknown wire values are rejected by serde.

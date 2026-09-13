@@ -1,6 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 
-export interface FontInfo { id: string; name: string; weight: number; italic: boolean; coverage: [number, number][] }
+export interface FontInfo { id: string; name: string; weight: number; italic: boolean; coverage: [number, number][]; shapedCoverage?: [number, number][] }
 export interface InstalledFont { id: string; name: string; supported: boolean; reason?: string | null }
 export const fontApi = {
   listInstalled: () => invoke<InstalledFont[]>("list_installed_fonts"),
@@ -89,13 +89,14 @@ export function retainCustomFonts(ids: Set<string>) {
   for (const id of previous) if (!retained.has(id)) void releaseUnownedFont(id);
 }
 
-export function customTextError(info: FontInfo, text: string): string | null {
+export function customTextError(info: FontInfo, text: string, shaped = false): string | null {
+  const coverage = shaped ? info.shapedCoverage ?? info.coverage : info.coverage;
   for (const character of text) {
     if (character === "\n") continue;
     const value = character.codePointAt(0)!;
-    let low = 0, high = info.coverage.length - 1, found = false;
+    let low = 0, high = coverage.length - 1, found = false;
     while (low <= high) {
-      const middle = (low + high) >> 1, [start, end] = info.coverage[middle];
+      const middle = (low + high) >> 1, [start, end] = coverage[middle];
       if (value < start) high = middle - 1;
       else if (value > end) low = middle + 1;
       else { found = true; break; }

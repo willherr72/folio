@@ -1,0 +1,1806 @@
+{
+  "description": "Browser SVG versus PDFium: geometry comparison with explicit rasterizer tolerance; not pixel identity",
+  "inkTolerance": {
+    "boundsPixels": 2,
+    "centroidPixels": 1,
+    "neighborPixels": 2,
+    "unmatchedFraction": 0.005,
+    "weightedAreaFraction": 0.2,
+    "minimumDarkness": 0.05
+  },
+  "errors": [],
+  "cases": [
+    {
+      "stem": "arabic-0",
+      "zoom": 150,
+      "rotation": 0,
+      "text": "سلام",
+      "fontId": "ceea25b464a656dc3b26849bab9356740401af62aedf1bfa8b7f0d9b75925b1b",
+      "width": 600,
+      "height": 600,
+      "pass": true,
+      "boundsDelta": 1,
+      "centroidDelta": 0.03271420334732511,
+      "weightedAreaFraction": 0.0009018531627891587,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        225,
+        235,
+        290,
+        275
+      ],
+      "expectedBounds": [
+        225,
+        235,
+        290,
+        274
+      ],
+      "actualCount": 575,
+      "expectedCount": 571
+    },
+    {
+      "stem": "arabic-0",
+      "zoom": 300,
+      "rotation": 0,
+      "text": "سلام",
+      "fontId": "ceea25b464a656dc3b26849bab9356740401af62aedf1bfa8b7f0d9b75925b1b",
+      "width": 1200,
+      "height": 1200,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.10570447437277153,
+      "weightedAreaFraction": 0.0051244447407173665,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        451,
+        470,
+        580,
+        550
+      ],
+      "expectedBounds": [
+        451,
+        470,
+        580,
+        550
+      ],
+      "actualCount": 2049,
+      "expectedCount": 2063
+    },
+    {
+      "stem": "arabic-180",
+      "zoom": 150,
+      "rotation": 180,
+      "text": "سلام",
+      "fontId": "ceea25b464a656dc3b26849bab9356740401af62aedf1bfa8b7f0d9b75925b1b",
+      "width": 600,
+      "height": 600,
+      "pass": true,
+      "boundsDelta": 1,
+      "centroidDelta": 0.06073245463059607,
+      "weightedAreaFraction": 0.00341290310070003,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        159,
+        174,
+        224,
+        214
+      ],
+      "expectedBounds": [
+        159,
+        175,
+        224,
+        214
+      ],
+      "actualCount": 580,
+      "expectedCount": 572
+    },
+    {
+      "stem": "arabic-180",
+      "zoom": 300,
+      "rotation": 180,
+      "text": "سلام",
+      "fontId": "ceea25b464a656dc3b26849bab9356740401af62aedf1bfa8b7f0d9b75925b1b",
+      "width": 1200,
+      "height": 1200,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.17084360564518875,
+      "weightedAreaFraction": 0.005073305999370741,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        319,
+        349,
+        448,
+        429
+      ],
+      "expectedBounds": [
+        319,
+        349,
+        448,
+        429
+      ],
+      "actualCount": 2055,
+      "expectedCount": 2064
+    },
+    {
+      "stem": "arabic-270",
+      "zoom": 150,
+      "rotation": 270,
+      "text": "سلام",
+      "fontId": "ceea25b464a656dc3b26849bab9356740401af62aedf1bfa8b7f0d9b75925b1b",
+      "width": 600,
+      "height": 600,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.03038123397078607,
+      "weightedAreaFraction": 0.003059349439765337,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        235,
+        159,
+        274,
+        224
+      ],
+      "expectedBounds": [
+        235,
+        159,
+        274,
+        224
+      ],
+      "actualCount": 570,
+      "expectedCount": 571
+    },
+    {
+      "stem": "arabic-270",
+      "zoom": 300,
+      "rotation": 270,
+      "text": "سلام",
+      "fontId": "ceea25b464a656dc3b26849bab9356740401af62aedf1bfa8b7f0d9b75925b1b",
+      "width": 1200,
+      "height": 1200,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.038313040494188044,
+      "weightedAreaFraction": 0.005623976563530045,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        470,
+        319,
+        550,
+        448
+      ],
+      "expectedBounds": [
+        470,
+        319,
+        550,
+        448
+      ],
+      "actualCount": 2051,
+      "expectedCount": 2063
+    },
+    {
+      "stem": "arabic-90",
+      "zoom": 150,
+      "rotation": 90,
+      "text": "سلام",
+      "fontId": "ceea25b464a656dc3b26849bab9356740401af62aedf1bfa8b7f0d9b75925b1b",
+      "width": 600,
+      "height": 600,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.03311359882627585,
+      "weightedAreaFraction": 0.004916768897315985,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        175,
+        225,
+        214,
+        290
+      ],
+      "expectedBounds": [
+        175,
+        225,
+        214,
+        290
+      ],
+      "actualCount": 572,
+      "expectedCount": 572
+    },
+    {
+      "stem": "arabic-90",
+      "zoom": 300,
+      "rotation": 90,
+      "text": "سلام",
+      "fontId": "ceea25b464a656dc3b26849bab9356740401af62aedf1bfa8b7f0d9b75925b1b",
+      "width": 1200,
+      "height": 1200,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.042242592595528095,
+      "weightedAreaFraction": 0.006132649449998365,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        349,
+        451,
+        429,
+        580
+      ],
+      "expectedBounds": [
+        349,
+        451,
+        429,
+        580
+      ],
+      "actualCount": 2051,
+      "expectedCount": 2064
+    },
+    {
+      "stem": "composed-0",
+      "zoom": 150,
+      "rotation": 0,
+      "text": "café",
+      "fontId": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "width": 600,
+      "height": 600,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.03317199670129867,
+      "weightedAreaFraction": 0.005871548351892483,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        226,
+        232,
+        299,
+        261
+      ],
+      "expectedBounds": [
+        226,
+        232,
+        299,
+        261
+      ],
+      "actualCount": 745,
+      "expectedCount": 749
+    },
+    {
+      "stem": "composed-0",
+      "zoom": 300,
+      "rotation": 0,
+      "text": "café",
+      "fontId": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "width": 1200,
+      "height": 1200,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.07309586089718323,
+      "weightedAreaFraction": 0.0031101285269965443,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        453,
+        464,
+        598,
+        522
+      ],
+      "expectedBounds": [
+        453,
+        464,
+        598,
+        522
+      ],
+      "actualCount": 2633,
+      "expectedCount": 2642
+    },
+    {
+      "stem": "composed-180",
+      "zoom": 150,
+      "rotation": 180,
+      "text": "café",
+      "fontId": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "width": 600,
+      "height": 600,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.09522465021757398,
+      "weightedAreaFraction": 0.0102817285915853,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        150,
+        188,
+        223,
+        217
+      ],
+      "expectedBounds": [
+        150,
+        188,
+        223,
+        217
+      ],
+      "actualCount": 738,
+      "expectedCount": 747
+    },
+    {
+      "stem": "composed-180",
+      "zoom": 300,
+      "rotation": 180,
+      "text": "café",
+      "fontId": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "width": 1200,
+      "height": 1200,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.09469379099584785,
+      "weightedAreaFraction": 0.0020990352511073645,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        301,
+        377,
+        446,
+        435
+      ],
+      "expectedBounds": [
+        301,
+        377,
+        446,
+        435
+      ],
+      "actualCount": 2626,
+      "expectedCount": 2638
+    },
+    {
+      "stem": "composed-270",
+      "zoom": 150,
+      "rotation": 270,
+      "text": "café",
+      "fontId": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "width": 600,
+      "height": 600,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.04021866437872745,
+      "weightedAreaFraction": 0.007445074796672639,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        232,
+        150,
+        261,
+        223
+      ],
+      "expectedBounds": [
+        232,
+        150,
+        261,
+        223
+      ],
+      "actualCount": 734,
+      "expectedCount": 748
+    },
+    {
+      "stem": "composed-270",
+      "zoom": 300,
+      "rotation": 270,
+      "text": "café",
+      "fontId": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "width": 1200,
+      "height": 1200,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.12452778203163462,
+      "weightedAreaFraction": 0.002086292357691355,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        464,
+        301,
+        522,
+        446
+      ],
+      "expectedBounds": [
+        464,
+        301,
+        522,
+        446
+      ],
+      "actualCount": 2631,
+      "expectedCount": 2640
+    },
+    {
+      "stem": "composed-90",
+      "zoom": 150,
+      "rotation": 90,
+      "text": "café",
+      "fontId": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "width": 600,
+      "height": 600,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.012877718120250847,
+      "weightedAreaFraction": 0.009764386131495864,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        188,
+        226,
+        217,
+        299
+      ],
+      "expectedBounds": [
+        188,
+        226,
+        217,
+        299
+      ],
+      "actualCount": 733,
+      "expectedCount": 748
+    },
+    {
+      "stem": "composed-90",
+      "zoom": 300,
+      "rotation": 90,
+      "text": "café",
+      "fontId": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "width": 1200,
+      "height": 1200,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.09412198941026872,
+      "weightedAreaFraction": 0.00013741451231780586,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        377,
+        453,
+        435,
+        598
+      ],
+      "expectedBounds": [
+        377,
+        453,
+        435,
+        598
+      ],
+      "actualCount": 2634,
+      "expectedCount": 2640
+    },
+    {
+      "stem": "decomposed-0",
+      "zoom": 150,
+      "rotation": 0,
+      "text": "café",
+      "fontId": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "width": 600,
+      "height": 600,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.03317199670129867,
+      "weightedAreaFraction": 0.005871548351892483,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        226,
+        232,
+        299,
+        261
+      ],
+      "expectedBounds": [
+        226,
+        232,
+        299,
+        261
+      ],
+      "actualCount": 745,
+      "expectedCount": 749
+    },
+    {
+      "stem": "decomposed-0",
+      "zoom": 300,
+      "rotation": 0,
+      "text": "café",
+      "fontId": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "width": 1200,
+      "height": 1200,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.07309586089718323,
+      "weightedAreaFraction": 0.0031101285269965443,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        453,
+        464,
+        598,
+        522
+      ],
+      "expectedBounds": [
+        453,
+        464,
+        598,
+        522
+      ],
+      "actualCount": 2633,
+      "expectedCount": 2642
+    },
+    {
+      "stem": "decomposed-180",
+      "zoom": 150,
+      "rotation": 180,
+      "text": "café",
+      "fontId": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "width": 600,
+      "height": 600,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.09522465021757398,
+      "weightedAreaFraction": 0.0102817285915853,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        150,
+        188,
+        223,
+        217
+      ],
+      "expectedBounds": [
+        150,
+        188,
+        223,
+        217
+      ],
+      "actualCount": 738,
+      "expectedCount": 747
+    },
+    {
+      "stem": "decomposed-180",
+      "zoom": 300,
+      "rotation": 180,
+      "text": "café",
+      "fontId": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "width": 1200,
+      "height": 1200,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.09469379099584785,
+      "weightedAreaFraction": 0.0020990352511073645,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        301,
+        377,
+        446,
+        435
+      ],
+      "expectedBounds": [
+        301,
+        377,
+        446,
+        435
+      ],
+      "actualCount": 2626,
+      "expectedCount": 2638
+    },
+    {
+      "stem": "decomposed-270",
+      "zoom": 150,
+      "rotation": 270,
+      "text": "café",
+      "fontId": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "width": 600,
+      "height": 600,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.04021866437872745,
+      "weightedAreaFraction": 0.007445074796672639,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        232,
+        150,
+        261,
+        223
+      ],
+      "expectedBounds": [
+        232,
+        150,
+        261,
+        223
+      ],
+      "actualCount": 734,
+      "expectedCount": 748
+    },
+    {
+      "stem": "decomposed-270",
+      "zoom": 300,
+      "rotation": 270,
+      "text": "café",
+      "fontId": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "width": 1200,
+      "height": 1200,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.12452778203163462,
+      "weightedAreaFraction": 0.002086292357691355,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        464,
+        301,
+        522,
+        446
+      ],
+      "expectedBounds": [
+        464,
+        301,
+        522,
+        446
+      ],
+      "actualCount": 2631,
+      "expectedCount": 2640
+    },
+    {
+      "stem": "decomposed-90",
+      "zoom": 150,
+      "rotation": 90,
+      "text": "café",
+      "fontId": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "width": 600,
+      "height": 600,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.012877718120250847,
+      "weightedAreaFraction": 0.009764386131495864,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        188,
+        226,
+        217,
+        299
+      ],
+      "expectedBounds": [
+        188,
+        226,
+        217,
+        299
+      ],
+      "actualCount": 733,
+      "expectedCount": 748
+    },
+    {
+      "stem": "decomposed-90",
+      "zoom": 300,
+      "rotation": 90,
+      "text": "café",
+      "fontId": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "width": 1200,
+      "height": 1200,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.09412198941026872,
+      "weightedAreaFraction": 0.00013741451231780586,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        377,
+        453,
+        435,
+        598
+      ],
+      "expectedBounds": [
+        377,
+        453,
+        435,
+        598
+      ],
+      "actualCount": 2634,
+      "expectedCount": 2640
+    },
+    {
+      "stem": "indic-0",
+      "zoom": 150,
+      "rotation": 0,
+      "text": "किताब",
+      "fontId": "385e78e6359a9d88a0f243d53b1209d7548361ba2194e2b9ec779bcaa7e8949d",
+      "width": 600,
+      "height": 600,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.11850255040380375,
+      "weightedAreaFraction": 0.012722262450720702,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        225,
+        228,
+        312,
+        261
+      ],
+      "expectedBounds": [
+        225,
+        228,
+        312,
+        261
+      ],
+      "actualCount": 1144,
+      "expectedCount": 1150
+    },
+    {
+      "stem": "indic-0",
+      "zoom": 300,
+      "rotation": 0,
+      "text": "किताब",
+      "fontId": "385e78e6359a9d88a0f243d53b1209d7548361ba2194e2b9ec779bcaa7e8949d",
+      "width": 1200,
+      "height": 1200,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.03404178560344917,
+      "weightedAreaFraction": 0.005097512715501885,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        450,
+        457,
+        625,
+        522
+      ],
+      "expectedBounds": [
+        450,
+        457,
+        625,
+        522
+      ],
+      "actualCount": 3962,
+      "expectedCount": 3970
+    },
+    {
+      "stem": "indic-180",
+      "zoom": 150,
+      "rotation": 180,
+      "text": "किताब",
+      "fontId": "385e78e6359a9d88a0f243d53b1209d7548361ba2194e2b9ec779bcaa7e8949d",
+      "width": 600,
+      "height": 600,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.12338500714895417,
+      "weightedAreaFraction": 0.01165403223981082,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        137,
+        188,
+        224,
+        221
+      ],
+      "expectedBounds": [
+        137,
+        188,
+        224,
+        221
+      ],
+      "actualCount": 1143,
+      "expectedCount": 1149
+    },
+    {
+      "stem": "indic-180",
+      "zoom": 300,
+      "rotation": 180,
+      "text": "किताब",
+      "fontId": "385e78e6359a9d88a0f243d53b1209d7548361ba2194e2b9ec779bcaa7e8949d",
+      "width": 1200,
+      "height": 1200,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.09670782339463813,
+      "weightedAreaFraction": 0.0046843163104904875,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        274,
+        377,
+        449,
+        442
+      ],
+      "expectedBounds": [
+        274,
+        377,
+        449,
+        442
+      ],
+      "actualCount": 3967,
+      "expectedCount": 3967
+    },
+    {
+      "stem": "indic-270",
+      "zoom": 150,
+      "rotation": 270,
+      "text": "किताब",
+      "fontId": "385e78e6359a9d88a0f243d53b1209d7548361ba2194e2b9ec779bcaa7e8949d",
+      "width": 600,
+      "height": 600,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.2668593943055839,
+      "weightedAreaFraction": 0.008863687797028418,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        228,
+        137,
+        261,
+        224
+      ],
+      "expectedBounds": [
+        228,
+        137,
+        261,
+        224
+      ],
+      "actualCount": 1131,
+      "expectedCount": 1151
+    },
+    {
+      "stem": "indic-270",
+      "zoom": 300,
+      "rotation": 270,
+      "text": "किताब",
+      "fontId": "385e78e6359a9d88a0f243d53b1209d7548361ba2194e2b9ec779bcaa7e8949d",
+      "width": 1200,
+      "height": 1200,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.21611501681201162,
+      "weightedAreaFraction": 8.422825858053559e-05,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        457,
+        274,
+        522,
+        449
+      ],
+      "expectedBounds": [
+        457,
+        274,
+        522,
+        449
+      ],
+      "actualCount": 3951,
+      "expectedCount": 3968
+    },
+    {
+      "stem": "indic-90",
+      "zoom": 150,
+      "rotation": 90,
+      "text": "किताब",
+      "fontId": "385e78e6359a9d88a0f243d53b1209d7548361ba2194e2b9ec779bcaa7e8949d",
+      "width": 600,
+      "height": 600,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.31674175241420244,
+      "weightedAreaFraction": 0.010463129982813889,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        188,
+        225,
+        221,
+        312
+      ],
+      "expectedBounds": [
+        188,
+        225,
+        221,
+        312
+      ],
+      "actualCount": 1128,
+      "expectedCount": 1149
+    },
+    {
+      "stem": "indic-90",
+      "zoom": 300,
+      "rotation": 90,
+      "text": "किताब",
+      "fontId": "385e78e6359a9d88a0f243d53b1209d7548361ba2194e2b9ec779bcaa7e8949d",
+      "width": 1200,
+      "height": 1200,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.1565363309661052,
+      "weightedAreaFraction": 0.0014780418679992441,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        377,
+        450,
+        442,
+        625
+      ],
+      "expectedBounds": [
+        377,
+        450,
+        442,
+        625
+      ],
+      "actualCount": 3964,
+      "expectedCount": 3968
+    },
+    {
+      "stem": "ligatures-off-0",
+      "zoom": 150,
+      "rotation": 0,
+      "text": "office",
+      "fontId": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "width": 600,
+      "height": 600,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.0626044190128141,
+      "weightedAreaFraction": 0.010276036385963605,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        226,
+        233,
+        324,
+        261
+      ],
+      "expectedBounds": [
+        226,
+        233,
+        324,
+        261
+      ],
+      "actualCount": 979,
+      "expectedCount": 998
+    },
+    {
+      "stem": "ligatures-off-0",
+      "zoom": 300,
+      "rotation": 0,
+      "text": "office",
+      "fontId": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "width": 1200,
+      "height": 1200,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.0666503297258032,
+      "weightedAreaFraction": 0.0043881629697080995,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        453,
+        467,
+        648,
+        522
+      ],
+      "expectedBounds": [
+        453,
+        467,
+        648,
+        522
+      ],
+      "actualCount": 3507,
+      "expectedCount": 3530
+    },
+    {
+      "stem": "ligatures-off-180",
+      "zoom": 150,
+      "rotation": 180,
+      "text": "office",
+      "fontId": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "width": 600,
+      "height": 600,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.05708977754915168,
+      "weightedAreaFraction": 0.009153049968851258,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        125,
+        188,
+        223,
+        216
+      ],
+      "expectedBounds": [
+        125,
+        188,
+        223,
+        216
+      ],
+      "actualCount": 984,
+      "expectedCount": 997
+    },
+    {
+      "stem": "ligatures-off-180",
+      "zoom": 300,
+      "rotation": 180,
+      "text": "office",
+      "fontId": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "width": 1200,
+      "height": 1200,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.061986162950859125,
+      "weightedAreaFraction": 0.0033694808839912884,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        251,
+        377,
+        446,
+        432
+      ],
+      "expectedBounds": [
+        251,
+        377,
+        446,
+        432
+      ],
+      "actualCount": 3503,
+      "expectedCount": 3526
+    },
+    {
+      "stem": "ligatures-off-270",
+      "zoom": 150,
+      "rotation": 270,
+      "text": "office",
+      "fontId": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "width": 600,
+      "height": 600,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.021289898067834656,
+      "weightedAreaFraction": 0.0024916706194319997,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        233,
+        125,
+        261,
+        223
+      ],
+      "expectedBounds": [
+        233,
+        125,
+        261,
+        223
+      ],
+      "actualCount": 993,
+      "expectedCount": 996
+    },
+    {
+      "stem": "ligatures-off-270",
+      "zoom": 300,
+      "rotation": 270,
+      "text": "office",
+      "fontId": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "width": 1200,
+      "height": 1200,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.14183043406035267,
+      "weightedAreaFraction": 0.004566866301719276,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        467,
+        251,
+        522,
+        446
+      ],
+      "expectedBounds": [
+        467,
+        251,
+        522,
+        446
+      ],
+      "actualCount": 3515,
+      "expectedCount": 3527
+    },
+    {
+      "stem": "ligatures-off-90",
+      "zoom": 150,
+      "rotation": 90,
+      "text": "office",
+      "fontId": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "width": 600,
+      "height": 600,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.07018626705183806,
+      "weightedAreaFraction": 0.0016428477551533906,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        188,
+        226,
+        216,
+        324
+      ],
+      "expectedBounds": [
+        188,
+        226,
+        216,
+        324
+      ],
+      "actualCount": 987,
+      "expectedCount": 997
+    },
+    {
+      "stem": "ligatures-off-90",
+      "zoom": 300,
+      "rotation": 90,
+      "text": "office",
+      "fontId": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "width": 1200,
+      "height": 1200,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.08862977731365618,
+      "weightedAreaFraction": 0.0028020337087744265,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        377,
+        453,
+        432,
+        648
+      ],
+      "expectedBounds": [
+        377,
+        453,
+        432,
+        648
+      ],
+      "actualCount": 3516,
+      "expectedCount": 3529
+    },
+    {
+      "stem": "ligatures-on-0",
+      "zoom": 150,
+      "rotation": 0,
+      "text": "office",
+      "fontId": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "width": 600,
+      "height": 600,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.09046827656152345,
+      "weightedAreaFraction": 0.007693360946135576,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        226,
+        233,
+        323,
+        261
+      ],
+      "expectedBounds": [
+        226,
+        233,
+        323,
+        261
+      ],
+      "actualCount": 989,
+      "expectedCount": 997
+    },
+    {
+      "stem": "ligatures-on-0",
+      "zoom": 300,
+      "rotation": 0,
+      "text": "office",
+      "fontId": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "width": 1200,
+      "height": 1200,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.054606216185675294,
+      "weightedAreaFraction": 0.004057126626593944,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        453,
+        467,
+        646,
+        522
+      ],
+      "expectedBounds": [
+        453,
+        467,
+        646,
+        522
+      ],
+      "actualCount": 3519,
+      "expectedCount": 3538
+    },
+    {
+      "stem": "ligatures-on-180",
+      "zoom": 150,
+      "rotation": 180,
+      "text": "office",
+      "fontId": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "width": 600,
+      "height": 600,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.06593276703304696,
+      "weightedAreaFraction": 0.008121358087398544,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        126,
+        188,
+        223,
+        216
+      ],
+      "expectedBounds": [
+        126,
+        188,
+        223,
+        216
+      ],
+      "actualCount": 985,
+      "expectedCount": 996
+    },
+    {
+      "stem": "ligatures-on-180",
+      "zoom": 300,
+      "rotation": 180,
+      "text": "office",
+      "fontId": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "width": 1200,
+      "height": 1200,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.07647347479223754,
+      "weightedAreaFraction": 0.0023952967677070597,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        253,
+        377,
+        446,
+        432
+      ],
+      "expectedBounds": [
+        253,
+        377,
+        446,
+        432
+      ],
+      "actualCount": 3522,
+      "expectedCount": 3538
+    },
+    {
+      "stem": "ligatures-on-270",
+      "zoom": 150,
+      "rotation": 270,
+      "text": "office",
+      "fontId": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "width": 600,
+      "height": 600,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.043323191433415786,
+      "weightedAreaFraction": 0.0026422340859634306,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        233,
+        126,
+        261,
+        223
+      ],
+      "expectedBounds": [
+        233,
+        126,
+        261,
+        223
+      ],
+      "actualCount": 995,
+      "expectedCount": 996
+    },
+    {
+      "stem": "ligatures-on-270",
+      "zoom": 300,
+      "rotation": 270,
+      "text": "office",
+      "fontId": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "width": 1200,
+      "height": 1200,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.12358288831774189,
+      "weightedAreaFraction": 0.005673419718153104,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        467,
+        253,
+        522,
+        446
+      ],
+      "expectedBounds": [
+        467,
+        253,
+        522,
+        446
+      ],
+      "actualCount": 3520,
+      "expectedCount": 3538
+    },
+    {
+      "stem": "ligatures-on-90",
+      "zoom": 150,
+      "rotation": 90,
+      "text": "office",
+      "fontId": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "width": 600,
+      "height": 600,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.001516380711450438,
+      "weightedAreaFraction": 0.0017945074947049683,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        188,
+        226,
+        216,
+        323
+      ],
+      "expectedBounds": [
+        188,
+        226,
+        216,
+        323
+      ],
+      "actualCount": 988,
+      "expectedCount": 997
+    },
+    {
+      "stem": "ligatures-on-90",
+      "zoom": 300,
+      "rotation": 90,
+      "text": "office",
+      "fontId": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "width": 1200,
+      "height": 1200,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.07782961761671459,
+      "weightedAreaFraction": 0.003225309148631558,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        377,
+        453,
+        432,
+        646
+      ],
+      "expectedBounds": [
+        377,
+        453,
+        432,
+        646
+      ],
+      "actualCount": 3523,
+      "expectedCount": 3537
+    },
+    {
+      "stem": "marks-0",
+      "zoom": 150,
+      "rotation": 0,
+      "text": "q̣̇",
+      "fontId": "3fdf69cabf06049ea70a00b5919340e2ce1e6d02b0cc3c4b44fb6801bd1e0d22",
+      "width": 600,
+      "height": 600,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.5477613558701648,
+      "weightedAreaFraction": 0.027344144806358404,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        227,
+        233,
+        244,
+        275
+      ],
+      "expectedBounds": [
+        227,
+        233,
+        244,
+        275
+      ],
+      "actualCount": 296,
+      "expectedCount": 296
+    },
+    {
+      "stem": "marks-0",
+      "zoom": 300,
+      "rotation": 0,
+      "text": "q̣̇",
+      "fontId": "3fdf69cabf06049ea70a00b5919340e2ce1e6d02b0cc3c4b44fb6801bd1e0d22",
+      "width": 1200,
+      "height": 1200,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.4415982497197888,
+      "weightedAreaFraction": 0.012390908174059436,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        454,
+        467,
+        489,
+        550
+      ],
+      "expectedBounds": [
+        454,
+        467,
+        489,
+        550
+      ],
+      "actualCount": 1071,
+      "expectedCount": 1076
+    },
+    {
+      "stem": "marks-180",
+      "zoom": 150,
+      "rotation": 180,
+      "text": "q̣̇",
+      "fontId": "3fdf69cabf06049ea70a00b5919340e2ce1e6d02b0cc3c4b44fb6801bd1e0d22",
+      "width": 600,
+      "height": 600,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.514504389541969,
+      "weightedAreaFraction": 0.033450963093662835,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        205,
+        174,
+        222,
+        216
+      ],
+      "expectedBounds": [
+        205,
+        174,
+        222,
+        216
+      ],
+      "actualCount": 295,
+      "expectedCount": 296
+    },
+    {
+      "stem": "marks-180",
+      "zoom": 300,
+      "rotation": 180,
+      "text": "q̣̇",
+      "fontId": "3fdf69cabf06049ea70a00b5919340e2ce1e6d02b0cc3c4b44fb6801bd1e0d22",
+      "width": 1200,
+      "height": 1200,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.50844145393404,
+      "weightedAreaFraction": 0.00760744370655997,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        410,
+        349,
+        445,
+        432
+      ],
+      "expectedBounds": [
+        410,
+        349,
+        445,
+        432
+      ],
+      "actualCount": 1073,
+      "expectedCount": 1076
+    },
+    {
+      "stem": "marks-270",
+      "zoom": 150,
+      "rotation": 270,
+      "text": "q̣̇",
+      "fontId": "3fdf69cabf06049ea70a00b5919340e2ce1e6d02b0cc3c4b44fb6801bd1e0d22",
+      "width": 600,
+      "height": 600,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.5796490823566955,
+      "weightedAreaFraction": 0.04164981803477485,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        233,
+        205,
+        275,
+        222
+      ],
+      "expectedBounds": [
+        233,
+        205,
+        275,
+        222
+      ],
+      "actualCount": 294,
+      "expectedCount": 296
+    },
+    {
+      "stem": "marks-270",
+      "zoom": 300,
+      "rotation": 270,
+      "text": "q̣̇",
+      "fontId": "3fdf69cabf06049ea70a00b5919340e2ce1e6d02b0cc3c4b44fb6801bd1e0d22",
+      "width": 1200,
+      "height": 1200,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.46657254899554346,
+      "weightedAreaFraction": 0.008189203200614982,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        467,
+        410,
+        550,
+        445
+      ],
+      "expectedBounds": [
+        467,
+        410,
+        550,
+        445
+      ],
+      "actualCount": 1073,
+      "expectedCount": 1076
+    },
+    {
+      "stem": "marks-90",
+      "zoom": 150,
+      "rotation": 90,
+      "text": "q̣̇",
+      "fontId": "3fdf69cabf06049ea70a00b5919340e2ce1e6d02b0cc3c4b44fb6801bd1e0d22",
+      "width": 600,
+      "height": 600,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.5747662042290358,
+      "weightedAreaFraction": 0.04012164198301982,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        174,
+        227,
+        216,
+        244
+      ],
+      "expectedBounds": [
+        174,
+        227,
+        216,
+        244
+      ],
+      "actualCount": 297,
+      "expectedCount": 296
+    },
+    {
+      "stem": "marks-90",
+      "zoom": 300,
+      "rotation": 90,
+      "text": "q̣̇",
+      "fontId": "3fdf69cabf06049ea70a00b5919340e2ce1e6d02b0cc3c4b44fb6801bd1e0d22",
+      "width": 1200,
+      "height": 1200,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.46566772579672033,
+      "weightedAreaFraction": 0.00818324463655604,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        349,
+        454,
+        432,
+        489
+      ],
+      "expectedBounds": [
+        349,
+        454,
+        432,
+        489
+      ],
+      "actualCount": 1075,
+      "expectedCount": 1076
+    },
+    {
+      "stem": "supplementary-0",
+      "zoom": 150,
+      "rotation": 0,
+      "text": "A𝐴B",
+      "fontId": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "width": 600,
+      "height": 600,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.27671695593573986,
+      "weightedAreaFraction": 0.00963665194400182,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        224,
+        234,
+        301,
+        260
+      ],
+      "expectedBounds": [
+        224,
+        234,
+        301,
+        260
+      ],
+      "actualCount": 802,
+      "expectedCount": 810
+    },
+    {
+      "stem": "supplementary-0",
+      "zoom": 300,
+      "rotation": 0,
+      "text": "A𝐴B",
+      "fontId": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "width": 1200,
+      "height": 1200,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.02807396181947297,
+      "weightedAreaFraction": 0.0008831191393329061,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        449,
+        469,
+        602,
+        521
+      ],
+      "expectedBounds": [
+        449,
+        469,
+        602,
+        521
+      ],
+      "actualCount": 2888,
+      "expectedCount": 2894
+    },
+    {
+      "stem": "supplementary-180",
+      "zoom": 150,
+      "rotation": 180,
+      "text": "A𝐴B",
+      "fontId": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "width": 600,
+      "height": 600,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.2424814706791949,
+      "weightedAreaFraction": 0.010130477555341811,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        148,
+        189,
+        225,
+        215
+      ],
+      "expectedBounds": [
+        148,
+        189,
+        225,
+        215
+      ],
+      "actualCount": 801,
+      "expectedCount": 811
+    },
+    {
+      "stem": "supplementary-180",
+      "zoom": 300,
+      "rotation": 180,
+      "text": "A𝐴B",
+      "fontId": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "width": 1200,
+      "height": 1200,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.011617074411333306,
+      "weightedAreaFraction": 0.0004752005763711511,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        297,
+        378,
+        450,
+        430
+      ],
+      "expectedBounds": [
+        297,
+        378,
+        450,
+        430
+      ],
+      "actualCount": 2884,
+      "expectedCount": 2893
+    },
+    {
+      "stem": "supplementary-270",
+      "zoom": 150,
+      "rotation": 270,
+      "text": "A𝐴B",
+      "fontId": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "width": 600,
+      "height": 600,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.016566364320141247,
+      "weightedAreaFraction": 0.0025487720635510662,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        234,
+        148,
+        260,
+        225
+      ],
+      "expectedBounds": [
+        234,
+        148,
+        260,
+        225
+      ],
+      "actualCount": 805,
+      "expectedCount": 811
+    },
+    {
+      "stem": "supplementary-270",
+      "zoom": 300,
+      "rotation": 270,
+      "text": "A𝐴B",
+      "fontId": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "width": 1200,
+      "height": 1200,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.14172148991343647,
+      "weightedAreaFraction": 0.005968702843925157,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        469,
+        297,
+        521,
+        450
+      ],
+      "expectedBounds": [
+        469,
+        297,
+        521,
+        450
+      ],
+      "actualCount": 2880,
+      "expectedCount": 2894
+    },
+    {
+      "stem": "supplementary-90",
+      "zoom": 150,
+      "rotation": 90,
+      "text": "A𝐴B",
+      "fontId": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "width": 600,
+      "height": 600,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.04542669970737734,
+      "weightedAreaFraction": 0.004061055397835214,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        189,
+        224,
+        215,
+        301
+      ],
+      "expectedBounds": [
+        189,
+        224,
+        215,
+        301
+      ],
+      "actualCount": 805,
+      "expectedCount": 810
+    },
+    {
+      "stem": "supplementary-90",
+      "zoom": 300,
+      "rotation": 90,
+      "text": "A𝐴B",
+      "fontId": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+      "width": 1200,
+      "height": 1200,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.10557142743709846,
+      "weightedAreaFraction": 0.005783384118560843,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        378,
+        449,
+        430,
+        602
+      ],
+      "expectedBounds": [
+        378,
+        449,
+        430,
+        602
+      ],
+      "actualCount": 2879,
+      "expectedCount": 2894
+    }
+  ]
+}

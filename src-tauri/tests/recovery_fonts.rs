@@ -287,3 +287,86 @@ fn substituted_source_recovers_without_original_font_file_or_registry_asset() {
     }
     store.clear().unwrap();
 }
+#[cfg(feature = "shaped-text")]
+#[test]
+fn recovery_restores_shaped_options_and_preparation_after_font_release() {
+    let _lock = TEST_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+    let temp = tempfile::tempdir().unwrap();
+    let engine = engine();
+    let source_path = fixture(temp.path());
+    let source = engine.open_document(&source_path).unwrap();
+    let bytes = fs::read(
+        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("../tests/fixtures/shaped-text/NotoSansArabic-Regular.ttf"),
+    )
+    .unwrap();
+    let font = engine.fonts().register(bytes.clone()).unwrap();
+    let mut work = workspace(&source, Some(&font.id));
+    let overlay = &mut work["tabs"][0]["document"]["pages"][0]["overlays"][0];
+    overlay["text"] = json!("سلام");
+    overlay["shaping"] = json!({"version":1,"direction":"rtl","ligatures":true});
+    let expected = engine
+        .prepare_text_overlay(&serde_json::from_value(overlay.clone()).unwrap())
+        .unwrap();
+    let expected = serde_json::to_value(expected).unwrap();
+    let store = RecoveryStore::new(temp.path().join("recovery")).unwrap();
+    store.save(&engine, work).unwrap();
+    engine.close_document(&source.id).unwrap();
+    engine.fonts().remove(&font.id).unwrap();
+    fs::remove_file(source_path).unwrap();
+    let recovered = store.load(&engine).unwrap().unwrap();
+    let page = recovered["tabs"][0]["document"]["pages"][0].clone();
+    let actual = engine
+        .prepare_text_overlay(&serde_json::from_value(page["overlays"][0].clone()).unwrap())
+        .unwrap();
+    assert_eq!(serde_json::to_value(actual).unwrap(), expected);
+    assert_eq!(
+        &*engine.fonts().get(&font.id).unwrap().bytes,
+        bytes.as_slice()
+    );
+    let output = temp.path().join("shaped.pdf");
+    engine
+        .export_pdf(
+            serde_json::from_value(json!({"pages":[page]})).unwrap(),
+            &output,
+        )
+        .unwrap();
+    let opened = engine.open_document(&output).unwrap();
+    assert_eq!(opened.pages[0].overlays.len(), 1);
+}
+
+#[cfg(feature = "shaped-text")]
+#[test]
+fn recovery_preserves_unsupported_shaped_draft_without_silently_exporting_it() {
+    let _lock = TEST_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+    let temp = tempfile::tempdir().unwrap();
+    let engine = engine();
+    let source = engine.open_document(fixture(temp.path())).unwrap();
+    let font = engine.fonts().register(font_bytes()).unwrap();
+    let mut work = workspace(&source, Some(&font.id));
+    let overlay = &mut work["tabs"][0]["document"]["pages"][0]["overlays"][0];
+    overlay["text"] = json!("unfinished\nsecond line");
+    overlay["shaping"] = json!({"version":1,"direction":"auto","ligatures":true});
+    let original = overlay.clone();
+    assert!(engine
+        .prepare_text_overlay(&serde_json::from_value(original.clone()).unwrap())
+        .is_err());
+    let store = RecoveryStore::new(temp.path().join("recovery")).unwrap();
+    store.save(&engine, work).unwrap();
+    engine.close_document(&source.id).unwrap();
+    engine.fonts().remove(&font.id).unwrap();
+    let recovered = store.load(&engine).unwrap().unwrap();
+    let page = recovered["tabs"][0]["document"]["pages"][0].clone();
+    assert_eq!(page["overlays"][0], original);
+    assert!(engine
+        .prepare_text_overlay(&serde_json::from_value(original).unwrap())
+        .is_err());
+    let output = temp.path().join("unsupported.pdf");
+    assert!(engine
+        .export_pdf(
+            serde_json::from_value(json!({"pages":[page]})).unwrap(),
+            &output
+        )
+        .is_err());
+    assert!(!output.exists());
+}

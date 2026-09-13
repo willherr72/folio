@@ -1,5 +1,8 @@
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
 import { Check, LoaderCircle, Search, Type, Upload } from "lucide-react";
+import type { TextOverlay } from "../editor/types";
+import { useShapedText } from "../editor/shaped-text";
+import { PreparedOverlayInk } from "./TextOverlayPresentation";
 import { Modal } from "./Modal";
 import { acquireFontInOrder, customTextError, ensureCustomFont, flushFontReleases, fontApi, fontFamily, holdCustomFont, type FontInfo, type InstalledFont } from "../editor/custom-fonts";
 import "./release-dialogs.css";
@@ -7,6 +10,8 @@ import "./font-picker.css";
 
 interface FontPickerProps {
   text: string;
+  shaping?: TextOverlay["shaping"];
+  fontSize?: number;
   title?: string;
   description?: string;
   currentFontId?: string;
@@ -24,7 +29,7 @@ function styleName(info: FontInfo) {
   return `${weight}${info.italic ? " · Italic" : ""}`;
 }
 
-export function FontPicker({ text, title = "Choose a font", description = "Preview an installed font or import your own. The selected font is included when you save your PDF.", currentFontId, onChoose, onClose }: FontPickerProps) {
+export function FontPicker({ text, shaping, fontSize = 24, title = "Choose a font", description = "Preview an installed font or import your own. The selected font is included when you save your PDF.", currentFontId, onChoose, onClose }: FontPickerProps) {
   const [fonts, setFonts] = useState<InstalledFont[] | null>(null);
   const [query, setQuery] = useState("");
   const [busy, setBusy] = useState(false);
@@ -40,6 +45,8 @@ export function FontPicker({ text, title = "Choose a font", description = "Previ
   const searchRef = useRef<HTMLInputElement>(null), listRef = useRef<HTMLUListElement>(null);
   const latestText = useRef(text);
   latestText.current = text;
+  const latestShaping = useRef(shaping);
+  latestShaping.current = shaping;
   const labelId = useId();
 
   const discard = () => {
@@ -78,7 +85,7 @@ export function FontPicker({ text, title = "Choose a font", description = "Previ
             owned = { info, releaseLease: holdCustomFont(info.id) };
             if (!isCurrent()) return;
             loadingFont.current = owned;
-            const problem = customTextError(info, latestText.current);
+            const problem = customTextError(info, latestText.current, !!latestShaping.current);
             if (problem) throw new Error(problem);
             await ensureCustomFont(info.id, info);
             if (!isCurrent()) return;
@@ -128,10 +135,17 @@ export function FontPicker({ text, title = "Choose a font", description = "Previ
     if (currentFontId) choose({ kind: "current", id: currentFontId });
   }, [currentFontId]);
 
-  const problem = selected ? customTextError(selected, text) : null;
+  const shaped = useShapedText(selected && shaping ? {
+    type: "text", id: "font-preview", x: 0, y: 0, fontSize, color: "#222222",
+    text, fontId: selected.id, shaping,
+  } : undefined);
+  const preparing = !!selected && !!shaping && (!shaped || shaped.status === "loading");
+  const problem = (selected ? customTextError(selected, text, !!shaping) : null)
+    ?? (shaped?.status === "error" ? shaped.error : null);
+  const canPreview = selected && !problem && (!shaping || shaped?.status === "ready");
   const apply = () => {
     const owned = previewFont.current;
-    if (!active.current || applying.current || busy || !owned || problem) return;
+    if (!active.current || applying.current || busy || preparing || !owned || problem) return;
     // Transfer before calling the parent, which may synchronously unmount us.
     applying.current = true;
     owned.transferred = true;
@@ -184,25 +198,30 @@ export function FontPicker({ text, title = "Choose a font", description = "Previ
         </div>
         <div className="font-picker-preview-column">
           <div className="font-picker-section-heading"><h3>Preview</h3><span>Your text</span></div>
-          <div className={`font-picker-preview-card${selected && !problem ? " has-font" : ""}`} aria-busy={busy}>
-            {selected && !problem ? <>
-              <div className="font-picker-face-info"><strong>{selected.name}</strong><span>{styleName(selected)}</span></div>
-              <div className="font-picker-sample" role="region" aria-label="Font preview" style={{ fontFamily: fontFamily(selected.id), fontKerning: "none", fontVariantLigatures: "none", fontFeatureSettings: '"kern" 0, "liga" 0, "clig" 0', fontSynthesis: "none" }}>{text}</div>
+          <div className={`font-picker-preview-card${canPreview ? " has-font" : ""}`} aria-busy={busy || preparing}>
+            {canPreview ? <>
+              <div className="font-picker-face-info"><strong>{selected!.name}</strong><span>{styleName(selected!)}</span></div>
+              {shaping && shaped?.result ? <div className="font-picker-sample" role="region" aria-label="Font preview">
+                <svg role="img" aria-label={text} width="100%" height={Math.max(32, shaped.result.bounds.height + 8)} viewBox={`${shaped.result.bounds.x - 4} ${shaped.result.bounds.y - 4} ${Math.max(1, shaped.result.bounds.width) + 8} ${Math.max(1, shaped.result.bounds.height) + 8}`} preserveAspectRatio="xMinYMid meet">
+                  <PreparedOverlayInk result={shaped.result} fontSize={fontSize}/>
+                </svg>
+              </div> : <div className="font-picker-sample" role="region" aria-label="Font preview" style={{ fontFamily: fontFamily(selected!.id), fontKerning: "none", fontVariantLigatures: "none", fontFeatureSettings: '\"kern\" 0, \"liga\" 0, \"clig\" 0', fontSynthesis: "none" }}>{text}</div>}
             </> : <div className="font-picker-placeholder">
-              {busy ? <LoaderCircle size={26} className="font-picker-spinner" aria-hidden="true"/> : <Type size={28} aria-hidden="true"/>}
+              {busy || preparing ? <LoaderCircle size={26} className="font-picker-spinner" aria-hidden="true"/> : <Type size={28} aria-hidden="true"/>}
               <strong>{busy ? "Preparing preview…" : error || problem ? "Preview unavailable" : "Find the right font"}</strong>
-              <p role={busy ? "status" : undefined}>{busy ? "Loading your selected font." : "Select a font to see your text here."}</p>
+              <p role={busy || preparing ? "status" : undefined}>{preparing ? "Preparing shaped text." : busy ? "Loading your selected font." : "Select a font to see your text here."}</p>
             </div>}
           </div>
         </div>
       </div>
       {(error || problem) && <p className="error-note font-picker-error" role="alert">{error || problem}</p>}
+      {shaped?.status === "error" && shaped.retry && <button type="button" className="button" onClick={shaped.retry}>Retry preview</button>}
       {catalogError && <p className="error-note font-picker-error" role="alert">{catalogError}</p>}
     </div>
     <footer className="dialog-actions font-picker-actions">
       <button type="button" className="button font-picker-import" disabled={busy || applied} onClick={() => choose({ kind: "import" })}><Upload size={14} aria-hidden="true"/>Import font…</button>
       <button type="button" className="button" onClick={cancel}>Cancel</button>
-      <button type="button" className="button primary" disabled={busy || !selected || !!problem || applied} onClick={apply}>Apply font</button>
+      <button type="button" className="button primary" disabled={busy || preparing || !selected || !!problem || applied} onClick={apply}>Apply font</button>
     </footer>
   </Modal>;
 }

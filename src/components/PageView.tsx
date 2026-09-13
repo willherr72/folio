@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { subscribeShapedText, shapedTextRevision } from "../editor/shaped-text";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import type { FolioAdapter } from "../editor/adapter";
 import { clientPointToPage, displayDimensions, pageTransform, placeInkPaths } from "../editor/geometry";
 import { textOverlayBounds } from "../editor/text-overlay-geometry";
@@ -152,6 +153,7 @@ export function PageView(props: PageViewProps) {
   const previewPaths = previewEnabled && signaturePoint ? placeInkPaths(pendingSignature!, signaturePoint, page.width, page.height) : [];
   const cssWidth = dimensions.width * zoom / 100;
   const rendered = usePageImage(adapter, page, Math.min(2400, Math.max(600, Math.round(cssWidth * devicePixelRatio))));
+  useSyncExternalStore(subscribeShapedText, shapedTextRevision);
   const cursor = pendingSignature || tool === "draw" || tool === "comment" ? "crosshair" : tool === "text" || tool === "highlight" ? "text" : "default";
 
   const originalPoint = (event: React.PointerEvent) => {

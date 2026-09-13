@@ -12,8 +12,8 @@ Extract it and open **Folio.exe**. Keep the resources folder beside the executab
 Microsoft Edge WebView2 Runtime is required.
 
 In this development checkout, double-click **Launch Folio.cmd** after building.
-Version 0.9.0 lives in **artifacts/Folio-v0.9.0/Folio.exe**.
-The ZIP is **artifacts/Folio-v0.9.0-windows-x64.zip**.
+Version 0.9.1 lives in **artifacts/Folio-v0.9.1/Folio.exe**.
+The ZIP is **artifacts/Folio-v0.9.1-windows-x64.zip**.
 
 ## Everyday editing
 
@@ -22,6 +22,7 @@ The ZIP is **artifacts/Folio-v0.9.0-windows-x64.zip**.
 - **Edit existing text:** choose **Edit text**, click an outlined run, change **Replacement text**, and apply. Supported horizontal runs use standard Helvetica, Times and Courier or verified embedded TrueType fonts, including subsets. Longer replacements can use available space. If the subset lacks a letter, choose and preview an explicit substitute font. Complex layouts remain unsupported. [Support details](docs/existing-text-editing.md).
 - **Text:** choose Text and click a page. The Content field selects the placeholder
   immediately, so typing replaces it. Choose a font and style, adjust size/color, and drag the note to move it. **More fonts…** searches installed fonts or imports a local TTF/OTF. Preview your text, then choose **Apply font**. Supported fonts are embedded so recipients do not need to install them. [Font support](docs/font-support-roadmap.md).
+- **Shaped text (unreleased source builds):** enable **Shaped text** in Properties, enter a single line, then choose an exact custom font with **More fonts…**. Native previews support tested ligatures, combining marks, Arabic joining and Indic samples. Mixed direction and RTL word separators remain unsupported. [Scope and verification](docs/shaped-editor-integration.md).
 - **Select and copy:** drag across embedded PDF text in Select mode, then press
   **Ctrl+C** to copy it, including spaces and line breaks. Scanned pages without
   embedded text require OCR, which is not included.

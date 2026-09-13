@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Add opt-in shaped single-line text boxes with native outline previews, direction/ligature controls and exact-font validation. Preserve older text boxes unchanged; retain shaped controls/font resources in editable saves and recovery, with shared cluster geometry for search.
+- Keep IME composition as one committed edit, discard stale native preparation, share duplicate preview work, and bound preview memory and hostile font character-map enumeration. Expose retry after a preview failure.
+
 - Add an experimental paired native PDF/vector preview from one shaping pass, with shared glyph outlines and placements. Verify 64 browser/PDFium comparisons across scripts, rotations and zooms; desktop text-box integration remains pending.
 
 - Preserve logical reader/search order on eligible rotated simple-text pages by extracting from a temporary unrotated page copy and retaining original display geometry. Leave counterrotated, mixed, non-ASCII and ambiguous layouts on the existing path; keep raw interoperability extraction unchanged.
