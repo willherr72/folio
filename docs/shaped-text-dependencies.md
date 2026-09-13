@@ -2,7 +2,7 @@
 
 This is the issue #14 native/API serialization gate. It adds no supported characters to legacy overlays and makes no production UI support claim.
 
-The entire gate is behind the nondefault `shaped-text` Cargo feature. Default application builds omit its modules, public APIs and optional shaping dependencies. Run native evidence with `cargo test --features shaped-text --test shaping --test shaping_unicode_conformance --test shaped_pdf --test shaped_pdfium_api`; regenerate reader fixtures with `cargo run --features shaped-text --example shaped-text-probe`. `FontAsset::parse_for_shaping` is available only with that feature.
+The original gate used the nondefault `shaped-text` Cargo feature. Starting with v0.10.0, default application builds include that feature and the opt-in shaped text-box editor. Legacy overlays keep their existing validation. Run native evidence with `cargo test --features shaped-text --test shaping --test shaping_unicode_conformance --test shaped_pdf --test shaped_pdfium_api`; regenerate reader fixtures with `cargo run --features shaped-text --example shaped-text-probe`. `FontAsset::parse_for_shaping` is available only with that feature.
 
 ## Pinned dependencies
 
@@ -37,4 +37,4 @@ Folio vendors the exact HarfRust 0.13.3 package with a two-file resource-status 
 
 ## Redistribution
 
-The pinned crate packages include full notices: HarfRust `LICENSE`; Unicode crates/read-fonts/font-types `LICENSE-MIT` and `LICENSE-APACHE`; bytemuck_derive additionally `LICENSE-ZLIB`. HarfRust's MIT notice credits HarfBuzz developers and Yevhenii Reizner. Its vendored directory retains that full notice and `FOLIO_PROVENANCE.json` records the original registry archive checksum, upstream revision, all original file hashes and the two changed file hashes; `FOLIO_PATCH.patch` is the complete source change. Existing release license collection must include these packages before distribution; this gate does not create a release. Test-font licenses and exact provenance live beside `tests/fixtures/shaped-text` and the existing DejaVu corpus.
+The pinned crate packages include full notices: HarfRust `LICENSE`; Unicode crates/read-fonts/font-types `LICENSE-MIT` and `LICENSE-APACHE`; bytemuck_derive additionally `LICENSE-ZLIB`. HarfRust's MIT notice credits HarfBuzz developers and Yevhenii Reizner. Its vendored directory retains that full notice and `FOLIO_PROVENANCE.json` records the original registry archive checksum, upstream revision, all original file hashes and the two changed file hashes; `FOLIO_PATCH.patch` is the complete source change. Release license collection includes these packages and the three Folio vendor notice/patch/provenance files alongside HarfRust’s LICENSE. Test-font licenses and exact provenance live beside `tests/fixtures/shaped-text` and the existing DejaVu corpus.

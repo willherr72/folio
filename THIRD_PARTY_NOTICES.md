@@ -26,11 +26,12 @@ Sans Arabic/Devanagari fonts. Full DejaVu and SIL Open Font License notices and
 immutable source hashes are in [tests/fixtures/shaped-text](tests/fixtures/shaped-text/README.md).
 Versioned Unicode development data carries the complete
 [Unicode License V3](tests/fixtures/shaped-text/unicode/LICENSE_UNICODE.txt).
-Optional native shaping dependencies, versions and licenses are documented in
-[the dependency decision](docs/shaped-text-dependencies.md); they require the
-nondefault `shaped-text` build feature.
+Native shaping dependencies, versions and licenses are documented in
+[the dependency decision](docs/shaped-text-dependencies.md). They are included
+in default builds starting with v0.10.0; full dependency licenses are bundled
+under `licenses/rust`.
 
-The experimental shaper uses a locally patched HarfRust 0.13.3 snapshot. Its
+The native shaper uses a locally patched HarfRust 0.13.3 snapshot. Its
 complete upstream MIT license, archive/source checksums, exact patch, and
 maintenance notes are in [src-tauri/vendor/harfrust-0.13.3](src-tauri/vendor/harfrust-0.13.3/FOLIO_VENDOR.md).
 The local changes expose and enforce shaping work limits; they do not imply
@@ -48,3 +49,6 @@ uses a fixed advance. No ReportLab font binaries are included.
 ReportLab's three-clause BSD license is reproduced in [docs/licenses/REPORTLAB.txt](docs/licenses/REPORTLAB.txt).
 Additional notices in the distribution: Copyright (c) 2000-2025, ReportLab Inc.;
 Copyright ReportLab Europe Ltd. 2000-2017. Source: https://www.reportlab.com/.
+
+The portable distribution includes HarfRust’s local change notice, complete patch,
+and source provenance in `licenses/rust/harfrust-0.13.3/` alongside its full LICENSE.

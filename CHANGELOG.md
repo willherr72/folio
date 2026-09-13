@@ -1,19 +1,12 @@
 # Changelog
 
-## Unreleased
+## 0.10.0
 
-- Add opt-in shaped single-line text boxes with native outline previews, direction/ligature controls and exact-font validation. Preserve older text boxes unchanged; retain shaped controls/font resources in editable saves and recovery, with shared cluster geometry for search.
-- Keep IME composition as one committed edit, discard stale native preparation, share duplicate preview work, and bound preview memory and hostile font character-map enumeration. Expose retry after a preview failure.
-
-- Add an experimental paired native PDF/vector preview from one shaping pass, with shared glyph outlines and placements. Verify 64 browser/PDFium comparisons across scripts, rotations and zooms; desktop text-box integration remains pending.
-
-- Preserve logical reader/search order on eligible rotated simple-text pages by extracting from a temporary unrotated page copy and retaining original display geometry. Leave counterrotated, mixed, non-ASCII and ambiguous layouts on the existing path; keep raw interoperability extraction unchanged.
-
-- Retain negative font-resource boundary probes: multiple Type3 resources reorder PDFium copy on 180-degree pages, while whole-line ActualText repairs copy but collapses selection geometry. Keep the supported writer's 255-definition guard and add strict per-font inspection regressions.
-
-- Add an experimental native complex-text PDF representation with exact Unicode across PDFium, MuPDF and pypdf for 32 sample/rotation cases, retained source fonts and bounded outline generation. Mixed-direction text remains refused; editor integration and portable cluster selection are still pending.
-- Reuse exact semantic character definitions so longer repeated text can exceed 255 characters within the existing layout limits. Refuse RTL separators and joiners after regression tests exposed reversed word order and misplaced selection boxes.
-- Reject interrupted shaping and excessive or malformed composite outlines using a documented, pinned HarfRust patch and reproducible hostile-font regressions.
+- Add opt-in **Shaped text** for single-line custom-font text boxes, with native outline previews, direction and ligature controls, and font validation at the authored size.
+- Preserve shaped controls and exact embedded fonts through editable save/reopen and recovery. Flattened exports share native glyph placement, color and semantic text; search uses logical cluster bounds.
+- Commit IME composition as one edit, retain unsupported drafts for recovery, discard stale preview work, and protect fonts through canceled requests. Share duplicate preparations, bound preview memory, and offer retry after failures.
+- Preserve reader/search order on eligible rotated simple-text pages while retaining source display geometry.
+- Bound malformed font character-map and shaping work; retain explicit unsupported-script and 255-definition guards. Mixed-direction text, RTL separators/joiners, whitespace-only lines and general paragraph reflow remain unsupported.
 
 ## 0.9.1
 

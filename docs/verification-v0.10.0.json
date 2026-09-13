@@ -1,0 +1,73 @@
+{
+  "release": "0.10.0",
+  "date": "2026-09-13",
+  "frontendTests": 241,
+  "nativeTests": 137,
+  "nativeIgnored": 3,
+  "dependencyRecords": 551,
+  "desktop": {
+    "passed": true,
+    "binarySha256": "0b0a1bd2d23d902ed75014e773652b850f870d9c06e40bc9004dc05fa1aa6813",
+    "sourceSha256": "65d61a2942add01e77c73be095297eab2a54744d01e0eb9f048c899917961b78",
+    "editableSha256": "edf25373d922aeedfe5d30137ad6b2a9a094428b213b8669e2e947f8c314acf0",
+    "flatSha256": "31d2adce25eb7fda5edf09016e667198f02b1667668c722b93fa3cf267ff9886",
+    "checks": [
+      "native PDF open",
+      "native font import and shaped outline preview",
+      "ligature controls change native glyphs",
+      "shaped text undo and redo",
+      "WebView composition commits as one undo step",
+      "editable/flattened export preserves source",
+      "editable reopen without source or imported font",
+      "shaped annotation search",
+      "flattened native reader text",
+      "flattened drag selection copies exact Unicode",
+      "print setup and cancel",
+      "tab return retains native preparation"
+    ],
+    "errors": []
+  },
+  "recovery": {
+    "passed": true,
+    "binarySha256": "0b0a1bd2d23d902ed75014e773652b850f870d9c06e40bc9004dc05fa1aa6813",
+    "checks": [
+      "crash checkpoint contains shaped draft",
+      "restore with all source PDFs and imported font moved",
+      "native outlines regenerated",
+      "shaping controls restored",
+      "recovered logical text searchable"
+    ]
+  },
+  "scripts": {
+    "passed": true,
+    "checks": [
+      "Arabic native import, shaped preview, flattened save, reader Unicode",
+      "Indic native import, shaped preview, flattened save, reader Unicode"
+    ],
+    "binarySha256": "0b0a1bd2d23d902ed75014e773652b850f870d9c06e40bc9004dc05fa1aa6813"
+  },
+  "independentReaders": {
+    "mupdf": "1.27.1",
+    "pypdf": "6.14.2",
+    "results": [
+      {
+        "file": "Flattened.pdf.moved",
+        "expected": "office café Ω",
+        "mupdfExactSubstring": true,
+        "pypdfExactSubstring": true
+      },
+      {
+        "file": "Arabic.pdf",
+        "expected": "سلام",
+        "mupdfExactSubstring": true,
+        "pypdfExactSubstring": true
+      },
+      {
+        "file": "Indic.pdf",
+        "expected": "नमस्ते",
+        "mupdfExactSubstring": true,
+        "pypdfExactSubstring": true
+      }
+    ]
+  }
+}

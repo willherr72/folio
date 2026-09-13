@@ -12,8 +12,8 @@ Extract it and open **Folio.exe**. Keep the resources folder beside the executab
 Microsoft Edge WebView2 Runtime is required.
 
 In this development checkout, double-click **Launch Folio.cmd** after building.
-Version 0.9.1 lives in **artifacts/Folio-v0.9.1/Folio.exe**.
-The ZIP is **artifacts/Folio-v0.9.1-windows-x64.zip**.
+Version 0.10.0 lives in **artifacts/Folio-v0.10.0/Folio.exe**.
+The ZIP is **artifacts/Folio-v0.10.0-windows-x64.zip**.
 
 ## Everyday editing
 
@@ -22,7 +22,7 @@ The ZIP is **artifacts/Folio-v0.9.1-windows-x64.zip**.
 - **Edit existing text:** choose **Edit text**, click an outlined run, change **Replacement text**, and apply. Supported horizontal runs use standard Helvetica, Times and Courier or verified embedded TrueType fonts, including subsets. Longer replacements can use available space. If the subset lacks a letter, choose and preview an explicit substitute font. Complex layouts remain unsupported. [Support details](docs/existing-text-editing.md).
 - **Text:** choose Text and click a page. The Content field selects the placeholder
   immediately, so typing replaces it. Choose a font and style, adjust size/color, and drag the note to move it. **More fonts…** searches installed fonts or imports a local TTF/OTF. Preview your text, then choose **Apply font**. Supported fonts are embedded so recipients do not need to install them. [Font support](docs/font-support-roadmap.md).
-- **Shaped text (unreleased source builds):** enable **Shaped text** in Properties, enter a single line, then choose an exact custom font with **More fonts…**. Native previews support tested ligatures, combining marks, Arabic joining and Indic samples. Mixed direction and RTL word separators remain unsupported. [Scope and verification](docs/shaped-editor-integration.md).
+- **Shaped text (v0.10.0):** enable **Shaped text** in Properties, enter a single line, then choose an exact custom font with **More fonts…**. Native previews support tested ligatures, combining marks, Arabic joining and Indic samples. Mixed direction and RTL word separators remain unsupported. [Scope and verification](docs/shaped-editor-integration.md).
 - **Select and copy:** drag across embedded PDF text in Select mode, then press
   **Ctrl+C** to copy it, including spaces and line breaks. Scanned pages without
   embedded text require OCR, which is not included.
@@ -80,7 +80,7 @@ Dark mode changes the interface; PDF pages retain their original colors.
   reader may prevent Folio from restoring handles. Unsupported or changed metadata
   leaves the annotation in the PDF with its native appearance. See
   [editable PDF format](docs/editable-pdf-format.md).
-- Added text supports twelve standard PDF faces and installed/imported static TrueType-outline fonts with editable embedding permissions. Custom fonts support covered Latin, Greek, Cyrillic and selected punctuation/symbols; CFF, variable/color fonts, collections, complex scripts and combining sequences are not supported yet. Unsupported characters produce a clear error.
+- Added text supports twelve standard PDF faces and installed/imported static TrueType-outline fonts with editable embedding permissions. Legacy boxes support covered Latin, Greek, Cyrillic and selected punctuation/symbols. Opt-in shaped boxes add tested ligatures, combining marks, Arabic joining and Indic samples. CFF, variable/color fonts and collections remain unsupported. Unsupported text produces a clear error.
 - OCR, redaction, form editing and password-protected PDFs are not implemented.
 - Printing uses bounded raster images (up to 2400 pixels wide), so it does not preserve
   selectable/vector text in virtual-printer output. Save a copy preserves source vectors.
@@ -173,17 +173,15 @@ commands and measured Windows baselines. Small synthetic PDFs are versioned; lar
 scans and 300-page fixtures are generated locally. No private documents are included.
 
 The [complex-text development gate](docs/shaped-text-interop.md) records native
-shaping and PDF serialization experiments for issue #14. These require the
-nondefault `shaped-text` Cargo feature and are not enabled in application builds.
-Reader copy and selection compatibility must pass before broader script support
-is offered in the editor.
+shaping and PDF serialization experiments for issue #14. The `shaped-text` Cargo feature is included in default application builds starting
+with v0.10.0. The [editor integration](docs/shaped-editor-integration.md) describes
+the supported subset and its reader-copy and selection checks.
 
 The [native semantic PDF verification](docs/semantic-native-verification.md)
 passes exact Unicode in three readers for 32 unmixed sample/rotation cases.
 Mixed-direction text remains refused, and MuPDF cluster selection still differs.
 [Shaping resource checks](docs/shaping-resource-limits.md) document the pinned
-completion-status patch and bounded outline traversal. These development results
-do not enable complex-script input in the released editor.
+completion-status patch and bounded outline traversal. The released editor offers the tested subset through opt-in shaped text boxes.
 
 [Long-text verification](docs/semantic-long-native-verification.md) extends this
 experiment through exact character-definition reuse, including a 4,096-scalar

@@ -1,0 +1,15 @@
+import {chromium,expect} from '@playwright/test';import {execFile} from 'node:child_process';import {promisify} from 'node:util';import {readFileSync,writeFileSync,existsSync} from 'node:fs';import {resolve} from 'node:path';
+const run=resolve(process.env.FOLIO_RELEASE_RUN||'artifacts/release-v0.10-desktop-4'),state=JSON.parse(readFileSync(resolve(run,'process.json'),'utf8').replace(/^\uFEFF/,''));const exec=promisify(execFile);
+const browser=await chromium.connectOverCDP(`http://127.0.0.1:${state.port}`);const page=browser.contexts()[0].pages().find(p=>!p.url().startsWith('devtools:'));page.setDefaultTimeout(20000);const checks=[];
+async function dialog(title,path,action='Open'){await exec('pwsh',['-NoProfile','-File',resolve('scripts/set-release-dialog.ps1'),'-AppProcessId',String(state.pid),'-FilePath',path,'-Action',action,'-Title',title],{windowsHide:true,timeout:25000});}
+try{
+ for(const [name,text,font] of [['Arabic','سلام','NotoSansArabic-Regular.ttf'],['Indic','नमस्ते','NotoSansDevanagari-Regular.ttf']]){
+  await page.getByRole('button',{name:'Open',exact:true}).click();await dialog('Open a PDF',resolve(run,'Moved original.pdf'));const canvas=page.locator('.page-canvas').first();await expect(canvas.locator('image')).toHaveCount(1);
+  await page.getByRole('button',{name:'Text',exact:true}).click();await canvas.click({position:{x:120,y:240}});await page.getByRole('checkbox',{name:'Shaped text',exact:true}).check();await page.getByRole('textbox',{name:'Content',exact:true}).fill(text);
+  await page.getByRole('button',{name:'More fonts…',exact:true}).click();await page.getByRole('button',{name:'Import font…',exact:true}).click();await dialog('Import a font',resolve('tests/fixtures/shaped-text',font));await expect(page.getByRole('button',{name:'Apply font',exact:true})).toBeEnabled();await page.getByRole('button',{name:'Apply font',exact:true}).click();await expect(canvas.locator('[data-overlay] use').first()).toBeAttached();await expect(page.getByRole('alert')).toHaveCount(0);
+  await page.getByRole('button',{name:'Save options',exact:true}).click();await page.getByRole('menuitem',{name:'Flatten text and ink',exact:true}).click();const output=resolve(run,name+'.pdf');await dialog('Save a PDF copy',output,'Save');await expect.poll(()=>existsSync(output),{timeout:20000}).toBe(true);
+  await page.getByRole('button',{name:'Open',exact:true}).click();await dialog('Open a PDF',output);await expect(page.getByRole('tab',{name:name+'.pdf',exact:true})).toHaveAttribute('aria-selected','true');await expect.poll(()=>canvas.locator('.pdf-text-layer').textContent()).toContain(text);await expect(canvas.locator('[data-overlay]')).toHaveCount(0);
+  await page.screenshot({path:resolve(run,name+'.png')});checks.push(name+' native import, shaped preview, flattened save, reader Unicode');
+ }
+ writeFileSync(resolve(run,'script-results.json'),JSON.stringify({passed:true,checks,binarySha256:state.sha256},null,2));console.log('PASS',checks);
+}finally{await browser.close();}

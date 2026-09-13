@@ -1,7 +1,7 @@
 # Shaped text-box integration
 
-Unreleased source-build implementation of #14. The published portable release
-remains v0.9.1. Shaping is now a default native build feature; the new editing
+Released in v0.10.0 as the supported subset of #14.
+Shaping is a default native build feature; the new editing
 path is explicitly selected per text box. Older boxes keep their legacy behavior.
 
 ## Using it
@@ -100,15 +100,13 @@ separators/joiners, whitespace-only lines and more than 255 distinct semantic
 character definitions are still refused. Empty boxes are supported. Font
 fallback, paragraph wrapping, general existing-PDF complex-text replacement,
 variable/color/CFF fonts and glyph-level canvas caret editing are not introduced.
-No new real-reader Acrobat/Foxit or OS IME manual acceptance is claimed by these
-automated results. Release packaging and desktop/manual acceptance remain before
-a new downloadable release.
+No real-reader Acrobat/Foxit copy/selection or physical OS IME manual acceptance
+is claimed. Packaged WebView composition, save/reopen, selection, search and recovery
+checks are recorded in [v0.10.0 release verification](verification-v0.10.0.md).
 
 ## Final checks
 
-Full default-feature native suite: 135 passed, 3 existing ignored. The subsequently
-added crop matrix and unsupported-draft recovery tests both passed separately
-(137 unique native tests total). Three cmap coverage regressions were rerun after
-the final preflight guard ordering change. Frontend suite: 241 passed across 48
-files. TypeScript/Vite production build passed. Rust formatting, whitespace and
-independent review passed. No new release artifact is published by this checkpoint.
+The v0.10.0 release rerun passed all 137 default-feature native tests, with three
+existing opt-in checks ignored, and all 241 frontend tests across 48 files. The
+TypeScript/Vite/Tauri production build, Rust formatting, whitespace and independent
+review passed. See the release verification for packaged desktop acceptance.
