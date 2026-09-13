@@ -6,7 +6,10 @@ mod semantic_pdf;
 #[cfg(feature = "shaped-text")]
 mod shaped_pdf;
 #[cfg(feature = "shaped-text")]
-pub use semantic_pdf::{create_semantic_font_banks_probe, create_semantic_pdf};
+pub use semantic_pdf::{
+    create_semantic_font_banks_probe, create_semantic_pdf, prepare_semantic_text,
+    NativeGlyphOutline, NativeGlyphPlacement, NativeTextPreview, PreparedSemanticText,
+};
 #[cfg(feature = "shaped-text")]
 mod shaping;
 #[cfg(feature = "shaped-text")]

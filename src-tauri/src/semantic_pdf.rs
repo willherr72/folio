@@ -26,6 +26,7 @@ fn numbers(values: &[f32]) -> Object {
 #[derive(Default)]
 struct Pen {
     content: String,
+    path: String,
     position: (f32, f32),
     start: (f32, f32),
     ops: usize,
@@ -43,11 +44,19 @@ impl Pen {
             self.invalid = true;
             return;
         }
+        self.path.push_str(match operator {
+            "m" => "M",
+            "l" => "L",
+            "c" => "C",
+            "h" => "Z",
+            _ => unreachable!(),
+        });
         for value in values {
+            write!(&mut self.path, "{value:.7} ").unwrap();
             write!(&mut self.content, "{value:.7} ").unwrap();
         }
         writeln!(&mut self.content, "{operator}").unwrap();
-        if self.content.len() > MAX_CONTENT_BYTES {
+        if self.content.len() > MAX_CONTENT_BYTES || self.path.len() > MAX_CONTENT_BYTES {
             self.invalid = true;
         }
     }
@@ -121,6 +130,7 @@ pub fn create_semantic_pdf(
     semantic_pdf(
         font, text, font_size, direction, ligatures, rotation, false, false,
     )
+    .map(PreparedSemanticText::into_pdf)
 }
 
 /// Negative research control, NOT a supported writer. Font switches corrupt
@@ -145,6 +155,78 @@ pub fn create_semantic_font_banks_probe(
         true,
         actual_text,
     )
+    .map(PreparedSemanticText::into_pdf)
+}
+
+/// A paired, immutable preview and PDF produced by one native shaping pass.
+/// This remains experimental and is not accepted as editable document metadata.
+pub struct PreparedSemanticText {
+    pdf: ShapedPdf,
+    preview: NativeTextPreview,
+}
+impl PreparedSemanticText {
+    pub fn pdf(&self) -> &ShapedPdf {
+        &self.pdf
+    }
+    pub fn preview(&self) -> &NativeTextPreview {
+        &self.preview
+    }
+    pub fn into_pdf(self) -> ShapedPdf {
+        self.pdf
+    }
+}
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NativeTextPreview {
+    pub version: u32,
+    pub font_id: String,
+    pub text: String,
+    pub width: f32,
+    pub height: f32,
+    pub rotation: u16,
+    pub color: [f32; 3],
+    pub outlines: Vec<NativeGlyphOutline>,
+    pub glyphs: Vec<NativeGlyphPlacement>,
+}
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NativeGlyphOutline {
+    pub glyph_id: u16,
+    pub path: String,
+}
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NativeGlyphPlacement {
+    pub glyph_id: u16,
+    pub transform: [f64; 6],
+}
+
+pub fn prepare_semantic_text(
+    font: &FontAsset,
+    text: &str,
+    font_size: f32,
+    direction: TextDirection,
+    ligatures: bool,
+    rotation: u16,
+) -> EngineResult<PreparedSemanticText> {
+    semantic_pdf(
+        font, text, font_size, direction, ligatures, rotation, false, false,
+    )
+}
+
+// Count serialized bytes without allocating another copy of the outline data.
+struct PreviewBudget(usize);
+impl io::Write for PreviewBudget {
+    fn write(&mut self, bytes: &[u8]) -> io::Result<usize> {
+        if bytes.len() > MAX_CONTENT_BYTES.saturating_sub(self.0) {
+            return Err(io::Error::other("Native preview byte limit exceeded."));
+        }
+        self.0 += bytes.len();
+        Ok(bytes.len())
+    }
+    fn flush(&mut self) -> io::Result<()> {
+        Ok(())
+    }
 }
 
 fn semantic_pdf(
@@ -156,7 +238,7 @@ fn semantic_pdf(
     rotation: u16,
     font_banks: bool,
     actual_text: bool,
-) -> EngineResult<ShapedPdf> {
+) -> EngineResult<PreparedSemanticText> {
     if !matches!(rotation, 0 | 90 | 180 | 270) {
         return Err(invalid("Semantic evidence supports quarter turns only."));
     }
@@ -198,6 +280,7 @@ fn semantic_pdf(
     let mut cache = BTreeMap::<u16, Pen>::new();
     let mut clusters = BTreeMap::<(usize, usize), (bool, Vec<&PositionedGlyph>)>::new();
     let mut visible = String::from("q 0.1 0.2 0.3 rg\n");
+    let mut placements = Vec::new();
     let mut ops = 0;
     for run in &layout.runs {
         for glyph in &run.glyphs {
@@ -221,6 +304,19 @@ fn semantic_pdf(
                 ));
             }
             if !pen.content.is_empty() {
+                // Match the decimal precision of the PDF cm operands exactly.
+                let rounded_scale: f64 = format!("{scale:.9}").parse().unwrap();
+                placements.push(NativeGlyphPlacement {
+                    glyph_id: glyph.glyph_id,
+                    transform: [
+                        rounded_scale,
+                        0.,
+                        0.,
+                        rounded_scale,
+                        format!("{:.7}", origin.0 + glyph.x).parse().unwrap(),
+                        format!("{:.7}", origin.1 + glyph.y).parse().unwrap(),
+                    ],
+                });
                 writeln!(
                     &mut visible,
                     "q {scale:.9} 0 0 {scale:.9} {:.7} {:.7} cm",
@@ -434,8 +530,32 @@ fn semantic_pdf(
     let mut bytes = BoundedPdf(Vec::new());
     pdf.save_to(&mut bytes)
         .map_err(|_| invalid("The semantic PDF exceeds its byte limit or could not be saved."))?;
-    Ok(ShapedPdf {
-        layout,
-        bytes: bytes.0,
+    let preview = NativeTextPreview {
+        version: 1,
+        font_id: font.info.id.clone(),
+        text: text.to_owned(),
+        width,
+        height,
+        rotation,
+        color: [0.1, 0.2, 0.3],
+        outlines: cache
+            .into_iter()
+            .filter(|(_, pen)| !pen.path.is_empty())
+            .map(|(glyph_id, pen)| NativeGlyphOutline {
+                glyph_id,
+                path: pen.path,
+            })
+            .collect(),
+        glyphs: placements,
+    };
+    serde_json::to_writer(PreviewBudget(0), &preview).map_err(|_| {
+        invalid("The native preview exceeds its byte limit or could not be serialized.")
+    })?;
+    Ok(PreparedSemanticText {
+        pdf: ShapedPdf {
+            layout,
+            bytes: bytes.0,
+        },
+        preview,
     })
 }

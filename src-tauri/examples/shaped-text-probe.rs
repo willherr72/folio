@@ -18,15 +18,20 @@ fn main() -> Result<(), Box<dyn Error>> {
     let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..");
     let mut arguments = std::env::args_os().skip(1);
     let first = arguments.next();
+    let preview = first.as_deref() == Some(std::ffi::OsStr::new("--semantic-preview"));
     let long_text = first.as_deref() == Some(std::ffi::OsStr::new("--semantic-long"));
     let bank_actual = first.as_deref() == Some(std::ffi::OsStr::new("--semantic-banks-actualtext"));
     let banked = bank_actual || first.as_deref() == Some(std::ffi::OsStr::new("--semantic-banks"));
-    let semantic =
-        banked || long_text || first.as_deref() == Some(std::ffi::OsStr::new("--semantic"));
+    let semantic = preview
+        || banked
+        || long_text
+        || first.as_deref() == Some(std::ffi::OsStr::new("--semantic"));
     let output = (if semantic { arguments.next() } else { first })
         .map(PathBuf::from)
         .unwrap_or_else(|| {
-            root.join(if bank_actual {
+            root.join(if preview {
+                "artifacts/shaped-text/shared-preview-native"
+            } else if bank_actual {
                 "artifacts/shaped-text/semantic-banks-actualtext"
             } else if banked {
                 "artifacts/shaped-text/semantic-banks-native"
@@ -40,7 +45,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         });
     if arguments.next().is_some() {
         return Err(
-            "Usage: shaped-text-probe [--semantic|--semantic-long|--semantic-banks|--semantic-banks-actualtext] [new-output-directory]".into(),
+            "Usage: shaped-text-probe [--semantic-preview|--semantic|--semantic-long|--semantic-banks|--semantic-banks-actualtext] [new-output-directory]".into(),
         );
     }
     // Evidence is immutable: use another directory for subsequent runs.
@@ -212,7 +217,23 @@ fn main() -> Result<(), Box<dyn Error>> {
             FontAsset::parse_for_shaping(fs::read(root.join("tests/fixtures").join(fixture))?)?;
         for rotation in [0, 90, 180, 270] {
             let stem = format!("{name}-{rotation}");
-            let candidate = if banked {
+            let mut prepared_preview = None;
+            let candidate = if preview {
+                folio_engine::prepare_semantic_text(
+                    &font,
+                    &text,
+                    font_size,
+                    TextDirection::Auto,
+                    ligatures,
+                    rotation,
+                )
+                .map(|prepared| {
+                    prepared_preview = Some(
+                        serde_json::to_vec_pretty(prepared.preview()).expect("validated preview"),
+                    );
+                    prepared.into_pdf()
+                })
+            } else if banked {
                 create_semantic_font_banks_probe(
                     &font,
                     &text,
@@ -257,6 +278,17 @@ fn main() -> Result<(), Box<dyn Error>> {
             )?;
             let source = engine.open_document(&path)?;
             let page = &source.pages[0];
+            if let Some(preview_json) = prepared_preview {
+                fs::write(output.join(format!("{stem}.preview.json")), preview_json)?;
+                for zoom in [150, 300] {
+                    let png = engine.render_page(
+                        &source.id,
+                        0,
+                        (page.width * zoom as f32 / 100.).round() as u32,
+                    )?;
+                    fs::write(output.join(format!("{stem}.preview-{zoom}.png")), png)?;
+                }
+            }
             // The long-line matrix includes very narrow rotated pages. Bound
             // preview size instead of rendering a 1,000px-wide strip tens of
             // thousands of pixels tall. Target 2,000px on the longest side;

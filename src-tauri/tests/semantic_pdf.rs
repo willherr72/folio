@@ -4,6 +4,89 @@ use folio_engine::{
 };
 use std::{fs, path::PathBuf};
 
+#[test]
+fn prepared_preview_retains_exact_font_layout_and_pdf_geometry() {
+    use folio_engine::prepare_semantic_text;
+    for (name, text) in [
+        ("corpus/fonts/DejaVuSerif.ttf", "office"),
+        ("shaped-text/DejaVuSans.ttf", "q\u{307}\u{323}"),
+        ("shaped-text/NotoSansArabic-Regular.ttf", "سلام"),
+        ("shaped-text/NotoSansDevanagari-Regular.ttf", "किताब"),
+        ("corpus/fonts/DejaVuSerif.ttf", "A\u{1d434}B"),
+    ] {
+        let font = font(name);
+        for rotation in [0, 90, 180, 270] {
+            let prepared =
+                prepare_semantic_text(&font, text, 24., TextDirection::Auto, true, rotation)
+                    .unwrap();
+            let preview = prepared.preview();
+            assert_eq!(preview.version, 1);
+            assert_eq!(preview.text, text);
+            assert_eq!(preview.font_id, font.info.id);
+            assert_eq!(preview.rotation, rotation);
+            assert!(!preview.outlines.is_empty());
+            assert!(!preview.glyphs.is_empty());
+            let ids: std::collections::BTreeSet<_> =
+                preview.outlines.iter().map(|o| o.glyph_id).collect();
+            assert_eq!(ids.len(), preview.outlines.len());
+            assert!(preview.glyphs.iter().all(|g| ids.contains(&g.glyph_id)));
+            assert!(preview
+                .outlines
+                .iter()
+                .all(|o| !o.path.is_empty() && o.path.is_ascii()));
+            assert_eq!(prepared.pdf().layout.text, text);
+            let pdf = lopdf::Document::load_mem(&prepared.pdf().bytes).unwrap();
+            let page = pdf
+                .get_dictionary(*pdf.get_pages().get(&1).unwrap())
+                .unwrap();
+            let media = page.get(b"MediaBox").unwrap().as_array().unwrap();
+            assert_eq!(media[2].as_float().unwrap(), preview.width);
+            assert_eq!(media[3].as_float().unwrap(), preview.height);
+            assert!(contains_program(&prepared.pdf().bytes, &font.bytes));
+            assert!(serde_json::to_vec(preview).unwrap().len() <= 8 * 1024 * 1024);
+            let bytes = prepared.pdf().bytes.clone();
+            assert_eq!(prepared.into_pdf().bytes, bytes);
+        }
+    }
+}
+
+#[test]
+fn prepared_preview_keeps_writer_refusals_and_reuses_repeated_outlines() {
+    let arabic = font("shaped-text/NotoSansArabic-Regular.ttf");
+    let font = font("corpus/fonts/DejaVuSerif.ttf");
+    let prepared = folio_engine::prepare_semantic_text(
+        &font,
+        &"i".repeat(100),
+        12.,
+        TextDirection::Ltr,
+        false,
+        0,
+    )
+    .unwrap();
+    assert_eq!(prepared.preview().outlines.len(), 1);
+    assert_eq!(prepared.preview().glyphs.len(), 100);
+    for (text, rotation) in [("A", 45), ("\u{10ffff}", 0)] {
+        assert!(folio_engine::prepare_semantic_text(
+            &font,
+            text,
+            24.,
+            TextDirection::Auto,
+            true,
+            rotation
+        )
+        .is_err());
+    }
+    assert!(folio_engine::prepare_semantic_text(
+        &arabic,
+        "سلام عالم",
+        24.,
+        TextDirection::Auto,
+        true,
+        0
+    )
+    .is_err());
+}
+
 fn font(name: &str) -> FontAsset {
     FontAsset::parse_for_shaping(
         fs::read(
