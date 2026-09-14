@@ -3,8 +3,10 @@
 Exact logical copy is compared byte-for-byte as Python Unicode strings. A separate
 painted-line check ignores only CR/LF conventions and reader terminal line breaks;
 it does not establish exact logical copying. Native/resaved raster and text must
-remain stable for the evidence to be valid. No PDF is written or modified here. Default success additionally requires exact
-logical copying in all three readers. --diagnostic is explicitly not acceptance.
+remain stable for the evidence to be valid. No PDF is written or modified here.
+Default success requires exact PDFium character-range text, MuPDF selection text,
+and pypdf extraction, before and after save. Page extraction is retained separately.
+--diagnostic is explicitly not acceptance. Interactive viewer approval is separate.
 """
 import argparse
 import hashlib
@@ -12,6 +14,23 @@ import json
 import re
 from copy import deepcopy
 from pathlib import Path
+
+
+def native_copy_text(path):
+    # Reuse the raw-binding probe, not Folio's own clipboard implementation.
+    import ctypes as c
+    import importlib.util
+    spec = importlib.util.spec_from_file_location('tagged_probe', Path(__file__).with_name('probe-tagged-selection.py'))
+    probe = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(probe)
+    dll = probe.separator.reader.native_reader(probe.ROOT / 'src-tauri/resources/pdfium/pdfium.dll')
+    dll.FPDFText_GetText.argtypes = [c.c_void_p, c.c_int, c.c_int, c.POINTER(c.c_ushort)]
+    dll.FPDFText_GetText.restype = c.c_int
+    dll.FPDF_InitLibrary()
+    try:
+        return probe.pdfium_text(dll, path)
+    finally:
+        dll.FPDF_DestroyLibrary()
 
 
 def reader_text_result(logical, painted_lines, actual):
@@ -104,6 +123,8 @@ def inspect(input_path, expected):
         row['readers'] = {}
         paths = [input_path / case[key] for key in ['pdf', 'resavedPdf']]
         texts = []
+        copies = []
+        windows_copies = []
         rasters = []
         geometry = []
         for path in paths:
@@ -111,6 +132,13 @@ def inspect(input_path, expected):
                 assert len(document) == 1
                 page = document[0]
                 mu_text = page.get_text(sort=False)
+                textpage = page.get_textpage()
+                start = fitz.mupdf.FzPoint(0, 0)
+                end = fitz.mupdf.FzPoint(page.cropbox.width, page.cropbox.height)
+                copies.append({'mupdf': fitz.mupdf.fz_copy_selection(textpage.this, start, end, 0),
+                               'pdfium': native_copy_text(path)})
+                windows_copies.append(fitz.mupdf.fz_copy_selection(textpage.this, start, end, 1))
+                row['mupdfSelectionPoints'] = [[start.x, start.y], [end.x, end.y]]
                 geometry.append(page.get_text('rawdict'))
                 pixmap = page.get_pixmap(matrix=fitz.Matrix(2, 2), alpha=False)
                 rasters.append((pixmap.width, pixmap.height, hashlib.sha256(pixmap.samples).hexdigest()))
@@ -119,18 +147,25 @@ def inspect(input_path, expected):
             texts.append({'mupdf': mu_text, 'pypdf': reader.pages[0].extract_text()})
         texts[0]['pdfium'] = case['pdfiumText']
         texts[1]['pdfium'] = case['pdfiumResavedText']
+        assert copies[0]['pdfium'] == texts[0]['pdfium'] and copies[1]['pdfium'] == texts[1]['pdfium'], 'Fresh PDFium text differs from native fixture evidence'
         for reader in ['pdfium', 'mupdf', 'pypdf']:
             row['readers'][reader] = reader_text_result(row['logicalText'], painted, texts[0][reader])
             row['readers'][reader]['resavedText'] = texts[1][reader]
+            if reader in copies[0]:
+                row['readers'][reader].update(copyText=copies[0][reader], resavedCopyText=copies[1][reader],
+                                             exactCopyText=copies[0][reader] == row['logicalText'],
+                                             copyMethod='FPDFText_GetText full character range' if reader == 'pdfium' else 'fz_copy_selection page corners, crlf=0')
+        row['readers']['mupdf'].update(selectionCrlf=windows_copies[0], resavedSelectionCrlf=windows_copies[1])
         row['mupdfRawDictionaryEqual'] = geometry[0] == geometry[1]
         row['mupdfGeometryEqualExceptResourceLabels'] = geometry_without_resource_labels(geometry[0]) == geometry_without_resource_labels(geometry[1])
-        row['roundtripStable'] = (texts[0] == texts[1] and row['mupdfGeometryEqualExceptResourceLabels']
+        row['roundtripStable'] = (texts[0] == texts[1] and copies[0] == copies[1] and windows_copies[0] == windows_copies[1] and row['mupdfGeometryEqualExceptResourceLabels']
                                   and rasters[0] == rasters[1]
                                   and case['pdfiumGeometry'] == case['pdfiumResavedGeometry']
                                   and all(raster['unchanged'] for raster in case['rasters']))
         row['mupdfRasterSha256'] = rasters[0][2]
         row['pdfSha256'] = hashlib.sha256(paths[0].read_bytes()).hexdigest()
         row['allReadersExactLogicalText'] = all(r['exactLogicalText'] for r in row['readers'].values())
+        row['exactSelectionAndExtraction'] = all(value == row['logicalText'] for copy in copies for value in copy.values()) and all(text['pypdf'] == row['logicalText'] for text in texts)
         row['allReadersLogicalIgnoringOneTerminalEol'] = all(r['logicalTextIgnoringOneTerminalEol'] for r in row['readers'].values())
         row['allReadersPaintedLineText'] = all(r['paintedLineText'] for r in row['readers'].values())
         results.append(row)
@@ -138,9 +173,11 @@ def inspect(input_path, expected):
     assert exported, 'At least one exported case is required'
     valid = all(row['roundtripStable'] and row['exactSourceRanges'] for row in results)
     return {'description': 'Development evidence; painted-line agreement is not exact logical copy.',
+            'copyEvidenceVersion': 2,
             'mupdf': fitz.VersionBind, 'pypdf': pypdf.__version__,
             'evidenceValid': valid, 'cases': len(results), 'exports': len(exported),
             'exactLogicalCopyCases': sum(row['allReadersExactLogicalText'] for row in exported),
+            'exactSelectionAndExtractionCases': sum(row['exactSelectionAndExtraction'] for row in exported),
             'logicalIgnoringOneTerminalEolCases': sum(row['allReadersLogicalIgnoringOneTerminalEol'] for row in exported),
             'paintedLineCases': sum(row['allReadersPaintedLineText'] for row in exported),
             'results': results}
@@ -153,8 +190,10 @@ def exact_copy_gate(report):
         return False
     return all(row.get('roundtripStable') and row.get('exactSourceRanges')
                and isinstance(row.get('logicalText'), str)
-               and all(row['readers'].get(reader, {}).get('actualText') == row['logicalText']
-                       for reader in ['pdfium', 'mupdf', 'pypdf']) for row in exported)
+               and all(row['readers'].get(reader, {}).get(key) == row['logicalText']
+                       for reader in ['pdfium', 'mupdf'] for key in ['copyText', 'resavedCopyText'])
+               and all(row['readers'].get('pypdf', {}).get(key) == row['logicalText']
+                       for key in ['actualText', 'resavedText']) for row in exported)
 
 
 def main():

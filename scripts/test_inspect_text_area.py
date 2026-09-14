@@ -82,14 +82,27 @@ class InspectorTests(unittest.TestCase):
         self.assertNotEqual(module.geometry_without_resource_labels(a), module.geometry_without_resource_labels(b))
 
     def gate_report(self):
-        readers={name:{'actualText':'A  B','exactLogicalText':True} for name in ['pdfium','mupdf','pypdf']}
+        readers={name:{'actualText':'A  B','resavedText':'A  B','copyText':'A  B','resavedCopyText':'A  B','exactLogicalText':True} for name in ['pdfium','mupdf','pypdf']}
         return {'evidenceValid':True,'exports':1,'results':[{'logicalText':'A  B','readers':readers,'roundtripStable':True,'exactSourceRanges':True}]}
 
     def test_copy_gate_requires_exact_raw_text_from_all_readers(self):
         self.assertTrue(module.exact_copy_gate(self.gate_report()))
         for reader in ['pdfium','mupdf','pypdf']:
             for changed in ['A B','A  B\n','A\n B']:
-                report=self.gate_report();report['results'][0]['readers'][reader]['actualText']=changed
+                report=self.gate_report();report['results'][0]['readers'][reader]['copyText' if reader != 'pypdf' else 'actualText']=changed
+                self.assertFalse(module.exact_copy_gate(report))
+
+    def test_page_serialization_newline_is_not_a_selection_copy_failure(self):
+        report=self.gate_report()
+        report['results'][0]['readers']['mupdf'].update(actualText='A  B\n',resavedText='A  B\n')
+        self.assertTrue(module.exact_copy_gate(report))
+
+    def test_selection_evidence_cannot_fall_back_to_page_text(self):
+        for reader in ['pdfium','mupdf']:
+            for key in ['copyText','resavedCopyText']:
+                report=self.gate_report();report['results'][0]['readers'][reader].pop(key)
+                self.assertFalse(module.exact_copy_gate(report))
+                report=self.gate_report();report['results'][0]['readers'][reader][key]='A B'
                 self.assertFalse(module.exact_copy_gate(report))
 
     def test_copy_gate_rejects_missing_evidence_even_when_summary_claims_success(self):

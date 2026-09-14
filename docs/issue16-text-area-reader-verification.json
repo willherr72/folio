@@ -1,11 +1,13 @@
 {
   "description": "Development evidence; painted-line agreement is not exact logical copy.",
+  "copyEvidenceVersion": 2,
   "mupdf": "1.27.1",
   "pypdf": "6.14.2",
   "evidenceValid": true,
   "cases": 9,
   "exports": 7,
   "exactLogicalCopyCases": 0,
+  "exactSelectionAndExtractionCases": 0,
   "logicalIgnoringOneTerminalEolCases": 0,
   "paintedLineCases": 6,
   "results": [
@@ -28,14 +30,24 @@
           "exactLogicalText": false,
           "logicalTextIgnoringOneTerminalEol": false,
           "paintedLineText": true,
-          "resavedText": "office café café\r\nwith fine lines\r\nand clear words"
+          "resavedText": "office café café\r\nwith fine lines\r\nand clear words",
+          "copyText": "office café café\r\nwith fine lines\r\nand clear words",
+          "resavedCopyText": "office café café\r\nwith fine lines\r\nand clear words",
+          "exactCopyText": false,
+          "copyMethod": "FPDFText_GetText full character range"
         },
         "mupdf": {
           "actualText": "office café café\nwith fine lines\nand clear words\n",
           "exactLogicalText": false,
           "logicalTextIgnoringOneTerminalEol": false,
           "paintedLineText": true,
-          "resavedText": "office café café\nwith fine lines\nand clear words\n"
+          "resavedText": "office café café\nwith fine lines\nand clear words\n",
+          "copyText": "office café café\nwith fine lines\nand clear words",
+          "resavedCopyText": "office café café\nwith fine lines\nand clear words",
+          "exactCopyText": false,
+          "copyMethod": "fz_copy_selection page corners, crlf=0",
+          "selectionCrlf": "office café café\r\nwith fine lines\r\nand clear words",
+          "resavedSelectionCrlf": "office café café\r\nwith fine lines\r\nand clear words"
         },
         "pypdf": {
           "actualText": "office café café\nwith fine lines\nand clear words",
@@ -45,12 +57,23 @@
           "resavedText": "office café café\nwith fine lines\nand clear words"
         }
       },
+      "mupdfSelectionPoints": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          480.0,
+          480.0
+        ]
+      ],
       "mupdfRawDictionaryEqual": false,
       "mupdfGeometryEqualExceptResourceLabels": true,
       "roundtripStable": true,
       "mupdfRasterSha256": "0d9727be4612e88d12f0751c4103337ee45f012cf4f6eccbd5ea55f88fa2140f",
       "pdfSha256": "1143a88596aecb874662639d2b84f0450922f404063bce1f42aa135d8f1a7c8e",
       "allReadersExactLogicalText": false,
+      "exactSelectionAndExtraction": false,
       "allReadersLogicalIgnoringOneTerminalEol": false,
       "allReadersPaintedLineText": true
     },
@@ -72,14 +95,24 @@
           "exactLogicalText": false,
           "logicalTextIgnoringOneTerminalEol": false,
           "paintedLineText": true,
-          "resavedText": "office café café with fine lines and clear\r\nwords"
+          "resavedText": "office café café with fine lines and clear\r\nwords",
+          "copyText": "office café café with fine lines and clear\r\nwords",
+          "resavedCopyText": "office café café with fine lines and clear\r\nwords",
+          "exactCopyText": false,
+          "copyMethod": "FPDFText_GetText full character range"
         },
         "mupdf": {
           "actualText": "office café café with fine lines and clear\nwords\n",
           "exactLogicalText": false,
           "logicalTextIgnoringOneTerminalEol": false,
           "paintedLineText": true,
-          "resavedText": "office café café with fine lines and clear\nwords\n"
+          "resavedText": "office café café with fine lines and clear\nwords\n",
+          "copyText": "office café café with fine lines and clear\nwords",
+          "resavedCopyText": "office café café with fine lines and clear\nwords",
+          "exactCopyText": false,
+          "copyMethod": "fz_copy_selection page corners, crlf=0",
+          "selectionCrlf": "office café café with fine lines and clear\r\nwords",
+          "resavedSelectionCrlf": "office café café with fine lines and clear\r\nwords"
         },
         "pypdf": {
           "actualText": "office café café with fine lines and clear\nwords",
@@ -89,12 +122,23 @@
           "resavedText": "office café café with fine lines and clear\nwords"
         }
       },
+      "mupdfSelectionPoints": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          480.0,
+          480.0
+        ]
+      ],
       "mupdfRawDictionaryEqual": false,
       "mupdfGeometryEqualExceptResourceLabels": true,
       "roundtripStable": true,
       "mupdfRasterSha256": "5c71b59bb06503be42ae0a205e642a2e142da582f81fd2050719fdccd4e6d320",
       "pdfSha256": "43d9282e6b8ba85293c27438ad0e2694c550ed0365d77b19c54002326667abdb",
       "allReadersExactLogicalText": false,
+      "exactSelectionAndExtraction": false,
       "allReadersLogicalIgnoringOneTerminalEol": false,
       "allReadersPaintedLineText": true
     },
@@ -117,14 +161,24 @@
           "exactLogicalText": false,
           "logicalTextIgnoringOneTerminalEol": false,
           "paintedLineText": true,
-          "resavedText": "office café café\r\nwith fine lines\r\nand clear words"
+          "resavedText": "office café café\r\nwith fine lines\r\nand clear words",
+          "copyText": "office café café\r\nwith fine lines\r\nand clear words",
+          "resavedCopyText": "office café café\r\nwith fine lines\r\nand clear words",
+          "exactCopyText": false,
+          "copyMethod": "FPDFText_GetText full character range"
         },
         "mupdf": {
           "actualText": "office café café\nwith fine lines\nand clear words\n",
           "exactLogicalText": false,
           "logicalTextIgnoringOneTerminalEol": false,
           "paintedLineText": true,
-          "resavedText": "office café café\nwith fine lines\nand clear words\n"
+          "resavedText": "office café café\nwith fine lines\nand clear words\n",
+          "copyText": "office café café\nwith fine lines\nand clear words",
+          "resavedCopyText": "office café café\nwith fine lines\nand clear words",
+          "exactCopyText": false,
+          "copyMethod": "fz_copy_selection page corners, crlf=0",
+          "selectionCrlf": "office café café\r\nwith fine lines\r\nand clear words",
+          "resavedSelectionCrlf": "office café café\r\nwith fine lines\r\nand clear words"
         },
         "pypdf": {
           "actualText": "office café café\nwith fine lines\nand clear words",
@@ -134,12 +188,23 @@
           "resavedText": "office café café\nwith fine lines\nand clear words"
         }
       },
+      "mupdfSelectionPoints": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          480.0,
+          480.0
+        ]
+      ],
       "mupdfRawDictionaryEqual": false,
       "mupdfGeometryEqualExceptResourceLabels": true,
       "roundtripStable": true,
       "mupdfRasterSha256": "36f67efee46d038fcac687a5edd070a1dbfbb5fff675404470a828f8bb2ed1fa",
       "pdfSha256": "b42500551257b76695560ea84fec3aa3eb3c0c7d21cbca73c2f01c91ab431e95",
       "allReadersExactLogicalText": false,
+      "exactSelectionAndExtraction": false,
       "allReadersLogicalIgnoringOneTerminalEol": false,
       "allReadersPaintedLineText": true
     },
@@ -162,14 +227,24 @@
           "exactLogicalText": false,
           "logicalTextIgnoringOneTerminalEol": false,
           "paintedLineText": true,
-          "resavedText": "office café café\r\nwith fine lines\r\nand clear words"
+          "resavedText": "office café café\r\nwith fine lines\r\nand clear words",
+          "copyText": "office café café\r\nwith fine lines\r\nand clear words",
+          "resavedCopyText": "office café café\r\nwith fine lines\r\nand clear words",
+          "exactCopyText": false,
+          "copyMethod": "FPDFText_GetText full character range"
         },
         "mupdf": {
           "actualText": "office café café\nwith fine lines\nand clear words\n",
           "exactLogicalText": false,
           "logicalTextIgnoringOneTerminalEol": false,
           "paintedLineText": true,
-          "resavedText": "office café café\nwith fine lines\nand clear words\n"
+          "resavedText": "office café café\nwith fine lines\nand clear words\n",
+          "copyText": "office café café\nwith fine lines\nand clear words",
+          "resavedCopyText": "office café café\nwith fine lines\nand clear words",
+          "exactCopyText": false,
+          "copyMethod": "fz_copy_selection page corners, crlf=0",
+          "selectionCrlf": "office café café\r\nwith fine lines\r\nand clear words",
+          "resavedSelectionCrlf": "office café café\r\nwith fine lines\r\nand clear words"
         },
         "pypdf": {
           "actualText": "office café café\nwith fine lines\nand clear words",
@@ -179,12 +254,23 @@
           "resavedText": "office café café\nwith fine lines\nand clear words"
         }
       },
+      "mupdfSelectionPoints": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          480.0,
+          480.0
+        ]
+      ],
       "mupdfRawDictionaryEqual": false,
       "mupdfGeometryEqualExceptResourceLabels": true,
       "roundtripStable": true,
       "mupdfRasterSha256": "bfb0235df3e47a21957c3cd40c80c818e2e8c5c179535a69c257aa0819da7633",
       "pdfSha256": "f6f19a28769cf5a8128fc33c32fae58e54d865373fa36a94ce9bb6d58eafc307",
       "allReadersExactLogicalText": false,
+      "exactSelectionAndExtraction": false,
       "allReadersLogicalIgnoringOneTerminalEol": false,
       "allReadersPaintedLineText": true
     },
@@ -207,14 +293,24 @@
           "exactLogicalText": false,
           "logicalTextIgnoringOneTerminalEol": false,
           "paintedLineText": true,
-          "resavedText": "office café café\r\nwith fine lines\r\nand clear words"
+          "resavedText": "office café café\r\nwith fine lines\r\nand clear words",
+          "copyText": "office café café\r\nwith fine lines\r\nand clear words",
+          "resavedCopyText": "office café café\r\nwith fine lines\r\nand clear words",
+          "exactCopyText": false,
+          "copyMethod": "FPDFText_GetText full character range"
         },
         "mupdf": {
           "actualText": "office café café\nwith fine lines\nand clear words\n",
           "exactLogicalText": false,
           "logicalTextIgnoringOneTerminalEol": false,
           "paintedLineText": true,
-          "resavedText": "office café café\nwith fine lines\nand clear words\n"
+          "resavedText": "office café café\nwith fine lines\nand clear words\n",
+          "copyText": "office café café\nwith fine lines\nand clear words",
+          "resavedCopyText": "office café café\nwith fine lines\nand clear words",
+          "exactCopyText": false,
+          "copyMethod": "fz_copy_selection page corners, crlf=0",
+          "selectionCrlf": "office café café\r\nwith fine lines\r\nand clear words",
+          "resavedSelectionCrlf": "office café café\r\nwith fine lines\r\nand clear words"
         },
         "pypdf": {
           "actualText": "office café café\nwith fine lines\nand clear words",
@@ -224,12 +320,23 @@
           "resavedText": "office café café\nwith fine lines\nand clear words"
         }
       },
+      "mupdfSelectionPoints": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          480.0,
+          480.0
+        ]
+      ],
       "mupdfRawDictionaryEqual": false,
       "mupdfGeometryEqualExceptResourceLabels": true,
       "roundtripStable": true,
       "mupdfRasterSha256": "43ab81bc3b94b3ed450308e25fcc10d85f87ea0b4379f5c7b8cf47e775380cea",
       "pdfSha256": "e12158ba7c27536c9879a217ddbbd7504082a920fd02745df305bfdd0e39207d",
       "allReadersExactLogicalText": false,
+      "exactSelectionAndExtraction": false,
       "allReadersLogicalIgnoringOneTerminalEol": false,
       "allReadersPaintedLineText": true
     },
@@ -252,14 +359,24 @@
           "exactLogicalText": false,
           "logicalTextIgnoringOneTerminalEol": false,
           "paintedLineText": true,
-          "resavedText": "office\r\ncafé\r\ncafé"
+          "resavedText": "office\r\ncafé\r\ncafé",
+          "copyText": "office\r\ncafé\r\ncafé",
+          "resavedCopyText": "office\r\ncafé\r\ncafé",
+          "exactCopyText": false,
+          "copyMethod": "FPDFText_GetText full character range"
         },
         "mupdf": {
           "actualText": "office\ncafé\ncafé\n",
           "exactLogicalText": false,
           "logicalTextIgnoringOneTerminalEol": false,
           "paintedLineText": true,
-          "resavedText": "office\ncafé\ncafé\n"
+          "resavedText": "office\ncafé\ncafé\n",
+          "copyText": "office\ncafé\ncafé",
+          "resavedCopyText": "office\ncafé\ncafé",
+          "exactCopyText": false,
+          "copyMethod": "fz_copy_selection page corners, crlf=0",
+          "selectionCrlf": "office\r\ncafé\r\ncafé",
+          "resavedSelectionCrlf": "office\r\ncafé\r\ncafé"
         },
         "pypdf": {
           "actualText": "office\ncafé\ncafé",
@@ -269,12 +386,23 @@
           "resavedText": "office\ncafé\ncafé"
         }
       },
+      "mupdfSelectionPoints": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          480.0,
+          480.0
+        ]
+      ],
       "mupdfRawDictionaryEqual": false,
       "mupdfGeometryEqualExceptResourceLabels": true,
       "roundtripStable": true,
       "mupdfRasterSha256": "2d607c16e47dfb1248343d35f27477d0beb0ec6f1171b266430851910b29f330",
       "pdfSha256": "2f7bee1aa5c5d6f27c1064d13fd59496c7e825c3aa7ea31e1f4d7e0ae93b5059",
       "allReadersExactLogicalText": false,
+      "exactSelectionAndExtraction": false,
       "allReadersLogicalIgnoringOneTerminalEol": false,
       "allReadersPaintedLineText": true
     },
@@ -296,14 +424,24 @@
           "exactLogicalText": false,
           "logicalTextIgnoringOneTerminalEol": false,
           "paintedLineText": false,
-          "resavedText": "one two\r\nthree four five"
+          "resavedText": "one two\r\nthree four five",
+          "copyText": "one two\r\nthree four five",
+          "resavedCopyText": "one two\r\nthree four five",
+          "exactCopyText": false,
+          "copyMethod": "FPDFText_GetText full character range"
         },
         "mupdf": {
           "actualText": "one  two\nthree four five\n",
           "exactLogicalText": false,
           "logicalTextIgnoringOneTerminalEol": false,
           "paintedLineText": true,
-          "resavedText": "one  two\nthree four five\n"
+          "resavedText": "one  two\nthree four five\n",
+          "copyText": "one  two\nthree four five",
+          "resavedCopyText": "one  two\nthree four five",
+          "exactCopyText": false,
+          "copyMethod": "fz_copy_selection page corners, crlf=0",
+          "selectionCrlf": "one  two\r\nthree four five",
+          "resavedSelectionCrlf": "one  two\r\nthree four five"
         },
         "pypdf": {
           "actualText": "one  two\nthree four five",
@@ -313,12 +451,23 @@
           "resavedText": "one  two\nthree four five"
         }
       },
+      "mupdfSelectionPoints": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          480.0,
+          480.0
+        ]
+      ],
       "mupdfRawDictionaryEqual": false,
       "mupdfGeometryEqualExceptResourceLabels": true,
       "roundtripStable": true,
       "mupdfRasterSha256": "1224296f674f5d69508e1db28267f7a63a3963139944debae671f717732d9b2f",
       "pdfSha256": "a3d7ea738b37cad85be315f6b3b4bf79cf98b8db4a90440bf8d96bd630188237",
       "allReadersExactLogicalText": false,
+      "exactSelectionAndExtraction": false,
       "allReadersLogicalIgnoringOneTerminalEol": false,
       "allReadersPaintedLineText": false
     },

@@ -1,0 +1,137 @@
+{
+  "description": "Throwaway editable AcroForm alternative. Field-value reads are not clipboard or page-selection acceptance. No native Folio integration.",
+  "releaseAcceptance": false,
+  "mupdf": "1.27.1",
+  "pypdf": "6.14.2",
+  "cases": [
+    {
+      "name": "spaces-wrap",
+      "expected": "one  two three four five six seven eight nine ten",
+      "readings": [
+        {
+          "pdf": "spaces-wrap.pdf",
+          "sha256": "949f34dde689d076354aa48b3399b8888617d539821a8d1fb6eb239d00783dd0",
+          "mupdfFieldValue": "one  two three four five six seven eight nine ten",
+          "pypdfFieldValue": "one  two three four five six seven eight nine ten",
+          "mupdfExact": true,
+          "pypdfExact": true,
+          "rasterSha256": "0dd088aa99e4667949a5a3a4dbc952873ec50e1d6b1f52ecd2c94ecc895de766",
+          "pdfiumFormText": {
+            "FORM_GetSelectedText": "one  two three four five six seven eight nine ten",
+            "FORM_GetFocusedText": "one  two three four five six seven eight nine ten"
+          },
+          "pdfiumSelectionExact": true
+        },
+        {
+          "pdf": "spaces-wrap-resaved.pdf",
+          "sha256": "c16f7fdea229d8686dadb6ebba5f697db80842ebbf2110d5487337a3ef3993c1",
+          "mupdfFieldValue": "one  two three four five six seven eight nine ten",
+          "pypdfFieldValue": "one  two three four five six seven eight nine ten",
+          "mupdfExact": true,
+          "pypdfExact": true,
+          "rasterSha256": "0dd088aa99e4667949a5a3a4dbc952873ec50e1d6b1f52ecd2c94ecc895de766",
+          "pdfiumFormText": {
+            "FORM_GetSelectedText": "one  two three four five six seven eight nine ten",
+            "FORM_GetFocusedText": "one  two three four five six seven eight nine ten"
+          },
+          "pdfiumSelectionExact": true
+        }
+      ],
+      "appearanceStable": true
+    },
+    {
+      "name": "hard-breaks",
+      "expected": "First line\nSecond line\n\nFourth line",
+      "readings": [
+        {
+          "pdf": "hard-breaks.pdf",
+          "sha256": "a29c0a25c3a85b430439eebbb967b6c2ab60467ab291006ca1d6aa0346f819e3",
+          "mupdfFieldValue": "First line\nSecond line\n\nFourth line",
+          "pypdfFieldValue": "First line\nSecond line\n\nFourth line",
+          "mupdfExact": true,
+          "pypdfExact": true,
+          "rasterSha256": "0bf79dcf2adc5b860e507b36fa75d33a3ab5de6323350a10e1d51048d9b3aede",
+          "pdfiumFormText": {
+            "FORM_GetSelectedText": "First line\r\nSecond line\r\n\r\nFourth line",
+            "FORM_GetFocusedText": "First line\r\nSecond line\r\n\r\nFourth line"
+          },
+          "pdfiumSelectionExact": false
+        },
+        {
+          "pdf": "hard-breaks-resaved.pdf",
+          "sha256": "07dbf15eeefeb13dc99187d1c9e5a02c0ada706e3963221bc62d6a3c6dc72409",
+          "mupdfFieldValue": "First line\nSecond line\n\nFourth line",
+          "pypdfFieldValue": "First line\nSecond line\n\nFourth line",
+          "mupdfExact": true,
+          "pypdfExact": true,
+          "rasterSha256": "0bf79dcf2adc5b860e507b36fa75d33a3ab5de6323350a10e1d51048d9b3aede",
+          "pdfiumFormText": {
+            "FORM_GetSelectedText": "First line\r\nSecond line\r\n\r\nFourth line",
+            "FORM_GetFocusedText": "First line\r\nSecond line\r\n\r\nFourth line"
+          },
+          "pdfiumSelectionExact": false
+        }
+      ],
+      "appearanceStable": true
+    },
+    {
+      "name": "edge-spaces",
+      "expected": "  leading and trailing  ",
+      "readings": [
+        {
+          "pdf": "edge-spaces.pdf",
+          "sha256": "ae1d43a09e2077a55b593c052439816a7875eeb99eb7832d231ea7110ffb68a4",
+          "mupdfFieldValue": "  leading and trailing  ",
+          "pypdfFieldValue": "  leading and trailing  ",
+          "mupdfExact": true,
+          "pypdfExact": true,
+          "rasterSha256": "084d01ad0589cfbcc49c5c5944e71ac5e5d677473b3d5367f625384538b6e2ff",
+          "pdfiumFormText": {
+            "FORM_GetSelectedText": "  leading and trailing  ",
+            "FORM_GetFocusedText": "  leading and trailing  "
+          },
+          "pdfiumSelectionExact": true
+        },
+        {
+          "pdf": "edge-spaces-resaved.pdf",
+          "sha256": "a0543ad33895f01b5b5fcbcc674fa2e2dc676ec06b030e725303b4df653255d1",
+          "mupdfFieldValue": "  leading and trailing  ",
+          "pypdfFieldValue": "  leading and trailing  ",
+          "mupdfExact": true,
+          "pypdfExact": true,
+          "rasterSha256": "084d01ad0589cfbcc49c5c5944e71ac5e5d677473b3d5367f625384538b6e2ff",
+          "pdfiumFormText": {
+            "FORM_GetSelectedText": "  leading and trailing  ",
+            "FORM_GetFocusedText": "  leading and trailing  "
+          },
+          "pdfiumSelectionExact": true
+        }
+      ],
+      "appearanceStable": true
+    }
+  ],
+  "pdfiumSha256": "04100c03e41cac1f979e36e5e26fb860bcb5a7461f53830d3c098716624a27a9",
+  "formSelectionMethod": {
+    "interfaceVersion": 1,
+    "focusPointPdfCoordinates": [
+      50,
+      250
+    ],
+    "operations": [
+      "FORM_OnAfterLoadPage",
+      "FORM_OnFocus",
+      "FORM_SelectAllText",
+      "FORM_GetSelectedText"
+    ],
+    "font": "Helvetica, 16pt",
+    "widgets": "editable multiline AcroForm"
+  },
+  "rasterMethod": {
+    "matrix": [
+      1.5,
+      1.5
+    ],
+    "alpha": false,
+    "annotations": true
+  }
+}

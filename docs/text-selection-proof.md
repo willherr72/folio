@@ -1,5 +1,9 @@
 # External selection and tagged-PDF investigation (#14 / #16)
 
+Follow-up: the [version-2 copy gate](text-copy-gate-v2.md) now measures actual
+MuPDF selection in the native-area inspector. Historical page-extraction results
+below are retained; they are no longer substituted for selection evidence.
+
 This continues the strict external-copy requirement after `c39a14c`. No desktop
 feature or production writer changes, and no release acceptance is claimed.
 
