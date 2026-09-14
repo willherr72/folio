@@ -110,7 +110,7 @@ $env:CARGO_TARGET_DIR = 'C:/Users/WilliamHerr/Desktop/Code/Folio/src-tauri/targe
 cargo test --manifest-path src-tauri/Cargo.toml --test text_area -j1
 cargo run --manifest-path src-tauri/Cargo.toml --example text-area-probe -j1
 python -B -X utf8 scripts/test_inspect_text_area.py
-python -B -X utf8 scripts/inspect-text-area.py --expected-cases 9
+python -B -X utf8 scripts/inspect-text-area.py --expected-cases 9 --diagnostic
 node scripts/smoke-text-area-preview.mjs
 ```
 
@@ -118,3 +118,16 @@ The example refuses an existing output directory; pass a new directory as its
 argument for another run. Inspector `--input` and browser `FOLIO_TEXT_AREA_INPUT`
 select that directory. Generated artifacts stay under `artifacts/`; the browser
 script writes a standalone `text-area-browser/index.html` for visual exploration.
+
+## Strict external-copy requirement
+
+The user confirmed that identical copying in external viewers is required before
+release. `inspect-text-area.py` now fails by default unless every exported case
+copies the exact original logical string in PDFium, MuPDF and pypdf, in addition
+to valid source-range and roundtrip evidence. `--diagnostic` permits investigation
+of failed cases; it never establishes release acceptance. Even a passing copy
+gate would be necessary, not sufficient, for the other #16 acceptance criteria.
+
+The [80-case separator investigation](text-separator-proof.md) found no qualifying
+encoding. The text-area tool remains unreleased; a Folio-only clipboard workaround
+does not satisfy the requirement.

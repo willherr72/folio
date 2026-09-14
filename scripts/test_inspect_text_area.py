@@ -81,6 +81,25 @@ class InspectorTests(unittest.TestCase):
         b = deepcopy(a); b['blocks'][0]['lines'][0]['spans'][0]['font'] = 'OtherFont'
         self.assertNotEqual(module.geometry_without_resource_labels(a), module.geometry_without_resource_labels(b))
 
+    def gate_report(self):
+        readers={name:{'actualText':'A  B','exactLogicalText':True} for name in ['pdfium','mupdf','pypdf']}
+        return {'evidenceValid':True,'exports':1,'results':[{'logicalText':'A  B','readers':readers,'roundtripStable':True,'exactSourceRanges':True}]}
+
+    def test_copy_gate_requires_exact_raw_text_from_all_readers(self):
+        self.assertTrue(module.exact_copy_gate(self.gate_report()))
+        for reader in ['pdfium','mupdf','pypdf']:
+            for changed in ['A B','A  B\n','A\n B']:
+                report=self.gate_report();report['results'][0]['readers'][reader]['actualText']=changed
+                self.assertFalse(module.exact_copy_gate(report))
+
+    def test_copy_gate_rejects_missing_evidence_even_when_summary_claims_success(self):
+        for mutate in [lambda r:r.update(results=[]),lambda r:r.update(evidenceValid=False),
+                       lambda r:r['results'][0]['readers'].pop('pypdf'),
+                       lambda r:r['results'][0].update(roundtripStable=False),
+                       lambda r:r.update(exports=2)]:
+            report=self.gate_report();mutate(report)
+            self.assertFalse(module.exact_copy_gate(report))
+
     def test_empty_matrix_cannot_pass(self):
         with self.assertRaises(ValueError):
             module.validate_case_names([], 0)

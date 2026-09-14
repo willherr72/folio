@@ -344,5 +344,7 @@
       "exportRefused": true,
       "roundtripStable": true
     }
-  ]
+  ],
+  "exactCopyGatePassed": false,
+  "diagnosticOnly": false
 }

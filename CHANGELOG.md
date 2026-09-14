@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Require exact external-reader text in the text-area verifier by default; diagnostic results cannot satisfy the release gate. Retain 80 experimental separator-encoding cases with their copying failures.
+
 - Add a development-only native Latin text-area layout API with measured wrapping, alignment, exact logical source ranges and explicit overflow. Existing desktop overlays are unchanged.
 - Add native-vector/PDFium preview comparisons and saved-reader fixtures. Preserve the observed soft-wrap newline and repeated-space copy failures as integration gates for #16; no text-area tool is enabled yet.
 

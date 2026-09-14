@@ -1,0 +1,5894 @@
+{
+  "description": "Experimental only. Exact text, optional terminal-EOL diagnostic, character boxes and original vector ink are separate gates. No production writer changed.",
+  "pdfiumSha256": "04100c03e41cac1f979e36e5e26fb860bcb5a7461f53830d3c098716624a27a9",
+  "mupdf": "1.27.1",
+  "pypdf": "6.14.2",
+  "cases": [
+    {
+      "case": "single",
+      "strategy": "courier-objects",
+      "rotation": 0,
+      "expected": "A B",
+      "texts": {
+        "pdfium": "A B",
+        "mupdf": "A B\n",
+        "pypdf": "A B"
+      },
+      "exact": {
+        "pdfium": true,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "terminalEolOnly": {
+        "pdfium": true,
+        "mupdf": true,
+        "pypdf": true
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.15999984741211,
+            59.86000061035156,
+            120.0,
+            131.4199981689453
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            60.0,
+            120.0,
+            120.0
+          ],
+          "textObject": 1
+        },
+        {
+          "text": "B",
+          "box": [
+            72.83999633789062,
+            82.86000061035156,
+            120.0,
+            131.4199981689453
+          ],
+          "textObject": 2
+        }
+      ],
+      "pdfiumCellBoxesExact": false,
+      "unchangedInk": true,
+      "sha256": "fedeb271f7bc546e33282ae3778ee220dfae5838a77873c6d1e2887b1d589efa",
+      "pdf": "single-0-courier-objects.pdf"
+    },
+    {
+      "case": "single",
+      "strategy": "scalar-cells",
+      "rotation": 0,
+      "expected": "A B",
+      "texts": {
+        "pdfium": "A B",
+        "mupdf": "A B\n",
+        "pypdf": "A B"
+      },
+      "exact": {
+        "pdfium": true,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "terminalEolOnly": {
+        "pdfium": true,
+        "mupdf": true,
+        "pypdf": true
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            60.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            72.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            72.0,
+            84.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": true,
+      "unchangedInk": true,
+      "sha256": "cb8d5d89e46e79b2eb6cc462c590a9984bc242e903581235f1ad0805e6902794",
+      "pdf": "single-0-scalar-cells.pdf"
+    },
+    {
+      "case": "single",
+      "strategy": "expanded-unicode",
+      "rotation": 0,
+      "expected": "A B",
+      "texts": {
+        "pdfium": "A B",
+        "mupdf": "A B\n",
+        "pypdf": "A B"
+      },
+      "exact": {
+        "pdfium": true,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "terminalEolOnly": {
+        "pdfium": true,
+        "mupdf": true,
+        "pypdf": true
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            60.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            72.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            72.0,
+            84.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": true,
+      "unchangedInk": true,
+      "sha256": "cb8d5d89e46e79b2eb6cc462c590a9984bc242e903581235f1ad0805e6902794",
+      "pdf": "single-0-expanded-unicode.pdf"
+    },
+    {
+      "case": "single",
+      "strategy": "whole-actualtext",
+      "rotation": 0,
+      "expected": "A B",
+      "texts": {
+        "pdfium": "A B",
+        "mupdf": "A B\n",
+        "pypdf": "A B"
+      },
+      "exact": {
+        "pdfium": true,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "terminalEolOnly": {
+        "pdfium": true,
+        "mupdf": true,
+        "pypdf": true
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            60.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            72.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            72.0,
+            84.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": true,
+      "unchangedInk": true,
+      "sha256": "8621e2fc5d4b50ecf755807eeb16f7d350599d6ef937acb5ecb5dc08a18d6b68",
+      "pdf": "single-0-whole-actualtext.pdf"
+    },
+    {
+      "case": "single",
+      "strategy": "courier-objects",
+      "rotation": 90,
+      "expected": "A B",
+      "texts": {
+        "pdfium": "A B",
+        "mupdf": "A B\n",
+        "pypdf": "A B"
+      },
+      "exact": {
+        "pdfium": true,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "terminalEolOnly": {
+        "pdfium": true,
+        "mupdf": true,
+        "pypdf": true
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.15999984741211,
+            59.86000061035156,
+            120.0,
+            131.4199981689453
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            60.0,
+            120.0,
+            120.0
+          ],
+          "textObject": 1
+        },
+        {
+          "text": "B",
+          "box": [
+            72.83999633789062,
+            82.86000061035156,
+            120.0,
+            131.4199981689453
+          ],
+          "textObject": 2
+        }
+      ],
+      "pdfiumCellBoxesExact": false,
+      "unchangedInk": true,
+      "sha256": "745dbd998cccde4123d12ed689eda4d24d32a838fdd8529663cf47407ad9dd75",
+      "pdf": "single-90-courier-objects.pdf"
+    },
+    {
+      "case": "single",
+      "strategy": "scalar-cells",
+      "rotation": 90,
+      "expected": "A B",
+      "texts": {
+        "pdfium": "A B",
+        "mupdf": "A B\n",
+        "pypdf": "A B"
+      },
+      "exact": {
+        "pdfium": true,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "terminalEolOnly": {
+        "pdfium": true,
+        "mupdf": true,
+        "pypdf": true
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            60.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            72.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            72.0,
+            84.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": true,
+      "unchangedInk": true,
+      "sha256": "70a9e1b338500ebf9911802e6acdc1911320707767389be2df488613ceeb66e2",
+      "pdf": "single-90-scalar-cells.pdf"
+    },
+    {
+      "case": "single",
+      "strategy": "expanded-unicode",
+      "rotation": 90,
+      "expected": "A B",
+      "texts": {
+        "pdfium": "A B",
+        "mupdf": "A B\n",
+        "pypdf": "A B"
+      },
+      "exact": {
+        "pdfium": true,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "terminalEolOnly": {
+        "pdfium": true,
+        "mupdf": true,
+        "pypdf": true
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            60.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            72.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            72.0,
+            84.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": true,
+      "unchangedInk": true,
+      "sha256": "70a9e1b338500ebf9911802e6acdc1911320707767389be2df488613ceeb66e2",
+      "pdf": "single-90-expanded-unicode.pdf"
+    },
+    {
+      "case": "single",
+      "strategy": "whole-actualtext",
+      "rotation": 90,
+      "expected": "A B",
+      "texts": {
+        "pdfium": "A B",
+        "mupdf": "A B\n",
+        "pypdf": "A B"
+      },
+      "exact": {
+        "pdfium": true,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "terminalEolOnly": {
+        "pdfium": true,
+        "mupdf": true,
+        "pypdf": true
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            60.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            72.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            72.0,
+            84.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": true,
+      "unchangedInk": true,
+      "sha256": "8b8eabb7f751a21e9ef2b14b2fabae3078e648de4b4aae29e3beabe05cbc030a",
+      "pdf": "single-90-whole-actualtext.pdf"
+    },
+    {
+      "case": "single",
+      "strategy": "courier-objects",
+      "rotation": 180,
+      "expected": "A B",
+      "texts": {
+        "pdfium": "B A",
+        "mupdf": "A B\n",
+        "pypdf": "A B"
+      },
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "terminalEolOnly": {
+        "pdfium": false,
+        "mupdf": true,
+        "pypdf": true
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "B",
+          "box": [
+            72.83999633789062,
+            82.86000061035156,
+            120.0,
+            131.4199981689453
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            84.0,
+            84.0,
+            120.0,
+            120.0
+          ],
+          "textObject": 1
+        },
+        {
+          "text": "A",
+          "box": [
+            48.15999984741211,
+            59.86000061035156,
+            120.0,
+            131.4199981689453
+          ],
+          "textObject": 2
+        }
+      ],
+      "pdfiumCellBoxesExact": false,
+      "unchangedInk": true,
+      "sha256": "ca107274b8a9dc0a38cdc0210ac10c195996d161c749b0084eda00d8c8a57807",
+      "pdf": "single-180-courier-objects.pdf"
+    },
+    {
+      "case": "single",
+      "strategy": "scalar-cells",
+      "rotation": 180,
+      "expected": "A B",
+      "texts": {
+        "pdfium": "A B",
+        "mupdf": "A B\n",
+        "pypdf": "A B"
+      },
+      "exact": {
+        "pdfium": true,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "terminalEolOnly": {
+        "pdfium": true,
+        "mupdf": true,
+        "pypdf": true
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            60.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            72.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            72.0,
+            84.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": true,
+      "unchangedInk": true,
+      "sha256": "d33568eaaafe50e4124a8222da88645eaf168aabb661f28c787c494ae46e5571",
+      "pdf": "single-180-scalar-cells.pdf"
+    },
+    {
+      "case": "single",
+      "strategy": "expanded-unicode",
+      "rotation": 180,
+      "expected": "A B",
+      "texts": {
+        "pdfium": "A B",
+        "mupdf": "A B\n",
+        "pypdf": "A B"
+      },
+      "exact": {
+        "pdfium": true,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "terminalEolOnly": {
+        "pdfium": true,
+        "mupdf": true,
+        "pypdf": true
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            60.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            72.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            72.0,
+            84.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": true,
+      "unchangedInk": true,
+      "sha256": "d33568eaaafe50e4124a8222da88645eaf168aabb661f28c787c494ae46e5571",
+      "pdf": "single-180-expanded-unicode.pdf"
+    },
+    {
+      "case": "single",
+      "strategy": "whole-actualtext",
+      "rotation": 180,
+      "expected": "A B",
+      "texts": {
+        "pdfium": "A B",
+        "mupdf": "A B\n",
+        "pypdf": "A B"
+      },
+      "exact": {
+        "pdfium": true,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "terminalEolOnly": {
+        "pdfium": true,
+        "mupdf": true,
+        "pypdf": true
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            60.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            72.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            72.0,
+            84.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": true,
+      "unchangedInk": true,
+      "sha256": "dea3aa2d4375bb8489c056f44847635b992d693f03ad90ed54322ada3c971ead",
+      "pdf": "single-180-whole-actualtext.pdf"
+    },
+    {
+      "case": "single",
+      "strategy": "courier-objects",
+      "rotation": 270,
+      "expected": "A B",
+      "texts": {
+        "pdfium": "A B",
+        "mupdf": "A B\n",
+        "pypdf": "A B"
+      },
+      "exact": {
+        "pdfium": true,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "terminalEolOnly": {
+        "pdfium": true,
+        "mupdf": true,
+        "pypdf": true
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.15999984741211,
+            59.86000061035156,
+            120.0,
+            131.4199981689453
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            60.0,
+            120.0,
+            120.0
+          ],
+          "textObject": 1
+        },
+        {
+          "text": "B",
+          "box": [
+            72.83999633789062,
+            82.86000061035156,
+            120.0,
+            131.4199981689453
+          ],
+          "textObject": 2
+        }
+      ],
+      "pdfiumCellBoxesExact": false,
+      "unchangedInk": true,
+      "sha256": "8db1a07b6ef7be22644dc9fc7bd96907d19fad1f6480193f87ec8ff7fa802347",
+      "pdf": "single-270-courier-objects.pdf"
+    },
+    {
+      "case": "single",
+      "strategy": "scalar-cells",
+      "rotation": 270,
+      "expected": "A B",
+      "texts": {
+        "pdfium": "A B",
+        "mupdf": "A B\n",
+        "pypdf": "A B"
+      },
+      "exact": {
+        "pdfium": true,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "terminalEolOnly": {
+        "pdfium": true,
+        "mupdf": true,
+        "pypdf": true
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            60.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            72.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            72.0,
+            84.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": true,
+      "unchangedInk": true,
+      "sha256": "98988bc19b8487d45a20ff190f5df91f21c97804f87bb530d207598c65055f0a",
+      "pdf": "single-270-scalar-cells.pdf"
+    },
+    {
+      "case": "single",
+      "strategy": "expanded-unicode",
+      "rotation": 270,
+      "expected": "A B",
+      "texts": {
+        "pdfium": "A B",
+        "mupdf": "A B\n",
+        "pypdf": "A B"
+      },
+      "exact": {
+        "pdfium": true,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "terminalEolOnly": {
+        "pdfium": true,
+        "mupdf": true,
+        "pypdf": true
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            60.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            72.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            72.0,
+            84.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": true,
+      "unchangedInk": true,
+      "sha256": "98988bc19b8487d45a20ff190f5df91f21c97804f87bb530d207598c65055f0a",
+      "pdf": "single-270-expanded-unicode.pdf"
+    },
+    {
+      "case": "single",
+      "strategy": "whole-actualtext",
+      "rotation": 270,
+      "expected": "A B",
+      "texts": {
+        "pdfium": "A B",
+        "mupdf": "A B\n",
+        "pypdf": "A B"
+      },
+      "exact": {
+        "pdfium": true,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "terminalEolOnly": {
+        "pdfium": true,
+        "mupdf": true,
+        "pypdf": true
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            60.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            72.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            72.0,
+            84.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": true,
+      "unchangedInk": true,
+      "sha256": "e0a9352058c51fa5b26a60863680e22b25933426e31b6dea3e44c57108c0094f",
+      "pdf": "single-270-whole-actualtext.pdf"
+    },
+    {
+      "case": "spaces",
+      "strategy": "courier-objects",
+      "rotation": 0,
+      "expected": "A  B",
+      "texts": {
+        "pdfium": "A B",
+        "mupdf": "A  B\n",
+        "pypdf": "A  B"
+      },
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "terminalEolOnly": {
+        "pdfium": false,
+        "mupdf": true,
+        "pypdf": true
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.15999984741211,
+            59.86000061035156,
+            120.0,
+            131.4199981689453
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            60.0,
+            120.0,
+            120.0
+          ],
+          "textObject": 1
+        },
+        {
+          "text": "B",
+          "box": [
+            84.83999633789062,
+            94.86000061035156,
+            120.0,
+            131.4199981689453
+          ],
+          "textObject": 2
+        }
+      ],
+      "pdfiumCellBoxesExact": false,
+      "unchangedInk": true,
+      "sha256": "3a6ef817680f44a60d2825d370356705acf06c820db569aff2994a075d67bce8",
+      "pdf": "spaces-0-courier-objects.pdf"
+    },
+    {
+      "case": "spaces",
+      "strategy": "scalar-cells",
+      "rotation": 0,
+      "expected": "A  B",
+      "texts": {
+        "pdfium": "A B",
+        "mupdf": "A  B\n",
+        "pypdf": "A  B"
+      },
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "terminalEolOnly": {
+        "pdfium": false,
+        "mupdf": true,
+        "pypdf": true
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            60.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            72.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            84.0,
+            96.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": false,
+      "unchangedInk": true,
+      "sha256": "83c76c6b149a69cfba1abc4db474f0283d025880fc95c5414b8b16e84c803044",
+      "pdf": "spaces-0-scalar-cells.pdf"
+    },
+    {
+      "case": "spaces",
+      "strategy": "expanded-unicode",
+      "rotation": 0,
+      "expected": "A  B",
+      "texts": {
+        "pdfium": "A B",
+        "mupdf": "A  B\n",
+        "pypdf": "A  B"
+      },
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "terminalEolOnly": {
+        "pdfium": false,
+        "mupdf": true,
+        "pypdf": true
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            60.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            84.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            84.0,
+            96.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": false,
+      "unchangedInk": true,
+      "sha256": "8814077f9a25083d7204f28f51558367538b24681df10cce0eb09e9cd3c89123",
+      "pdf": "spaces-0-expanded-unicode.pdf"
+    },
+    {
+      "case": "spaces",
+      "strategy": "whole-actualtext",
+      "rotation": 0,
+      "expected": "A  B",
+      "texts": {
+        "pdfium": "A B",
+        "mupdf": "A  B\n",
+        "pypdf": "A  B"
+      },
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "terminalEolOnly": {
+        "pdfium": false,
+        "mupdf": true,
+        "pypdf": true
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            60.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            72.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            84.0,
+            96.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": false,
+      "unchangedInk": true,
+      "sha256": "287193d4221cccd94393240f1a04dd6703da0863672de8a017d03c7b12a0671d",
+      "pdf": "spaces-0-whole-actualtext.pdf"
+    },
+    {
+      "case": "spaces",
+      "strategy": "courier-objects",
+      "rotation": 90,
+      "expected": "A  B",
+      "texts": {
+        "pdfium": "A B",
+        "mupdf": "A  B\n",
+        "pypdf": "A  B"
+      },
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "terminalEolOnly": {
+        "pdfium": false,
+        "mupdf": true,
+        "pypdf": true
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.15999984741211,
+            59.86000061035156,
+            120.0,
+            131.4199981689453
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            60.0,
+            120.0,
+            120.0
+          ],
+          "textObject": 1
+        },
+        {
+          "text": "B",
+          "box": [
+            84.83999633789062,
+            94.86000061035156,
+            120.0,
+            131.4199981689453
+          ],
+          "textObject": 2
+        }
+      ],
+      "pdfiumCellBoxesExact": false,
+      "unchangedInk": true,
+      "sha256": "11e26004b83c10391cc35d47ab2e4bc5e305861876daed9a9c710a4e0fe020cc",
+      "pdf": "spaces-90-courier-objects.pdf"
+    },
+    {
+      "case": "spaces",
+      "strategy": "scalar-cells",
+      "rotation": 90,
+      "expected": "A  B",
+      "texts": {
+        "pdfium": "A B",
+        "mupdf": "A  B\n",
+        "pypdf": "A  B"
+      },
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "terminalEolOnly": {
+        "pdfium": false,
+        "mupdf": true,
+        "pypdf": true
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            60.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            72.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            84.0,
+            96.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": false,
+      "unchangedInk": true,
+      "sha256": "7d8ee6c8c368c8389d38ce58133f514cb7958cee2167f01b20593afaa1945001",
+      "pdf": "spaces-90-scalar-cells.pdf"
+    },
+    {
+      "case": "spaces",
+      "strategy": "expanded-unicode",
+      "rotation": 90,
+      "expected": "A  B",
+      "texts": {
+        "pdfium": "A B",
+        "mupdf": "A  B\n",
+        "pypdf": "A  B"
+      },
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "terminalEolOnly": {
+        "pdfium": false,
+        "mupdf": true,
+        "pypdf": true
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            60.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            84.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            84.0,
+            96.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": false,
+      "unchangedInk": true,
+      "sha256": "404d15cd65a7e4ac0088fd351bb48a06c3fc6414460932873bf16522b6e06edb",
+      "pdf": "spaces-90-expanded-unicode.pdf"
+    },
+    {
+      "case": "spaces",
+      "strategy": "whole-actualtext",
+      "rotation": 90,
+      "expected": "A  B",
+      "texts": {
+        "pdfium": "A B",
+        "mupdf": "A  B\n",
+        "pypdf": "A  B"
+      },
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "terminalEolOnly": {
+        "pdfium": false,
+        "mupdf": true,
+        "pypdf": true
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            60.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            72.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            84.0,
+            96.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": false,
+      "unchangedInk": true,
+      "sha256": "7f40c3f657662b2afbd2f91ef2614e607daffdf16d878816d194fd88de3de33c",
+      "pdf": "spaces-90-whole-actualtext.pdf"
+    },
+    {
+      "case": "spaces",
+      "strategy": "courier-objects",
+      "rotation": 180,
+      "expected": "A  B",
+      "texts": {
+        "pdfium": "B A",
+        "mupdf": "A  B\n",
+        "pypdf": "A  B"
+      },
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "terminalEolOnly": {
+        "pdfium": false,
+        "mupdf": true,
+        "pypdf": true
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "B",
+          "box": [
+            84.83999633789062,
+            94.86000061035156,
+            120.0,
+            131.4199981689453
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            96.0,
+            96.0,
+            120.0,
+            120.0
+          ],
+          "textObject": 1
+        },
+        {
+          "text": "A",
+          "box": [
+            48.15999984741211,
+            59.86000061035156,
+            120.0,
+            131.4199981689453
+          ],
+          "textObject": 2
+        }
+      ],
+      "pdfiumCellBoxesExact": false,
+      "unchangedInk": true,
+      "sha256": "70d93f7b6013d704a2f09079f96b7aba7d39cdd37a9ceefde0424e137722ef86",
+      "pdf": "spaces-180-courier-objects.pdf"
+    },
+    {
+      "case": "spaces",
+      "strategy": "scalar-cells",
+      "rotation": 180,
+      "expected": "A  B",
+      "texts": {
+        "pdfium": "A B",
+        "mupdf": "A  B\n",
+        "pypdf": "A  B"
+      },
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "terminalEolOnly": {
+        "pdfium": false,
+        "mupdf": true,
+        "pypdf": true
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            60.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            72.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            84.0,
+            96.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": false,
+      "unchangedInk": true,
+      "sha256": "101ed29d5f014267e615aaa2703595cd123133cbb07642b9665840fea12c46da",
+      "pdf": "spaces-180-scalar-cells.pdf"
+    },
+    {
+      "case": "spaces",
+      "strategy": "expanded-unicode",
+      "rotation": 180,
+      "expected": "A  B",
+      "texts": {
+        "pdfium": "A B",
+        "mupdf": "A  B\n",
+        "pypdf": "A  B"
+      },
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "terminalEolOnly": {
+        "pdfium": false,
+        "mupdf": true,
+        "pypdf": true
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            60.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            84.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            84.0,
+            96.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": false,
+      "unchangedInk": true,
+      "sha256": "5f9ed7605167a5baa716fdebb0f1d7b372548328eec2db359a8e77fbfafd2e28",
+      "pdf": "spaces-180-expanded-unicode.pdf"
+    },
+    {
+      "case": "spaces",
+      "strategy": "whole-actualtext",
+      "rotation": 180,
+      "expected": "A  B",
+      "texts": {
+        "pdfium": "A B",
+        "mupdf": "A  B\n",
+        "pypdf": "A  B"
+      },
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "terminalEolOnly": {
+        "pdfium": false,
+        "mupdf": true,
+        "pypdf": true
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            60.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            72.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            84.0,
+            96.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": false,
+      "unchangedInk": true,
+      "sha256": "b9c464c1eea3735ae0ec515239a3c64831f8ea6d02987ed2fa65316e8ddccedb",
+      "pdf": "spaces-180-whole-actualtext.pdf"
+    },
+    {
+      "case": "spaces",
+      "strategy": "courier-objects",
+      "rotation": 270,
+      "expected": "A  B",
+      "texts": {
+        "pdfium": "A B",
+        "mupdf": "A  B\n",
+        "pypdf": "A  B"
+      },
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "terminalEolOnly": {
+        "pdfium": false,
+        "mupdf": true,
+        "pypdf": true
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.15999984741211,
+            59.86000061035156,
+            120.0,
+            131.4199981689453
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            60.0,
+            120.0,
+            120.0
+          ],
+          "textObject": 1
+        },
+        {
+          "text": "B",
+          "box": [
+            84.83999633789062,
+            94.86000061035156,
+            120.0,
+            131.4199981689453
+          ],
+          "textObject": 2
+        }
+      ],
+      "pdfiumCellBoxesExact": false,
+      "unchangedInk": true,
+      "sha256": "ea8b8c74ea0fe1697027e5f1a478467e3d57da297e86c1df2a90667770642740",
+      "pdf": "spaces-270-courier-objects.pdf"
+    },
+    {
+      "case": "spaces",
+      "strategy": "scalar-cells",
+      "rotation": 270,
+      "expected": "A  B",
+      "texts": {
+        "pdfium": "A B",
+        "mupdf": "A  B\n",
+        "pypdf": "A  B"
+      },
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "terminalEolOnly": {
+        "pdfium": false,
+        "mupdf": true,
+        "pypdf": true
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            60.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            72.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            84.0,
+            96.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": false,
+      "unchangedInk": true,
+      "sha256": "68dbeb4878208b8e2c13190270f39123e52668d4907d1528cf9c243c21d60dd7",
+      "pdf": "spaces-270-scalar-cells.pdf"
+    },
+    {
+      "case": "spaces",
+      "strategy": "expanded-unicode",
+      "rotation": 270,
+      "expected": "A  B",
+      "texts": {
+        "pdfium": "A B",
+        "mupdf": "A  B\n",
+        "pypdf": "A  B"
+      },
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "terminalEolOnly": {
+        "pdfium": false,
+        "mupdf": true,
+        "pypdf": true
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            60.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            84.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            84.0,
+            96.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": false,
+      "unchangedInk": true,
+      "sha256": "06443ddd65262ea79be97bfa3c0098e6036b90694fe6cba53a70e8d6520ca8e7",
+      "pdf": "spaces-270-expanded-unicode.pdf"
+    },
+    {
+      "case": "spaces",
+      "strategy": "whole-actualtext",
+      "rotation": 270,
+      "expected": "A  B",
+      "texts": {
+        "pdfium": "A B",
+        "mupdf": "A  B\n",
+        "pypdf": "A  B"
+      },
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "terminalEolOnly": {
+        "pdfium": false,
+        "mupdf": true,
+        "pypdf": true
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            60.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            72.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            84.0,
+            96.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": false,
+      "unchangedInk": true,
+      "sha256": "d3b8db2cd218a8f45114e0a640ade856babd8f88292c0f2daffc099725642ce8",
+      "pdf": "spaces-270-whole-actualtext.pdf"
+    },
+    {
+      "case": "soft",
+      "strategy": "courier-objects",
+      "rotation": 0,
+      "expected": "A B C D",
+      "texts": {
+        "pdfium": "A B\r\nC D",
+        "mupdf": "A B \nC D\n",
+        "pypdf": "A B \nC D"
+      },
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "terminalEolOnly": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.15999984741211,
+            59.86000061035156,
+            120.0,
+            131.4199981689453
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            60.0,
+            120.0,
+            120.0
+          ],
+          "textObject": 1
+        },
+        {
+          "text": "B",
+          "box": [
+            72.83999633789062,
+            82.86000061035156,
+            120.0,
+            131.4199981689453
+          ],
+          "textObject": 2
+        },
+        {
+          "text": "\r",
+          "box": [
+            84.0,
+            84.0,
+            120.0,
+            120.0
+          ],
+          "textObject": 1
+        },
+        {
+          "text": "\n",
+          "box": [
+            84.0,
+            84.0,
+            120.0,
+            120.0
+          ],
+          "textObject": 1
+        },
+        {
+          "text": "C",
+          "box": [
+            49.2400016784668,
+            58.73999786376953,
+            91.69999694824219,
+            103.68000030517578
+          ],
+          "textObject": 3
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            60.0,
+            92.0,
+            92.0
+          ],
+          "textObject": 1
+        },
+        {
+          "text": "D",
+          "box": [
+            73.54000091552734,
+            83.16000366210938,
+            92.0,
+            103.41999816894531
+          ],
+          "textObject": 4
+        }
+      ],
+      "pdfiumCellBoxesExact": false,
+      "unchangedInk": true,
+      "sha256": "81c064fb487950b5266d5df7b93a8d1ff4a59f8ad9678eaadbc0b98eec87e0af",
+      "pdf": "soft-0-courier-objects.pdf"
+    },
+    {
+      "case": "soft",
+      "strategy": "scalar-cells",
+      "rotation": 0,
+      "expected": "A B C D",
+      "texts": {
+        "pdfium": "A B C D",
+        "mupdf": "A B \nC D\n",
+        "pypdf": "A B C D"
+      },
+      "exact": {
+        "pdfium": true,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "terminalEolOnly": {
+        "pdfium": true,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            60.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            72.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            72.0,
+            84.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            84.0,
+            96.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "C",
+          "box": [
+            48.0,
+            60.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            72.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "D",
+          "box": [
+            72.0,
+            84.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": true,
+      "unchangedInk": true,
+      "sha256": "bbce4e651cc9ffcb484a8e3715b139a8aa4e035a616870020ca3706e0dd2b44a",
+      "pdf": "soft-0-scalar-cells.pdf"
+    },
+    {
+      "case": "soft",
+      "strategy": "expanded-unicode",
+      "rotation": 0,
+      "expected": "A B C D",
+      "texts": {
+        "pdfium": "A B C D",
+        "mupdf": "A B \nC D\n",
+        "pypdf": "A B C D"
+      },
+      "exact": {
+        "pdfium": true,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "terminalEolOnly": {
+        "pdfium": true,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            60.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            72.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            72.0,
+            84.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            84.0,
+            96.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "C",
+          "box": [
+            48.0,
+            60.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            72.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "D",
+          "box": [
+            72.0,
+            84.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": true,
+      "unchangedInk": true,
+      "sha256": "bbce4e651cc9ffcb484a8e3715b139a8aa4e035a616870020ca3706e0dd2b44a",
+      "pdf": "soft-0-expanded-unicode.pdf"
+    },
+    {
+      "case": "soft",
+      "strategy": "whole-actualtext",
+      "rotation": 0,
+      "expected": "A B C D",
+      "texts": {
+        "pdfium": "A B C D",
+        "mupdf": "A B \nC D\n",
+        "pypdf": "A B C D"
+      },
+      "exact": {
+        "pdfium": true,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "terminalEolOnly": {
+        "pdfium": true,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            54.85714340209961,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            54.85714340209961,
+            61.71428680419922,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            61.71428680419922,
+            68.57142639160156,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            68.57142639160156,
+            75.42857360839844,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "C",
+          "box": [
+            75.42857360839844,
+            82.28572082519531,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            82.28572082519531,
+            89.14286041259766,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "D",
+          "box": [
+            89.14286041259766,
+            96.0,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": false,
+      "unchangedInk": true,
+      "sha256": "f42c41de1753f14f9a1454d2d831ea845856528121b42010c6f16560a0bc867a",
+      "pdf": "soft-0-whole-actualtext.pdf"
+    },
+    {
+      "case": "soft",
+      "strategy": "courier-objects",
+      "rotation": 90,
+      "expected": "A B C D",
+      "texts": {
+        "pdfium": "A B\r\nC D",
+        "mupdf": "A B \nC D\n",
+        "pypdf": "A B \nC D"
+      },
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "terminalEolOnly": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.15999984741211,
+            59.86000061035156,
+            120.0,
+            131.4199981689453
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            60.0,
+            120.0,
+            120.0
+          ],
+          "textObject": 1
+        },
+        {
+          "text": "B",
+          "box": [
+            72.83999633789062,
+            82.86000061035156,
+            120.0,
+            131.4199981689453
+          ],
+          "textObject": 2
+        },
+        {
+          "text": "\r",
+          "box": [
+            84.0,
+            84.0,
+            120.0,
+            120.0
+          ],
+          "textObject": 1
+        },
+        {
+          "text": "\n",
+          "box": [
+            84.0,
+            84.0,
+            120.0,
+            120.0
+          ],
+          "textObject": 1
+        },
+        {
+          "text": "C",
+          "box": [
+            49.2400016784668,
+            58.73999786376953,
+            91.69999694824219,
+            103.68000030517578
+          ],
+          "textObject": 3
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            60.0,
+            92.0,
+            92.0
+          ],
+          "textObject": 1
+        },
+        {
+          "text": "D",
+          "box": [
+            73.54000091552734,
+            83.16000366210938,
+            92.0,
+            103.41999816894531
+          ],
+          "textObject": 4
+        }
+      ],
+      "pdfiumCellBoxesExact": false,
+      "unchangedInk": true,
+      "sha256": "06d8c3ff65a04ef68207bcdd5a46b74a929bec48639e6c0f8cd8aca2a6b34473",
+      "pdf": "soft-90-courier-objects.pdf"
+    },
+    {
+      "case": "soft",
+      "strategy": "scalar-cells",
+      "rotation": 90,
+      "expected": "A B C D",
+      "texts": {
+        "pdfium": "A B C D",
+        "mupdf": "A B \nC D\n",
+        "pypdf": "A B C D"
+      },
+      "exact": {
+        "pdfium": true,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "terminalEolOnly": {
+        "pdfium": true,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            60.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            72.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            72.0,
+            84.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            84.0,
+            96.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "C",
+          "box": [
+            48.0,
+            60.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            72.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "D",
+          "box": [
+            72.0,
+            84.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": true,
+      "unchangedInk": true,
+      "sha256": "c1fca87e1d7377e8351a642b12ddc8592f302ea6df2e57090bfe308f95ee05d2",
+      "pdf": "soft-90-scalar-cells.pdf"
+    },
+    {
+      "case": "soft",
+      "strategy": "expanded-unicode",
+      "rotation": 90,
+      "expected": "A B C D",
+      "texts": {
+        "pdfium": "A B C D",
+        "mupdf": "A B \nC D\n",
+        "pypdf": "A B C D"
+      },
+      "exact": {
+        "pdfium": true,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "terminalEolOnly": {
+        "pdfium": true,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            60.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            72.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            72.0,
+            84.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            84.0,
+            96.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "C",
+          "box": [
+            48.0,
+            60.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            72.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "D",
+          "box": [
+            72.0,
+            84.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": true,
+      "unchangedInk": true,
+      "sha256": "c1fca87e1d7377e8351a642b12ddc8592f302ea6df2e57090bfe308f95ee05d2",
+      "pdf": "soft-90-expanded-unicode.pdf"
+    },
+    {
+      "case": "soft",
+      "strategy": "whole-actualtext",
+      "rotation": 90,
+      "expected": "A B C D",
+      "texts": {
+        "pdfium": "A B C D",
+        "mupdf": "A B \nC D\n",
+        "pypdf": "A B C D"
+      },
+      "exact": {
+        "pdfium": true,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "terminalEolOnly": {
+        "pdfium": true,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            54.85714340209961,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            54.85714340209961,
+            61.71428680419922,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            61.71428680419922,
+            68.57142639160156,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            68.57142639160156,
+            75.42857360839844,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "C",
+          "box": [
+            75.42857360839844,
+            82.28572082519531,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            82.28572082519531,
+            89.14286041259766,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "D",
+          "box": [
+            89.14286041259766,
+            96.0,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": false,
+      "unchangedInk": true,
+      "sha256": "31f3f25ff67c6a0d69625e9e493da93f11ec5cf8ca1091697627e6cc7052f639",
+      "pdf": "soft-90-whole-actualtext.pdf"
+    },
+    {
+      "case": "soft",
+      "strategy": "courier-objects",
+      "rotation": 180,
+      "expected": "A B C D",
+      "texts": {
+        "pdfium": "B A\r\nD C",
+        "mupdf": "A B \nC D\n",
+        "pypdf": "A B \nC D"
+      },
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "terminalEolOnly": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "B",
+          "box": [
+            72.83999633789062,
+            82.86000061035156,
+            120.0,
+            131.4199981689453
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            84.0,
+            84.0,
+            120.0,
+            120.0
+          ],
+          "textObject": 1
+        },
+        {
+          "text": "A",
+          "box": [
+            48.15999984741211,
+            59.86000061035156,
+            120.0,
+            131.4199981689453
+          ],
+          "textObject": 2
+        },
+        {
+          "text": "\r",
+          "box": [
+            60.0,
+            60.0,
+            120.0,
+            120.0
+          ],
+          "textObject": 1
+        },
+        {
+          "text": "\n",
+          "box": [
+            60.0,
+            60.0,
+            120.0,
+            120.0
+          ],
+          "textObject": 1
+        },
+        {
+          "text": "D",
+          "box": [
+            73.54000091552734,
+            83.16000366210938,
+            92.0,
+            103.41999816894531
+          ],
+          "textObject": 3
+        },
+        {
+          "text": " ",
+          "box": [
+            84.0,
+            84.0,
+            92.0,
+            92.0
+          ],
+          "textObject": 1
+        },
+        {
+          "text": "C",
+          "box": [
+            49.2400016784668,
+            58.73999786376953,
+            91.69999694824219,
+            103.68000030517578
+          ],
+          "textObject": 4
+        }
+      ],
+      "pdfiumCellBoxesExact": false,
+      "unchangedInk": true,
+      "sha256": "4cc069f7bfa71d17eb5ba6a8a34880e234d641d47ab9789afcbcdb45553861b0",
+      "pdf": "soft-180-courier-objects.pdf"
+    },
+    {
+      "case": "soft",
+      "strategy": "scalar-cells",
+      "rotation": 180,
+      "expected": "A B C D",
+      "texts": {
+        "pdfium": "A B C D",
+        "mupdf": "A B \nC D\n",
+        "pypdf": "A B C D"
+      },
+      "exact": {
+        "pdfium": true,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "terminalEolOnly": {
+        "pdfium": true,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            60.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            72.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            72.0,
+            84.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            84.0,
+            96.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "C",
+          "box": [
+            48.0,
+            60.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            72.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "D",
+          "box": [
+            72.0,
+            84.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": true,
+      "unchangedInk": true,
+      "sha256": "134dfd2900a9eb3a078b2d011a0ebb2679fcc5017cc5e558298f6b3d587d6f75",
+      "pdf": "soft-180-scalar-cells.pdf"
+    },
+    {
+      "case": "soft",
+      "strategy": "expanded-unicode",
+      "rotation": 180,
+      "expected": "A B C D",
+      "texts": {
+        "pdfium": "A B C D",
+        "mupdf": "A B \nC D\n",
+        "pypdf": "A B C D"
+      },
+      "exact": {
+        "pdfium": true,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "terminalEolOnly": {
+        "pdfium": true,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            60.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            72.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            72.0,
+            84.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            84.0,
+            96.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "C",
+          "box": [
+            48.0,
+            60.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            72.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "D",
+          "box": [
+            72.0,
+            84.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": true,
+      "unchangedInk": true,
+      "sha256": "134dfd2900a9eb3a078b2d011a0ebb2679fcc5017cc5e558298f6b3d587d6f75",
+      "pdf": "soft-180-expanded-unicode.pdf"
+    },
+    {
+      "case": "soft",
+      "strategy": "whole-actualtext",
+      "rotation": 180,
+      "expected": "A B C D",
+      "texts": {
+        "pdfium": "A B C D",
+        "mupdf": "A B \nC D\n",
+        "pypdf": "A B C D"
+      },
+      "exact": {
+        "pdfium": true,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "terminalEolOnly": {
+        "pdfium": true,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            54.85714340209961,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            54.85714340209961,
+            61.71428680419922,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            61.71428680419922,
+            68.57142639160156,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            68.57142639160156,
+            75.42857360839844,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "C",
+          "box": [
+            75.42857360839844,
+            82.28572082519531,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            82.28572082519531,
+            89.14286041259766,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "D",
+          "box": [
+            89.14286041259766,
+            96.0,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": false,
+      "unchangedInk": true,
+      "sha256": "d40115b7fd5ee5385d5312377b23bf5d0947ca727c74b5f9c90e98c3a4d33150",
+      "pdf": "soft-180-whole-actualtext.pdf"
+    },
+    {
+      "case": "soft",
+      "strategy": "courier-objects",
+      "rotation": 270,
+      "expected": "A B C D",
+      "texts": {
+        "pdfium": "A B\r\nC D",
+        "mupdf": "A B \nC D\n",
+        "pypdf": "A B \nC D"
+      },
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "terminalEolOnly": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.15999984741211,
+            59.86000061035156,
+            120.0,
+            131.4199981689453
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            60.0,
+            120.0,
+            120.0
+          ],
+          "textObject": 1
+        },
+        {
+          "text": "B",
+          "box": [
+            72.83999633789062,
+            82.86000061035156,
+            120.0,
+            131.4199981689453
+          ],
+          "textObject": 2
+        },
+        {
+          "text": "\r",
+          "box": [
+            84.0,
+            84.0,
+            120.0,
+            120.0
+          ],
+          "textObject": 1
+        },
+        {
+          "text": "\n",
+          "box": [
+            84.0,
+            84.0,
+            120.0,
+            120.0
+          ],
+          "textObject": 1
+        },
+        {
+          "text": "C",
+          "box": [
+            49.2400016784668,
+            58.73999786376953,
+            91.69999694824219,
+            103.68000030517578
+          ],
+          "textObject": 3
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            60.0,
+            92.0,
+            92.0
+          ],
+          "textObject": 1
+        },
+        {
+          "text": "D",
+          "box": [
+            73.54000091552734,
+            83.16000366210938,
+            92.0,
+            103.41999816894531
+          ],
+          "textObject": 4
+        }
+      ],
+      "pdfiumCellBoxesExact": false,
+      "unchangedInk": true,
+      "sha256": "8850d907811d72a83fef7d6ace43bae633f542331263bd83cd55fa723d523df8",
+      "pdf": "soft-270-courier-objects.pdf"
+    },
+    {
+      "case": "soft",
+      "strategy": "scalar-cells",
+      "rotation": 270,
+      "expected": "A B C D",
+      "texts": {
+        "pdfium": "A B C D",
+        "mupdf": "A B \nC D\n",
+        "pypdf": "A B C D"
+      },
+      "exact": {
+        "pdfium": true,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "terminalEolOnly": {
+        "pdfium": true,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            60.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            72.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            72.0,
+            84.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            84.0,
+            96.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "C",
+          "box": [
+            48.0,
+            60.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            72.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "D",
+          "box": [
+            72.0,
+            84.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": true,
+      "unchangedInk": true,
+      "sha256": "4fa010da8abf896a05879c50767e1d7487d79cd164999325af41e29767704d19",
+      "pdf": "soft-270-scalar-cells.pdf"
+    },
+    {
+      "case": "soft",
+      "strategy": "expanded-unicode",
+      "rotation": 270,
+      "expected": "A B C D",
+      "texts": {
+        "pdfium": "A B C D",
+        "mupdf": "A B \nC D\n",
+        "pypdf": "A B C D"
+      },
+      "exact": {
+        "pdfium": true,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "terminalEolOnly": {
+        "pdfium": true,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            60.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            72.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            72.0,
+            84.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            84.0,
+            96.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "C",
+          "box": [
+            48.0,
+            60.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            72.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "D",
+          "box": [
+            72.0,
+            84.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": true,
+      "unchangedInk": true,
+      "sha256": "4fa010da8abf896a05879c50767e1d7487d79cd164999325af41e29767704d19",
+      "pdf": "soft-270-expanded-unicode.pdf"
+    },
+    {
+      "case": "soft",
+      "strategy": "whole-actualtext",
+      "rotation": 270,
+      "expected": "A B C D",
+      "texts": {
+        "pdfium": "A B C D",
+        "mupdf": "A B \nC D\n",
+        "pypdf": "A B C D"
+      },
+      "exact": {
+        "pdfium": true,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "terminalEolOnly": {
+        "pdfium": true,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            54.85714340209961,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            54.85714340209961,
+            61.71428680419922,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            61.71428680419922,
+            68.57142639160156,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            68.57142639160156,
+            75.42857360839844,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "C",
+          "box": [
+            75.42857360839844,
+            82.28572082519531,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            82.28572082519531,
+            89.14286041259766,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "D",
+          "box": [
+            89.14286041259766,
+            96.0,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": false,
+      "unchangedInk": true,
+      "sha256": "668c68f623fd28215ff332b7fd534665b8a9883f7806fe15cbfdf37f314e72ee",
+      "pdf": "soft-270-whole-actualtext.pdf"
+    },
+    {
+      "case": "soft-spaces",
+      "strategy": "courier-objects",
+      "rotation": 0,
+      "expected": "A  B C D",
+      "texts": {
+        "pdfium": "A B\r\nC D",
+        "mupdf": "A  B\n C D\n",
+        "pypdf": "A  B\n C D"
+      },
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "terminalEolOnly": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.15999984741211,
+            59.86000061035156,
+            120.0,
+            131.4199981689453
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            60.0,
+            120.0,
+            120.0
+          ],
+          "textObject": 1
+        },
+        {
+          "text": "B",
+          "box": [
+            84.83999633789062,
+            94.86000061035156,
+            120.0,
+            131.4199981689453
+          ],
+          "textObject": 2
+        },
+        {
+          "text": "\r",
+          "box": [
+            96.0,
+            96.0,
+            120.0,
+            120.0
+          ],
+          "textObject": 1
+        },
+        {
+          "text": "\n",
+          "box": [
+            96.0,
+            96.0,
+            120.0,
+            120.0
+          ],
+          "textObject": 1
+        },
+        {
+          "text": "C",
+          "box": [
+            61.2400016784668,
+            70.73999786376953,
+            91.69999694824219,
+            103.68000030517578
+          ],
+          "textObject": 3
+        },
+        {
+          "text": " ",
+          "box": [
+            72.0,
+            72.0,
+            92.0,
+            92.0
+          ],
+          "textObject": 1
+        },
+        {
+          "text": "D",
+          "box": [
+            85.54000091552734,
+            95.16000366210938,
+            92.0,
+            103.41999816894531
+          ],
+          "textObject": 4
+        }
+      ],
+      "pdfiumCellBoxesExact": false,
+      "unchangedInk": true,
+      "sha256": "532f9da1261bf95764a2e96cdbc097a4aa2e94a882506d6f6cec3c93550c0d48",
+      "pdf": "soft-spaces-0-courier-objects.pdf"
+    },
+    {
+      "case": "soft-spaces",
+      "strategy": "scalar-cells",
+      "rotation": 0,
+      "expected": "A  B C D",
+      "texts": {
+        "pdfium": "A B C D",
+        "mupdf": "A  B\n C D\n",
+        "pypdf": "A  B  C D"
+      },
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "terminalEolOnly": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            60.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            72.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            84.0,
+            96.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            48.0,
+            60.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "C",
+          "box": [
+            60.0,
+            72.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            72.0,
+            84.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "D",
+          "box": [
+            84.0,
+            96.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": false,
+      "unchangedInk": true,
+      "sha256": "f745f0bb93894b8a573c6c010a58cf56000e48eccc76c2daefe4e9b31b937de9",
+      "pdf": "soft-spaces-0-scalar-cells.pdf"
+    },
+    {
+      "case": "soft-spaces",
+      "strategy": "expanded-unicode",
+      "rotation": 0,
+      "expected": "A  B C D",
+      "texts": {
+        "pdfium": "A B C D",
+        "mupdf": "A  B\n C D\n",
+        "pypdf": "A  B  C D"
+      },
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "terminalEolOnly": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            60.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            84.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            84.0,
+            96.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            48.0,
+            60.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "C",
+          "box": [
+            60.0,
+            72.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            72.0,
+            84.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "D",
+          "box": [
+            84.0,
+            96.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": false,
+      "unchangedInk": true,
+      "sha256": "b9d341863fc6186739903d848f6a046de20d8737cc869698cf050a2568d601f3",
+      "pdf": "soft-spaces-0-expanded-unicode.pdf"
+    },
+    {
+      "case": "soft-spaces",
+      "strategy": "whole-actualtext",
+      "rotation": 0,
+      "expected": "A  B C D",
+      "texts": {
+        "pdfium": "A B C D",
+        "mupdf": "A  B\n C D\n",
+        "pypdf": "A  B  C D"
+      },
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "terminalEolOnly": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            54.0,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            54.0,
+            60.0,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            66.0,
+            72.0,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            72.0,
+            78.0,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "C",
+          "box": [
+            78.0,
+            84.0,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            84.0,
+            90.0,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "D",
+          "box": [
+            90.0,
+            96.0,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": false,
+      "unchangedInk": true,
+      "sha256": "daa615de0b347237bd190873c8376ac4758056746d75892f8c633089e14e3519",
+      "pdf": "soft-spaces-0-whole-actualtext.pdf"
+    },
+    {
+      "case": "soft-spaces",
+      "strategy": "courier-objects",
+      "rotation": 90,
+      "expected": "A  B C D",
+      "texts": {
+        "pdfium": "A B\r\nC D",
+        "mupdf": "A  B\n C D\n",
+        "pypdf": "A  B\n C D"
+      },
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "terminalEolOnly": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.15999984741211,
+            59.86000061035156,
+            120.0,
+            131.4199981689453
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            60.0,
+            120.0,
+            120.0
+          ],
+          "textObject": 1
+        },
+        {
+          "text": "B",
+          "box": [
+            84.83999633789062,
+            94.86000061035156,
+            120.0,
+            131.4199981689453
+          ],
+          "textObject": 2
+        },
+        {
+          "text": "\r",
+          "box": [
+            96.0,
+            96.0,
+            120.0,
+            120.0
+          ],
+          "textObject": 1
+        },
+        {
+          "text": "\n",
+          "box": [
+            96.0,
+            96.0,
+            120.0,
+            120.0
+          ],
+          "textObject": 1
+        },
+        {
+          "text": "C",
+          "box": [
+            61.2400016784668,
+            70.73999786376953,
+            91.69999694824219,
+            103.68000030517578
+          ],
+          "textObject": 3
+        },
+        {
+          "text": " ",
+          "box": [
+            72.0,
+            72.0,
+            92.0,
+            92.0
+          ],
+          "textObject": 1
+        },
+        {
+          "text": "D",
+          "box": [
+            85.54000091552734,
+            95.16000366210938,
+            92.0,
+            103.41999816894531
+          ],
+          "textObject": 4
+        }
+      ],
+      "pdfiumCellBoxesExact": false,
+      "unchangedInk": true,
+      "sha256": "e11b6ef1b529e8f83bc611992832432809d1240ce928c7cc707b76cfb0e52906",
+      "pdf": "soft-spaces-90-courier-objects.pdf"
+    },
+    {
+      "case": "soft-spaces",
+      "strategy": "scalar-cells",
+      "rotation": 90,
+      "expected": "A  B C D",
+      "texts": {
+        "pdfium": "A B C D",
+        "mupdf": "A  B\n C D\n",
+        "pypdf": "A  B  C D"
+      },
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "terminalEolOnly": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            60.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            72.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            84.0,
+            96.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            48.0,
+            60.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "C",
+          "box": [
+            60.0,
+            72.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            72.0,
+            84.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "D",
+          "box": [
+            84.0,
+            96.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": false,
+      "unchangedInk": true,
+      "sha256": "faa0b2d4ab98c64a3c339dd1e6c941c7dbc695aaa3e603f14aecceeb31df6839",
+      "pdf": "soft-spaces-90-scalar-cells.pdf"
+    },
+    {
+      "case": "soft-spaces",
+      "strategy": "expanded-unicode",
+      "rotation": 90,
+      "expected": "A  B C D",
+      "texts": {
+        "pdfium": "A B C D",
+        "mupdf": "A  B\n C D\n",
+        "pypdf": "A  B  C D"
+      },
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "terminalEolOnly": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            60.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            84.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            84.0,
+            96.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            48.0,
+            60.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "C",
+          "box": [
+            60.0,
+            72.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            72.0,
+            84.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "D",
+          "box": [
+            84.0,
+            96.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": false,
+      "unchangedInk": true,
+      "sha256": "7a8f0f7e1bb687bf4e2677719d0d9999dc4690145636c5901877f986d0715fc5",
+      "pdf": "soft-spaces-90-expanded-unicode.pdf"
+    },
+    {
+      "case": "soft-spaces",
+      "strategy": "whole-actualtext",
+      "rotation": 90,
+      "expected": "A  B C D",
+      "texts": {
+        "pdfium": "A B C D",
+        "mupdf": "A  B\n C D\n",
+        "pypdf": "A  B  C D"
+      },
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "terminalEolOnly": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            54.0,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            54.0,
+            60.0,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            66.0,
+            72.0,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            72.0,
+            78.0,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "C",
+          "box": [
+            78.0,
+            84.0,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            84.0,
+            90.0,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "D",
+          "box": [
+            90.0,
+            96.0,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": false,
+      "unchangedInk": true,
+      "sha256": "aa3b6bdb2cfc5cb21ddf2341f7467c8a8239fb361346f750a01b578104c25cc3",
+      "pdf": "soft-spaces-90-whole-actualtext.pdf"
+    },
+    {
+      "case": "soft-spaces",
+      "strategy": "courier-objects",
+      "rotation": 180,
+      "expected": "A  B C D",
+      "texts": {
+        "pdfium": "B A\r\nD C",
+        "mupdf": "A  B\n C D\n",
+        "pypdf": "A  B\n C D"
+      },
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "terminalEolOnly": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "B",
+          "box": [
+            84.83999633789062,
+            94.86000061035156,
+            120.0,
+            131.4199981689453
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            96.0,
+            96.0,
+            120.0,
+            120.0
+          ],
+          "textObject": 1
+        },
+        {
+          "text": "A",
+          "box": [
+            48.15999984741211,
+            59.86000061035156,
+            120.0,
+            131.4199981689453
+          ],
+          "textObject": 2
+        },
+        {
+          "text": "\r",
+          "box": [
+            60.0,
+            60.0,
+            120.0,
+            120.0
+          ],
+          "textObject": 1
+        },
+        {
+          "text": "\n",
+          "box": [
+            60.0,
+            60.0,
+            120.0,
+            120.0
+          ],
+          "textObject": 1
+        },
+        {
+          "text": "D",
+          "box": [
+            85.54000091552734,
+            95.16000366210938,
+            92.0,
+            103.41999816894531
+          ],
+          "textObject": 3
+        },
+        {
+          "text": " ",
+          "box": [
+            96.0,
+            96.0,
+            92.0,
+            92.0
+          ],
+          "textObject": 1
+        },
+        {
+          "text": "C",
+          "box": [
+            61.2400016784668,
+            70.73999786376953,
+            91.69999694824219,
+            103.68000030517578
+          ],
+          "textObject": 4
+        }
+      ],
+      "pdfiumCellBoxesExact": false,
+      "unchangedInk": true,
+      "sha256": "1ce3e6ecca92945307638bdcb228abac66e4709d4e004088b52dd5f8e9162633",
+      "pdf": "soft-spaces-180-courier-objects.pdf"
+    },
+    {
+      "case": "soft-spaces",
+      "strategy": "scalar-cells",
+      "rotation": 180,
+      "expected": "A  B C D",
+      "texts": {
+        "pdfium": "A B C D",
+        "mupdf": "A  B\n C D\n",
+        "pypdf": "A  B  C D"
+      },
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "terminalEolOnly": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            60.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            72.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            84.0,
+            96.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            48.0,
+            60.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "C",
+          "box": [
+            60.0,
+            72.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            72.0,
+            84.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "D",
+          "box": [
+            84.0,
+            96.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": false,
+      "unchangedInk": true,
+      "sha256": "da388d7550f9183f11e14138830f446dc8d29cc45e313b07e444ca1cecd2053f",
+      "pdf": "soft-spaces-180-scalar-cells.pdf"
+    },
+    {
+      "case": "soft-spaces",
+      "strategy": "expanded-unicode",
+      "rotation": 180,
+      "expected": "A  B C D",
+      "texts": {
+        "pdfium": "A B C D",
+        "mupdf": "A  B\n C D\n",
+        "pypdf": "A  B  C D"
+      },
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "terminalEolOnly": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            60.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            84.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            84.0,
+            96.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            48.0,
+            60.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "C",
+          "box": [
+            60.0,
+            72.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            72.0,
+            84.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "D",
+          "box": [
+            84.0,
+            96.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": false,
+      "unchangedInk": true,
+      "sha256": "98cabbb2788eed3a4a058b65c0e31e9b6ea57f0c970a223ba832a03f54b9376b",
+      "pdf": "soft-spaces-180-expanded-unicode.pdf"
+    },
+    {
+      "case": "soft-spaces",
+      "strategy": "whole-actualtext",
+      "rotation": 180,
+      "expected": "A  B C D",
+      "texts": {
+        "pdfium": "A B C D",
+        "mupdf": "A  B\n C D\n",
+        "pypdf": "A  B  C D"
+      },
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "terminalEolOnly": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            54.0,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            54.0,
+            60.0,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            66.0,
+            72.0,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            72.0,
+            78.0,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "C",
+          "box": [
+            78.0,
+            84.0,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            84.0,
+            90.0,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "D",
+          "box": [
+            90.0,
+            96.0,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": false,
+      "unchangedInk": true,
+      "sha256": "a7670d2f852949d749fa688c02a1e8e04ca52bd9c359291b73eaf54cfbef75ad",
+      "pdf": "soft-spaces-180-whole-actualtext.pdf"
+    },
+    {
+      "case": "soft-spaces",
+      "strategy": "courier-objects",
+      "rotation": 270,
+      "expected": "A  B C D",
+      "texts": {
+        "pdfium": "A B\r\nC D",
+        "mupdf": "A  B\n C D\n",
+        "pypdf": "A  B\n C D"
+      },
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "terminalEolOnly": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.15999984741211,
+            59.86000061035156,
+            120.0,
+            131.4199981689453
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            60.0,
+            120.0,
+            120.0
+          ],
+          "textObject": 1
+        },
+        {
+          "text": "B",
+          "box": [
+            84.83999633789062,
+            94.86000061035156,
+            120.0,
+            131.4199981689453
+          ],
+          "textObject": 2
+        },
+        {
+          "text": "\r",
+          "box": [
+            96.0,
+            96.0,
+            120.0,
+            120.0
+          ],
+          "textObject": 1
+        },
+        {
+          "text": "\n",
+          "box": [
+            96.0,
+            96.0,
+            120.0,
+            120.0
+          ],
+          "textObject": 1
+        },
+        {
+          "text": "C",
+          "box": [
+            61.2400016784668,
+            70.73999786376953,
+            91.69999694824219,
+            103.68000030517578
+          ],
+          "textObject": 3
+        },
+        {
+          "text": " ",
+          "box": [
+            72.0,
+            72.0,
+            92.0,
+            92.0
+          ],
+          "textObject": 1
+        },
+        {
+          "text": "D",
+          "box": [
+            85.54000091552734,
+            95.16000366210938,
+            92.0,
+            103.41999816894531
+          ],
+          "textObject": 4
+        }
+      ],
+      "pdfiumCellBoxesExact": false,
+      "unchangedInk": true,
+      "sha256": "77ef4f2b15fa924a47b7dcf689a4dfe7d9f9127664def050c7d07ec1e4396c39",
+      "pdf": "soft-spaces-270-courier-objects.pdf"
+    },
+    {
+      "case": "soft-spaces",
+      "strategy": "scalar-cells",
+      "rotation": 270,
+      "expected": "A  B C D",
+      "texts": {
+        "pdfium": "A B C D",
+        "mupdf": "A  B\n C D\n",
+        "pypdf": "A  B  C D"
+      },
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "terminalEolOnly": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            60.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            72.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            84.0,
+            96.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            48.0,
+            60.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "C",
+          "box": [
+            60.0,
+            72.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            72.0,
+            84.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "D",
+          "box": [
+            84.0,
+            96.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": false,
+      "unchangedInk": true,
+      "sha256": "3d99ae089de68dac3b380356421ce9a9855395991e50473063e129ec2468e460",
+      "pdf": "soft-spaces-270-scalar-cells.pdf"
+    },
+    {
+      "case": "soft-spaces",
+      "strategy": "expanded-unicode",
+      "rotation": 270,
+      "expected": "A  B C D",
+      "texts": {
+        "pdfium": "A B C D",
+        "mupdf": "A  B\n C D\n",
+        "pypdf": "A  B  C D"
+      },
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "terminalEolOnly": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            60.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            60.0,
+            84.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            84.0,
+            96.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            48.0,
+            60.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "C",
+          "box": [
+            60.0,
+            72.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            72.0,
+            84.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "D",
+          "box": [
+            84.0,
+            96.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": false,
+      "unchangedInk": true,
+      "sha256": "5ec757bf076f3c13fbc108c9bd6880220fcdae885c5e9820a880c51225817f52",
+      "pdf": "soft-spaces-270-expanded-unicode.pdf"
+    },
+    {
+      "case": "soft-spaces",
+      "strategy": "whole-actualtext",
+      "rotation": 270,
+      "expected": "A  B C D",
+      "texts": {
+        "pdfium": "A B C D",
+        "mupdf": "A  B\n C D\n",
+        "pypdf": "A  B  C D"
+      },
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "terminalEolOnly": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            54.0,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            54.0,
+            60.0,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            66.0,
+            72.0,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            72.0,
+            78.0,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "C",
+          "box": [
+            78.0,
+            84.0,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            84.0,
+            90.0,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "D",
+          "box": [
+            90.0,
+            96.0,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": false,
+      "unchangedInk": true,
+      "sha256": "a05d7cd7ac59e3a6f3959a8671d36a07e955b7b63c683634d3569dc565d36d74",
+      "pdf": "soft-spaces-270-whole-actualtext.pdf"
+    },
+    {
+      "case": "hard",
+      "strategy": "courier-objects",
+      "rotation": 0,
+      "expected": "A\nB",
+      "texts": {
+        "pdfium": "AB",
+        "mupdf": "A\nB\n",
+        "pypdf": "A\nB"
+      },
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "terminalEolOnly": {
+        "pdfium": false,
+        "mupdf": true,
+        "pypdf": true
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.15999984741211,
+            59.86000061035156,
+            120.0,
+            131.4199981689453
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            48.84000015258789,
+            58.86000061035156,
+            92.0,
+            103.41999816894531
+          ],
+          "textObject": 1
+        }
+      ],
+      "pdfiumCellBoxesExact": false,
+      "unchangedInk": true,
+      "sha256": "b4536dc91403aec47946334d2bdbb09d12f6740a1759cb2256c41e3b66f2cfd7",
+      "pdf": "hard-0-courier-objects.pdf"
+    },
+    {
+      "case": "hard",
+      "strategy": "scalar-cells",
+      "rotation": 0,
+      "expected": "A\nB",
+      "texts": {
+        "pdfium": "A\nB",
+        "mupdf": "A \nB\n",
+        "pypdf": "A\n B"
+      },
+      "exact": {
+        "pdfium": true,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "terminalEolOnly": {
+        "pdfium": true,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            60.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "\n",
+          "box": [
+            60.0,
+            72.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            48.0,
+            60.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": true,
+      "unchangedInk": true,
+      "sha256": "c3222db1d565a86d55b9ec4d2dded35add3c8ff8e4cbe2f6e8374214c7afae7b",
+      "pdf": "hard-0-scalar-cells.pdf"
+    },
+    {
+      "case": "hard",
+      "strategy": "expanded-unicode",
+      "rotation": 0,
+      "expected": "A\nB",
+      "texts": {
+        "pdfium": "A\nB",
+        "mupdf": "A \nB\n",
+        "pypdf": "A\n B"
+      },
+      "exact": {
+        "pdfium": true,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "terminalEolOnly": {
+        "pdfium": true,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            60.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "\n",
+          "box": [
+            60.0,
+            72.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            48.0,
+            60.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": true,
+      "unchangedInk": true,
+      "sha256": "c3222db1d565a86d55b9ec4d2dded35add3c8ff8e4cbe2f6e8374214c7afae7b",
+      "pdf": "hard-0-expanded-unicode.pdf"
+    },
+    {
+      "case": "hard",
+      "strategy": "whole-actualtext",
+      "rotation": 0,
+      "expected": "A\nB",
+      "texts": {
+        "pdfium": "A B",
+        "mupdf": "A\nB\n",
+        "pypdf": "A\n B"
+      },
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "terminalEolOnly": {
+        "pdfium": false,
+        "mupdf": true,
+        "pypdf": false
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            56.0,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            56.0,
+            64.0,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            64.0,
+            72.0,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": false,
+      "unchangedInk": true,
+      "sha256": "40d77df4b880158543fc68168cbd9101fced541e2c4d30e466391d804bb5ac57",
+      "pdf": "hard-0-whole-actualtext.pdf"
+    },
+    {
+      "case": "hard",
+      "strategy": "courier-objects",
+      "rotation": 90,
+      "expected": "A\nB",
+      "texts": {
+        "pdfium": "BA",
+        "mupdf": "A\nB\n",
+        "pypdf": "A\nB"
+      },
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "terminalEolOnly": {
+        "pdfium": false,
+        "mupdf": true,
+        "pypdf": true
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "B",
+          "box": [
+            48.84000015258789,
+            58.86000061035156,
+            92.0,
+            103.41999816894531
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "A",
+          "box": [
+            48.15999984741211,
+            59.86000061035156,
+            120.0,
+            131.4199981689453
+          ],
+          "textObject": 1
+        }
+      ],
+      "pdfiumCellBoxesExact": false,
+      "unchangedInk": true,
+      "sha256": "b40113c8ac8d056d2eb70ba8ae33151ff89056e386d26ee1d9e317764836ccba",
+      "pdf": "hard-90-courier-objects.pdf"
+    },
+    {
+      "case": "hard",
+      "strategy": "scalar-cells",
+      "rotation": 90,
+      "expected": "A\nB",
+      "texts": {
+        "pdfium": "A\nB",
+        "mupdf": "A \nB\n",
+        "pypdf": "A\n B"
+      },
+      "exact": {
+        "pdfium": true,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "terminalEolOnly": {
+        "pdfium": true,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            60.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "\n",
+          "box": [
+            60.0,
+            72.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            48.0,
+            60.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": true,
+      "unchangedInk": true,
+      "sha256": "2dace07983d8554fc65c42b99675dc8dfeff1cc48834845ffdf36ab8b3f142be",
+      "pdf": "hard-90-scalar-cells.pdf"
+    },
+    {
+      "case": "hard",
+      "strategy": "expanded-unicode",
+      "rotation": 90,
+      "expected": "A\nB",
+      "texts": {
+        "pdfium": "A\nB",
+        "mupdf": "A \nB\n",
+        "pypdf": "A\n B"
+      },
+      "exact": {
+        "pdfium": true,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "terminalEolOnly": {
+        "pdfium": true,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            60.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "\n",
+          "box": [
+            60.0,
+            72.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            48.0,
+            60.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": true,
+      "unchangedInk": true,
+      "sha256": "2dace07983d8554fc65c42b99675dc8dfeff1cc48834845ffdf36ab8b3f142be",
+      "pdf": "hard-90-expanded-unicode.pdf"
+    },
+    {
+      "case": "hard",
+      "strategy": "whole-actualtext",
+      "rotation": 90,
+      "expected": "A\nB",
+      "texts": {
+        "pdfium": "A B",
+        "mupdf": "A\nB\n",
+        "pypdf": "A\n B"
+      },
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "terminalEolOnly": {
+        "pdfium": false,
+        "mupdf": true,
+        "pypdf": false
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            56.0,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            56.0,
+            64.0,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            64.0,
+            72.0,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": false,
+      "unchangedInk": true,
+      "sha256": "81ff30ae163f0eb6432ec4159c9bb1e21e5b7d45f892531fa2aed8a9d80e6323",
+      "pdf": "hard-90-whole-actualtext.pdf"
+    },
+    {
+      "case": "hard",
+      "strategy": "courier-objects",
+      "rotation": 180,
+      "expected": "A\nB",
+      "texts": {
+        "pdfium": "AB",
+        "mupdf": "A\nB\n",
+        "pypdf": "A\nB"
+      },
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "terminalEolOnly": {
+        "pdfium": false,
+        "mupdf": true,
+        "pypdf": true
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.15999984741211,
+            59.86000061035156,
+            120.0,
+            131.4199981689453
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            48.84000015258789,
+            58.86000061035156,
+            92.0,
+            103.41999816894531
+          ],
+          "textObject": 1
+        }
+      ],
+      "pdfiumCellBoxesExact": false,
+      "unchangedInk": true,
+      "sha256": "49fddb14ec902423d6d86cb8967b9b7bcd1cc575498eff626e9d6abb8cfe6bb9",
+      "pdf": "hard-180-courier-objects.pdf"
+    },
+    {
+      "case": "hard",
+      "strategy": "scalar-cells",
+      "rotation": 180,
+      "expected": "A\nB",
+      "texts": {
+        "pdfium": "A\nB",
+        "mupdf": "A \nB\n",
+        "pypdf": "A\n B"
+      },
+      "exact": {
+        "pdfium": true,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "terminalEolOnly": {
+        "pdfium": true,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            60.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "\n",
+          "box": [
+            60.0,
+            72.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            48.0,
+            60.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": true,
+      "unchangedInk": true,
+      "sha256": "1ce69251462c33cdc3f4daca178240ad4331041fe63bccb0917d8ba4666bc6b2",
+      "pdf": "hard-180-scalar-cells.pdf"
+    },
+    {
+      "case": "hard",
+      "strategy": "expanded-unicode",
+      "rotation": 180,
+      "expected": "A\nB",
+      "texts": {
+        "pdfium": "A\nB",
+        "mupdf": "A \nB\n",
+        "pypdf": "A\n B"
+      },
+      "exact": {
+        "pdfium": true,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "terminalEolOnly": {
+        "pdfium": true,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            60.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "\n",
+          "box": [
+            60.0,
+            72.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            48.0,
+            60.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": true,
+      "unchangedInk": true,
+      "sha256": "1ce69251462c33cdc3f4daca178240ad4331041fe63bccb0917d8ba4666bc6b2",
+      "pdf": "hard-180-expanded-unicode.pdf"
+    },
+    {
+      "case": "hard",
+      "strategy": "whole-actualtext",
+      "rotation": 180,
+      "expected": "A\nB",
+      "texts": {
+        "pdfium": "A B",
+        "mupdf": "A\nB\n",
+        "pypdf": "A\n B"
+      },
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "terminalEolOnly": {
+        "pdfium": false,
+        "mupdf": true,
+        "pypdf": false
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            56.0,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            56.0,
+            64.0,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            64.0,
+            72.0,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": false,
+      "unchangedInk": true,
+      "sha256": "7f1595538bb16553328c6b8f65331e5e0e91996bca4faa2aa359ce7cff0c7130",
+      "pdf": "hard-180-whole-actualtext.pdf"
+    },
+    {
+      "case": "hard",
+      "strategy": "courier-objects",
+      "rotation": 270,
+      "expected": "A\nB",
+      "texts": {
+        "pdfium": "AB",
+        "mupdf": "A\nB\n",
+        "pypdf": "A\nB"
+      },
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": true
+      },
+      "terminalEolOnly": {
+        "pdfium": false,
+        "mupdf": true,
+        "pypdf": true
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.15999984741211,
+            59.86000061035156,
+            120.0,
+            131.4199981689453
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            48.84000015258789,
+            58.86000061035156,
+            92.0,
+            103.41999816894531
+          ],
+          "textObject": 1
+        }
+      ],
+      "pdfiumCellBoxesExact": false,
+      "unchangedInk": true,
+      "sha256": "cec55ef1ac840f021cca15c514d59cc10e5f68332a350c22310f5586d9ec2085",
+      "pdf": "hard-270-courier-objects.pdf"
+    },
+    {
+      "case": "hard",
+      "strategy": "scalar-cells",
+      "rotation": 270,
+      "expected": "A\nB",
+      "texts": {
+        "pdfium": "A\nB",
+        "mupdf": "A \nB\n",
+        "pypdf": "A\n B"
+      },
+      "exact": {
+        "pdfium": true,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "terminalEolOnly": {
+        "pdfium": true,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            60.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "\n",
+          "box": [
+            60.0,
+            72.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            48.0,
+            60.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": true,
+      "unchangedInk": true,
+      "sha256": "2a0cfbc83805bdf334b5b3c9cebf5afefad9d96a0d8f39e62a3f0610f4e70a94",
+      "pdf": "hard-270-scalar-cells.pdf"
+    },
+    {
+      "case": "hard",
+      "strategy": "expanded-unicode",
+      "rotation": 270,
+      "expected": "A\nB",
+      "texts": {
+        "pdfium": "A\nB",
+        "mupdf": "A \nB\n",
+        "pypdf": "A\n B"
+      },
+      "exact": {
+        "pdfium": true,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "terminalEolOnly": {
+        "pdfium": true,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            60.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "\n",
+          "box": [
+            60.0,
+            72.0,
+            116.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            48.0,
+            60.0,
+            88.0,
+            108.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": true,
+      "unchangedInk": true,
+      "sha256": "2a0cfbc83805bdf334b5b3c9cebf5afefad9d96a0d8f39e62a3f0610f4e70a94",
+      "pdf": "hard-270-expanded-unicode.pdf"
+    },
+    {
+      "case": "hard",
+      "strategy": "whole-actualtext",
+      "rotation": 270,
+      "expected": "A\nB",
+      "texts": {
+        "pdfium": "A B",
+        "mupdf": "A\nB\n",
+        "pypdf": "A\n B"
+      },
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "terminalEolOnly": {
+        "pdfium": false,
+        "mupdf": true,
+        "pypdf": false
+      },
+      "pdfiumCharacters": [
+        {
+          "text": "A",
+          "box": [
+            48.0,
+            56.0,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": " ",
+          "box": [
+            56.0,
+            64.0,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        },
+        {
+          "text": "B",
+          "box": [
+            64.0,
+            72.0,
+            88.0,
+            136.0
+          ],
+          "textObject": 0
+        }
+      ],
+      "pdfiumCellBoxesExact": false,
+      "unchangedInk": true,
+      "sha256": "1518ed9a1e21e520ce92a2cc3f7a90cc024e24ea6ca1ceb3e82fd31655677bc5",
+      "pdf": "hard-270-whole-actualtext.pdf"
+    }
+  ],
+  "sourceInspection": {
+    "url": "https://pdfium.googlesource.com/pdfium/+/refs/heads/chromium/8044/core/fpdftext/cpdf_textpage.cpp",
+    "sha256": "2cd51fcce2948568b7c7dfdcde72f6020e8c9581ac71f86eb5d3dc8c4f1988e4",
+    "function": "CPDF_TextPage::CloseTempLine",
+    "finding": "Consecutive ASCII spaces are removed from both temporary text and character lists before bidi processing."
+  }
+}

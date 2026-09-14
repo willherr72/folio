@@ -3,7 +3,8 @@
 Exact logical copy is compared byte-for-byte as Python Unicode strings. A separate
 painted-line check ignores only CR/LF conventions and reader terminal line breaks;
 it does not establish exact logical copying. Native/resaved raster and text must
-remain stable for the evidence to be valid. No PDF is written or modified here.
+remain stable for the evidence to be valid. No PDF is written or modified here. Default success additionally requires exact
+logical copying in all three readers. --diagnostic is explicitly not acceptance.
 """
 import argparse
 import hashlib
@@ -145,17 +146,31 @@ def inspect(input_path, expected):
             'results': results}
 
 
+def exact_copy_gate(report):
+    """Necessary release gate only; this does not establish all area acceptance."""
+    exported = [row for row in report.get('results', []) if 'readers' in row]
+    if not report.get('evidenceValid') or not exported or len(exported) != report.get('exports'):
+        return False
+    return all(row.get('roundtripStable') and row.get('exactSourceRanges')
+               and isinstance(row.get('logicalText'), str)
+               and all(row['readers'].get(reader, {}).get('actualText') == row['logicalText']
+                       for reader in ['pdfium', 'mupdf', 'pypdf']) for row in exported)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--input', type=Path, default=Path('artifacts/text-area-native'))
     parser.add_argument('--expected-cases', type=int, required=True)
+    parser.add_argument('--diagnostic', action='store_true', help='Report failed copying without treating it as release acceptance; still require valid fixture/roundtrip evidence.')
     parser.add_argument('--output', type=Path, default=Path('artifacts/text-area-reader-results.json'))
     args = parser.parse_args()
     report = inspect(args.input, args.expected_cases)
+    report['exactCopyGatePassed'] = exact_copy_gate(report)
+    report['diagnosticOnly'] = args.diagnostic
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(report, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     print(json.dumps({key: value for key, value in report.items() if key != 'results'}))
-    if not report['evidenceValid']:
+    if not report['evidenceValid'] or (not args.diagnostic and not report['exactCopyGatePassed']):
         raise SystemExit(1)
 
 if __name__ == '__main__':
