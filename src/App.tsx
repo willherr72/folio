@@ -31,8 +31,9 @@ import "./styles.css";
 import {SaveCopyButton} from "./components/SaveCopyButton";
 import { OverlayProperties } from "./components/OverlayProperties";
 import { ExistingTextDialog } from "./components/ExistingTextDialog";
+import { TextGroupDialog } from "./components/TextGroupDialog";
 import { commitTextReplacement } from "./editor/text-edit";
-import type {EditableTextRun} from "./editor/types";
+import type {EditableTextRun,TextGroupPreview} from "./editor/types";
 import { ReviewList } from "./components/ReviewList";
 
 interface AppProps { initialDemo?: boolean }
@@ -84,6 +85,9 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
   const [fontPicker, setFontPicker] = useState<{tabId: string; pageId: string; overlayId: string; text: string; fontId?: string; fontSize: number; shaping?: import("./editor/types").TextOverlay["shaping"]} | null>(null);
   const [textEdit,setTextEdit] = useState<{tabId:string;page:PagePlan;run:EditableTextRun}|null>(null);
   const [textEditError,setTextEditError] = useState<string|null>(null);
+  const [textGroup,setTextGroup] = useState<{tabId:string;page:PagePlan;run:EditableTextRun;adapter:FolioAdapter;runs:EditableTextRun[];loading:boolean}|null>(null);
+  const [textGroupError,setTextGroupError] = useState<string|null>(null);
+  const groupGeneration=useRef(0);
   const [signatureOpen, setSignatureOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [confirmation, setConfirmation] = useState<Confirmation | null>(null);
@@ -99,7 +103,7 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
   const dirty = current ? planDigest(current) !== savedDigest : false;
   const selectedPage = current?.pages.find((page) => page.id === current.selectedPageId) ?? current?.pages[0] ?? null;
   const selectedOverlay = selectedPage?.overlays.find((overlay) => overlay.id === current?.selectedOverlayId) ?? null;
-  const modalOpen = !!fontPicker || !!textEdit || signatureOpen || settingsOpen || printOpen || !!confirmation || !recovery.ready;
+  const modalOpen = !!fontPicker || !!textEdit || !!textGroup || signatureOpen || settingsOpen || printOpen || !!confirmation || !recovery.ready;
   const blocked = modalOpen || !!busy;
   const dirtyTabs = workspace.tabs.filter(tab => planDigest(tab.history.present) !== tab.savedDigest);
   const closeState = useRef({ dirty:dirtyTabs.length > 0, blocked, dirtyCount:dirtyTabs.length });
@@ -155,6 +159,7 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
     scrollPositions.current.delete(tab.id);
   }, []);
   const clearTransient = useCallback(() => {
+    groupGeneration.current++;setTextGroup(null);setTextGroupError(null);
     setTool("select"); setPendingSignature(null); setNewTextId(null); setTextEdit(null); setTextEditError(null); setFontPicker(null);
     setNotice(null); setFailure(null); setDraggedPageId(null); setDropTarget(null);
     window.getSelection()?.removeAllRanges();
@@ -289,6 +294,41 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
     } finally {
       if (orphanSource) await editingAdapter.closeDocument(orphanSource).catch(()=>{});
       operation.current=false;if (mounted.current) setBusy(null);
+    }
+  };
+  const beginTextGroup = async () => {
+    if(!textEdit || operation.current || !adapter.listTextRuns || !adapter.inspectTextGroup || !adapter.replaceTextGroup)return;
+    const request={...textEdit,adapter,runs:[] as EditableTextRun[],loading:true};
+    const generation=++groupGeneration.current;
+    setTextGroup(request);setTextEdit(null);setTextEditError(null);setTextGroupError(null);
+    try {
+      const result=await request.adapter.listTextRuns!(request.page.sourceId,request.page.pageIndex);
+      if(mounted.current && generation===groupGeneration.current){
+        setTextGroup({...request,runs:result.runs,loading:false});
+        if(result.reason)setTextGroupError(result.reason);
+      }
+    } catch(error) {
+      if(mounted.current && generation===groupGeneration.current){setTextGroup({...request,loading:false});setTextGroupError(errorMessage(error));}
+    }
+  };
+  const applyTextGroup = async (preview:TextGroupPreview,replacement:string) => {
+    const request=textGroup;
+    if(!request || operation.current || !request.adapter.replaceTextGroup)return;
+    const editingAdapter=request.adapter;
+    operation.current=true;setBusy("Updating PDF text…");setTextGroupError(null);
+    let orphanSource:string|null=null;
+    try {
+      const result=await editingAdapter.replaceTextGroup!(request.page.sourceId,request.page.pageIndex,preview.objectIndices,preview.text,replacement);
+      const session=workspaceCurrent.current.tabs.find(tab=>tab.id===request.tabId);
+      if(result.id && !workspaceCurrent.current.tabs.some(tab=>tab.sourceIds.includes(result.id)))orphanSource=result.id;
+      if(!mounted.current || !session)return;
+      commitTextReplacement(session,request.page,result);
+      setWorkspace(value=>updateSession(value,request.tabId,tab=>commitTextReplacement(tab,request.page,result)));
+      orphanSource=null;groupGeneration.current++;setTextGroup(null);setTool("select");setNotice("PDF text updated");
+    } catch(error) {if(mounted.current)setTextGroupError(errorMessage(error));}
+    finally {
+      if(orphanSource)await editingAdapter.closeDocument(orphanSource).catch(()=>{});
+      operation.current=false;if(mounted.current)setBusy(null);
     }
   };
   const addText = (pageId: string, point: InkPoint) => {
@@ -470,7 +510,10 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
   };
   const dialogs = <>
     {fontPicker && <FontPicker fontSize={fontPicker.fontSize} shaping={fontPicker.shaping} currentFontId={fontPicker.fontId} text={fontPicker.text} onChoose={chooseFont} onClose={() => setFontPicker(null)}/>}
-    {textEdit && <ExistingTextDialog run={textEdit.run} busy={!!busy} error={textEditError} onApply={applyTextEdit} onDraftChange={()=>setTextEditError(null)} onCancel={()=>{if(!operation.current){setTextEdit(null);setTextEditError(null);}}}/> }
+    {textEdit && <ExistingTextDialog run={textEdit.run} busy={!!busy} error={textEditError} onApply={applyTextEdit} onDraftChange={()=>setTextEditError(null)} onEditTogether={adapter.listTextRuns && adapter.inspectTextGroup && adapter.replaceTextGroup ? ()=>void beginTextGroup() : undefined} onCancel={()=>{if(!operation.current){setTextEdit(null);setTextEditError(null);}}}/> }
+    {textGroup && <TextGroupDialog anchor={textGroup.run} runs={textGroup.runs} loading={textGroup.loading} busy={!!busy} error={textGroupError}
+      onInspect={indices=>textGroup.adapter.inspectTextGroup!(textGroup.page.sourceId,textGroup.page.pageIndex,indices)} onApply={applyTextGroup} onDraftChange={()=>setTextGroupError(null)}
+      onCancel={()=>{if(!operation.current){groupGeneration.current++;setTextGroup(null);setTextGroupError(null);}}}/>}
     {(recovery.pending||recovery.error)&&<RecoveryDialog count={recovery.pending?.tabs.length??0} error={recovery.error} busy={recovery.working} onRestore={()=>void recovery.restore()} onDiscard={()=>void recovery.discard()} onSkip={recovery.skip}/>}
     {printOpen&&current&&<PrintDialog pages={current.pages} currentPageId={selectedPage?.id??null} onClose={()=>setPrintOpen(false)} onPrint={(pages,options)=>void startPrint(pages,options)}/>}
     {signatureOpen && <SignaturePad onCancel={() => { setSignatureOpen(false); setTool("select"); }} onAccept={(paths) => { setSignatureOpen(false); setPendingSignature(paths); setNotice("Click a page to place your signature"); }}/>}
@@ -497,7 +540,7 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
       <div className="brand"><span className="folio-mark small">F</span><span>Folio</span></div>
       <div className="document-tabs" role="tablist" aria-label="Open documents">
         {workspace.tabs.map(tab => <div key={tab.id} className={"document-tab " + (tab.id === workspace.activeId ? "active" : "")}>
-          <button id={"tab-" + tab.id} role="tab" aria-label={tab.history.present.name} aria-selected={tab.id === workspace.activeId} tabIndex={tab.id === workspace.activeId ? 0 : -1} disabled={!!busy}
+          <button id={"tab-" + tab.id} role="tab" aria-label={tab.history.present.name} aria-selected={tab.id === workspace.activeId} tabIndex={tab.id === workspace.activeId ? 0 : -1} disabled={blocked}
             title={tab.history.present.name} onClick={() => switchTab(tab.id)} onKeyDown={event => {
               if (!["ArrowLeft","ArrowRight","Home","End"].includes(event.key)) return;
               event.preventDefault();
@@ -508,21 +551,21 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
             }}>
             <span>{tab.history.present.name}</span>{planDigest(tab.history.present) !== tab.savedDigest && <i aria-label="Unsaved changes"/>}
           </button>
-          <button className="tab-close" aria-label={"Close " + tab.history.present.name} title="Close tab (Ctrl+W)" disabled={!!busy} onClick={() => void closeTab(tab.id)}><X size={13}/></button>
+          <button className="tab-close" aria-label={"Close " + tab.history.present.name} title="Close tab (Ctrl+W)" disabled={blocked} onClick={() => void closeTab(tab.id)}><X size={13}/></button>
         </div>)}
         <button className="icon-button new-document" aria-label="Open PDF in new tab" title="Open PDF in new tab (Ctrl+O)" disabled={blocked} onClick={openPdf}><Plus size={16}/></button>
       </div>
-      <div className="titlebar-actions"><button className="icon-button" aria-label="Settings" title="Settings" disabled={!!busy} onClick={() => setSettingsOpen(true)}><Settings size={18}/></button></div>
+      <div className="titlebar-actions"><button className="icon-button" aria-label="Settings" title="Settings" disabled={blocked} onClick={() => setSettingsOpen(true)}><Settings size={18}/></button></div>
     </header>
     <div className="toolbar" role="toolbar" aria-label="Document tools">
-      <div className="tool-group"><button className="tool-button" onClick={openPdf} disabled={!!busy} title="Open PDF (Ctrl+O)"><FolderOpen size={17}/><span>Open</span></button><button className="tool-button" onClick={addPdf} disabled={blocked || adapter.kind === "demo"} title="Add another PDF"><FilePlus2 size={17}/><span>Add PDF</span></button></div>
+      <div className="tool-group"><button className="tool-button" onClick={openPdf} disabled={blocked} title="Open PDF (Ctrl+O)"><FolderOpen size={17}/><span>Open</span></button><button className="tool-button" onClick={addPdf} disabled={blocked || adapter.kind === "demo"} title="Add another PDF"><FilePlus2 size={17}/><span>Add PDF</span></button></div>
       <div className="separator"/>
       <div className="tool-group modes">
         <button className={`tool-button ${tool === "select" ? "active" : ""}`} disabled={blocked} onClick={() => chooseTool("select")}><MousePointer2 size={17}/><span>Select</span></button>
         <button className={`tool-button ${tool === "edit" ? "active" : ""}`} disabled={blocked || !adapter.listTextRuns || !adapter.replaceText} onClick={() => chooseTool("edit")} title="Change supported existing PDF text"><TextCursorInput size={17}/><span>Edit text</span></button>
         <button className={`tool-button ${tool === "text" ? "active" : ""}`} disabled={blocked} onClick={() => chooseTool("text")}><Type size={17}/><span>Text</span></button>
         <button className={`tool-button ${tool === "draw" ? "active" : ""}`} disabled={blocked} onClick={() => chooseTool("draw")}><Pencil size={17}/><span>Draw</span></button>
-        <button className={`tool-button ${tool === "signature" ? "active" : ""}`} disabled={!!busy} onClick={() => chooseTool("signature")}><PenLine size={17}/><span>Signature</span></button>
+        <button className={`tool-button ${tool === "signature" ? "active" : ""}`} disabled={blocked} onClick={() => chooseTool("signature")}><PenLine size={17}/><span>Signature</span></button>
         <button className={`tool-button ${tool === "highlight" ? "active" : ""}`} disabled={blocked} onClick={() => chooseTool("highlight")}><Highlighter size={17}/><span>Highlight</span></button>
         <button className={`tool-button ${tool === "comment" ? "active" : ""}`} disabled={blocked} onClick={() => chooseTool("comment")}><MessageSquare size={17}/><span>Comment</span></button>
       </div>

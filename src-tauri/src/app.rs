@@ -1,4 +1,5 @@
 use crate::printing::{print_document, PrintOptions};
+use crate::TextGroupPreview;
 use crate::{
     DocumentInfo, EngineError, ExportRequest, PageText, PdfEngine, RecoveryStore, TextRuns,
 };
@@ -154,6 +155,37 @@ async fn list_text_runs(
     on_worker(move || engine.list_text_runs(&source_id, page_index)).await
 }
 
+#[tauri::command]
+async fn inspect_text_group(
+    engine: State<'_, PdfEngine>,
+    source_id: String,
+    page_index: usize,
+    object_indices: Vec<usize>,
+) -> Result<TextGroupPreview, String> {
+    let engine = engine.inner().clone();
+    on_worker(move || engine.inspect_text_group(&source_id, page_index, &object_indices)).await
+}
+#[tauri::command]
+async fn replace_text_group(
+    engine: State<'_, PdfEngine>,
+    source_id: String,
+    page_index: usize,
+    object_indices: Vec<usize>,
+    expected_text: String,
+    replacement: String,
+) -> Result<DocumentInfo, String> {
+    let engine = engine.inner().clone();
+    on_worker(move || {
+        engine.replace_text_group(
+            &source_id,
+            page_index,
+            &object_indices,
+            &expected_text,
+            &replacement,
+        )
+    })
+    .await
+}
 #[tauri::command]
 async fn replace_text(
     engine: State<'_, PdfEngine>,
@@ -314,6 +346,8 @@ pub fn run() {
             page_text,
             list_text_runs,
             replace_text,
+            inspect_text_group,
+            replace_text_group,
             export_pdf,
             close_document,
             engine_status,

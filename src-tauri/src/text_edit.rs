@@ -9,6 +9,9 @@ use embedded_font::{FontProofs, VerifiedFont};
 #[path = "positioned_text.rs"]
 mod positioned_text;
 
+#[path = "text_group.rs"]
+mod text_group;
+
 const EPSILON: f32 = 0.02;
 
 fn invalid(message: &str) -> EngineError {

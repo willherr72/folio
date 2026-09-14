@@ -43,6 +43,7 @@ export interface EditableTextRun {
   reason?: string;
 }
 export interface TextRuns { runs: EditableTextRun[]; reason?: string }
+export interface TextGroupPreview { objectIndices: number[]; text: string; fontName: string; fontSize: number }
 export interface HighlightOverlay {
   type: "highlight";
   id: string;

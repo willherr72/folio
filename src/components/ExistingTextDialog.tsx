@@ -11,10 +11,11 @@ interface ExistingTextDialogProps {
   error: string | null;
   onApply(replacement: string, fontId?: string): void | Promise<void>;
   onDraftChange?(): void;
+  onEditTogether?(): void;
   onCancel(): void;
 }
 
-export function ExistingTextDialog({ run, busy, error, onApply, onCancel, onDraftChange }: ExistingTextDialogProps) {
+export function ExistingTextDialog({ run, busy, error, onApply, onCancel, onDraftChange, onEditTogether }: ExistingTextDialogProps) {
   const [replacement, setReplacement] = useState(run.text);
   const [font, setFont] = useState<FontInfo | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -83,6 +84,7 @@ export function ExistingTextDialog({ run, busy, error, onApply, onCancel, onDraf
         {message && <p id={errorId} className="existing-text-error" role="alert">{message}</p>}
       </div>
       <footer className="dialog-actions">
+        {onEditTogether && <button type="button" className="button" disabled={busy} onClick={onEditTogether}>Edit together…</button>}
         <button type="button" className="button" disabled={busy} onClick={cancel}>Cancel</button>
         {editable && <button type="submit" className="button primary" disabled={!canApply}>{busy ? "Applying…" : "Apply changes"}</button>}
       </footer>

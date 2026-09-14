@@ -1,0 +1,51 @@
+import {act, cleanup, fireEvent, render, screen} from "@testing-library/react";
+import {afterEach, expect, it, vi} from "vitest";
+import {TextGroupDialog} from "../src/components/TextGroupDialog";
+import type {EditableTextRun, TextGroupPreview} from "../src/editor/types";
+const runs: EditableTextRun[] = ["Hello ", "world", "!"].map((text, objectIndex)=>({text,objectIndex,fontName:"Helvetica",fontSize:12,bounds:{x:objectIndex*30,y:20,width:30,height:12},supported:true}));
+const preview: TextGroupPreview = {objectIndices:[0,1],text:"Hello world",fontName:"Helvetica",fontSize:12};
+const options=()=>({anchor:runs[0],runs,busy:false,error:null,onInspect:vi.fn().mockResolvedValue(preview),onApply:vi.fn(),onCancel:vi.fn()});
+afterEach(cleanup);
+it("bounds nearby choices, caps membership at eight and requires consecutive pieces",()=>{
+ const many=Array.from({length:30},(_,objectIndex)=>({...runs[0],objectIndex,text:`Piece ${objectIndex}`}));
+ const props=options();render(<TextGroupDialog {...props} anchor={many[10]} runs={many}/>);
+ expect(screen.getAllByRole("checkbox")).toHaveLength(17);expect(screen.queryByRole("checkbox",{name:"Piece 1"})).not.toBeInTheDocument();
+ fireEvent.click(screen.getByRole("checkbox",{name:"Piece 12"}));expect(screen.getByRole("button",{name:"Check selection"})).toBeDisabled();
+ fireEvent.click(screen.getByRole("checkbox",{name:"Piece 11"}));expect(screen.getByRole("button",{name:"Check selection"})).toBeEnabled();
+ for(let index=13;index<=17;index++)fireEvent.click(screen.getByRole("checkbox",{name:`Piece ${index}`}));
+ expect(screen.getByRole("checkbox",{name:"Piece 18"})).toBeDisabled();expect(screen.getByRole("checkbox",{name:"Piece 12"})).toBeEnabled();
+});
+it("requires explicit selection and native verification before showing a replacement",async()=>{
+ const props=options();render(<TextGroupDialog {...props}/>);
+ expect(screen.getByRole("checkbox",{name:/Hello/})).toBeChecked();
+ expect(screen.getByRole("checkbox",{name:/Hello/})).toBeDisabled();
+ expect(screen.getByRole("checkbox",{name:"world"})).not.toBeChecked();
+ expect(screen.getByRole("button",{name:"Check selection"})).toBeDisabled();
+ expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
+ fireEvent.click(screen.getByRole("checkbox",{name:"world"}));
+ fireEvent.click(screen.getByRole("button",{name:"Check selection"}));
+ const input=await screen.findByRole("textbox",{name:"Replacement text"});
+ expect(props.onInspect).toHaveBeenCalledWith([0,1]);expect(input).toHaveValue("Hello world");
+ fireEvent.change(input,{target:{value:"Hi world"}});fireEvent.submit(input.closest("form")!);
+ expect(props.onApply).toHaveBeenCalledWith(preview,"Hi world");
+});
+it("invalidates a delayed check when selection changes and when cancelled",async()=>{
+ let resolve!:(value:TextGroupPreview)=>void;const props=options();props.onInspect.mockImplementation(()=>new Promise(done=>{resolve=done;}));
+ render(<TextGroupDialog {...props}/>);fireEvent.click(screen.getByRole("checkbox",{name:"world"}));fireEvent.click(screen.getByRole("button",{name:"Check selection"}));
+ fireEvent.click(screen.getByRole("checkbox",{name:"!"}));await act(async()=>resolve(preview));
+ expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
+ fireEvent.click(screen.getByRole("checkbox",{name:"!"}));fireEvent.click(screen.getByRole("button",{name:"Check selection"}));
+ fireEvent.click(screen.getByRole("button",{name:"Cancel"}));await act(async()=>resolve(preview));
+ expect(props.onCancel).toHaveBeenCalledOnce();expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
+});
+it("keeps the draft after apply errors and blocks changing or cancelling during apply",async()=>{
+ const props=options();const view=render(<TextGroupDialog {...props}/>);
+ fireEvent.click(screen.getByRole("checkbox",{name:"world"}));fireEvent.click(screen.getByRole("button",{name:"Check selection"}));
+ const input=await screen.findByRole("textbox",{name:"Replacement text"});fireEvent.change(input,{target:{value:"A longer draft"}});
+ view.rerender(<TextGroupDialog {...props} busy/>);fireEvent.keyDown(input,{key:"Escape"});
+ expect(props.onCancel).not.toHaveBeenCalled();expect(screen.getByRole("checkbox",{name:"world"})).toBeDisabled();
+ view.rerender(<TextGroupDialog {...props} error="Text does not fit"/>);
+ expect(input).toHaveValue("A longer draft");expect(screen.getByRole("alert")).toHaveTextContent("Text does not fit");
+ expect(screen.getByRole("button",{name:"Apply changes"})).toBeEnabled();
+ fireEvent.click(screen.getByRole("checkbox",{name:"!"}));expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
+});

@@ -1,0 +1,648 @@
+{
+  "mupdf": "1.27.1",
+  "pypdf": "6.14.2",
+  "cases": 32,
+  "passed": true,
+  "results": [
+    {
+      "case": "leading-0-equal",
+      "exportSha256": "e5a14a610c23ae8d195825407ebe79555729673207091ce2ce1930b075294d54",
+      "referenceSha256": "498e718698dc5a12451a926dd140009006514b322ba38260d6cf50ed954741bb",
+      "pages": [
+        {
+          "page": 0,
+          "mupdfExactText": true,
+          "mupdfExactRaster": true,
+          "pypdfExactText": true,
+          "mupdfText": "New words\nNeighbor\n",
+          "referenceMupdfText": "New words\nNeighbor\n",
+          "pypdfText": "New words\nNeighbor",
+          "referencePypdfText": "New words\nNeighbor",
+          "mupdfRasterSha256": "8504384cbe8de56a06d5fef23a64fbfe1cbf59b0cecef0db088a97f3f9cee1fe",
+          "referenceMupdfRasterSha256": "8504384cbe8de56a06d5fef23a64fbfe1cbf59b0cecef0db088a97f3f9cee1fe"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "case": "leading-0-long",
+      "exportSha256": "1ab8cfca023837a7cc2a8230f8097e219a7f3072aded1aca71c468b681e66158",
+      "referenceSha256": "42e39e9563e87aeb82e749384227a8c4c52bbc4448b3706d4cf499da0e3df69e",
+      "pages": [
+        {
+          "page": 0,
+          "mupdfExactText": true,
+          "mupdfExactRaster": true,
+          "pypdfExactText": true,
+          "mupdfText": "Longer words\nNeighbor\n",
+          "referenceMupdfText": "Longer words\nNeighbor\n",
+          "pypdfText": "Longer words\nNeighbor",
+          "referencePypdfText": "Longer words\nNeighbor",
+          "mupdfRasterSha256": "f945b2897b1d2290898b27cbca5d81efd5d183dc8e6a28116e5ff8414bda7931",
+          "referenceMupdfRasterSha256": "f945b2897b1d2290898b27cbca5d81efd5d183dc8e6a28116e5ff8414bda7931"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "case": "leading-0-noop",
+      "exportSha256": "3d7ba8a2350242f2950887a2fc62af4014bbfa9c282c66f75d323fb75e2f22b6",
+      "referenceSha256": "2ac2918d6509c9694a81c9b9eb560403d601ceff236c8a10b497aa81c3fceedc",
+      "pages": [
+        {
+          "page": 0,
+          "mupdfExactText": true,
+          "mupdfExactRaster": true,
+          "pypdfExactText": true,
+          "mupdfText": "Old words\nNeighbor\n",
+          "referenceMupdfText": "Old words\nNeighbor\n",
+          "pypdfText": "Old words\nNeighbor",
+          "referencePypdfText": "Old words\nNeighbor",
+          "mupdfRasterSha256": "b9da5553402586ced048020c29f762c0c31d5ca168371a7f34423b6fefb7cbfe",
+          "referenceMupdfRasterSha256": "b9da5553402586ced048020c29f762c0c31d5ca168371a7f34423b6fefb7cbfe"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "case": "leading-0-short",
+      "exportSha256": "3c4fc00464a2a774bb85987baaf16cedfccc4d65edee0c868dc464df725dd150",
+      "referenceSha256": "b2b84510f24186eb7e90eb26f1bb59488437d238205b8967cc20bd2b9afed415",
+      "pages": [
+        {
+          "page": 0,
+          "mupdfExactText": true,
+          "mupdfExactRaster": true,
+          "pypdfExactText": true,
+          "mupdfText": "New\nNeighbor\n",
+          "referenceMupdfText": "New\nNeighbor\n",
+          "pypdfText": "New\nNeighbor",
+          "referencePypdfText": "New\nNeighbor",
+          "mupdfRasterSha256": "1c475ab9a8e28334e9520777673a84925f9066ec7bf8b17d9e5eced66bc3cdf3",
+          "referenceMupdfRasterSha256": "1c475ab9a8e28334e9520777673a84925f9066ec7bf8b17d9e5eced66bc3cdf3"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "case": "leading-180-equal",
+      "exportSha256": "b5ee7c16483c40008570f4395ac1a63b9a330350ed5e68f9d22fb31cf4f075b5",
+      "referenceSha256": "5ac1bb1d1f9f1333f058d195c656d70200d1ef18ba5da9c5a0211de25b245325",
+      "pages": [
+        {
+          "page": 0,
+          "mupdfExactText": true,
+          "mupdfExactRaster": true,
+          "pypdfExactText": true,
+          "mupdfText": "New words\nNeighbor\n",
+          "referenceMupdfText": "New words\nNeighbor\n",
+          "pypdfText": "New words\nNeighbor",
+          "referencePypdfText": "New words\nNeighbor",
+          "mupdfRasterSha256": "086ab09e1cbaea5a0245a93dc2ad495935acabb2971ac0e1b084e06ee8738621",
+          "referenceMupdfRasterSha256": "086ab09e1cbaea5a0245a93dc2ad495935acabb2971ac0e1b084e06ee8738621"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "case": "leading-180-long",
+      "exportSha256": "2428ff8bce9b0b43f13dda15cca4f4d3b782ca47030a344534ade5d60afb3062",
+      "referenceSha256": "4484a59876bffb8a2bc883946ffb0776526b6a86a43a31ec9864e2ef48486f18",
+      "pages": [
+        {
+          "page": 0,
+          "mupdfExactText": true,
+          "mupdfExactRaster": true,
+          "pypdfExactText": true,
+          "mupdfText": "Longer words\nNeighbor\n",
+          "referenceMupdfText": "Longer words\nNeighbor\n",
+          "pypdfText": "Longer words\nNeighbor",
+          "referencePypdfText": "Longer words\nNeighbor",
+          "mupdfRasterSha256": "261e987e80d36a39846dca563571a559381871dee670070a6ea9be76fda64257",
+          "referenceMupdfRasterSha256": "261e987e80d36a39846dca563571a559381871dee670070a6ea9be76fda64257"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "case": "leading-180-noop",
+      "exportSha256": "76a84ee0af1daa8692ae2eeaf92e1ba2594cd2a620cfc3324bed859f58191445",
+      "referenceSha256": "797c091e2c1c2c6bfda3d34852f3af2b24e581c6d62fad43dd39ec9495e51ad8",
+      "pages": [
+        {
+          "page": 0,
+          "mupdfExactText": true,
+          "mupdfExactRaster": true,
+          "pypdfExactText": true,
+          "mupdfText": "Old words\nNeighbor\n",
+          "referenceMupdfText": "Old words\nNeighbor\n",
+          "pypdfText": "Old words\nNeighbor",
+          "referencePypdfText": "Old words\nNeighbor",
+          "mupdfRasterSha256": "20c59a3d68298d89b4356d8ba81d040e63e5317c4df8ec76b3b67e797baa60d3",
+          "referenceMupdfRasterSha256": "20c59a3d68298d89b4356d8ba81d040e63e5317c4df8ec76b3b67e797baa60d3"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "case": "leading-180-short",
+      "exportSha256": "2b5872701a9e850ef8f95ffb3796f65f116db2e9167e039cb0486e8a5c75df3c",
+      "referenceSha256": "9864f5642d1c0c5f96ccd0e8cec2e084dbbf9633179fe86e493272405d459d8c",
+      "pages": [
+        {
+          "page": 0,
+          "mupdfExactText": true,
+          "mupdfExactRaster": true,
+          "pypdfExactText": true,
+          "mupdfText": "New\nNeighbor\n",
+          "referenceMupdfText": "New\nNeighbor\n",
+          "pypdfText": "New\nNeighbor",
+          "referencePypdfText": "New\nNeighbor",
+          "mupdfRasterSha256": "f0294e29475f177b7c9ef097a37f9655139d4d18c86b433d32f63c38be70fc48",
+          "referenceMupdfRasterSha256": "f0294e29475f177b7c9ef097a37f9655139d4d18c86b433d32f63c38be70fc48"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "case": "trailing-0-equal",
+      "exportSha256": "2f7e385f5735cfa7d75f71027594e2d5e8c00babc36c27fddd35668810210953",
+      "referenceSha256": "498e718698dc5a12451a926dd140009006514b322ba38260d6cf50ed954741bb",
+      "pages": [
+        {
+          "page": 0,
+          "mupdfExactText": true,
+          "mupdfExactRaster": true,
+          "pypdfExactText": true,
+          "mupdfText": "New words\nNeighbor\n",
+          "referenceMupdfText": "New words\nNeighbor\n",
+          "pypdfText": "New words\nNeighbor",
+          "referencePypdfText": "New words\nNeighbor",
+          "mupdfRasterSha256": "8504384cbe8de56a06d5fef23a64fbfe1cbf59b0cecef0db088a97f3f9cee1fe",
+          "referenceMupdfRasterSha256": "8504384cbe8de56a06d5fef23a64fbfe1cbf59b0cecef0db088a97f3f9cee1fe"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "case": "trailing-0-long",
+      "exportSha256": "281ab9b5c54c854544bf5b472778b4730bd7c68abc37ba7afe77c0462a9ce662",
+      "referenceSha256": "42e39e9563e87aeb82e749384227a8c4c52bbc4448b3706d4cf499da0e3df69e",
+      "pages": [
+        {
+          "page": 0,
+          "mupdfExactText": true,
+          "mupdfExactRaster": true,
+          "pypdfExactText": true,
+          "mupdfText": "Longer words\nNeighbor\n",
+          "referenceMupdfText": "Longer words\nNeighbor\n",
+          "pypdfText": "Longer words\nNeighbor",
+          "referencePypdfText": "Longer words\nNeighbor",
+          "mupdfRasterSha256": "f945b2897b1d2290898b27cbca5d81efd5d183dc8e6a28116e5ff8414bda7931",
+          "referenceMupdfRasterSha256": "f945b2897b1d2290898b27cbca5d81efd5d183dc8e6a28116e5ff8414bda7931"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "case": "trailing-0-noop",
+      "exportSha256": "7c7e4085ab4d6399ddffa68acee03d951503ad9d0e10756e3c9a7a8741c1a710",
+      "referenceSha256": "2ac2918d6509c9694a81c9b9eb560403d601ceff236c8a10b497aa81c3fceedc",
+      "pages": [
+        {
+          "page": 0,
+          "mupdfExactText": true,
+          "mupdfExactRaster": true,
+          "pypdfExactText": true,
+          "mupdfText": "Old words\nNeighbor\n",
+          "referenceMupdfText": "Old words\nNeighbor\n",
+          "pypdfText": "Old words\nNeighbor",
+          "referencePypdfText": "Old words\nNeighbor",
+          "mupdfRasterSha256": "b9da5553402586ced048020c29f762c0c31d5ca168371a7f34423b6fefb7cbfe",
+          "referenceMupdfRasterSha256": "b9da5553402586ced048020c29f762c0c31d5ca168371a7f34423b6fefb7cbfe"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "case": "trailing-0-short",
+      "exportSha256": "2a37afe1e9d2b47f33a60452bfacf357850e77292eba9a272fb93d8ceb4baf3b",
+      "referenceSha256": "b2b84510f24186eb7e90eb26f1bb59488437d238205b8967cc20bd2b9afed415",
+      "pages": [
+        {
+          "page": 0,
+          "mupdfExactText": true,
+          "mupdfExactRaster": true,
+          "pypdfExactText": true,
+          "mupdfText": "New\nNeighbor\n",
+          "referenceMupdfText": "New\nNeighbor\n",
+          "pypdfText": "New\nNeighbor",
+          "referencePypdfText": "New\nNeighbor",
+          "mupdfRasterSha256": "1c475ab9a8e28334e9520777673a84925f9066ec7bf8b17d9e5eced66bc3cdf3",
+          "referenceMupdfRasterSha256": "1c475ab9a8e28334e9520777673a84925f9066ec7bf8b17d9e5eced66bc3cdf3"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "case": "trailing-180-equal",
+      "exportSha256": "fdd2b2cc697e7a4d68da2ddf404c6893443ced02e5f0d65cf18436980644b587",
+      "referenceSha256": "5ac1bb1d1f9f1333f058d195c656d70200d1ef18ba5da9c5a0211de25b245325",
+      "pages": [
+        {
+          "page": 0,
+          "mupdfExactText": true,
+          "mupdfExactRaster": true,
+          "pypdfExactText": true,
+          "mupdfText": "New words\nNeighbor\n",
+          "referenceMupdfText": "New words\nNeighbor\n",
+          "pypdfText": "New words\nNeighbor",
+          "referencePypdfText": "New words\nNeighbor",
+          "mupdfRasterSha256": "086ab09e1cbaea5a0245a93dc2ad495935acabb2971ac0e1b084e06ee8738621",
+          "referenceMupdfRasterSha256": "086ab09e1cbaea5a0245a93dc2ad495935acabb2971ac0e1b084e06ee8738621"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "case": "trailing-180-long",
+      "exportSha256": "9946e7a396277bff675196e0b30ca4d906275652547c32b191c685a287d74e28",
+      "referenceSha256": "4484a59876bffb8a2bc883946ffb0776526b6a86a43a31ec9864e2ef48486f18",
+      "pages": [
+        {
+          "page": 0,
+          "mupdfExactText": true,
+          "mupdfExactRaster": true,
+          "pypdfExactText": true,
+          "mupdfText": "Longer words\nNeighbor\n",
+          "referenceMupdfText": "Longer words\nNeighbor\n",
+          "pypdfText": "Longer words\nNeighbor",
+          "referencePypdfText": "Longer words\nNeighbor",
+          "mupdfRasterSha256": "261e987e80d36a39846dca563571a559381871dee670070a6ea9be76fda64257",
+          "referenceMupdfRasterSha256": "261e987e80d36a39846dca563571a559381871dee670070a6ea9be76fda64257"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "case": "trailing-180-noop",
+      "exportSha256": "1c2c3cc43efa0073289476707a449ccc4a8e0e09f666d7ebac7b2e53899b1e1b",
+      "referenceSha256": "797c091e2c1c2c6bfda3d34852f3af2b24e581c6d62fad43dd39ec9495e51ad8",
+      "pages": [
+        {
+          "page": 0,
+          "mupdfExactText": true,
+          "mupdfExactRaster": true,
+          "pypdfExactText": true,
+          "mupdfText": "Old words\nNeighbor\n",
+          "referenceMupdfText": "Old words\nNeighbor\n",
+          "pypdfText": "Old words\nNeighbor",
+          "referencePypdfText": "Old words\nNeighbor",
+          "mupdfRasterSha256": "20c59a3d68298d89b4356d8ba81d040e63e5317c4df8ec76b3b67e797baa60d3",
+          "referenceMupdfRasterSha256": "20c59a3d68298d89b4356d8ba81d040e63e5317c4df8ec76b3b67e797baa60d3"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "case": "trailing-180-short",
+      "exportSha256": "5bd01316a2d544c00f1423308fe802645845b3d3fe3a7bf3860d881baec88265",
+      "referenceSha256": "9864f5642d1c0c5f96ccd0e8cec2e084dbbf9633179fe86e493272405d459d8c",
+      "pages": [
+        {
+          "page": 0,
+          "mupdfExactText": true,
+          "mupdfExactRaster": true,
+          "pypdfExactText": true,
+          "mupdfText": "New\nNeighbor\n",
+          "referenceMupdfText": "New\nNeighbor\n",
+          "pypdfText": "New\nNeighbor",
+          "referencePypdfText": "New\nNeighbor",
+          "mupdfRasterSha256": "f0294e29475f177b7c9ef097a37f9655139d4d18c86b433d32f63c38be70fc48",
+          "referenceMupdfRasterSha256": "f0294e29475f177b7c9ef097a37f9655139d4d18c86b433d32f63c38be70fc48"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "case": "within-0-equal",
+      "exportSha256": "e57ca844e9b052bf1da42fad423782781c6cccf2e8d5a84fd0c291b7112efe5f",
+      "referenceSha256": "88fe26a57c2f6fa0d07b13cac97659bcaf9f5332790d621ad4f23b2cba8e6bd4",
+      "pages": [
+        {
+          "page": 0,
+          "mupdfExactText": true,
+          "mupdfExactRaster": true,
+          "pypdfExactText": true,
+          "mupdfText": "World\nNeighbor\n",
+          "referenceMupdfText": "World\nNeighbor\n",
+          "pypdfText": "World\nNeighbor",
+          "referencePypdfText": "World\nNeighbor",
+          "mupdfRasterSha256": "0ccee3e1e7c30d1f2daa01f374b33d6c0afb6fd39db7a1172a0b893d41682b79",
+          "referenceMupdfRasterSha256": "0ccee3e1e7c30d1f2daa01f374b33d6c0afb6fd39db7a1172a0b893d41682b79"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "case": "within-0-long",
+      "exportSha256": "e75a0642ac36f530a87db407581684d007ebf9e3fa38b90e01327345ebeaef18",
+      "referenceSha256": "42e39e9563e87aeb82e749384227a8c4c52bbc4448b3706d4cf499da0e3df69e",
+      "pages": [
+        {
+          "page": 0,
+          "mupdfExactText": true,
+          "mupdfExactRaster": true,
+          "pypdfExactText": true,
+          "mupdfText": "Longer words\nNeighbor\n",
+          "referenceMupdfText": "Longer words\nNeighbor\n",
+          "pypdfText": "Longer words\nNeighbor",
+          "referencePypdfText": "Longer words\nNeighbor",
+          "mupdfRasterSha256": "f945b2897b1d2290898b27cbca5d81efd5d183dc8e6a28116e5ff8414bda7931",
+          "referenceMupdfRasterSha256": "f945b2897b1d2290898b27cbca5d81efd5d183dc8e6a28116e5ff8414bda7931"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "case": "within-0-noop",
+      "exportSha256": "447c43dfa3e6b882c51e6448e1ead8744c3e1692ae610628495cb5da217a2464",
+      "referenceSha256": "14bb78231682470c7540152d851449b8174a9a1288983ac30cf34e0701340efe",
+      "pages": [
+        {
+          "page": 0,
+          "mupdfExactText": true,
+          "mupdfExactRaster": true,
+          "pypdfExactText": true,
+          "mupdfText": "Hello\nNeighbor\n",
+          "referenceMupdfText": "Hello\nNeighbor\n",
+          "pypdfText": "Hello\nNeighbor",
+          "referencePypdfText": "Hello\nNeighbor",
+          "mupdfRasterSha256": "8e257a1a6c5183e32355eb7f21458568d9159cab1a026c3f8b40a25e03411f8a",
+          "referenceMupdfRasterSha256": "8e257a1a6c5183e32355eb7f21458568d9159cab1a026c3f8b40a25e03411f8a"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "case": "within-0-short",
+      "exportSha256": "7aa65d4736d78f845084427c4ae0df6b0b19dd8bc503857093131fdd5e86fe62",
+      "referenceSha256": "b2b84510f24186eb7e90eb26f1bb59488437d238205b8967cc20bd2b9afed415",
+      "pages": [
+        {
+          "page": 0,
+          "mupdfExactText": true,
+          "mupdfExactRaster": true,
+          "pypdfExactText": true,
+          "mupdfText": "New\nNeighbor\n",
+          "referenceMupdfText": "New\nNeighbor\n",
+          "pypdfText": "New\nNeighbor",
+          "referencePypdfText": "New\nNeighbor",
+          "mupdfRasterSha256": "1c475ab9a8e28334e9520777673a84925f9066ec7bf8b17d9e5eced66bc3cdf3",
+          "referenceMupdfRasterSha256": "1c475ab9a8e28334e9520777673a84925f9066ec7bf8b17d9e5eced66bc3cdf3"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "case": "within-180-equal",
+      "exportSha256": "21306c34a669c0c01fce7a399298364af9d8abb0edb04ec3240f7df6a23697df",
+      "referenceSha256": "9ff7f29c6aee9421f408afbbcef87dcbf8432bda9f7056df10482c6b2862f61c",
+      "pages": [
+        {
+          "page": 0,
+          "mupdfExactText": true,
+          "mupdfExactRaster": true,
+          "pypdfExactText": true,
+          "mupdfText": "World\nNeighbor\n",
+          "referenceMupdfText": "World\nNeighbor\n",
+          "pypdfText": "World\nNeighbor",
+          "referencePypdfText": "World\nNeighbor",
+          "mupdfRasterSha256": "4cffeea7baf8cc3ecc2572975b1571ab51a8401920311c0af421383eb850a872",
+          "referenceMupdfRasterSha256": "4cffeea7baf8cc3ecc2572975b1571ab51a8401920311c0af421383eb850a872"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "case": "within-180-long",
+      "exportSha256": "d3cb5f760777323ec74f0a09fd422032ffbd20200ab588cf69358d98fde7e597",
+      "referenceSha256": "4484a59876bffb8a2bc883946ffb0776526b6a86a43a31ec9864e2ef48486f18",
+      "pages": [
+        {
+          "page": 0,
+          "mupdfExactText": true,
+          "mupdfExactRaster": true,
+          "pypdfExactText": true,
+          "mupdfText": "Longer words\nNeighbor\n",
+          "referenceMupdfText": "Longer words\nNeighbor\n",
+          "pypdfText": "Longer words\nNeighbor",
+          "referencePypdfText": "Longer words\nNeighbor",
+          "mupdfRasterSha256": "261e987e80d36a39846dca563571a559381871dee670070a6ea9be76fda64257",
+          "referenceMupdfRasterSha256": "261e987e80d36a39846dca563571a559381871dee670070a6ea9be76fda64257"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "case": "within-180-noop",
+      "exportSha256": "6c0567eb864c805609c5d8af3196897e74babbec5fa5bd347cde90f3f42fc8be",
+      "referenceSha256": "3680e97c459ae83a91aafb4ad41af7c9d660a0b65acbc9043d4761fc6969726c",
+      "pages": [
+        {
+          "page": 0,
+          "mupdfExactText": true,
+          "mupdfExactRaster": true,
+          "pypdfExactText": true,
+          "mupdfText": "Hello\nNeighbor\n",
+          "referenceMupdfText": "Hello\nNeighbor\n",
+          "pypdfText": "Hello\nNeighbor",
+          "referencePypdfText": "Hello\nNeighbor",
+          "mupdfRasterSha256": "b13af946de7bb43c5d37bfe4981bb21c0cb04b34f6323a3f12814f6477db20ad",
+          "referenceMupdfRasterSha256": "b13af946de7bb43c5d37bfe4981bb21c0cb04b34f6323a3f12814f6477db20ad"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "case": "within-180-short",
+      "exportSha256": "37f2ec43d199cc8773860ba6fca81004a2336c9e89ff02dc7a800d4f6a4f08e2",
+      "referenceSha256": "9864f5642d1c0c5f96ccd0e8cec2e084dbbf9633179fe86e493272405d459d8c",
+      "pages": [
+        {
+          "page": 0,
+          "mupdfExactText": true,
+          "mupdfExactRaster": true,
+          "pypdfExactText": true,
+          "mupdfText": "New\nNeighbor\n",
+          "referenceMupdfText": "New\nNeighbor\n",
+          "pypdfText": "New\nNeighbor",
+          "referencePypdfText": "New\nNeighbor",
+          "mupdfRasterSha256": "f0294e29475f177b7c9ef097a37f9655139d4d18c86b433d32f63c38be70fc48",
+          "referenceMupdfRasterSha256": "f0294e29475f177b7c9ef097a37f9655139d4d18c86b433d32f63c38be70fc48"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "case": "within-270-equal",
+      "exportSha256": "338c290cf30dfb6caedfe2ea8d9e00bd85d609477f7d0ac29749603b16e62c1e",
+      "referenceSha256": "49cd2d8eb7c9b068d93c928182619166fb3b6579733d64747638d9caebc8d96b",
+      "pages": [
+        {
+          "page": 0,
+          "mupdfExactText": true,
+          "mupdfExactRaster": true,
+          "pypdfExactText": true,
+          "mupdfText": "World\nNeighbor\n",
+          "referenceMupdfText": "World\nNeighbor\n",
+          "pypdfText": "World\nNeighbor",
+          "referencePypdfText": "World\nNeighbor",
+          "mupdfRasterSha256": "99306164e3b8b1f39af7c4e35b60ca3574152dc659aee7c4cdb5b624b25492f0",
+          "referenceMupdfRasterSha256": "99306164e3b8b1f39af7c4e35b60ca3574152dc659aee7c4cdb5b624b25492f0"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "case": "within-270-long",
+      "exportSha256": "40a05a275f1e6307e885cb9977828feda2e335378c3e5adbf5d6feaffc98bc5b",
+      "referenceSha256": "d897ec0a4c9ee8aafcac44661cf161bd58a90135893c9a60c2544e0b04339524",
+      "pages": [
+        {
+          "page": 0,
+          "mupdfExactText": true,
+          "mupdfExactRaster": true,
+          "pypdfExactText": true,
+          "mupdfText": "Longer words\nNeighbor\n",
+          "referenceMupdfText": "Longer words\nNeighbor\n",
+          "pypdfText": "Longer words\nNeighbor",
+          "referencePypdfText": "Longer words\nNeighbor",
+          "mupdfRasterSha256": "ae1f2354720bd8471965a22d47633a2a06c29df4c5d2265f1f8813f8db95c149",
+          "referenceMupdfRasterSha256": "ae1f2354720bd8471965a22d47633a2a06c29df4c5d2265f1f8813f8db95c149"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "case": "within-270-noop",
+      "exportSha256": "0890bc0ec30068a426fdc84e8232b081750458ef3ce1bbd83dcf2ece67e1e592",
+      "referenceSha256": "d037fcb4356d4da2cfeccb58bf8eec00ec14f52d46656bcc06b14f30925cccdb",
+      "pages": [
+        {
+          "page": 0,
+          "mupdfExactText": true,
+          "mupdfExactRaster": true,
+          "pypdfExactText": true,
+          "mupdfText": "Hello\nNeighbor\n",
+          "referenceMupdfText": "Hello\nNeighbor\n",
+          "pypdfText": "Hello\nNeighbor",
+          "referencePypdfText": "Hello\nNeighbor",
+          "mupdfRasterSha256": "6abec2388e2d23506a6884b608775581363caa6cfc1d7a087c4a4ed7c3ccea7d",
+          "referenceMupdfRasterSha256": "6abec2388e2d23506a6884b608775581363caa6cfc1d7a087c4a4ed7c3ccea7d"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "case": "within-270-short",
+      "exportSha256": "04b7b3dee990c9cfefdb2ab8ace407910695458770d81e26d6ddb07150374404",
+      "referenceSha256": "c533bfc8f00c840f3129c66b087c6a3262c1ac52d2720ec7f66d26b3450961bb",
+      "pages": [
+        {
+          "page": 0,
+          "mupdfExactText": true,
+          "mupdfExactRaster": true,
+          "pypdfExactText": true,
+          "mupdfText": "New\nNeighbor\n",
+          "referenceMupdfText": "New\nNeighbor\n",
+          "pypdfText": "New\nNeighbor",
+          "referencePypdfText": "New\nNeighbor",
+          "mupdfRasterSha256": "1d95196340eced03e057209cd25f3d752b69c492bcae3d60a0de41e015658730",
+          "referenceMupdfRasterSha256": "1d95196340eced03e057209cd25f3d752b69c492bcae3d60a0de41e015658730"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "case": "within-90-equal",
+      "exportSha256": "1b3c21b39a437e9b7979760095bf73275cbeca84fac04cb01f0748e660261c3f",
+      "referenceSha256": "b6c38c9fbf1aaed4d28ff075fd44020a7a7f62f95321aa98e9f0019a6f29bea0",
+      "pages": [
+        {
+          "page": 0,
+          "mupdfExactText": true,
+          "mupdfExactRaster": true,
+          "pypdfExactText": true,
+          "mupdfText": "World\nNeighbor\n",
+          "referenceMupdfText": "World\nNeighbor\n",
+          "pypdfText": "World\nNeighbor",
+          "referencePypdfText": "World\nNeighbor",
+          "mupdfRasterSha256": "ed7ae64a0c4abdf8e6bb292a76e08932f836d64edf683da491bd03be184fec36",
+          "referenceMupdfRasterSha256": "ed7ae64a0c4abdf8e6bb292a76e08932f836d64edf683da491bd03be184fec36"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "case": "within-90-long",
+      "exportSha256": "36ffaded447f0dce3dd5e9fc96ca86b8a86a74e95cec0d9e0f9901f599d53ced",
+      "referenceSha256": "d8d279c166c156bbdbaa30cf628396a0d83fa8701fc259760463b70eb615599d",
+      "pages": [
+        {
+          "page": 0,
+          "mupdfExactText": true,
+          "mupdfExactRaster": true,
+          "pypdfExactText": true,
+          "mupdfText": "Longer words\nNeighbor\n",
+          "referenceMupdfText": "Longer words\nNeighbor\n",
+          "pypdfText": "Longer words\nNeighbor",
+          "referencePypdfText": "Longer words\nNeighbor",
+          "mupdfRasterSha256": "3d4f67e158bdb9730c15eb3265daf6e6701ccf8b3fa3d474c8b749bb860ce3ff",
+          "referenceMupdfRasterSha256": "3d4f67e158bdb9730c15eb3265daf6e6701ccf8b3fa3d474c8b749bb860ce3ff"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "case": "within-90-noop",
+      "exportSha256": "3bf8b01b8518a21c6b6c958de248a16e9660327bc6aabb1225a7d2e218cd5893",
+      "referenceSha256": "4307fa8ed2522591005d70a3596c27cf005d9fe386231c81c622a30577cd6acb",
+      "pages": [
+        {
+          "page": 0,
+          "mupdfExactText": true,
+          "mupdfExactRaster": true,
+          "pypdfExactText": true,
+          "mupdfText": "Hello\nNeighbor\n",
+          "referenceMupdfText": "Hello\nNeighbor\n",
+          "pypdfText": "Hello\nNeighbor",
+          "referencePypdfText": "Hello\nNeighbor",
+          "mupdfRasterSha256": "4d0e93a0e34afa20c441d043d7287fddca4e7de893d2b3b20d22684bd3ce0ba8",
+          "referenceMupdfRasterSha256": "4d0e93a0e34afa20c441d043d7287fddca4e7de893d2b3b20d22684bd3ce0ba8"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "case": "within-90-short",
+      "exportSha256": "95f5cae07b5c1a2244a79c3b0c8ec39f35da9379aa5a0e3cda58b4c8b46115cf",
+      "referenceSha256": "729b8e26deb6dfcb41b078cf691dbcb7510217a5d27f95ac73bb7ef6f1be0d81",
+      "pages": [
+        {
+          "page": 0,
+          "mupdfExactText": true,
+          "mupdfExactRaster": true,
+          "pypdfExactText": true,
+          "mupdfText": "New\nNeighbor\n",
+          "referenceMupdfText": "New\nNeighbor\n",
+          "pypdfText": "New\nNeighbor",
+          "referencePypdfText": "New\nNeighbor",
+          "mupdfRasterSha256": "a846122ba295a6019d60a407a41a8f525c82761e02b3e3f423ee92b90b3d3caf",
+          "referenceMupdfRasterSha256": "a846122ba295a6019d60a407a41a8f525c82761e02b3e3f423ee92b90b3d3caf"
+        }
+      ],
+      "passed": true
+    }
+  ]
+}

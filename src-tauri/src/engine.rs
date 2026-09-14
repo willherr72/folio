@@ -64,6 +64,40 @@ impl PdfEngine {
         self.inner.fonts.clone()
     }
 
+    pub fn inspect_text_group(
+        &self,
+        source_id: &str,
+        page_index: usize,
+        object_indices: &[usize],
+    ) -> EngineResult<TextGroupPreview> {
+        let (reply, receive) = mpsc::channel();
+        self.send(WorkerRequest::InspectTextGroup {
+            source_id: source_id.into(),
+            page_index,
+            object_indices: object_indices.to_vec(),
+            reply,
+        })?;
+        receive.recv().map_err(|_| EngineError::WorkerStopped)?
+    }
+    pub fn replace_text_group(
+        &self,
+        source_id: &str,
+        page_index: usize,
+        object_indices: &[usize],
+        expected_text: &str,
+        replacement: &str,
+    ) -> EngineResult<DocumentInfo> {
+        let (reply, receive) = mpsc::channel();
+        self.send(WorkerRequest::ReplaceTextGroup {
+            source_id: source_id.into(),
+            page_index,
+            object_indices: object_indices.to_vec(),
+            expected_text: expected_text.into(),
+            replacement: replacement.into(),
+            reply,
+        })?;
+        receive.recv().map_err(|_| EngineError::WorkerStopped)?
+    }
     pub fn list_text_runs(&self, source_id: &str, page_index: usize) -> EngineResult<TextRuns> {
         let (reply, receive) = mpsc::channel();
         self.send(WorkerRequest::ListTextRuns {
@@ -296,6 +330,20 @@ fn start_worker(engine_path: PathBuf) -> Result<PdfEngine, String> {
 }
 
 enum WorkerRequest {
+    InspectTextGroup {
+        source_id: String,
+        page_index: usize,
+        object_indices: Vec<usize>,
+        reply: mpsc::Sender<EngineResult<TextGroupPreview>>,
+    },
+    ReplaceTextGroup {
+        source_id: String,
+        page_index: usize,
+        object_indices: Vec<usize>,
+        expected_text: String,
+        replacement: String,
+        reply: mpsc::Sender<EngineResult<DocumentInfo>>,
+    },
     ListTextRuns {
         source_id: String,
         page_index: usize,
@@ -453,6 +501,34 @@ impl WorkerRuntime {
     fn run(&mut self, receiver: mpsc::Receiver<WorkerRequest>) {
         while let Ok(request) = receiver.recv() {
             match request {
+                WorkerRequest::InspectTextGroup {
+                    source_id,
+                    page_index,
+                    object_indices,
+                    reply,
+                } => {
+                    let _ = reply.send(self.inspect_text_group(
+                        &source_id,
+                        page_index,
+                        &object_indices,
+                    ));
+                }
+                WorkerRequest::ReplaceTextGroup {
+                    source_id,
+                    page_index,
+                    object_indices,
+                    expected_text,
+                    replacement,
+                    reply,
+                } => {
+                    let _ = reply.send(self.replace_text_group(
+                        &source_id,
+                        page_index,
+                        &object_indices,
+                        &expected_text,
+                        &replacement,
+                    ));
+                }
                 WorkerRequest::ListTextRuns {
                     source_id,
                     page_index,

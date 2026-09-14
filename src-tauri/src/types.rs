@@ -222,3 +222,12 @@ pub struct PageText {
     pub intrinsic_rotation: u16,
     pub characters: Vec<PdfTextCharacter>,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TextGroupPreview {
+    pub object_indices: Vec<usize>,
+    pub text: String,
+    pub font_name: String,
+    pub font_size: f32,
+}

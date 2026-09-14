@@ -1,6 +1,6 @@
 import { cloneOverlay } from "./model";
 import { invoke } from "@tauri-apps/api/core";
-import type { DocumentInfo, PagePlan, PageText, TextRuns } from "./types";
+import type { DocumentInfo, PagePlan, PageText, TextRuns, TextGroupPreview } from "./types";
 
 export interface FolioAdapter {
   kind: "native" | "demo";
@@ -8,6 +8,8 @@ export interface FolioAdapter {
   renderPage(sourceId: string, pageIndex: number, width: number): Promise<string>;
   getPageText?(sourceId: string, pageIndex: number): Promise<PageText>;
   listTextRuns?(sourceId: string, pageIndex: number): Promise<TextRuns>;
+  inspectTextGroup?(sourceId: string, pageIndex: number, objectIndices: number[]): Promise<TextGroupPreview>;
+  replaceTextGroup?(sourceId: string, pageIndex: number, objectIndices: number[], expectedText: string, replacement: string): Promise<DocumentInfo>;
   replaceText?(sourceId: string, pageIndex: number, objectIndex: number, expectedText: string, replacement: string, fontId?: string): Promise<DocumentInfo>;
   exportPdf(pages: PagePlan[], options?: {flatten?: boolean}): Promise<string | null>;
   closeDocument(sourceId: string): Promise<void>;
@@ -36,6 +38,8 @@ export const nativeAdapter: FolioAdapter = {
   },
   getPageText: (sourceId, pageIndex) => invoke<PageText>("page_text", { sourceId, pageIndex }),
   listTextRuns: (sourceId, pageIndex) => invoke<TextRuns>("list_text_runs", {sourceId,pageIndex}),
+  inspectTextGroup: (sourceId, pageIndex, objectIndices) => invoke<TextGroupPreview>("inspect_text_group", {sourceId,pageIndex,objectIndices}),
+  replaceTextGroup: (sourceId, pageIndex, objectIndices, expectedText, replacement) => invoke<DocumentInfo>("replace_text_group", {sourceId,pageIndex,objectIndices,expectedText,replacement}),
   replaceText: (sourceId, pageIndex, objectIndex, expectedText, replacement, fontId) => invoke<DocumentInfo>("replace_text", {sourceId,pageIndex,objectIndex,expectedText,replacement,...(fontId ? {fontId} : {})}),
   exportPdf: (pages, options) => invoke<string | null>("export_pdf", { request: { pages, ...(options?.flatten ? {flatten:true} : {}) } }),
   closeDocument: (sourceId) => invoke<void>("close_document", { sourceId }),

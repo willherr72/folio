@@ -44,6 +44,36 @@ Additional native tests cover leading/trailing/consecutive adjustments, dormant
 spacing, multibyte embedded fonts, split streams, shorthand text operators,
 resource bounds and refusal without source mutation.
 
+## Edit adjacent pieces together (v0.12.0)
+
+Choose **Edit text**, click a piece, then choose **Edit together…**. Select 2–8
+consecutive pieces from the nearby-text list and choose **Check selection**.
+When the check succeeds, edit the combined **Replacement text** and apply.
+`examples/Edit text together.pdf` provides split words and phrases to practice on.
+
+Membership is explicit. The pieces must use the same underlying PDF font,
+size, color and linear transform, and must join without changing any character's
+position or the page appearance. Folio checks the encoded characters as well as
+the extracted text; a generated space or silently omitted character is a reason
+to refuse the group. Identical font names alone do not establish compatibility.
+
+This first grouping stage supports the existing verified, unshaped Latin font
+subset. Tagged documents, marked content, explicit spacing, nested forms,
+intervening graphics and uncertain reading order remain unsupported for groups.
+A group cannot choose a substitute font. Fractional advances that cause even tiny
+raster differences can prevent a group from passing. Compatible rotated or transformed pieces
+can pass the same preservation proof. Longer replacements can use available space,
+subject to the existing crop and collision checks; paragraphs do not reflow.
+
+[Independent reader results](issue15-group-reader-verification.json) cover 32
+accepted group exports, with exact MuPDF text/raster and pypdf text comparisons
+to separately authored references. Native tests additionally cover embedded fonts,
+resource identity, invalid selections, refusal cases and temporary-source cleanup.
+
+Checking a selection leaves the document unchanged. Applying repeats the proof on
+a private page copy and creates one undo step. Canceling or changing the selection
+invalidates a pending check. Failed edits retain your replacement draft.
+
 ## Preservation and history
 
 The backend copies only the selected source page and edits that private copy. It never mutates a previously opened source. Applying the change creates a new one-page source; the frontend retains the workspace page identity, rotation, and annotation overlays while switching its source reference. Other pages and duplicate instances of the old source remain unchanged. Undo and redo select the retained immutable sources.

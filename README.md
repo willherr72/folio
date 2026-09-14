@@ -12,14 +12,14 @@ Extract it and open **Folio.exe**. Keep the resources folder beside the executab
 Microsoft Edge WebView2 Runtime is required.
 
 In this development checkout, double-click **Launch Folio.cmd** after building.
-Version 0.11.0 lives in **artifacts/Folio-v0.11.0/Folio.exe**.
-The ZIP is **artifacts/Folio-v0.11.0-windows-x64.zip**.
+Version 0.12.0 lives in **artifacts/Folio-v0.12.0/Folio.exe**.
+The ZIP is **artifacts/Folio-v0.12.0-windows-x64.zip**.
 
 ## Everyday editing
 
 - **Documents:** Open adds a PDF in a new top tab. Each document retains its edits,
   undo/redo history, selected page, zoom and scroll position when you switch tabs.
-- **Edit existing text:** choose **Edit text**, click an outlined run, change **Replacement text**, and apply. Verified single runs use standard Helvetica, Times and Courier or embedded TrueType fonts, including subsets. Rotation, scaling and explicit spacing are supported within the preservation checks. Longer replacements can use available space. Eligible ordinary runs can choose an explicit substitute font when a subset lacks a letter. Adjacent groups and nested forms remain unsupported. [Support details](docs/existing-text-editing.md).
+- **Edit existing text:** choose **Edit text**, click an outlined run, change **Replacement text**, and apply. Verified single runs use standard Helvetica, Times and Courier or embedded TrueType fonts, including subsets. Rotation, scaling and explicit spacing are supported within the preservation checks. Longer replacements can use available space. Eligible ordinary runs can choose an explicit substitute font when a subset lacks a letter. Choose **Edit together…** to explicitly select and verify 2–8 compatible adjacent pieces as one replacement. Nested forms remain unsupported. [Support details](docs/existing-text-editing.md).
 - **Text:** choose Text and click a page. The Content field selects the placeholder
   immediately, so typing replaces it. Choose a font and style, adjust size/color, and drag the note to move it. **More fonts…** searches installed fonts or imports a local TTF/OTF. Preview your text, then choose **Apply font**. Supported fonts are embedded so recipients do not need to install them. [Font support](docs/font-support-roadmap.md).
 - **Shaped text (v0.10.0):** enable **Shaped text** in Properties, enter a single line, then choose an exact custom font with **More fonts…**. Native previews support tested ligatures, combining marks, Arabic joining and Indic samples. Mixed direction and RTL word separators remain unsupported. [Scope and verification](docs/shaped-editor-integration.md).

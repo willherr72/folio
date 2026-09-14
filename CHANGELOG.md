@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.12.0
+
+- Add **Edit together…** for explicitly selected compatible adjacent text pieces. Check the selection, then replace the combined text in one undo step.
+- Verify actual font identity, encoded text, character positions and whole-page appearance before grouping. Refuse generated or omitted spaces, uncertain ordering, marked/tagged content and unsupported text state.
+- Preserve immutable sources, neighboring content, save/reopen and recovery through the existing replacement pipeline. Add a split-word practice PDF and native, UI and independent-reader coverage.
+- Issue #15 now includes bounded adjacent groups; isolated nested-form occurrences remain open.
+
 ## 0.11.0
 
 - Edit verified single text runs with rotation, scale, shear, horizontal scaling and text rise while preserving their affine placement.

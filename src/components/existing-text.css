@@ -22,3 +22,11 @@
 .existing-text-font-choice strong {font-weight:600;color:var(--ink);}
 .existing-text-fields .existing-text-preview {padding:14px;border-radius:6px;background:var(--panel);color:var(--ink);overflow-wrap:anywhere;}
 .existing-text-original-button {justify-self:start;border:0;padding:0;background:none;color:var(--accent);font:inherit;font-size:12px;cursor:pointer;text-decoration:underline;text-underline-offset:3px;}
+.text-group-pieces {margin:0;padding:8px;border:1px solid var(--line);border-radius:8px;max-height:250px;overflow-y:auto;min-width:0;}
+.text-group-pieces legend {padding:0 6px;color:var(--muted);font-size:12px;}
+.existing-text-fields .text-group-pieces label {display:flex;align-items:center;gap:10px;padding:9px 6px;border-radius:5px;cursor:pointer;}
+.text-group-pieces label:has(input:checked) {background:var(--control);}
+.existing-text-fields .text-group-pieces input {width:16px;height:16px;flex-shrink:0;accent-color:var(--accent);}
+.text-group-pieces span {white-space:pre-wrap;overflow-wrap:anywhere;min-width:0;}
+.text-group-pieces small {margin-left:auto;flex-shrink:0;color:var(--muted);font-size:11px;font-weight:400;}
+.text-group-check {justify-self:start;}

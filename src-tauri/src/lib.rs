@@ -29,7 +29,7 @@ pub use engine::{EngineError, EngineResult, PdfEngine};
 pub use types::{
     AnnotationRect, CommentOverlay, DocumentInfo, EditableTextRun, ExportRequest, HighlightOverlay,
     InkOverlay, Overlay, PageInfo, PagePlan, PageText, PdfTextCharacter, Point, ShapingDirection,
-    TextFont, TextOverlay, TextRuns, TextShaping,
+    TextFont, TextGroupPreview, TextOverlay, TextRuns, TextShaping,
 };
 
 pub use app::run;

@@ -1,0 +1,30 @@
+{
+  "release": "0.12.0",
+  "date": "2026-09-14",
+  "fullNativeTests": 160,
+  "nativeIgnored": 3,
+  "frontendTests": 284,
+  "frontendFiles": 50,
+  "groupReferenceCases": 32,
+  "groupRefusalCases": 4,
+  "dependencyRecords": 551,
+  "desktop": {
+    "passed": true,
+    "binarySha256": "1bf3f708a003a23cf5dbaf1e9ee408bd3f25bc406c2e931cfa9e67c6e490b31f",
+    "originalSha256": "2d75bda101fa7f0c85842f3d64ac1f9f6dde31b1c75840b44737fbbcc9ff1988",
+    "checks": [
+      "explicit three-piece selection, native proof, longer replacement and undo/redo",
+      "edited grouped source searchable",
+      "native save/reopen with original moved and unchanged",
+      "crash recovery restores unsaved grouped source with both original and saved paths unavailable"
+    ]
+  },
+  "privateSourceLifecycle": {
+    "repeatedInspections": 10,
+    "sourcesAfterInspection": 1,
+    "sourcesAfterEachFailure": 1,
+    "sourcesAfterSuccess": 2,
+    "sourcesAfterClosingBoth": 0
+  },
+  "issue15Closed": false
+}

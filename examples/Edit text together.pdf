@@ -1,0 +1,82 @@
+%PDF-1.3
+%‚„œ”
+1 0 obj
+<<
+/Producer (pypdf)
+/Title (Folio adjacent text practice)
+/Author (Folio contributors)
+>>
+endobj
+2 0 obj
+<<
+/Type /Pages
+/Count 1
+/Kids [ 4 0 R ]
+>>
+endobj
+3 0 obj
+<<
+/Type /Catalog
+/Pages 2 0 R
+>>
+endobj
+4 0 obj
+<<
+/Type /Page
+/Resources <<
+/Font <<
+/F1 5 0 R
+>>
+>>
+/MediaBox [ 0.0 0.0 612 792 ]
+/Parent 2 0 R
+/Contents 6 0 R
+>>
+endobj
+5 0 obj
+<<
+/Type /Font
+/Subtype /Type1
+/BaseFont /Helvetica
+>>
+endobj
+6 0 obj
+<<
+/Length 961
+>>
+stream
+0.12 0.16 0.20 rg
+BT /F1 25 Tf 54 730 Td (Edit words split into pieces) Tj ET
+BT /F1 12 Tf 54 702 Td (Some PDFs store one phrase as several separate pieces.) Tj ET
+BT /F1 12 Tf 54 680 Td (Choose Edit text, click a piece, then choose Edit together...) Tj ET
+BT /F1 12 Tf 54 660 Td (Select the matching pieces, check the selection, and apply your edit.) Tj ET
+BT /F1 10 Tf 54 584 Td (A WORD SPLIT ACROSS PIECES) Tj ET
+BT /F1 22 Tf 80 540 Td (In) Tj (voice) Tj ( total) Tj ET
+BT /F1 10 Tf 54 434 Td (A PHRASE SPLIT AT A SPACE) Tj ET
+BT /F1 22 Tf 80 390 Td (Annual ) Tj (report) Tj ET
+BT /F1 10 Tf 54 284 Td (THREE PIECES, ONE REPLACEMENT) Tj ET
+BT /F1 22 Tf 80 240 Td (Quarterly) Tj ( sales) Tj ( report) Tj ET
+BT /F1 11 Tf 54 124 Td (Try shorter and longer replacements, then Undo and Redo.) Tj ET
+BT /F1 11 Tf 54 104 Td (Save a copy and reopen it to search or copy the changed words.) Tj ET
+BT /F1 10 Tf 54 76 Td (Folio keeps the original file unchanged.) Tj ET
+
+endstream
+endobj
+xref
+0 7
+0000000000 65535 f 
+0000000015 00000 n 
+0000000121 00000 n 
+0000000180 00000 n 
+0000000229 00000 n 
+0000000361 00000 n 
+0000000431 00000 n 
+trailer
+<<
+/Size 7
+/Root 3 0 R
+/Info 1 0 R
+>>
+startxref
+1443
+%%EOF
