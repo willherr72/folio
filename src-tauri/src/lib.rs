@@ -16,11 +16,18 @@ pub use semantic_pdf::{
 #[cfg(feature = "shaped-text")]
 mod shaping;
 #[cfg(feature = "shaped-text")]
+mod text_area;
+#[cfg(feature = "shaped-text")]
 pub use shaped_pdf::{create_shaped_pdf, ShapedPdf};
 #[cfg(feature = "shaped-text")]
 pub use shaping::{
     shape_text, PositionedGlyph, ShapedRun, ShapedText, TextBoundary, TextBounds, TextDirection,
     TextRange,
+};
+#[cfg(feature = "shaped-text")]
+pub use text_area::{
+    layout_text_area, TextAreaAlignment, TextAreaBreak, TextAreaLayout, TextAreaLine,
+    TextAreaOverflow, TextAreaRequest,
 };
 mod types;
 pub use fonts::{FontAsset, FontInfo, FontRegistry, InstalledFont};

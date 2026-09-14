@@ -24,6 +24,10 @@ name = "shaping"
 required-features = ["shaped-text"]
 
 [[test]]
+name = "text_area"
+required-features = ["shaped-text"]
+
+[[test]]
 name = "shaping_unicode_conformance"
 required-features = ["shaped-text"]
 
@@ -41,6 +45,10 @@ required-features = ["shaped-text"]
 
 [[example]]
 name = "shaped-text-probe"
+required-features = ["shaped-text"]
+
+[[example]]
+name = "text-area-probe"
 required-features = ["shaped-text"]
 
 [build-dependencies]

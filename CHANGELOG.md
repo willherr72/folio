@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Add a development-only native Latin text-area layout API with measured wrapping, alignment, exact logical source ranges and explicit overflow. Existing desktop overlays are unchanged.
+- Add native-vector/PDFium preview comparisons and saved-reader fixtures. Preserve the observed soft-wrap newline and repeated-space copy failures as integration gates for #16; no text-area tool is enabled yet.
+
 ## 0.13.0
 
 - Edit one selected text occurrence inside a supported nested form without changing shared placements on the same or other pages.

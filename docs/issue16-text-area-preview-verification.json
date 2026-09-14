@@ -1,0 +1,364 @@
+{
+  "description": "Native vector paths versus PDFium; rasterizer tolerances unchanged.",
+  "inkTolerance": {
+    "boundsPixels": 2,
+    "centroidPixels": 1,
+    "neighborPixels": 2,
+    "unmatchedFraction": 0.005,
+    "weightedAreaFraction": 0.2,
+    "minimumDarkness": 0.05
+  },
+  "errors": [],
+  "cases": [
+    {
+      "name": "narrow-left",
+      "zoom": 150,
+      "width": 720,
+      "height": 720,
+      "pass": true,
+      "boundsDelta": 1,
+      "centroidDelta": 0.03457967955594654,
+      "weightedAreaFraction": 0.0023915637936866023,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        57,
+        60,
+        299,
+        168
+      ],
+      "expectedBounds": [
+        57,
+        60,
+        299,
+        169
+      ],
+      "actualCount": 5384,
+      "expectedCount": 5465
+    },
+    {
+      "name": "narrow-left",
+      "zoom": 300,
+      "width": 1440,
+      "height": 1440,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.034890972753686356,
+      "weightedAreaFraction": 0.0028240878941593723,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        115,
+        121,
+        599,
+        338
+      ],
+      "expectedBounds": [
+        115,
+        121,
+        599,
+        338
+      ],
+      "actualCount": 18758,
+      "expectedCount": 18873
+    },
+    {
+      "name": "wide-left",
+      "zoom": 150,
+      "width": 720,
+      "height": 720,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.10754954536912464,
+      "weightedAreaFraction": 0.0030337416379828913,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        57,
+        60,
+        662,
+        127
+      ],
+      "expectedBounds": [
+        57,
+        60,
+        662,
+        127
+      ],
+      "actualCount": 5482,
+      "expectedCount": 5530
+    },
+    {
+      "name": "wide-left",
+      "zoom": 300,
+      "width": 1440,
+      "height": 1440,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.1857163436228575,
+      "weightedAreaFraction": 0.00011679980189924375,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        115,
+        121,
+        1325,
+        254
+      ],
+      "expectedBounds": [
+        115,
+        121,
+        1325,
+        254
+      ],
+      "actualCount": 18754,
+      "expectedCount": 18893
+    },
+    {
+      "name": "narrow-center",
+      "zoom": 150,
+      "width": 720,
+      "height": 720,
+      "pass": true,
+      "boundsDelta": 1,
+      "centroidDelta": 0.016473238204952168,
+      "weightedAreaFraction": 0.0023212211114634934,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        69,
+        60,
+        311,
+        168
+      ],
+      "expectedBounds": [
+        69,
+        60,
+        311,
+        169
+      ],
+      "actualCount": 5452,
+      "expectedCount": 5523
+    },
+    {
+      "name": "narrow-center",
+      "zoom": 300,
+      "width": 1440,
+      "height": 1440,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.030003227879234373,
+      "weightedAreaFraction": 0.0027751639571676236,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        139,
+        121,
+        622,
+        338
+      ],
+      "expectedBounds": [
+        139,
+        121,
+        622,
+        338
+      ],
+      "actualCount": 18771,
+      "expectedCount": 18904
+    },
+    {
+      "name": "narrow-right",
+      "zoom": 150,
+      "width": 720,
+      "height": 720,
+      "pass": true,
+      "boundsDelta": 1,
+      "centroidDelta": 0.008666197438714107,
+      "weightedAreaFraction": 0.002483787198531712,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        81,
+        60,
+        322,
+        168
+      ],
+      "expectedBounds": [
+        81,
+        60,
+        322,
+        169
+      ],
+      "actualCount": 5422,
+      "expectedCount": 5509
+    },
+    {
+      "name": "narrow-right",
+      "zoom": 300,
+      "width": 1440,
+      "height": 1440,
+      "pass": true,
+      "boundsDelta": 1,
+      "centroidDelta": 0.03209009119370876,
+      "weightedAreaFraction": 0.002860765406165761,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        162,
+        121,
+        644,
+        338
+      ],
+      "expectedBounds": [
+        161,
+        121,
+        644,
+        338
+      ],
+      "actualCount": 18718,
+      "expectedCount": 18862
+    },
+    {
+      "name": "ligatures-off",
+      "zoom": 150,
+      "width": 720,
+      "height": 720,
+      "pass": true,
+      "boundsDelta": 1,
+      "centroidDelta": 0.048936463586613854,
+      "weightedAreaFraction": 0.0026094665388377014,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        57,
+        60,
+        299,
+        168
+      ],
+      "expectedBounds": [
+        57,
+        60,
+        299,
+        169
+      ],
+      "actualCount": 5383,
+      "expectedCount": 5473
+    },
+    {
+      "name": "ligatures-off",
+      "zoom": 300,
+      "width": 1440,
+      "height": 1440,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.04704736004981669,
+      "weightedAreaFraction": 0.0025901089958064024,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        115,
+        121,
+        599,
+        338
+      ],
+      "expectedBounds": [
+        115,
+        121,
+        599,
+        338
+      ],
+      "actualCount": 18837,
+      "expectedCount": 18946
+    },
+    {
+      "name": "hard-breaks",
+      "zoom": 150,
+      "width": 720,
+      "height": 720,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.13331001602173842,
+      "weightedAreaFraction": 0.0014852455296546566,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        58,
+        62,
+        138,
+        210
+      ],
+      "expectedBounds": [
+        58,
+        62,
+        138,
+        210
+      ],
+      "actualCount": 1846,
+      "expectedCount": 1898
+    },
+    {
+      "name": "hard-breaks",
+      "zoom": 300,
+      "width": 1440,
+      "height": 1440,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.04464659214386302,
+      "weightedAreaFraction": 0.0025397255621142385,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        117,
+        124,
+        277,
+        421
+      ],
+      "expectedBounds": [
+        117,
+        124,
+        277,
+        421
+      ],
+      "actualCount": 6407,
+      "expectedCount": 6475
+    },
+    {
+      "name": "spaces-nbsp",
+      "zoom": 150,
+      "width": 720,
+      "height": 720,
+      "pass": true,
+      "boundsDelta": 0,
+      "centroidDelta": 0.05519028070125387,
+      "weightedAreaFraction": 0.0035295448731841876,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        57,
+        64,
+        273,
+        127
+      ],
+      "expectedBounds": [
+        57,
+        64,
+        273,
+        127
+      ],
+      "actualCount": 2575,
+      "expectedCount": 2598
+    },
+    {
+      "name": "spaces-nbsp",
+      "zoom": 300,
+      "width": 1440,
+      "height": 1440,
+      "pass": true,
+      "boundsDelta": 1,
+      "centroidDelta": 0.08257915588774267,
+      "weightedAreaFraction": 0.001649988569925683,
+      "unmatchedFraction": 0,
+      "actualBounds": [
+        115,
+        129,
+        546,
+        254
+      ],
+      "expectedBounds": [
+        115,
+        128,
+        546,
+        254
+      ],
+      "actualCount": 8929,
+      "expectedCount": 8982
+    }
+  ]
+}

@@ -204,3 +204,5 @@ Shaped Content uses whole-grapheme Backspace/Delete and preserves native undo.
 [Issue #14 acceptance status](docs/issue14-status.md) records the remaining gates.
 
 Try the [positioned text practice PDF](examples/Positioned%20text%20demo.pdf) with **Edit text** to test rotation, skew and spacing. See [issue #15 status](docs/issue15-status.md) for the current scope.
+
+The [text-area layout checkpoint](docs/text-area-layout-checkpoint.md) adds a development-only native wrapping API and preview/PDF evidence for #16. It preserves source ranges and reports overflow, but reader copying still fails for soft wraps and a repeated-space case. No desktop text-area tool is enabled yet.
