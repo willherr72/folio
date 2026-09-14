@@ -8,7 +8,7 @@ For an eligible run whose subset lacks a needed character, choose **Choose subst
 
 Since v0.7.1, replacements can extend beyond the original run into available space while remaining within the visible page. Folio rejects new or expanded overlap with neighboring source text and graphics using conservative object bounds. Only a proven opaque, unstroked rectangular page fill painted behind the run is treated as a background. Images, forms and compound paths remain subject to conservative collision bounds, even when they cover the whole page. It does not reflow a paragraph or shrink the font to make an edit fit. Collision checks cover source page objects; separately placed annotations and overlays still need visual checking when expanding text.
 
-Unverified or ambiguous font mappings, embedded CFF/Type1/Type3 programs, symbolic fonts, multi-character ligatures, and invisible/stroked/clipping text are unsupported. Scans and text nested inside form objects do not produce editable runs. Documents containing optional content (PDF layers) are disabled, because copying a page can lose the catalog's visibility settings. Pages containing clipping paths, unverified custom font encodings, named pattern paints, or advanced graphics state are conservatively disabled as a whole. Explicit substitution additionally refuses marked-content/tagged text. Some remaining encoding or text-state problems can only be identified when applying the replacement; the editor reports the error and keeps the existing page.
+Unverified or ambiguous font mappings, embedded CFF/Type1/Type3 programs, symbolic fonts, multi-character ligatures, and invisible/stroked/clipping text are unsupported. Scans do not produce editable runs. Nested forms have the narrower occurrence-editing support described below. Documents containing optional content (PDF layers) are disabled, because copying a page can lose the catalog's visibility settings. Pages containing clipping paths, unverified custom font encodings, named pattern paints, or advanced graphics state are conservatively disabled as a whole. Explicit substitution additionally refuses marked-content/tagged text. Some remaining encoding or text-state problems can only be identified when applying the replacement; the editor reports the error and keeps the existing page.
 
 ## Positioned text (v0.11.0)
 
@@ -73,6 +73,39 @@ resource identity, invalid selections, refusal cases and temporary-source cleanu
 Checking a selection leaves the document unchanged. Applying repeats the proof on
 a private page copy and creates one undo step. Canceling or changing the selection
 invalidates a pending check. Failed edits retain your replacement draft.
+
+## Edit one form occurrence (v0.13.0)
+
+Some PDFs reuse one small content stream in several places. Choose **Edit text**
+and click a supported occurrence to edit it with the normal replacement dialog.
+The dialog confirms that only this occurrence changes. Folio copies the selected
+form/resource chain and redirects only that placement; other copies retain their
+original text. `examples/Edit one shared occurrence.pdf` demonstrates two shared
+placements on page 1 and another on page 2, nested two form levels deep.
+
+This first stage supports the standard Latin Type1 PDF fonts, printable ASCII
+without surrounding whitespace, positive scale/translation and a conservative
+text-only content grammar. Explicit character spacing, rotated/sheared form
+transforms, embedded/custom fonts, grouping and substitution are not supported
+inside forms. Text must fit inside the page and every ancestor form box without
+new overlap. Tagged/layered sources, source annotations/appearance streams,
+clipping, transparency, images and uncertain inherited state remain refusal cases.
+Existing top-level text, added annotations and their font features retain their
+previous behavior.
+
+An inherited leaf font resource can be preserved. An intermediate form without
+its own resource dictionary is refused: adding a dictionary there can change
+lookup semantics. The exact resource chain and invocation path identify the
+selection, even when several copies have identical text and font names.
+
+A bounded graph check runs for the new form-editing operations before native page
+copy/traversal. It refuses cycles, excessive depth/expanded work and uncertain
+inline-image parsing. Direct resource copies have cumulative byte/value limits
+checked before allocation. It does not change ordinary PDF opening or claim to harden
+all native rendering. A private validation page is flattened only for comparing
+font/text geometry; published pages keep their nested forms. Actual no-op cloning
+must preserve the full page text/geometry and raster. Changed output is reopened
+and checked before the new immutable source becomes available.
 
 ## Preservation and history
 

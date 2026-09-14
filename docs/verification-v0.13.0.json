@@ -1,0 +1,41 @@
+{
+  "release": "0.13.0",
+  "date": "2026-09-14",
+  "fullNativeTests": 186,
+  "nativeIgnored": 3,
+  "frontendTests": 290,
+  "frontendFiles": 52,
+  "formReferenceCases": 5,
+  "dependencyRecords": 551,
+  "desktop": {
+    "passed": true,
+    "binarySha256": "f630c69cd602c02790762cb3a0308be79f98fb4051321afbc9c0506ee350cc8e",
+    "originalSha256": "a6894c5da7a78524aaff0b634136eb41a0ab8cee6791c9045dc7bf4323c27d40",
+    "checks": [
+      "explicit nested occurrence, longer replacement, unchanged sibling, undo/redo",
+      "edited form source searchable",
+      "native save/reopen with original moved and unchanged",
+      "crash recovery restores unsaved form source with both original and saved paths unavailable"
+    ]
+  },
+  "savedPracticeReaders": {
+    "passed": true,
+    "changedTextBothReaders": true,
+    "unchangedSecondPageTextGlyphsRaster": true
+  },
+  "repeatedFormEdits": {
+    "closedSourcesUnavailable": true,
+    "edits": 8,
+    "objectCounts": [
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10,
+      10
+    ]
+  },
+  "issue15Closed": true
+}

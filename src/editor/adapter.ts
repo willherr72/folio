@@ -1,12 +1,14 @@
 import { cloneOverlay } from "./model";
 import { invoke } from "@tauri-apps/api/core";
-import type { DocumentInfo, PagePlan, PageText, TextRuns, TextGroupPreview } from "./types";
+import type { DocumentInfo, PagePlan, PageText, TextRuns, TextGroupPreview, FormTextRuns } from "./types";
 
 export interface FolioAdapter {
   kind: "native" | "demo";
   openPdf(): Promise<DocumentInfo | null>;
   renderPage(sourceId: string, pageIndex: number, width: number): Promise<string>;
   getPageText?(sourceId: string, pageIndex: number): Promise<PageText>;
+  listFormTextRuns?(sourceId: string, pageIndex: number): Promise<FormTextRuns>;
+  replaceFormText?(sourceId: string, pageIndex: number, objectPath: number[], expectedText: string, replacement: string): Promise<DocumentInfo>;
   listTextRuns?(sourceId: string, pageIndex: number): Promise<TextRuns>;
   inspectTextGroup?(sourceId: string, pageIndex: number, objectIndices: number[]): Promise<TextGroupPreview>;
   replaceTextGroup?(sourceId: string, pageIndex: number, objectIndices: number[], expectedText: string, replacement: string): Promise<DocumentInfo>;
@@ -37,6 +39,8 @@ export const nativeAdapter: FolioAdapter = {
     return bytesToUrl(bytes);
   },
   getPageText: (sourceId, pageIndex) => invoke<PageText>("page_text", { sourceId, pageIndex }),
+  listFormTextRuns: (sourceId, pageIndex) => invoke<FormTextRuns>("list_form_text_runs", {sourceId,pageIndex}),
+  replaceFormText: (sourceId,pageIndex,objectPath,expectedText,replacement) => invoke<DocumentInfo>("replace_form_text", {sourceId,pageIndex,objectPath,expectedText,replacement}),
   listTextRuns: (sourceId, pageIndex) => invoke<TextRuns>("list_text_runs", {sourceId,pageIndex}),
   inspectTextGroup: (sourceId, pageIndex, objectIndices) => invoke<TextGroupPreview>("inspect_text_group", {sourceId,pageIndex,objectIndices}),
   replaceTextGroup: (sourceId, pageIndex, objectIndices, expectedText, replacement) => invoke<DocumentInfo>("replace_text_group", {sourceId,pageIndex,objectIndices,expectedText,replacement}),

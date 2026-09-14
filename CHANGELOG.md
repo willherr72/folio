@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.13.0
+
+- Edit one selected text occurrence inside a supported nested form without changing shared placements on the same or other pages.
+- Preserve occurrence identity, immutable undo/redo, search, save/reopen and recovery through the existing text dialog. Add a two-page shared-occurrence practice PDF.
+- Verify resource isolation, glyph placement and page appearance before publishing an edit. Bound expanded form traversal and direct resource copies; prune unreachable private resources after repeated edits.
+- This initial subset supports standard Latin Type1 fonts, printable ASCII and verified positive scale/translation in text-only forms. Embedded fonts, complex form state, grouping and substitution remain unsupported for form occurrences.
+
 ## 0.12.0
 
 - Add **Edit together…** for explicitly selected compatible adjacent text pieces. Check the selection, then replace the combined text in one undo step.

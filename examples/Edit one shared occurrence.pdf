@@ -1,0 +1,153 @@
+%PDF-1.3
+%‚„œ”
+1 0 obj
+<<
+/Producer (pypdf)
+/Title (Folio isolated form text practice)
+/Author (Folio contributors)
+>>
+endobj
+2 0 obj
+<<
+/Type /Pages
+/Count 2
+/Kids [ 8 0 R 10 0 R ]
+>>
+endobj
+3 0 obj
+<<
+/Type /Catalog
+/Pages 2 0 R
+>>
+endobj
+4 0 obj
+<<
+/Type /Font
+/Subtype /Type1
+/BaseFont /Helvetica
+>>
+endobj
+5 0 obj
+<<
+/Type /Font
+/Subtype /Type1
+/BaseFont /Courier
+>>
+endobj
+6 0 obj
+<<
+/Type /XObject
+/Subtype /Form
+/BBox [ 0 0 260 50 ]
+/Resources <<
+/Font <<
+/F2 5 0 R
+>>
+>>
+/Length 50
+>>
+stream
+BT /F2 20 Tf 1 0 0 1 12 18 Tm (Shared words) Tj ET
+endstream
+endobj
+7 0 obj
+<<
+/Type /XObject
+/Subtype /Form
+/BBox [ 0 0 284 74 ]
+/Resources <<
+/XObject <<
+/Leaf 6 0 R
+>>
+>>
+/Length 29
+>>
+stream
+q 1 0 0 1 12 12 cm /Leaf Do Q
+endstream
+endobj
+8 0 obj
+<<
+/Type /Page
+/Resources <<
+/Font <<
+/F1 4 0 R
+>>
+/XObject <<
+/Panel 7 0 R
+>>
+>>
+/MediaBox [ 0.0 0.0 612 792 ]
+/Parent 2 0 R
+/Contents 9 0 R
+>>
+endobj
+9 0 obj
+<<
+/Length 749
+>>
+stream
+BT /F1 25 Tf 54 730 Td (Edit one shared occurrence) Tj ET
+BT /F1 12 Tf 54 700 Td (These three placements share the same nested PDF form.) Tj ET
+BT /F1 12 Tf 54 680 Td (Choose Edit text and click the first Shared words below.) Tj ET
+BT /F1 12 Tf 54 660 Td (Change it to New words. The other copies should stay unchanged.) Tj ET
+BT /F1 10 Tf 54 600 Td (FIRST OCCURRENCE - TRY EDITING THIS ONE) Tj ET
+q 1 0 0 1 68 500 cm /Panel Do Q
+BT /F1 10 Tf 54 410 Td (SECOND OCCURRENCE - SAME SHARED RESOURCE) Tj ET
+q 1 0 0 1 68 310 cm /Panel Do Q
+BT /F1 12 Tf 54 220 Td (A third placement is on page 2.) Tj ET
+BT /F1 12 Tf 54 198 Td (Try Undo and Redo, then save a copy and reopen it.) Tj ET
+BT /F1 10 Tf 54 76 Td (Folio keeps the original file unchanged.) Tj ET
+endstream
+endobj
+10 0 obj
+<<
+/Type /Page
+/Resources <<
+/Font <<
+/F1 4 0 R
+>>
+/XObject <<
+/Panel 7 0 R
+>>
+>>
+/MediaBox [ 0.0 0.0 612 792 ]
+/Parent 2 0 R
+/Contents 11 0 R
+>>
+endobj
+11 0 obj
+<<
+/Length 355
+>>
+stream
+BT /F1 25 Tf 54 730 Td (The third shared occurrence) Tj ET
+BT /F1 12 Tf 54 700 Td (Editing page 1 must leave this placement unchanged.) Tj ET
+q 1 0 0 1 68 500 cm /Panel Do Q
+BT /F1 12 Tf 54 380 Td (The visible words live two form levels below each page.) Tj ET
+BT /F1 12 Tf 54 358 Td (Folio isolates the selected placement before changing its text.) Tj ET
+endstream
+endobj
+xref
+0 12
+0000000000 65535 f 
+0000000015 00000 n 
+0000000126 00000 n 
+0000000192 00000 n 
+0000000241 00000 n 
+0000000311 00000 n 
+0000000379 00000 n 
+0000000569 00000 n 
+0000000743 00000 n 
+0000000903 00000 n 
+0000001703 00000 n 
+0000001865 00000 n 
+trailer
+<<
+/Size 12
+/Root 3 0 R
+/Info 1 0 R
+>>
+startxref
+2272
+%%EOF

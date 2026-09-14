@@ -231,3 +231,22 @@ pub struct TextGroupPreview {
     pub font_name: String,
     pub font_size: f32,
 }
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FormTextRun {
+    pub object_path: Vec<usize>,
+    pub text: String,
+    pub font_name: String,
+    pub font_size: f32,
+    pub bounds: AnnotationRect,
+    pub supported: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reason: Option<String>,
+}
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FormTextRuns {
+    pub runs: Vec<FormTextRun>,
+    pub reason: Option<String>,
+}

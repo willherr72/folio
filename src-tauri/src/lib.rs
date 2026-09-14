@@ -27,9 +27,10 @@ pub use fonts::{FontAsset, FontInfo, FontRegistry, InstalledFont};
 
 pub use engine::{EngineError, EngineResult, PdfEngine};
 pub use types::{
-    AnnotationRect, CommentOverlay, DocumentInfo, EditableTextRun, ExportRequest, HighlightOverlay,
-    InkOverlay, Overlay, PageInfo, PagePlan, PageText, PdfTextCharacter, Point, ShapingDirection,
-    TextFont, TextGroupPreview, TextOverlay, TextRuns, TextShaping,
+    AnnotationRect, CommentOverlay, DocumentInfo, EditableTextRun, ExportRequest, FormTextRun,
+    FormTextRuns, HighlightOverlay, InkOverlay, Overlay, PageInfo, PagePlan, PageText,
+    PdfTextCharacter, Point, ShapingDirection, TextFont, TextGroupPreview, TextOverlay, TextRuns,
+    TextShaping,
 };
 
 pub use app::run;
@@ -37,3 +38,5 @@ pub use app::run;
 mod recovery;
 pub use recovery::RecoveryStore;
 pub mod printing;
+
+mod form_graph;

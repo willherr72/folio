@@ -1,6 +1,6 @@
 # Issue 15 acceptance status
 
-v0.12.0 implements bounded positioned single runs and explicitly selected adjacent groups.
+v0.13.0 implements bounded positioned single runs, explicitly selected adjacent groups and isolated nested-form occurrences.
 
 - B1: Same-font single-run edits preserve explicit spacing, affine transforms and
   inherited text state through a proven native or uniquely mapped stream path.
@@ -10,9 +10,12 @@ v0.12.0 implements bounded positioned single runs and explicitly selected adjace
   merge, then apply one replacement through the immutable editing pipeline.
   No grouping is inferred from proximity or a shared font name. Exact font
   identity, encoded characters, glyph geometry and page raster are checked.
-- B3 remains open: copying resources to isolate one selected nested-form
-  occurrence. Text inside forms is still excluded; editing shared form resources
-  globally is not enabled.
+- B3: Select one supported nested-form text occurrence by its complete invocation
+  path. Clone only its resource chain, preserve other shared placements, and
+  verify the resulting page before publishing an immutable source. This first
+  subset supports standard Latin Type1 fonts, printable ASCII and positive
+  scale/translation in conservative text-only content; it does not extend all
+  page-level font and text-state support into forms.
 
 The page-level positioned route is intentionally conservative. Ambiguous operator
 mapping and relative neighbor movement remain refusal cases. Font substitution
@@ -41,3 +44,11 @@ size stabilized at 947 after the initial 938-byte output. Closed source IDs beca
 unavailable and the original file stayed unchanged. These are fixture-level
 ownership/object-growth checks, not a process working-set benchmark or an 8 GB
 hardware acceptance result.
+
+The [form reader matrix](issue15-form-reader-verification.json) compares five
+export/reference pairs with exact MuPDF text, glyph geometry and raster, plus
+pypdf text. The explicit-resource case positively copies the changed string in
+both readers. Four inherited-leaf cases preserve pypdf’s existing empty extraction;
+that equality is not evidence of successful pypdf copying. Eight repeated form
+edits retain ten PDF objects each and make closed source IDs unavailable; this is
+a fixture resource check, not a process-memory benchmark.

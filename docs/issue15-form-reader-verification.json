@@ -1,0 +1,178 @@
+{
+  "mupdf": "1.27.1",
+  "pypdf": "6.14.2",
+  "cases": 5,
+  "passed": true,
+  "results": [
+    {
+      "case": "explicit-new",
+      "exportSha256": "ccfd4d655a527262d7c92dad8a510a4c64c92d1fa5c40a05fcaa7a6b8903e3de",
+      "referenceSha256": "de553f947f0ea13f1cb29cb9d278c0d46fcd9da87babac2038b90e4b70b2dc3c",
+      "pages": [
+        {
+          "page": 0,
+          "mupdfExactText": true,
+          "mupdfExactGlyphGeometry": true,
+          "mupdfExactRaster": true,
+          "pypdfExactText": true,
+          "mupdfText": "New\nOld\n",
+          "referenceMupdfText": "New\nOld\n",
+          "pypdfText": "New\nOld",
+          "referencePypdfText": "New\nOld",
+          "mupdfRasterSha256": "f2b42a3d34041c0935aba698557a5ba24d39eb95ac93723f614baedd678d45dc",
+          "referenceMupdfRasterSha256": "f2b42a3d34041c0935aba698557a5ba24d39eb95ac93723f614baedd678d45dc"
+        },
+        {
+          "page": 1,
+          "mupdfExactText": true,
+          "mupdfExactGlyphGeometry": true,
+          "mupdfExactRaster": true,
+          "pypdfExactText": true,
+          "mupdfText": "Old\n",
+          "referenceMupdfText": "Old\n",
+          "pypdfText": "Old",
+          "referencePypdfText": "Old",
+          "mupdfRasterSha256": "af26dbc27f8d1f02cfd07eb41ee0a49e2ec252ecb2566768ff63cfafd00b5ac0",
+          "referenceMupdfRasterSha256": "af26dbc27f8d1f02cfd07eb41ee0a49e2ec252ecb2566768ff63cfafd00b5ac0"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "case": "shared-longer",
+      "exportSha256": "a1edce620050b1b7539564ddda9c67385afc3c0416b0d119a537ee65b90098af",
+      "referenceSha256": "e0a77ff54d26d6a0f5c462cb83d8f2f46e07c998ce52c84ceb67a856d6f7337f",
+      "pages": [
+        {
+          "page": 0,
+          "mupdfExactText": true,
+          "mupdfExactGlyphGeometry": true,
+          "mupdfExactRaster": true,
+          "pypdfExactText": true,
+          "mupdfText": "Longer\nOld\n",
+          "referenceMupdfText": "Longer\nOld\n",
+          "pypdfText": "",
+          "referencePypdfText": "",
+          "mupdfRasterSha256": "f17a339de5b09dded7cd008dfc80e36a06fde692d8cac0be9cb07e38b9f8c3f9",
+          "referenceMupdfRasterSha256": "f17a339de5b09dded7cd008dfc80e36a06fde692d8cac0be9cb07e38b9f8c3f9"
+        },
+        {
+          "page": 1,
+          "mupdfExactText": true,
+          "mupdfExactGlyphGeometry": true,
+          "mupdfExactRaster": true,
+          "pypdfExactText": true,
+          "mupdfText": "Old\n",
+          "referenceMupdfText": "Old\n",
+          "pypdfText": "",
+          "referencePypdfText": "",
+          "mupdfRasterSha256": "af26dbc27f8d1f02cfd07eb41ee0a49e2ec252ecb2566768ff63cfafd00b5ac0",
+          "referenceMupdfRasterSha256": "af26dbc27f8d1f02cfd07eb41ee0a49e2ec252ecb2566768ff63cfafd00b5ac0"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "case": "shared-new",
+      "exportSha256": "a85a2a1df15706715d27c931481b13ad163a0f9f9d1ddf8155aa643d741b8c99",
+      "referenceSha256": "fea83a6a7f3131d7b72f6dbc1a3f50b941e6f5a61d0af41d6ba74f6a1a18e853",
+      "pages": [
+        {
+          "page": 0,
+          "mupdfExactText": true,
+          "mupdfExactGlyphGeometry": true,
+          "mupdfExactRaster": true,
+          "pypdfExactText": true,
+          "mupdfText": "New\nOld\n",
+          "referenceMupdfText": "New\nOld\n",
+          "pypdfText": "",
+          "referencePypdfText": "",
+          "mupdfRasterSha256": "f2b42a3d34041c0935aba698557a5ba24d39eb95ac93723f614baedd678d45dc",
+          "referenceMupdfRasterSha256": "f2b42a3d34041c0935aba698557a5ba24d39eb95ac93723f614baedd678d45dc"
+        },
+        {
+          "page": 1,
+          "mupdfExactText": true,
+          "mupdfExactGlyphGeometry": true,
+          "mupdfExactRaster": true,
+          "pypdfExactText": true,
+          "mupdfText": "Old\n",
+          "referenceMupdfText": "Old\n",
+          "pypdfText": "",
+          "referencePypdfText": "",
+          "mupdfRasterSha256": "af26dbc27f8d1f02cfd07eb41ee0a49e2ec252ecb2566768ff63cfafd00b5ac0",
+          "referenceMupdfRasterSha256": "af26dbc27f8d1f02cfd07eb41ee0a49e2ec252ecb2566768ff63cfafd00b5ac0"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "case": "shared-o",
+      "exportSha256": "88275198f0e989465de969d2adab7af1f0f950f3e6962450a592a8e4e560f00a",
+      "referenceSha256": "e53cd33d04a3db310641a95b651ec4ebe0e2d7af046f36156490d3b98ae15d0c",
+      "pages": [
+        {
+          "page": 0,
+          "mupdfExactText": true,
+          "mupdfExactGlyphGeometry": true,
+          "mupdfExactRaster": true,
+          "pypdfExactText": true,
+          "mupdfText": "O\nOld\n",
+          "referenceMupdfText": "O\nOld\n",
+          "pypdfText": "",
+          "referencePypdfText": "",
+          "mupdfRasterSha256": "3de063dcb355704239197d4b987582ac28fb241ddef5829dfd1e42fd7441d8f1",
+          "referenceMupdfRasterSha256": "3de063dcb355704239197d4b987582ac28fb241ddef5829dfd1e42fd7441d8f1"
+        },
+        {
+          "page": 1,
+          "mupdfExactText": true,
+          "mupdfExactGlyphGeometry": true,
+          "mupdfExactRaster": true,
+          "pypdfExactText": true,
+          "mupdfText": "Old\n",
+          "referenceMupdfText": "Old\n",
+          "pypdfText": "",
+          "referencePypdfText": "",
+          "mupdfRasterSha256": "af26dbc27f8d1f02cfd07eb41ee0a49e2ec252ecb2566768ff63cfafd00b5ac0",
+          "referenceMupdfRasterSha256": "af26dbc27f8d1f02cfd07eb41ee0a49e2ec252ecb2566768ff63cfafd00b5ac0"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "case": "shared-old",
+      "exportSha256": "cdca0814f7faf8417637245e7e10cb6fc79ec3f321f50c1e0807ebdbc62aa3f7",
+      "referenceSha256": "fb88d08c05add636675fb86f7e21ae4f881c086c0acf31cd67882ff6c843b17b",
+      "pages": [
+        {
+          "page": 0,
+          "mupdfExactText": true,
+          "mupdfExactGlyphGeometry": true,
+          "mupdfExactRaster": true,
+          "pypdfExactText": true,
+          "mupdfText": "Old\nOld\n",
+          "referenceMupdfText": "Old\nOld\n",
+          "pypdfText": "",
+          "referencePypdfText": "",
+          "mupdfRasterSha256": "27553e78feacbc096bfdac5b3506095a7df80eefbf90f605bc41eabd08d4a6e5",
+          "referenceMupdfRasterSha256": "27553e78feacbc096bfdac5b3506095a7df80eefbf90f605bc41eabd08d4a6e5"
+        },
+        {
+          "page": 1,
+          "mupdfExactText": true,
+          "mupdfExactGlyphGeometry": true,
+          "mupdfExactRaster": true,
+          "pypdfExactText": true,
+          "mupdfText": "Old\n",
+          "referenceMupdfText": "Old\n",
+          "pypdfText": "",
+          "referencePypdfText": "",
+          "mupdfRasterSha256": "af26dbc27f8d1f02cfd07eb41ee0a49e2ec252ecb2566768ff63cfafd00b5ac0",
+          "referenceMupdfRasterSha256": "af26dbc27f8d1f02cfd07eb41ee0a49e2ec252ecb2566768ff63cfafd00b5ac0"
+        }
+      ],
+      "passed": true
+    }
+  ]
+}

@@ -83,7 +83,7 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
   const [tool, setTool] = useState<Tool>("select");
   const [pendingSignature, setPendingSignature] = useState<InkPoint[][] | null>(null);
   const [fontPicker, setFontPicker] = useState<{tabId: string; pageId: string; overlayId: string; text: string; fontId?: string; fontSize: number; shaping?: import("./editor/types").TextOverlay["shaping"]} | null>(null);
-  const [textEdit,setTextEdit] = useState<{tabId:string;page:PagePlan;run:EditableTextRun}|null>(null);
+  const [textEdit,setTextEdit] = useState<{tabId:string;page:PagePlan;run:EditableTextRun;adapter:FolioAdapter}|null>(null);
   const [textEditError,setTextEditError] = useState<string|null>(null);
   const [textGroup,setTextGroup] = useState<{tabId:string;page:PagePlan;run:EditableTextRun;adapter:FolioAdapter;runs:EditableTextRun[];loading:boolean}|null>(null);
   const [textGroupError,setTextGroupError] = useState<string|null>(null);
@@ -268,20 +268,24 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
     setHistory((value) => value ? commit(value, update) : value);
   }, [blocked, setHistory]);
   const beginTextEdit = (pageId:string, run:EditableTextRun) => {
-    if (blocked || !activeTab || !adapter.replaceText) return;
+    if (blocked || !activeTab || !(run.objectPath ? adapter.replaceFormText : adapter.replaceText)) return;
     const page = current?.pages.find(page=>page.id===pageId);
     if (!page) return;
-    setTextEdit({tabId:activeTab.id,page,run});setTextEditError(null);
+    setTextEdit({tabId:activeTab.id,page,run,adapter});setTextEditError(null);
   };
   const applyTextEdit = async (replacement:string, fontId?: string) => {
     const request=textEdit;
-    if (!request || (!request.run.supported && !(fontId && request.run.canSubstitute)) || operation.current || !adapter.replaceText) return;
-    const editingAdapter=adapter;
+    if (!request || operation.current) return;
+    const editingAdapter=request.adapter;
+    const formPath=request.run.objectPath;
+    if (formPath ? (!request.run.supported || !!fontId || !editingAdapter.replaceFormText)
+      : ((!request.run.supported && !(fontId && request.run.canSubstitute)) || !editingAdapter.replaceText)) return;
     operation.current=true;setBusy("Updating PDF text…");setTextEditError(null);
     let orphanSource:string|null=null;
     try {
       const args = [request.page.sourceId,request.page.pageIndex,request.run.objectIndex,request.run.text,replacement] as const;
-      const result=await (fontId ? editingAdapter.replaceText!(...args,fontId) : editingAdapter.replaceText!(...args));
+      const result=await (formPath ? editingAdapter.replaceFormText!(request.page.sourceId,request.page.pageIndex,[...formPath],request.run.text,replacement)
+        : fontId ? editingAdapter.replaceText!(...args,fontId) : editingAdapter.replaceText!(...args));
       const session=workspaceCurrent.current.tabs.find(tab=>tab.id===request.tabId);
       if (result.id && !workspaceCurrent.current.tabs.some(tab=>tab.sourceIds.includes(result.id))) orphanSource=result.id;
       if (!mounted.current || !session) return;
@@ -297,7 +301,7 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
     }
   };
   const beginTextGroup = async () => {
-    if(!textEdit || operation.current || !adapter.listTextRuns || !adapter.inspectTextGroup || !adapter.replaceTextGroup)return;
+    if(!textEdit || textEdit.run.objectPath || operation.current || !adapter.listTextRuns || !adapter.inspectTextGroup || !adapter.replaceTextGroup)return;
     const request={...textEdit,adapter,runs:[] as EditableTextRun[],loading:true};
     const generation=++groupGeneration.current;
     setTextGroup(request);setTextEdit(null);setTextEditError(null);setTextGroupError(null);
@@ -510,7 +514,7 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
   };
   const dialogs = <>
     {fontPicker && <FontPicker fontSize={fontPicker.fontSize} shaping={fontPicker.shaping} currentFontId={fontPicker.fontId} text={fontPicker.text} onChoose={chooseFont} onClose={() => setFontPicker(null)}/>}
-    {textEdit && <ExistingTextDialog run={textEdit.run} busy={!!busy} error={textEditError} onApply={applyTextEdit} onDraftChange={()=>setTextEditError(null)} onEditTogether={adapter.listTextRuns && adapter.inspectTextGroup && adapter.replaceTextGroup ? ()=>void beginTextGroup() : undefined} onCancel={()=>{if(!operation.current){setTextEdit(null);setTextEditError(null);}}}/> }
+    {textEdit && <ExistingTextDialog run={textEdit.run} busy={!!busy} error={textEditError} onApply={applyTextEdit} onDraftChange={()=>setTextEditError(null)} onEditTogether={!textEdit.run.objectPath && adapter.listTextRuns && adapter.inspectTextGroup && adapter.replaceTextGroup ? ()=>void beginTextGroup() : undefined} onCancel={()=>{if(!operation.current){setTextEdit(null);setTextEditError(null);}}}/> }
     {textGroup && <TextGroupDialog anchor={textGroup.run} runs={textGroup.runs} loading={textGroup.loading} busy={!!busy} error={textGroupError}
       onInspect={indices=>textGroup.adapter.inspectTextGroup!(textGroup.page.sourceId,textGroup.page.pageIndex,indices)} onApply={applyTextGroup} onDraftChange={()=>setTextGroupError(null)}
       onCancel={()=>{if(!operation.current){groupGeneration.current++;setTextGroup(null);setTextGroupError(null);}}}/>}
@@ -562,7 +566,7 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
       <div className="separator"/>
       <div className="tool-group modes">
         <button className={`tool-button ${tool === "select" ? "active" : ""}`} disabled={blocked} onClick={() => chooseTool("select")}><MousePointer2 size={17}/><span>Select</span></button>
-        <button className={`tool-button ${tool === "edit" ? "active" : ""}`} disabled={blocked || !adapter.listTextRuns || !adapter.replaceText} onClick={() => chooseTool("edit")} title="Change supported existing PDF text"><TextCursorInput size={17}/><span>Edit text</span></button>
+        <button className={`tool-button ${tool === "edit" ? "active" : ""}`} disabled={blocked || !((adapter.listTextRuns && adapter.replaceText) || (adapter.listFormTextRuns && adapter.replaceFormText))} onClick={() => chooseTool("edit")} title="Change supported existing PDF text"><TextCursorInput size={17}/><span>Edit text</span></button>
         <button className={`tool-button ${tool === "text" ? "active" : ""}`} disabled={blocked} onClick={() => chooseTool("text")}><Type size={17}/><span>Text</span></button>
         <button className={`tool-button ${tool === "draw" ? "active" : ""}`} disabled={blocked} onClick={() => chooseTool("draw")}><Pencil size={17}/><span>Draw</span></button>
         <button className={`tool-button ${tool === "signature" ? "active" : ""}`} disabled={blocked} onClick={() => chooseTool("signature")}><PenLine size={17}/><span>Signature</span></button>

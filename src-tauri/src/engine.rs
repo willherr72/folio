@@ -98,6 +98,38 @@ impl PdfEngine {
         })?;
         receive.recv().map_err(|_| EngineError::WorkerStopped)?
     }
+    pub fn list_form_text_runs(
+        &self,
+        source_id: &str,
+        page_index: usize,
+    ) -> EngineResult<FormTextRuns> {
+        let (reply, receive) = mpsc::channel();
+        self.send(WorkerRequest::ListFormTextRuns {
+            source_id: source_id.into(),
+            page_index,
+            reply,
+        })?;
+        receive.recv().map_err(|_| EngineError::WorkerStopped)?
+    }
+    pub fn replace_form_text(
+        &self,
+        source_id: &str,
+        page_index: usize,
+        object_path: &[usize],
+        expected_text: &str,
+        replacement: &str,
+    ) -> EngineResult<DocumentInfo> {
+        let (reply, receive) = mpsc::channel();
+        self.send(WorkerRequest::ReplaceFormText {
+            source_id: source_id.into(),
+            page_index,
+            object_path: object_path.to_vec(),
+            expected_text: expected_text.into(),
+            replacement: replacement.into(),
+            reply,
+        })?;
+        receive.recv().map_err(|_| EngineError::WorkerStopped)?
+    }
     pub fn list_text_runs(&self, source_id: &str, page_index: usize) -> EngineResult<TextRuns> {
         let (reply, receive) = mpsc::channel();
         self.send(WorkerRequest::ListTextRuns {
@@ -330,6 +362,19 @@ fn start_worker(engine_path: PathBuf) -> Result<PdfEngine, String> {
 }
 
 enum WorkerRequest {
+    ListFormTextRuns {
+        source_id: String,
+        page_index: usize,
+        reply: mpsc::Sender<EngineResult<FormTextRuns>>,
+    },
+    ReplaceFormText {
+        source_id: String,
+        page_index: usize,
+        object_path: Vec<usize>,
+        expected_text: String,
+        replacement: String,
+        reply: mpsc::Sender<EngineResult<DocumentInfo>>,
+    },
     InspectTextGroup {
         source_id: String,
         page_index: usize,
@@ -501,6 +546,29 @@ impl WorkerRuntime {
     fn run(&mut self, receiver: mpsc::Receiver<WorkerRequest>) {
         while let Ok(request) = receiver.recv() {
             match request {
+                WorkerRequest::ListFormTextRuns {
+                    source_id,
+                    page_index,
+                    reply,
+                } => {
+                    let _ = reply.send(self.list_form_text_runs(&source_id, page_index));
+                }
+                WorkerRequest::ReplaceFormText {
+                    source_id,
+                    page_index,
+                    object_path,
+                    expected_text,
+                    replacement,
+                    reply,
+                } => {
+                    let _ = reply.send(self.replace_form_text(
+                        &source_id,
+                        page_index,
+                        &object_path,
+                        &expected_text,
+                        &replacement,
+                    ));
+                }
                 WorkerRequest::InspectTextGroup {
                     source_id,
                     page_index,

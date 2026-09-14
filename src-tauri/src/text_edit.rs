@@ -991,3 +991,6 @@ impl WorkerRuntime {
         Ok(DocumentInfo { id, name, pages })
     }
 }
+
+#[path = "form_text.rs"]
+mod form_text;

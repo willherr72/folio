@@ -345,6 +345,8 @@ pub fn run() {
             render_page,
             page_text,
             list_text_runs,
+            list_form_text_runs,
+            replace_form_text,
             replace_text,
             inspect_text_group,
             replace_text_group,
@@ -365,4 +367,35 @@ pub fn run() {
             .set_level(rfd::MessageLevel::Error)
             .show();
     }
+}
+
+#[tauri::command]
+async fn list_form_text_runs(
+    engine: State<'_, PdfEngine>,
+    source_id: String,
+    page_index: usize,
+) -> Result<crate::FormTextRuns, String> {
+    let engine = engine.inner().clone();
+    on_worker(move || engine.list_form_text_runs(&source_id, page_index)).await
+}
+#[tauri::command]
+async fn replace_form_text(
+    engine: State<'_, PdfEngine>,
+    source_id: String,
+    page_index: usize,
+    object_path: Vec<usize>,
+    expected_text: String,
+    replacement: String,
+) -> Result<DocumentInfo, String> {
+    let engine = engine.inner().clone();
+    on_worker(move || {
+        engine.replace_form_text(
+            &source_id,
+            page_index,
+            &object_path,
+            &expected_text,
+            &replacement,
+        )
+    })
+    .await
 }

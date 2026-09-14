@@ -33,6 +33,8 @@ export interface AnnotationRect { x: number; y: number; width: number; height: n
 /** Existing page-content text; bounds include crop and intrinsic page rotation. */
 export interface EditableTextRun {
   objectIndex: number;
+  /** Complete occurrence identity for text inside nested form objects. */
+  objectPath?: number[];
   text: string;
   fontName: string;
   fontSize: number;
@@ -42,6 +44,8 @@ export interface EditableTextRun {
   canSubstitute?: boolean;
   reason?: string;
 }
+export interface FormTextRun extends Omit<EditableTextRun, "objectIndex" | "objectPath" | "canSubstitute"> { objectPath: number[] }
+export interface FormTextRuns { runs: FormTextRun[]; reason?: string }
 export interface TextRuns { runs: EditableTextRun[]; reason?: string }
 export interface TextGroupPreview { objectIndices: number[]; text: string; fontName: string; fontSize: number }
 export interface HighlightOverlay {

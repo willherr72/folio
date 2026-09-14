@@ -1,0 +1,21 @@
+# Isolated form text occurrences — issue15 B3
+
+## Behavior
+
+Selecting existing text inside a supported nested form opens the existing text dialog. Show that only this occurrence changes. Retain one immutable undo step, duplicate-page isolation, original-file protection, search/copy, export/reopen and recovery. No grouping or font substitution for form text in this first bounded stage. Existing top-level editing remains unchanged.
+
+## Identity and native architecture
+
+Use a stable objectPath of page-object and nested form-child indices, minimum two indices and bounded depth. Identity is captured with source ID and page index; expected text is revalidated. Never use the shared XObject resource ID alone. Add list_form_text_runs(source_id,page_index) -> FormTextRuns {runs,reason}; each FormTextRun has object_path,text,font_name,font_size,bounds,supported,reason. Add replace_form_text(source_id,page_index,object_path,expected_text,replacement) -> DocumentInfo.
+
+Before the new editing APIs load or copy a native page, traverse a bounded resource graph, cap decoded bytes/operator count/depth/object visits, and reject cycles. This guard is scoped to form discovery/editing; it does not change ordinary opening or claim to harden the general PDF renderer. Inline images and uncertain parser recovery are refused by the new editor. Map each form invocation and text-show operator uniquely. Clone the private selected page and every affected form/resource dictionary on the selected occurrence chain, then repoint only the selected invocation with a collision-free resource name. Shared forms in other placements/pages remain untouched. Do not insert borrowed PDFium child objects into a page. Use original-font encoded stream replacement and existing positive font proofs where applicable. A synthetic leaf page may establish those proofs, but it must preserve or explicitly reject inherited state. Preserve effective inherited resources, all ancestor transforms and form bounding boxes. Restrict the first stage to standard Latin Type1 PDF fonts, positive axis-aligned scale/translation and a verified text-only grammar. Embedded fonts, rotated/sheared forms and absent intermediate resource dictionaries remain refused; inherited leaf resources are admitted only when their absence and lookup are preserved. Use proved encoding and placement; unsupported cases return a specific refusal.
+
+No-op isolation must preserve full-page glyph text/geometry and raster. Applying compares selected text/style/placement, all unselected text occurrences and pixels outside changed bounds; enforce page crop, ancestor form boxes and conservative collisions. Save/reopen output before publishing a single new immutable source. All scratch documents are private and released after inspection/failure. Source paths and bytes remain protected. Reject tagged/marked content, optional content, uncertain clip/blend/transparency, singular transforms, ambiguous mappings and excessively deep/cyclic graphs. Narrow admission when evidence requires; never weaken preservation checks to make a fixture pass.
+
+## Frontend
+
+Optional adapter listFormTextRuns and replaceFormText commands. ExistingTextLayer combines top-level and form results, keys forms by complete path, and retains source/adapter cancellation guards. EditableTextRun gains optional objectPath for UI routing. App captures the selected path/source/page/tab and uses existing commit/orphan cleanup. Form runs disable group/substitution flows. No extra user settings or automatic shared-occurrence editing.
+
+## Acceptance
+
+Shared form twice on one page and once on another: change only selected occurrence. Two nested levels, inherited resources and different transforms. Short/equal/long/no-op; fit/collision refusals; standard and verified embedded fonts or an explicit narrower supported subset. Resource alias collisions, stale paths/text, cycles/depth/decoded-byte bounds, clip/blend/tag refusals. Whole-page native and independent-reader reference checks, source ownership/object-growth evidence, focused UI lifecycle tests, full regression and packaged Windows edit/undo/search/save/reopen/recovery. Include a practice PDF. Close B3 only to the extent the declared bounded contract is met; retain explicit refusals and unrelated #14/#10/#16 work.

@@ -47,7 +47,8 @@ export function ExistingTextDialog({ run, busy, error, onApply, onCancel, onDraf
       void pending.catch(() => {}).finally(() => { if (applying.current === pending) applying.current = null; });
     }
   };
-  const editable = run.supported || !!run.canSubstitute;
+  const canSubstitute = !run.objectPath && run.canSubstitute;
+  const editable = run.supported || !!canSubstitute;
   const [pasteError, setPasteError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const hintId = useId();
@@ -56,7 +57,7 @@ export function ExistingTextDialog({ run, busy, error, onApply, onCancel, onDraf
   const invalid = !replacement.trim() ? "Enter replacement text."
     : /[\u0000-\u001f\u007f-\u009f]/.test(replacement) ? "Use a single line without control characters."
     : replacement.length > 1000 ? "Use at most 1,000 characters." : font ? customTextError(font, replacement) : null;
-  const canApply = (run.supported || (!!run.canSubstitute && !!font)) && !busy && !invalid && (replacement !== run.text || !!font);
+  const canApply = (run.supported || (!!canSubstitute && !!font)) && !busy && !invalid && (replacement !== run.text || !!font);
   const message = pasteError ?? error ?? (replacement !== run.text ? invalid : null);
   const cancel = () => { if (!busy) onCancel(); };
   if (pickerOpen) return <FontPicker text={replacement} currentFontId={font?.id} title="Choose a substitute font" description="Preview a font for this replacement. Your PDF changes only when you apply the text edit." onChoose={chooseFont} onClose={()=>setPickerOpen(false)}/>;
@@ -64,6 +65,7 @@ export function ExistingTextDialog({ run, busy, error, onApply, onCancel, onDraf
     <form aria-busy={busy} onSubmit={event => { event.preventDefault(); submit(); }}>
       <div className="existing-text-fields">
         <p className="existing-text-font">{run.fontName} · {Number(run.fontSize.toFixed(2))} pt</p>
+        {run.objectPath && <p>Only this occurrence will change. Other copies of this text stay as they are.</p>}
         {editable ? <>
           <label>Replacement text<input ref={inputRef} type="text" value={replacement} maxLength={1000} readOnly={busy}
             aria-describedby={`${hintId}${message ? ` ${errorId}` : ""}`} aria-invalid={!!message}
@@ -73,7 +75,7 @@ export function ExistingTextDialog({ run, busy, error, onApply, onCancel, onDraf
           <p id={hintId}>Longer text can extend into available space at the same size and position. Folio checks page edges and nearby source text and graphics; the page does not reflow.</p>
         </> : <><p className="existing-text-original">{run.text}</p><p>{run.reason ?? "This text cannot be edited safely with its original font and layout."}</p></>}
         {run.isEmbedded && <p>The embedded font may contain only some characters.</p>}
-        {run.canSubstitute && <div className="existing-text-font-choice">
+        {canSubstitute && <div className="existing-text-font-choice">
           <div><span>Replacement font</span><strong>{font?.name ?? "Original PDF font"}</strong></div>
           <button type="button" className="button" disabled={busy} onClick={()=>setPickerOpen(true)}>Choose substitute font…</button>
           {font && <>
@@ -84,7 +86,7 @@ export function ExistingTextDialog({ run, busy, error, onApply, onCancel, onDraf
         {message && <p id={errorId} className="existing-text-error" role="alert">{message}</p>}
       </div>
       <footer className="dialog-actions">
-        {onEditTogether && <button type="button" className="button" disabled={busy} onClick={onEditTogether}>Edit together…</button>}
+        {onEditTogether && !run.objectPath && <button type="button" className="button" disabled={busy} onClick={onEditTogether}>Edit together…</button>}
         <button type="button" className="button" disabled={busy} onClick={cancel}>Cancel</button>
         {editable && <button type="submit" className="button primary" disabled={!canApply}>{busy ? "Applying…" : "Apply changes"}</button>}
       </footer>
