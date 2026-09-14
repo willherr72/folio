@@ -1,0 +1,82 @@
+%PDF-1.3
+%‚„œ”
+1 0 obj
+<<
+/Producer (pypdf)
+/Title (Folio positioned text practice)
+/Author (Folio contributors)
+>>
+endobj
+2 0 obj
+<<
+/Type /Pages
+/Count 1
+/Kids [ 4 0 R ]
+>>
+endobj
+3 0 obj
+<<
+/Type /Catalog
+/Pages 2 0 R
+>>
+endobj
+4 0 obj
+<<
+/Type /Page
+/Resources <<
+/Font <<
+/F1 5 0 R
+>>
+>>
+/MediaBox [ 0.0 0.0 612 792 ]
+/Parent 2 0 R
+/Contents 6 0 R
+>>
+endobj
+5 0 obj
+<<
+/Type /Font
+/Subtype /Type1
+/BaseFont /Helvetica
+>>
+endobj
+6 0 obj
+<<
+/Length 961
+>>
+stream
+0.12 0.16 0.20 rg
+BT /F1 26 Tf 54 730 Td (Try editing positioned text) Tj ET
+BT /F1 12 Tf 54 701 Td (Choose Edit text, click a sample below, and replace its words.) Tj ET
+BT /F1 12 Tf 54 682 Td (Try a shorter phrase, then a longer one. Undo and redo each edit.) Tj ET
+BT /F1 10 Tf 54 631 Td (ROTATED BASELINE) Tj ET
+q BT /F1 18 Tf 0.9659258 0.258819 -0.258819 0.9659258 80 568 Tm (Rotated words) Tj ET Q
+BT /F1 10 Tf 54 499 Td (SKEW AND HORIZONTAL SCALE) Tj ET
+q BT /F1 18 Tf 1.1 0 0.25 1 80 458 Tm (Skewed words) Tj ET Q
+BT /F1 10 Tf 54 389 Td (CHARACTER AND WORD SPACING) Tj ET
+q BT /F1 18 Tf 0.7 Tc 2 Tw 80 348 Td (Spaced words) Tj ET Q
+BT /F1 10 Tf 54 279 Td (EXPLICIT CHARACTER POSITIONING) Tj ET
+q BT /F1 18 Tf 80 238 Td [(Positioned) 40 ( words)] TJ ET Q
+BT /F1 11 Tf 54 120 Td (Save a copy, reopen it, and try searching or copying your new text.) Tj ET
+BT /F1 10 Tf 54 100 Td (Folio preserves the original file. Text will not automatically wrap.) Tj ET
+
+endstream
+endobj
+xref
+0 7
+0000000000 65535 f 
+0000000015 00000 n 
+0000000123 00000 n 
+0000000182 00000 n 
+0000000231 00000 n 
+0000000363 00000 n 
+0000000433 00000 n 
+trailer
+<<
+/Size 7
+/Root 3 0 R
+/Info 1 0 R
+>>
+startxref
+1445
+%%EOF

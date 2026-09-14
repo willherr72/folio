@@ -446,11 +446,11 @@ fn unsupported_layouts_fonts_and_invalid_replacements_leave_source_unchanged() {
         ("CustomFont", "BT /F1 16 Tf 60 300 Td (Original) Tj ET"),
         (
             "Helvetica",
-            "BT /F1 16 Tf 60 300 Td [(Orig) 150 (inal)] TJ ET",
+            "BT /F1 16 Tf 0 0 0 1 60 300 Tm (Original) Tj ET",
         ),
         (
             "Helvetica",
-            "BT /F1 16 Tf 1 0.2 0 1 60 300 Tm (Original) Tj ET",
+            "BT /F1 16 Tf 1000 0.2 0 1 60 300 Tm (Original) Tj ET",
         ),
         ("Helvetica", "BT /F1 16 Tf 3 Tr 60 300 Td (Original) Tj ET"),
         (
@@ -832,7 +832,7 @@ fn replacement_fit_depends_on_glyph_width_and_preserves_text_state_or_rejects_it
         let changed = engine.replace_text(&source.id, 0, 0, old, new);
         assert_eq!(
             changed.is_ok(),
-            !matches!(index, 2 | 3),
+            true,
             "text state fixture {index}: {changed:?}"
         );
         if let Ok(changed) = changed {
@@ -841,5 +841,411 @@ fn replacement_fit_depends_on_glyph_width_and_preserves_text_state_or_rejects_it
         }
         assert_eq!(engine.source_bytes(&source.id).unwrap(), bytes);
         engine.close_document(&source.id).unwrap();
+    }
+}
+
+#[test]
+fn positioned_single_runs_preserve_text_state_and_affine_transforms() {
+    let temp = tempfile::tempdir().unwrap();
+    let engine = engine();
+    let mut failures = Vec::new();
+    for (name, state, matrix, show) in [
+        (
+            "rotation",
+            "",
+            "0.8660254 0.5 -0.5 0.8660254 90 180",
+            "(Old words) Tj",
+        ),
+        ("scale", "", "1.2 0 0 0.8 70 250", "(Old words) Tj"),
+        ("shear", "", "1 0.2 0.15 1 70 250", "(Old words) Tj"),
+        (
+            "horizontal-scale",
+            "75 Tz",
+            "1 0 0 1 70 250",
+            "(Old words) Tj",
+        ),
+        ("rise", "6 Ts", "1 0 0 1 70 250", "(Old words) Tj"),
+        (
+            "character-spacing",
+            "0.5 Tc",
+            "1 0 0 1 70 250",
+            "(Old words) Tj",
+        ),
+        ("word-spacing", "2 Tw", "1 0 0 1 70 250", "(Old words) Tj"),
+        (
+            "negative-spacing",
+            "-0.3 Tc",
+            "1 0 0 1 70 250",
+            "(Old words) Tj",
+        ),
+        ("tj", "", "1 0 0 1 70 250", "[(Old) 35 ( words)] TJ"),
+    ] {
+        for rotation in [0, 90, 180, 270] {
+            let path = temp.path().join(format!("{name}-{rotation}.pdf"));
+            fixture(&path, "Helvetica", &format!("q BT /F1 12 Tf {state} {matrix} Tm {show} ET Q BT /F1 12 Tf 70 110 Td (Neighbor) Tj ET"), rotation);
+            let source = engine.open_document(&path).unwrap();
+            let original = engine.source_bytes(&source.id).unwrap();
+            let runs = engine.list_text_runs(&source.id, 0).unwrap();
+            let run = &runs.runs[0];
+            for replacement in [run.text.as_str(), "New words", "More new words", "Hi"] {
+                match engine.replace_text(&source.id, 0, run.object_index, &run.text, replacement) {
+                    Ok(edited) => {
+                        let reference_path = temp.path().join("reference.pdf");
+                        let reference_show = if name == "tj" && replacement.len() > 3 {
+                            format!("[({}) 35 ({})] TJ", &replacement[..3], &replacement[3..])
+                        } else {
+                            format!("({replacement}) Tj")
+                        };
+                        fixture(&reference_path,"Helvetica",&format!("q BT /F1 12 Tf {state} {matrix} Tm {reference_show} ET Q BT /F1 12 Tf 70 110 Td (Neighbor) Tj ET"),rotation);
+                        let reference = engine.open_document(&reference_path).unwrap();
+                        assert_eq!(
+                            engine.render_page(&edited.id, 0, 600).unwrap(),
+                            engine.render_page(&reference.id, 0, 600).unwrap(),
+                            "{name}/{rotation}/{replacement} raster"
+                        );
+                        let actual_text = engine.page_text(&edited.id, 0).unwrap();
+                        let reference_text = engine.page_text(&reference.id, 0).unwrap();
+                        assert_eq!(
+                            serde_json::to_value(actual_text).unwrap(),
+                            serde_json::to_value(reference_text).unwrap(),
+                            "{name}/{rotation}/{replacement} geometry"
+                        );
+                        let exported = temp.path().join("exported.pdf");
+                        engine.export_pdf(plan(&edited), &exported).unwrap();
+                        let reopened = engine.open_document(&exported).unwrap();
+                        assert_eq!(
+                            engine.render_page(&reopened.id, 0, 600).unwrap(),
+                            engine.render_page(&reference.id, 0, 600).unwrap()
+                        );
+                        if let Some(root) = std::env::var_os("FOLIO_POSITIONED_ARTIFACTS") {
+                            let root = PathBuf::from(root);
+                            std::fs::create_dir_all(&root).unwrap();
+                            let case =
+                                format!("{name}-{rotation}-{}", replacement.replace(' ', "_"));
+                            std::fs::copy(&path, root.join(format!("{case}-original.pdf")))
+                                .unwrap();
+                            std::fs::copy(
+                                &reference_path,
+                                root.join(format!("{case}-reference.pdf")),
+                            )
+                            .unwrap();
+                            std::fs::copy(&exported, root.join(format!("{case}-exported.pdf")))
+                                .unwrap();
+                        }
+                        engine.close_document(&reopened.id).unwrap();
+                        engine.close_document(&reference.id).unwrap();
+                        let after = engine.list_text_runs(&edited.id, 0).unwrap();
+                        assert_eq!(after.runs[0].text, replacement, "{name}");
+                        assert_eq!(after.runs[1].text, "Neighbor");
+                        assert_eq!(after.runs[1].bounds, runs.runs[1].bounds);
+                        assert_eq!(engine.source_bytes(&source.id).unwrap(), original);
+                        engine.close_document(&edited.id).unwrap();
+                    }
+                    Err(e) => failures.push(format!("{name}/{rotation}/{replacement}: {e}")),
+                }
+            }
+            engine.close_document(&source.id).unwrap();
+        }
+    }
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+}
+
+#[test]
+fn adjacent_relative_shows_keep_legacy_neighbor_positions() {
+    let temp = tempfile::tempdir().unwrap();
+    let engine = engine();
+    let path = temp.path().join("relative.pdf");
+    fixture(
+        &path,
+        "Helvetica",
+        "BT /F1 12 Tf 60 300 Td (WWWW) Tj (Neighbor) Tj ET",
+        0,
+    );
+    let source = engine.open_document(&path).unwrap();
+    let before = engine.list_text_runs(&source.id, 0).unwrap();
+    let changed = engine
+        .replace_text(
+            &source.id,
+            0,
+            before.runs[0].object_index,
+            &before.runs[0].text,
+            "WWWM",
+        )
+        .unwrap();
+    let after = engine.list_text_runs(&changed.id, 0).unwrap();
+    assert_eq!(after.runs[1].bounds, before.runs[1].bounds);
+    assert_eq!(after.runs[1].text, before.runs[1].text);
+}
+
+#[test]
+fn explicit_gaps_keep_their_character_slots_for_shorter_and_longer_text() {
+    let temp = tempfile::tempdir().unwrap();
+    let engine = engine();
+    for (replacement, expected) in [
+        ("WWWW", "[25 (WW) -20 10 (WW) 45] TJ"),
+        ("iiiiii", "[25 (ii) -20 10 (ii) 45 (ii)] TJ"),
+        ("i", "[25 (i)] TJ"),
+        ("ii", "[25 (ii)] TJ"),
+    ] {
+        let path = temp.path().join("gaps.pdf");
+        let stream = "BT /F1 12 Tf 1 0.2 0.1 1 70 250 Tm [25 (WW) -20 10 (WW) 45] TJ ET";
+        fixture(&path, "Helvetica", stream, 0);
+        let source = engine.open_document(&path).unwrap();
+        let run = engine.list_text_runs(&source.id, 0).unwrap().runs.remove(0);
+        let edited = engine
+            .replace_text(&source.id, 0, run.object_index, "WWWW", replacement)
+            .unwrap();
+        let reference_path = temp.path().join("reference.pdf");
+        fixture(
+            &reference_path,
+            "Helvetica",
+            &format!("BT /F1 12 Tf 1 0.2 0.1 1 70 250 Tm {expected} ET"),
+            0,
+        );
+        let reference = engine.open_document(&reference_path).unwrap();
+        assert_eq!(
+            engine.render_page(&edited.id, 0, 600).unwrap(),
+            engine.render_page(&reference.id, 0, 600).unwrap()
+        );
+        assert_eq!(
+            serde_json::to_value(engine.page_text(&edited.id, 0).unwrap()).unwrap(),
+            serde_json::to_value(engine.page_text(&reference.id, 0).unwrap()).unwrap()
+        );
+        for id in [source.id, edited.id, reference.id] {
+            engine.close_document(&id).unwrap();
+        }
+    }
+}
+
+#[test]
+fn replacement_preserves_text_state_not_visible_in_the_original_string() {
+    let temp = tempfile::tempdir().unwrap();
+    let engine = engine();
+    for (name, original, replacement, expected) in [
+        (
+            "dormant-character-space",
+            "2 Tc (W) Tj",
+            "WWW",
+            "2 Tc (WWW) Tj",
+        ),
+        (
+            "dormant-word-space",
+            "5 Tw (Old) Tj",
+            "New words",
+            "5 Tw (New words) Tj",
+        ),
+        (
+            "dormant-trailing-gap",
+            "[(W) 100] TJ",
+            "WW",
+            "[(W) 100 (W)] TJ",
+        ),
+    ] {
+        let path = temp.path().join(format!("{name}.pdf"));
+        fixture(
+            &path,
+            "Helvetica",
+            &format!("BT /F1 12 Tf 70 250 Td {original} ET"),
+            0,
+        );
+        let source = engine.open_document(&path).unwrap();
+        let run = engine.list_text_runs(&source.id, 0).unwrap().runs.remove(0);
+        let edited = engine
+            .replace_text(&source.id, 0, run.object_index, &run.text, replacement)
+            .unwrap();
+        let reference_path = temp.path().join("reference.pdf");
+        fixture(
+            &reference_path,
+            "Helvetica",
+            &format!("BT /F1 12 Tf 70 250 Td {expected} ET"),
+            0,
+        );
+        let reference = engine.open_document(&reference_path).unwrap();
+        let actual = engine.page_text(&edited.id, 0).unwrap();
+        let control = engine.page_text(&reference.id, 0).unwrap();
+        assert_eq!(
+            serde_json::to_value(actual).unwrap(),
+            serde_json::to_value(control).unwrap(),
+            "{name}"
+        );
+        assert_eq!(
+            engine.render_page(&edited.id, 0, 600).unwrap(),
+            engine.render_page(&reference.id, 0, 600).unwrap(),
+            "{name}"
+        );
+        for id in [source.id, edited.id, reference.id] {
+            engine.close_document(&id).unwrap();
+        }
+    }
+}
+
+#[test]
+fn positioned_shorthand_split_streams_and_relative_neighbor_refusal() {
+    let temp = tempfile::tempdir().unwrap();
+    let engine = engine();
+    for (name, stream, old, replacement, allowed) in [
+        (
+            "quote",
+            "BT /F1 12 Tf 20 TL 70 270 Td 2 0.5 (Old words) \" ET",
+            "Old words",
+            "New words",
+            true,
+        ),
+        (
+            "relative",
+            "BT /F1 12 Tf 0.2 Tc 70 250 Td (WWWW) Tj (Neighbor) Tj ET",
+            "WWWW",
+            "WMWM",
+            false,
+        ),
+        (
+            "overflow",
+            "BT /F1 12 Tf 0 1 -1 0 70 330 Tm (Hi) Tj ET",
+            "Hi",
+            "This replacement extends outside",
+            false,
+        ),
+    ] {
+        let path = temp.path().join(format!("{name}.pdf"));
+        fixture(&path, "Helvetica", stream, 0);
+        let source = engine.open_document(&path).unwrap();
+        let bytes = engine.source_bytes(&source.id).unwrap();
+        let run = engine
+            .list_text_runs(&source.id, 0)
+            .unwrap()
+            .runs
+            .into_iter()
+            .find(|r| r.text == old)
+            .unwrap();
+        let edited = engine.replace_text(&source.id, 0, run.object_index, old, replacement);
+        assert_eq!(edited.is_ok(), allowed, "{name}: {edited:?}");
+        if let Ok(edited) = edited {
+            let reference_path = temp.path().join("reference.pdf");
+            fixture(
+                &reference_path,
+                "Helvetica",
+                &stream.replace(old, replacement),
+                0,
+            );
+            let reference = engine.open_document(&reference_path).unwrap();
+            assert_eq!(
+                engine.render_page(&edited.id, 0, 600).unwrap(),
+                engine.render_page(&reference.id, 0, 600).unwrap()
+            );
+            engine.close_document(&reference.id).unwrap();
+            engine.close_document(&edited.id).unwrap();
+        }
+        assert_eq!(engine.source_bytes(&source.id).unwrap(), bytes);
+        engine.close_document(&source.id).unwrap();
+    }
+    let path = temp.path().join("split.pdf");
+    fixture(&path, "Helvetica", "", 0);
+    let mut pdf = lopdf::Document::load(&path).unwrap();
+    let page = *pdf.get_pages().values().next().unwrap();
+    let a = pdf.add_object(lopdf::Stream::new(
+        lopdf::dictionary! {},
+        b"BT /F1 12 Tf 0.5 Tc 70 250 Td ".to_vec(),
+    ));
+    let b = pdf.add_object(lopdf::Stream::new(
+        lopdf::dictionary! {},
+        b"(Old words) Tj ET".to_vec(),
+    ));
+    pdf.get_dictionary_mut(page).unwrap().set(
+        "Contents",
+        vec![lopdf::Object::Reference(a), lopdf::Object::Reference(b)],
+    );
+    pdf.save(&path).unwrap();
+    let source = engine.open_document(&path).unwrap();
+    let edited = engine
+        .replace_text(&source.id, 0, 0, "Old words", "New words")
+        .unwrap();
+    let reference_path = temp.path().join("reference.pdf");
+    fixture(
+        &reference_path,
+        "Helvetica",
+        "BT /F1 12 Tf 0.5 Tc 70 250 Td (New words) Tj ET",
+        0,
+    );
+    let reference = engine.open_document(&reference_path).unwrap();
+    assert_eq!(
+        engine.render_page(&edited.id, 0, 600).unwrap(),
+        engine.render_page(&reference.id, 0, 600).unwrap()
+    );
+}
+
+#[test]
+fn ambiguous_positioned_operators_and_deep_state_leave_source_unchanged() {
+    let temp = tempfile::tempdir().unwrap();
+    let engine = engine();
+    for (name, stream) in [
+        (
+            "empty-show",
+            "BT /F1 12 Tf 0.5 Tc 70 250 Td (Old) Tj () Tj ET".to_string(),
+        ),
+        (
+            "deep-state",
+            format!(
+                "{} BT /F1 12 Tf 0.5 Tc 70 250 Td (Old) Tj ET {}",
+                "q ".repeat(65),
+                "Q ".repeat(65)
+            ),
+        ),
+    ] {
+        let path = temp.path().join(format!("{name}.pdf"));
+        fixture(&path, "Helvetica", &stream, 0);
+        let source = engine.open_document(&path).unwrap();
+        let bytes = engine.source_bytes(&source.id).unwrap();
+        let error = engine
+            .replace_text(&source.id, 0, 0, "Old", "New")
+            .unwrap_err();
+        assert!(
+            error.to_string().contains("mapped uniquely") || error.to_string().contains("nesting"),
+            "{name}: {error}"
+        );
+        assert_eq!(engine.source_bytes(&source.id).unwrap(), bytes);
+        assert_eq!(std::fs::read(&path).unwrap().as_slice(), bytes.as_ref());
+    }
+}
+
+#[test]
+fn repeated_positioned_edits_bound_pdf_objects_and_release_old_sources() {
+    let temp = tempfile::tempdir().unwrap();
+    let engine = engine();
+    let path = temp.path().join("repeated.pdf");
+    fixture(
+        &path,
+        "Helvetica",
+        "BT /F1 12 Tf 0.5 Tc 70 250 Td (Old words) Tj ET",
+        0,
+    );
+    let original = std::fs::read(&path).unwrap();
+    let mut source = engine.open_document(&path).unwrap();
+    let mut expected = "Old words";
+    let mut counts = Vec::new();
+    let mut lengths = Vec::new();
+    for n in 0..20 {
+        let next = if n % 2 == 0 { "New words" } else { "Old words" };
+        let edited = engine
+            .replace_text(&source.id, 0, 0, expected, next)
+            .unwrap();
+        let bytes = engine.source_bytes(&edited.id).unwrap();
+        let pdf = lopdf::Document::load_mem(&bytes).unwrap();
+        counts.push(pdf.objects.len());
+        lengths.push(bytes.len());
+        engine.close_document(&source.id).unwrap();
+        assert!(engine.source_bytes(&source.id).is_err());
+        source = edited;
+        expected = next;
+    }
+    assert!(
+        counts.windows(2).all(|pair| pair[0] == pair[1]),
+        "PDF object growth: {counts:?}"
+    );
+    assert_eq!(std::fs::read(&path).unwrap(), original);
+    engine.close_document(&source.id).unwrap();
+    if let Some(root) = std::env::var_os("FOLIO_POSITIONED_ARTIFACTS") {
+        let root = PathBuf::from(root);
+        std::fs::create_dir_all(&root).unwrap();
+        std::fs::write(root.join("repeated-edits.json"),serde_json::to_vec_pretty(&serde_json::json!({"edits":20,"pdfObjectCounts":counts,"pdfByteLengths":lengths,"closedSourcesUnavailable":true})).unwrap()).unwrap();
     }
 }

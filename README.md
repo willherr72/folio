@@ -12,14 +12,14 @@ Extract it and open **Folio.exe**. Keep the resources folder beside the executab
 Microsoft Edge WebView2 Runtime is required.
 
 In this development checkout, double-click **Launch Folio.cmd** after building.
-Version 0.10.1 lives in **artifacts/Folio-v0.10.1/Folio.exe**.
-The ZIP is **artifacts/Folio-v0.10.1-windows-x64.zip**.
+Version 0.11.0 lives in **artifacts/Folio-v0.11.0/Folio.exe**.
+The ZIP is **artifacts/Folio-v0.11.0-windows-x64.zip**.
 
 ## Everyday editing
 
 - **Documents:** Open adds a PDF in a new top tab. Each document retains its edits,
   undo/redo history, selected page, zoom and scroll position when you switch tabs.
-- **Edit existing text:** choose **Edit text**, click an outlined run, change **Replacement text**, and apply. Supported horizontal runs use standard Helvetica, Times and Courier or verified embedded TrueType fonts, including subsets. Longer replacements can use available space. If the subset lacks a letter, choose and preview an explicit substitute font. Complex layouts remain unsupported. [Support details](docs/existing-text-editing.md).
+- **Edit existing text:** choose **Edit text**, click an outlined run, change **Replacement text**, and apply. Verified single runs use standard Helvetica, Times and Courier or embedded TrueType fonts, including subsets. Rotation, scaling and explicit spacing are supported within the preservation checks. Longer replacements can use available space. Eligible ordinary runs can choose an explicit substitute font when a subset lacks a letter. Adjacent groups and nested forms remain unsupported. [Support details](docs/existing-text-editing.md).
 - **Text:** choose Text and click a page. The Content field selects the placeholder
   immediately, so typing replaces it. Choose a font and style, adjust size/color, and drag the note to move it. **More fonts…** searches installed fonts or imports a local TTF/OTF. Preview your text, then choose **Apply font**. Supported fonts are embedded so recipients do not need to install them. [Font support](docs/font-support-roadmap.md).
 - **Shaped text (v0.10.0):** enable **Shaped text** in Properties, enter a single line, then choose an exact custom font with **More fonts…**. Native previews support tested ligatures, combining marks, Arabic joining and Indic samples. Mixed direction and RTL word separators remain unsupported. [Scope and verification](docs/shaped-editor-integration.md).
@@ -73,7 +73,7 @@ Dark mode changes the interface; PDF pages retain their original colors.
 
 ## Prototype boundaries
 
-- Existing-text editing requires a verified encoding, glyph mapping and simple horizontal layout. Ambiguous embedded fonts, complex scripts, individually positioned text and nested forms remain unsupported.
+- Existing-text editing requires verified encoding and glyph mappings. Same-font single runs can preserve explicit spacing and affine transforms; ambiguous mappings, shaped existing text, adjacent groups and nested forms remain unsupported. Explicitly spaced pages require a uniquely mapped operator and do not offer font substitution.
 - Drawn signatures are visual marks, not certificate-based digital signatures.
 - Editable additions use standard PDF annotations with self-contained appearances and
   versioned Folio metadata. Other readers can display them; edits made by another
@@ -202,3 +202,5 @@ Starting with v0.10.1, [one wide semantic font](docs/issue14-wide-semantic-probe
 handles more than 255 definitions while keeping the 4,096-scalar input bound.
 Shaped Content uses whole-grapheme Backspace/Delete and preserves native undo.
 [Issue #14 acceptance status](docs/issue14-status.md) records the remaining gates.
+
+Try the [positioned text practice PDF](examples/Positioned%20text%20demo.pdf) with **Edit text** to test rotation, skew and spacing. See [issue #15 status](docs/issue15-status.md) for the current scope.

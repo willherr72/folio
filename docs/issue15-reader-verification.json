@@ -1,0 +1,1304 @@
+{
+  "mupdf": "1.27.1",
+  "pypdf": "6.14.2",
+  "cases": 144,
+  "passed": true,
+  "results": [
+    {
+      "case": "character-spacing-0-Hi",
+      "sha256": "e9b9302b3c27fed28c09cde8151048917c325eda4cc9cd55e69f531f7ef4c748",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Hi\nNeighbor\n",
+      "pypdfText": "Hi\nNeighbor"
+    },
+    {
+      "case": "character-spacing-0-More_new_words",
+      "sha256": "f371cd8da22d4e68c978140d5e74c1ae951377667d7e765f547b8abd807f80a3",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "More new words\nNeighbor\n",
+      "pypdfText": "More new words\nNeighbor"
+    },
+    {
+      "case": "character-spacing-0-New_words",
+      "sha256": "4ca6cae3f312aed9084195b5d78b9a61c47284716895303ebc95531781771060",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "New words\nNeighbor\n",
+      "pypdfText": "New words\nNeighbor"
+    },
+    {
+      "case": "character-spacing-0-Old_words",
+      "sha256": "7f56b2ae3212d9133181e59c79147a0dcf0e44e7a1735441c63284db5d283420",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Old words\nNeighbor\n",
+      "pypdfText": "Old words\nNeighbor"
+    },
+    {
+      "case": "character-spacing-180-Hi",
+      "sha256": "b1704fb93354515e7a60bd897d7f98d21cf1fe48f07cf714873cce26f03e4352",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Hi\nNeighbor\n",
+      "pypdfText": "Hi\nNeighbor"
+    },
+    {
+      "case": "character-spacing-180-More_new_words",
+      "sha256": "d677e6ddd90e0391d7609beb97082a6c8957351d0feda80f0424df92442a19ab",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "More new words\nNeighbor\n",
+      "pypdfText": "More new words\nNeighbor"
+    },
+    {
+      "case": "character-spacing-180-New_words",
+      "sha256": "073f7b6bbca137c093764d0b66b8618c4208f417b33d975b81dce89e4989c7b6",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "New words\nNeighbor\n",
+      "pypdfText": "New words\nNeighbor"
+    },
+    {
+      "case": "character-spacing-180-Old_words",
+      "sha256": "c6f254ef11e30f591274d0f28cf6fe1a2b43a4b380bddbfa05295042f172eb21",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Old words\nNeighbor\n",
+      "pypdfText": "Old words\nNeighbor"
+    },
+    {
+      "case": "character-spacing-270-Hi",
+      "sha256": "86b57dbf7681ef2b71d530fb399d3cdf7702464e37aaedad7722209510301013",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Hi\nNeighbor\n",
+      "pypdfText": "Hi\nNeighbor"
+    },
+    {
+      "case": "character-spacing-270-More_new_words",
+      "sha256": "18a90c9c459b15adaa8519f26fe704e40671f099a1a826cf081aacc2bf1a6ada",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "More new words\nNeighbor\n",
+      "pypdfText": "More new words\nNeighbor"
+    },
+    {
+      "case": "character-spacing-270-New_words",
+      "sha256": "bc7cc6fddd9e59788990b257acd53a2dfd984d9317eb994e6bc03c8b40499858",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "New words\nNeighbor\n",
+      "pypdfText": "New words\nNeighbor"
+    },
+    {
+      "case": "character-spacing-270-Old_words",
+      "sha256": "72084b04cde3c01cb612dd36157bd83fdae4c68e5fe4256d6078d0d43772733a",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Old words\nNeighbor\n",
+      "pypdfText": "Old words\nNeighbor"
+    },
+    {
+      "case": "character-spacing-90-Hi",
+      "sha256": "586c5c3f5798e8900540c5bcfcc7c2f1a628a0cd8dc8865e29383bccd86b6dd8",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Hi\nNeighbor\n",
+      "pypdfText": "Hi\nNeighbor"
+    },
+    {
+      "case": "character-spacing-90-More_new_words",
+      "sha256": "36f7bc8ea2211c5d5a86fe50da049cee3c0b1ccf2447890e1e926676f1230ce0",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "More new words\nNeighbor\n",
+      "pypdfText": "More new words\nNeighbor"
+    },
+    {
+      "case": "character-spacing-90-New_words",
+      "sha256": "48f001dacaf4399b4afc15a1a11818ceec5dc215619397eba1a16bcb97865ca0",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "New words\nNeighbor\n",
+      "pypdfText": "New words\nNeighbor"
+    },
+    {
+      "case": "character-spacing-90-Old_words",
+      "sha256": "c0e8d1dc0a8077a1e7eeeb04a5f890bd1520a3e107a5cb3fb50cf1a232ad6173",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Old words\nNeighbor\n",
+      "pypdfText": "Old words\nNeighbor"
+    },
+    {
+      "case": "horizontal-scale-0-Hi",
+      "sha256": "0cc65270e4e162845f339c109834bcb6fcbfb9b019b61e171424159242d605cf",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Hi\nNeighbor\n",
+      "pypdfText": "Hi\nNeighbor"
+    },
+    {
+      "case": "horizontal-scale-0-More_new_words",
+      "sha256": "f1a0d6118cd687c5879583ee72d64e219b409a3fa26f8d44d0521f6b647527ec",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "More new words\nNeighbor\n",
+      "pypdfText": "More new words\nNeighbor"
+    },
+    {
+      "case": "horizontal-scale-0-New_words",
+      "sha256": "193e131afb38bee91d05badb7cc74f2ca068ba1394cdf1149f61694a17506bc5",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "New words\nNeighbor\n",
+      "pypdfText": "New words\nNeighbor"
+    },
+    {
+      "case": "horizontal-scale-0-Old_words",
+      "sha256": "2b31503bdcf1c12c992346bdd473a39ad3e380ff5cfa1ffca2e137f69c3895b7",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Old words\nNeighbor\n",
+      "pypdfText": "Old words\nNeighbor"
+    },
+    {
+      "case": "horizontal-scale-180-Hi",
+      "sha256": "6b8446efac90b5f7f6c00489b7a425886dab17e21498790a1175f54261837a63",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Hi\nNeighbor\n",
+      "pypdfText": "Hi\nNeighbor"
+    },
+    {
+      "case": "horizontal-scale-180-More_new_words",
+      "sha256": "8755b0044d68ff672af450af69a544942f8149ff0538f8f7c717ce7b35194e5a",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "More new words\nNeighbor\n",
+      "pypdfText": "More new words\nNeighbor"
+    },
+    {
+      "case": "horizontal-scale-180-New_words",
+      "sha256": "82ed3f05bd7c3e7913dbd9d1aa90b6165ee9a247538634b04db0273027113b64",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "New words\nNeighbor\n",
+      "pypdfText": "New words\nNeighbor"
+    },
+    {
+      "case": "horizontal-scale-180-Old_words",
+      "sha256": "8a21e46e1a8670e1633fbae9e7271ef904d47cf7a3bc1e84cffc609d9140f562",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Old words\nNeighbor\n",
+      "pypdfText": "Old words\nNeighbor"
+    },
+    {
+      "case": "horizontal-scale-270-Hi",
+      "sha256": "b013f03e2045d13d34e822a0b535fd00ae783b464ea05f6b0aeb8b6d0008588e",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Hi\nNeighbor\n",
+      "pypdfText": "Hi\nNeighbor"
+    },
+    {
+      "case": "horizontal-scale-270-More_new_words",
+      "sha256": "92646c0f257fc6e0a7425239db20665bf2b95e7dd71d65ad00e20d68669254e5",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "More new words\nNeighbor\n",
+      "pypdfText": "More new words\nNeighbor"
+    },
+    {
+      "case": "horizontal-scale-270-New_words",
+      "sha256": "db3c9713975bf88fe7cd166b126b56f3fa106af449cc605e350629ab640bff74",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "New words\nNeighbor\n",
+      "pypdfText": "New words\nNeighbor"
+    },
+    {
+      "case": "horizontal-scale-270-Old_words",
+      "sha256": "784b3a3eb8cb85551e1e799ae197e95853d2d07d897b3e08b630e81664eb5cbe",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Old words\nNeighbor\n",
+      "pypdfText": "Old words\nNeighbor"
+    },
+    {
+      "case": "horizontal-scale-90-Hi",
+      "sha256": "6f63b45103c0a9a1cddf89a43ccb5e05c46d581a5a6a390466d0841a8579da93",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Hi\nNeighbor\n",
+      "pypdfText": "Hi\nNeighbor"
+    },
+    {
+      "case": "horizontal-scale-90-More_new_words",
+      "sha256": "91d53d624f5afc68f6158c861769d4c329163e04ff89b6d00fd5141c4144f2a8",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "More new words\nNeighbor\n",
+      "pypdfText": "More new words\nNeighbor"
+    },
+    {
+      "case": "horizontal-scale-90-New_words",
+      "sha256": "22963f309656f53e1d59b1427377e00953e0d743ab4dadff5df3a1dec5aad9fa",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "New words\nNeighbor\n",
+      "pypdfText": "New words\nNeighbor"
+    },
+    {
+      "case": "horizontal-scale-90-Old_words",
+      "sha256": "9ce475d7bfbaa1df59918a92f3dcb2967fbb3739428b5e286fb441a3941847b8",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Old words\nNeighbor\n",
+      "pypdfText": "Old words\nNeighbor"
+    },
+    {
+      "case": "negative-spacing-0-Hi",
+      "sha256": "dc0e5ec2b4f0e1176adb8f02d69a6168ad38c3cc75b09b413f76957c7d3325ac",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Hi\nNeighbor\n",
+      "pypdfText": "Hi\nNeighbor"
+    },
+    {
+      "case": "negative-spacing-0-More_new_words",
+      "sha256": "40d09a6630218912c3e380c43409548e477699cb834423f92a412bf36c716059",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "More new words\nNeighbor\n",
+      "pypdfText": "More new words\nNeighbor"
+    },
+    {
+      "case": "negative-spacing-0-New_words",
+      "sha256": "e8cc989bb6d8b01d90eb500c9270b7e4700de3a3a322227e98e753e8d609d7fe",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "New words\nNeighbor\n",
+      "pypdfText": "New words\nNeighbor"
+    },
+    {
+      "case": "negative-spacing-0-Old_words",
+      "sha256": "f3636a2485c4cb75fe5588eca7ae49e628d242d7c9ce617c4cf261d06819998a",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Old words\nNeighbor\n",
+      "pypdfText": "Old words\nNeighbor"
+    },
+    {
+      "case": "negative-spacing-180-Hi",
+      "sha256": "8bfaa4f03793312563c392b639df22088ca2086c4391f90853f43b3f0bc1e644",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Hi\nNeighbor\n",
+      "pypdfText": "Hi\nNeighbor"
+    },
+    {
+      "case": "negative-spacing-180-More_new_words",
+      "sha256": "54fd2e0e92fd02d56194099a3ccdb67b1ba26d4255ab486f12e1039650ab0742",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "More new words\nNeighbor\n",
+      "pypdfText": "More new words\nNeighbor"
+    },
+    {
+      "case": "negative-spacing-180-New_words",
+      "sha256": "3b5180b0cf79a8136679bc2017110f946a031975662a29750d961a179a4f886a",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "New words\nNeighbor\n",
+      "pypdfText": "New words\nNeighbor"
+    },
+    {
+      "case": "negative-spacing-180-Old_words",
+      "sha256": "99a3b4099cc46f8f717e138ff2b7eeed9b2c9b66804d416fcc827dff47a564b7",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Old words\nNeighbor\n",
+      "pypdfText": "Old words\nNeighbor"
+    },
+    {
+      "case": "negative-spacing-270-Hi",
+      "sha256": "3e3c993648f569430ee58f2e7083715b67d6cc23320ca2c8ec5dbb24ddd842ba",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Hi\nNeighbor\n",
+      "pypdfText": "Hi\nNeighbor"
+    },
+    {
+      "case": "negative-spacing-270-More_new_words",
+      "sha256": "5132ae9dac95d7aa7f871236f14efdebfa9f585398a8cf68f119718940bdc72a",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "More new words\nNeighbor\n",
+      "pypdfText": "More new words\nNeighbor"
+    },
+    {
+      "case": "negative-spacing-270-New_words",
+      "sha256": "e165c8d989953539a6ecfcf9afc8a3a47b5ff13d0906cdc1669f62f47f5e507d",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "New words\nNeighbor\n",
+      "pypdfText": "New words\nNeighbor"
+    },
+    {
+      "case": "negative-spacing-270-Old_words",
+      "sha256": "ee8c0529c58c7c77971e5e539c5f46af21832816f92a59cd59231d6b5b0775d8",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Old words\nNeighbor\n",
+      "pypdfText": "Old words\nNeighbor"
+    },
+    {
+      "case": "negative-spacing-90-Hi",
+      "sha256": "917c58652310a1e9570395c25ad8ac5e7972454aac984bd2189addd95ac155f1",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Hi\nNeighbor\n",
+      "pypdfText": "Hi\nNeighbor"
+    },
+    {
+      "case": "negative-spacing-90-More_new_words",
+      "sha256": "a18897fce8850169b3498fd712d0475465739e97ff0ead8c2d8c66154357a8e7",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "More new words\nNeighbor\n",
+      "pypdfText": "More new words\nNeighbor"
+    },
+    {
+      "case": "negative-spacing-90-New_words",
+      "sha256": "6ae66aee4e0e0101f937c0975e8a062bb487f154f56c30ea4c4b0b1cddded965",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "New words\nNeighbor\n",
+      "pypdfText": "New words\nNeighbor"
+    },
+    {
+      "case": "negative-spacing-90-Old_words",
+      "sha256": "93477bed6eb86ff36357994084eba6dec06d5e594f94c395ad4d2c1e7aa9af1f",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Old words\nNeighbor\n",
+      "pypdfText": "Old words\nNeighbor"
+    },
+    {
+      "case": "rise-0-Hi",
+      "sha256": "e6c6ab37f73dab598aee30d054bd9a01f3846410c6dd12acab407cb9bdde2df8",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Hi\nNeighbor\n",
+      "pypdfText": "Hi\nNeighbor"
+    },
+    {
+      "case": "rise-0-More_new_words",
+      "sha256": "f0d130dd6f59bbb7fe488de2c1371d725ace68abe777f83bd4579657cb98aefa",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "More new words\nNeighbor\n",
+      "pypdfText": "More new words\nNeighbor"
+    },
+    {
+      "case": "rise-0-New_words",
+      "sha256": "e7e86072139f21d01717811ca31b27d93af9ab1532823a5282591a8dd33bd4f3",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "New words\nNeighbor\n",
+      "pypdfText": "New words\nNeighbor"
+    },
+    {
+      "case": "rise-0-Old_words",
+      "sha256": "3830ff51d1e3334f365c6b5a35bed03ee8ae6207f6d0502c3163276fc80ed74d",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Old words\nNeighbor\n",
+      "pypdfText": "Old words\nNeighbor"
+    },
+    {
+      "case": "rise-180-Hi",
+      "sha256": "89810c9657098ebc0bebe73973516c4b917a609498d1f58b292cdc95b6f42a05",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Hi\nNeighbor\n",
+      "pypdfText": "Hi\nNeighbor"
+    },
+    {
+      "case": "rise-180-More_new_words",
+      "sha256": "97f9e710c6485b9c222dfd09b8e88b39980db9e337883fd399b7401ba8647c2f",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "More new words\nNeighbor\n",
+      "pypdfText": "More new words\nNeighbor"
+    },
+    {
+      "case": "rise-180-New_words",
+      "sha256": "95a2fb904ce42dff6af96734e31c1cbb602f155c4a25d601a279e443abf870f5",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "New words\nNeighbor\n",
+      "pypdfText": "New words\nNeighbor"
+    },
+    {
+      "case": "rise-180-Old_words",
+      "sha256": "672614b1ef934137d0284387b311fd9932c2ce149275fddc3d96066a30eb8c37",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Old words\nNeighbor\n",
+      "pypdfText": "Old words\nNeighbor"
+    },
+    {
+      "case": "rise-270-Hi",
+      "sha256": "59689db8433e6f015c7f0bf95455df9026597266aa84a663a05d13edb668c5fb",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Hi\nNeighbor\n",
+      "pypdfText": "Hi\nNeighbor"
+    },
+    {
+      "case": "rise-270-More_new_words",
+      "sha256": "db056bff0521e66e028091ad0ce4e305511633239fa8344e22c72a909b40d068",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "More new words\nNeighbor\n",
+      "pypdfText": "More new words\nNeighbor"
+    },
+    {
+      "case": "rise-270-New_words",
+      "sha256": "e858944de81b529f8776c75481879ca85b467d5c71ec0eca987c645495f6719d",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "New words\nNeighbor\n",
+      "pypdfText": "New words\nNeighbor"
+    },
+    {
+      "case": "rise-270-Old_words",
+      "sha256": "07f0b9f976711098c011d22b58e2e4c0e91933cfefb8a479b177df7f449876b8",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Old words\nNeighbor\n",
+      "pypdfText": "Old words\nNeighbor"
+    },
+    {
+      "case": "rise-90-Hi",
+      "sha256": "d9db3992946da5df39e82bc8668af22ceba595572adfebdf006dfcdad4387a50",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Hi\nNeighbor\n",
+      "pypdfText": "Hi\nNeighbor"
+    },
+    {
+      "case": "rise-90-More_new_words",
+      "sha256": "29205d004afd4c6e42f98d0af429d5870a2c3eec9c073f3cf2a7d299ee4ff4b4",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "More new words\nNeighbor\n",
+      "pypdfText": "More new words\nNeighbor"
+    },
+    {
+      "case": "rise-90-New_words",
+      "sha256": "77de3f96a8c1ab1c945a89b871fffa44ce02ecb41113ded4d0743eea5b66db15",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "New words\nNeighbor\n",
+      "pypdfText": "New words\nNeighbor"
+    },
+    {
+      "case": "rise-90-Old_words",
+      "sha256": "279e95f214e2bdbcbb57e880a29919747e732b02d76ff5696cc0740bbdaed78b",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Old words\nNeighbor\n",
+      "pypdfText": "Old words\nNeighbor"
+    },
+    {
+      "case": "rotation-0-Hi",
+      "sha256": "8bd3b1e9ed6697bba86a5e66cfe73022fa3e2340562b34c13ee48eca2913d542",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Hi\nNeighbor\n",
+      "pypdfText": "Hi\nNeighbor"
+    },
+    {
+      "case": "rotation-0-More_new_words",
+      "sha256": "f414e87f9e5d764dcd4043c0ac141477a2158016fff8318698d19820e89bf719",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "More new words\nNeighbor\n",
+      "pypdfText": "More new words\nNeighbor"
+    },
+    {
+      "case": "rotation-0-New_words",
+      "sha256": "bbbd6300df0edba4b50e678e58938c61241030b0c442e5a29a4e58f37f57bc3a",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "New words\nNeighbor\n",
+      "pypdfText": "New words\nNeighbor"
+    },
+    {
+      "case": "rotation-0-Old_words",
+      "sha256": "c7cbdb826f4953bed552d911b0b61694f87516c19d52f15e1e0da746e1aa8ef8",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Old words\nNeighbor\n",
+      "pypdfText": "Old words\nNeighbor"
+    },
+    {
+      "case": "rotation-180-Hi",
+      "sha256": "1cb128a42981646560ff32c77c2bef9de256af4554ac37959b03bb51089328bd",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Hi\nNeighbor\n",
+      "pypdfText": "Hi\nNeighbor"
+    },
+    {
+      "case": "rotation-180-More_new_words",
+      "sha256": "47147cb9b49df7150f31a1be76a8bcc16de000c0590248345d01e4862f19edc7",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "More new words\nNeighbor\n",
+      "pypdfText": "More new words\nNeighbor"
+    },
+    {
+      "case": "rotation-180-New_words",
+      "sha256": "ca51ead089fadfa71496ccdebdf1d4e382d5f46b1256f271ce0a97ceb3ecc624",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "New words\nNeighbor\n",
+      "pypdfText": "New words\nNeighbor"
+    },
+    {
+      "case": "rotation-180-Old_words",
+      "sha256": "8e2c5518c76f5501358b778a09e3540a3e41df8fb6692cd227c8553acf142bdd",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Old words\nNeighbor\n",
+      "pypdfText": "Old words\nNeighbor"
+    },
+    {
+      "case": "rotation-270-Hi",
+      "sha256": "4b22a5072f02a9a04beec140be5295809eae2cb5a73aca8b603811a11977da71",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Hi\nNeighbor\n",
+      "pypdfText": "Hi\nNeighbor"
+    },
+    {
+      "case": "rotation-270-More_new_words",
+      "sha256": "9c8b5342ab9d7fed089a60e26b935febfb7f110791b88bfee020f007a8b88e08",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "More new words\nNeighbor\n",
+      "pypdfText": "More new words\nNeighbor"
+    },
+    {
+      "case": "rotation-270-New_words",
+      "sha256": "8fefc09b604fc364d1cec4bfdd9be500a0845d0308a9dc7ec1a45bd2de9f1c6b",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "New words\nNeighbor\n",
+      "pypdfText": "New words\nNeighbor"
+    },
+    {
+      "case": "rotation-270-Old_words",
+      "sha256": "61d051b69939eede2590d4378cfc8782f995a7d8c34cd179a6a6cad8917a3109",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Old words\nNeighbor\n",
+      "pypdfText": "Old words\nNeighbor"
+    },
+    {
+      "case": "rotation-90-Hi",
+      "sha256": "3d501384979a7cf5b4017b0782c2e7b0bfbdbeb57fb0e4a227e37d57606dd158",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Hi\nNeighbor\n",
+      "pypdfText": "Hi\nNeighbor"
+    },
+    {
+      "case": "rotation-90-More_new_words",
+      "sha256": "14a61c4026c19da1ce4c12a843677d4c81d691f4b87ab37c8cb4ec1a8435a1ed",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "More new words\nNeighbor\n",
+      "pypdfText": "More new words\nNeighbor"
+    },
+    {
+      "case": "rotation-90-New_words",
+      "sha256": "a2cf3b217d63adf8654f1cecdbad16e01b7a1df581113d66f0a23f1f915e2223",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "New words\nNeighbor\n",
+      "pypdfText": "New words\nNeighbor"
+    },
+    {
+      "case": "rotation-90-Old_words",
+      "sha256": "5f0c17d57c8f7f998221920e274a276cc6a6e8592f7f1fe91ed5583a3c79f3b3",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Old words\nNeighbor\n",
+      "pypdfText": "Old words\nNeighbor"
+    },
+    {
+      "case": "scale-0-Hi",
+      "sha256": "560da48add4afc18700a9a9c80a4f80685ce88b316381f6125d1aabc5e15db18",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Hi\nNeighbor\n",
+      "pypdfText": "Hi\nNeighbor"
+    },
+    {
+      "case": "scale-0-More_new_words",
+      "sha256": "c90c2e922b489c2e58408ccd47e3f84f659a113a8731b02f43691e2df3de69e4",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "More new words\nNeighbor\n",
+      "pypdfText": "More new words\nNeighbor"
+    },
+    {
+      "case": "scale-0-New_words",
+      "sha256": "01ab6ae37ea863f4dccb187e5aa1bc5b9e7e3aae9c5a5aeec675a75fc373733e",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "New words\nNeighbor\n",
+      "pypdfText": "New words\nNeighbor"
+    },
+    {
+      "case": "scale-0-Old_words",
+      "sha256": "e8372e83b2596c597342bfd0bab5566bc7e074e9c71985ac541d346f1d9565ee",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Old words\nNeighbor\n",
+      "pypdfText": "Old words\nNeighbor"
+    },
+    {
+      "case": "scale-180-Hi",
+      "sha256": "4f03b42196ee0cbb6cae9aedf3ad2cf4f79fe39b6d0cede257e5128b7dbc4ef3",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Hi\nNeighbor\n",
+      "pypdfText": "Hi\nNeighbor"
+    },
+    {
+      "case": "scale-180-More_new_words",
+      "sha256": "5c0bfe9654a3129bdd68a5922c85b88fca84c7c570ea7b06205d15f67440b11b",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "More new words\nNeighbor\n",
+      "pypdfText": "More new words\nNeighbor"
+    },
+    {
+      "case": "scale-180-New_words",
+      "sha256": "1d16915c791673dd334f8405a570f11a177fa547434dd03f29bb50e5e6b5f767",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "New words\nNeighbor\n",
+      "pypdfText": "New words\nNeighbor"
+    },
+    {
+      "case": "scale-180-Old_words",
+      "sha256": "6c11226a2fdf2900760986b90e36b0da517ff818c0b87a390eba0bdbc0ace48d",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Old words\nNeighbor\n",
+      "pypdfText": "Old words\nNeighbor"
+    },
+    {
+      "case": "scale-270-Hi",
+      "sha256": "bb711122f487f75085a2ea97c967e607a091ee02b3e0dcc4befda9ca4cef46b5",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Hi\nNeighbor\n",
+      "pypdfText": "Hi\nNeighbor"
+    },
+    {
+      "case": "scale-270-More_new_words",
+      "sha256": "996042da4268410177155d62248cf8fdad9c9eb917a9220755cb18cb027062cb",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "More new words\nNeighbor\n",
+      "pypdfText": "More new words\nNeighbor"
+    },
+    {
+      "case": "scale-270-New_words",
+      "sha256": "7b2b782a36f675bde0199e8a6f0e4715c9603dc35bbf7e730c6ab62cd0577156",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "New words\nNeighbor\n",
+      "pypdfText": "New words\nNeighbor"
+    },
+    {
+      "case": "scale-270-Old_words",
+      "sha256": "6e3b791bcd6d2bd5b1f5b00c82eed227ed7f9db0e5f79f0360b88bd7b1d9041f",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Old words\nNeighbor\n",
+      "pypdfText": "Old words\nNeighbor"
+    },
+    {
+      "case": "scale-90-Hi",
+      "sha256": "ebd93be303d9b605a93e9f23c615d9bfa8cff5e08745467539522704e7cc5553",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Hi\nNeighbor\n",
+      "pypdfText": "Hi\nNeighbor"
+    },
+    {
+      "case": "scale-90-More_new_words",
+      "sha256": "25510bd491d8f62b17321645b0447e31dcccc916c398a548b3dc40dae305cf07",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "More new words\nNeighbor\n",
+      "pypdfText": "More new words\nNeighbor"
+    },
+    {
+      "case": "scale-90-New_words",
+      "sha256": "003e077c7073e4d95c9e4ac78334c1decda1d6e3b79d36324de3c746cd52973f",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "New words\nNeighbor\n",
+      "pypdfText": "New words\nNeighbor"
+    },
+    {
+      "case": "scale-90-Old_words",
+      "sha256": "cb8c628c2e8531cdf8c6c052584272e68869a35ad26fe9df99b7c99f1bfc8626",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Old words\nNeighbor\n",
+      "pypdfText": "Old words\nNeighbor"
+    },
+    {
+      "case": "shear-0-Hi",
+      "sha256": "eded0274c59981cb3121d42b8e8281c2f122054014514d4b9a9e94811b461bc8",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Hi\nNeighbor\n",
+      "pypdfText": "Hi\nNeighbor"
+    },
+    {
+      "case": "shear-0-More_new_words",
+      "sha256": "7ac400399a2f3e0e6385520e8ce15cc30fa1fc803c8b2775d532e1f3e48316e7",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "More new words\nNeighbor\n",
+      "pypdfText": "More new words\nNeighbor"
+    },
+    {
+      "case": "shear-0-New_words",
+      "sha256": "1454d81d92c8d0859cc26cd9ded6ff258cca49c482f25ca520d22ad8e36df92a",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "New words\nNeighbor\n",
+      "pypdfText": "New words\nNeighbor"
+    },
+    {
+      "case": "shear-0-Old_words",
+      "sha256": "ee16bd0ed4fb9d975b6e7f1fd6121ac843d540fcf592b0287bee141cfac344a3",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Old words\nNeighbor\n",
+      "pypdfText": "Old words\nNeighbor"
+    },
+    {
+      "case": "shear-180-Hi",
+      "sha256": "5b35be57d8e77453cb21cfff2d5ff0f26f21826090a59b37218c49731f824b2a",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Hi\nNeighbor\n",
+      "pypdfText": "Hi\nNeighbor"
+    },
+    {
+      "case": "shear-180-More_new_words",
+      "sha256": "ae42ae66363ac69f9d21af5b6a70f988814981a317f68be0e7fc98567ed71310",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "More new words\nNeighbor\n",
+      "pypdfText": "More new words\nNeighbor"
+    },
+    {
+      "case": "shear-180-New_words",
+      "sha256": "5e9a147752dea2de88036d381c861a1848df5fa0d22a1ef8bb232c47f152b595",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "New words\nNeighbor\n",
+      "pypdfText": "New words\nNeighbor"
+    },
+    {
+      "case": "shear-180-Old_words",
+      "sha256": "414500ff8139e629d6c521c66854199a7eb0686116755114ef6defa77a3ea0be",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Old words\nNeighbor\n",
+      "pypdfText": "Old words\nNeighbor"
+    },
+    {
+      "case": "shear-270-Hi",
+      "sha256": "6f6dff2cb27030be0f2a12c9ae6d2bae97863e37aaf4806769a14d6d7e094dec",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Hi\nNeighbor\n",
+      "pypdfText": "Hi\nNeighbor"
+    },
+    {
+      "case": "shear-270-More_new_words",
+      "sha256": "40f1112ddd74062f20f4d7cc5f94b1a29fca8a2e791abbfbcef68d7da81e8350",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "More new words\nNeighbor\n",
+      "pypdfText": "More new words\nNeighbor"
+    },
+    {
+      "case": "shear-270-New_words",
+      "sha256": "9221c474f01820880ce46b3bd7383455ca3cab0851202016965855dcb39b0f37",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "New words\nNeighbor\n",
+      "pypdfText": "New words\nNeighbor"
+    },
+    {
+      "case": "shear-270-Old_words",
+      "sha256": "0a0d76f5c41044739de7564499704b4e0fd3a51652891be98fda7faa5defa746",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Old words\nNeighbor\n",
+      "pypdfText": "Old words\nNeighbor"
+    },
+    {
+      "case": "shear-90-Hi",
+      "sha256": "204259930b96c3ae3b41912d5a8daf0ac6b989fec2ae74c80b56d1e0bfa1e2f0",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Hi\nNeighbor\n",
+      "pypdfText": "Hi\nNeighbor"
+    },
+    {
+      "case": "shear-90-More_new_words",
+      "sha256": "7ac689ccb60ec6f79cae841337b11f9cfa63c4f16afa79175a48d4ce199041de",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "More new words\nNeighbor\n",
+      "pypdfText": "More new words\nNeighbor"
+    },
+    {
+      "case": "shear-90-New_words",
+      "sha256": "92f452978e09ea210ffb03c3a5e0548993fbf5343404e569c14cbad6cff0ef43",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "New words\nNeighbor\n",
+      "pypdfText": "New words\nNeighbor"
+    },
+    {
+      "case": "shear-90-Old_words",
+      "sha256": "79b3757884b772f6ab26e76ef5d8554bec70e6ab678035ce81ae18a364ffcd83",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Old words\nNeighbor\n",
+      "pypdfText": "Old words\nNeighbor"
+    },
+    {
+      "case": "tj-0-Hi",
+      "sha256": "c0890444a2523a9796eea7f3762b38eb4090b9cc00c9c7ccdb65522fd6567a90",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Hi\nNeighbor\n",
+      "pypdfText": "Hi\nNeighbor"
+    },
+    {
+      "case": "tj-0-More_new_words",
+      "sha256": "0e7c394a32bf22b30e62977b68c494df05a49711ebd0e24c108fc7735dcf259b",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "More new words\nNeighbor\n",
+      "pypdfText": "More new words\nNeighbor"
+    },
+    {
+      "case": "tj-0-New_words",
+      "sha256": "e5d0a86020c1f8be80ccba71bfb41b66ee8b76e802329a1a45a0906d60ae6690",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "New words\nNeighbor\n",
+      "pypdfText": "New words\nNeighbor"
+    },
+    {
+      "case": "tj-0-Old_words",
+      "sha256": "41959bbf1925d1b7c0cfda7ec80337cd2a7c2b691fb3ba2c04eab48d8b8bd5c1",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Old words\nNeighbor\n",
+      "pypdfText": "Old words\nNeighbor"
+    },
+    {
+      "case": "tj-180-Hi",
+      "sha256": "3dd0dcbeebd5b8b6261017c2763b774e9ac433bebe1ee775ada65ad843c80cfc",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Hi\nNeighbor\n",
+      "pypdfText": "Hi\nNeighbor"
+    },
+    {
+      "case": "tj-180-More_new_words",
+      "sha256": "44b1a4320050e1331d1dbb1cc4f17945d0a6cf067607a166a3bc859b6accebba",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "More new words\nNeighbor\n",
+      "pypdfText": "More new words\nNeighbor"
+    },
+    {
+      "case": "tj-180-New_words",
+      "sha256": "d81cafca9c57ed2375f561aaca3e60275fcec179f5925a0cff568735a1ac06e7",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "New words\nNeighbor\n",
+      "pypdfText": "New words\nNeighbor"
+    },
+    {
+      "case": "tj-180-Old_words",
+      "sha256": "fda38818c24413c72a07a571e7eccd43d990630fc2605f88d2c5a5d48997cd7e",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Old words\nNeighbor\n",
+      "pypdfText": "Old words\nNeighbor"
+    },
+    {
+      "case": "tj-270-Hi",
+      "sha256": "cb8c85d4ce523577cabe77a79a2d843a63c37ac2f09b0fc77675c9b6590cb502",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Hi\nNeighbor\n",
+      "pypdfText": "Hi\nNeighbor"
+    },
+    {
+      "case": "tj-270-More_new_words",
+      "sha256": "fb2cbe536771322ba20f8d0c280d461ae97d1b04d56aedf09f4a57f4a32d7bb9",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "More new words\nNeighbor\n",
+      "pypdfText": "More new words\nNeighbor"
+    },
+    {
+      "case": "tj-270-New_words",
+      "sha256": "0ac394205e2f2a6fcdfbc84931a2217eaed85e412a7ac19b61a8e5b6765b5611",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "New words\nNeighbor\n",
+      "pypdfText": "New words\nNeighbor"
+    },
+    {
+      "case": "tj-270-Old_words",
+      "sha256": "631b56fe45bdbfde2038960d2ccf41bca2f17b2a0978585530b9c95cb62d4db2",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Old words\nNeighbor\n",
+      "pypdfText": "Old words\nNeighbor"
+    },
+    {
+      "case": "tj-90-Hi",
+      "sha256": "9fee4edc210202e42c082341745cc633cf6f71f858de170282c15eb3918e2f9f",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Hi\nNeighbor\n",
+      "pypdfText": "Hi\nNeighbor"
+    },
+    {
+      "case": "tj-90-More_new_words",
+      "sha256": "55775e89bc2db7b16bfb79abac74790cfff6c553466f24a59f01354b5c37a698",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "More new words\nNeighbor\n",
+      "pypdfText": "More new words\nNeighbor"
+    },
+    {
+      "case": "tj-90-New_words",
+      "sha256": "88d2403f8b689373bff22697f6e2055d44c404aaad0d2338d85d88244ce9220e",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "New words\nNeighbor\n",
+      "pypdfText": "New words\nNeighbor"
+    },
+    {
+      "case": "tj-90-Old_words",
+      "sha256": "ac25cee5b13400d49c09ec3a5fce5abe5814b8fbd32c43bc80ddb2b093c29f2a",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Old words\nNeighbor\n",
+      "pypdfText": "Old words\nNeighbor"
+    },
+    {
+      "case": "word-spacing-0-Hi",
+      "sha256": "78ebd3e22c642a4aa574ad5075991e7102e8e113d67f391bf717b92f29a2bea8",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Hi\nNeighbor\n",
+      "pypdfText": "Hi\nNeighbor"
+    },
+    {
+      "case": "word-spacing-0-More_new_words",
+      "sha256": "6cc1a01ca3262f5a0a8399efae15e6535c67d5cca4ed15dcbc0cda6c6091062d",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "More new words\nNeighbor\n",
+      "pypdfText": "More new words\nNeighbor"
+    },
+    {
+      "case": "word-spacing-0-New_words",
+      "sha256": "2dae5034892226b2ecaee001e8511d21eda9d9757ab8fee8a3947bbd8cf2a0b0",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "New words\nNeighbor\n",
+      "pypdfText": "New words\nNeighbor"
+    },
+    {
+      "case": "word-spacing-0-Old_words",
+      "sha256": "5e9f60db695b0a2f0e519dfc14b60d8b5c8ee464faec8c62062fab5bd42aad30",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Old words\nNeighbor\n",
+      "pypdfText": "Old words\nNeighbor"
+    },
+    {
+      "case": "word-spacing-180-Hi",
+      "sha256": "3283baa8842009d5c58d513a1c450eac3515c2890623d8842659f234f5f3bf09",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Hi\nNeighbor\n",
+      "pypdfText": "Hi\nNeighbor"
+    },
+    {
+      "case": "word-spacing-180-More_new_words",
+      "sha256": "2438f8baaa6928de4fabeeff435886f12a022891c10e4ea9c2f7c91d46151f69",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "More new words\nNeighbor\n",
+      "pypdfText": "More new words\nNeighbor"
+    },
+    {
+      "case": "word-spacing-180-New_words",
+      "sha256": "c9a8fe9ef91059a6282e7fe1c0ff2c3ef3de9f096f20123780280ed13c9ba516",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "New words\nNeighbor\n",
+      "pypdfText": "New words\nNeighbor"
+    },
+    {
+      "case": "word-spacing-180-Old_words",
+      "sha256": "d342a958606c6eff095002de3e0793db8f7b614254416b40c46f5db0a7b9e93f",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Old words\nNeighbor\n",
+      "pypdfText": "Old words\nNeighbor"
+    },
+    {
+      "case": "word-spacing-270-Hi",
+      "sha256": "b8391af9ccf3cab4ff30e40880ec83cebca65885c708b8c15f5829c24c79318e",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Hi\nNeighbor\n",
+      "pypdfText": "Hi\nNeighbor"
+    },
+    {
+      "case": "word-spacing-270-More_new_words",
+      "sha256": "17b6204b84d0285144f547b9da90efb6239d26482fde7e2fb0e9df079d636b84",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "More new words\nNeighbor\n",
+      "pypdfText": "More new words\nNeighbor"
+    },
+    {
+      "case": "word-spacing-270-New_words",
+      "sha256": "7f677c25b3fdd3538a7d15e365ba43acf2616759b1dfd137484e44a3d31889eb",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "New words\nNeighbor\n",
+      "pypdfText": "New words\nNeighbor"
+    },
+    {
+      "case": "word-spacing-270-Old_words",
+      "sha256": "3551a18ce744098ab96761dd0dda3f81033464ba0fccf0e98c069bcd15e96c5c",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Old words\nNeighbor\n",
+      "pypdfText": "Old words\nNeighbor"
+    },
+    {
+      "case": "word-spacing-90-Hi",
+      "sha256": "f4db52a267b16f46fa63673d65a1374392ea42940011b45b75aa61fa30830c97",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Hi\nNeighbor\n",
+      "pypdfText": "Hi\nNeighbor"
+    },
+    {
+      "case": "word-spacing-90-More_new_words",
+      "sha256": "0115feac3c88f2cf94de68ee0e90402eb691b1665870865e2d9aaecaebbe9edc",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "More new words\nNeighbor\n",
+      "pypdfText": "More new words\nNeighbor"
+    },
+    {
+      "case": "word-spacing-90-New_words",
+      "sha256": "a71f86e686201e9000e84c64fce448de58082ac59c872e1f10b6f767d35b73b9",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "New words\nNeighbor\n",
+      "pypdfText": "New words\nNeighbor"
+    },
+    {
+      "case": "word-spacing-90-Old_words",
+      "sha256": "0b587a30d7f65189d27b83506dcc55d1516a300d1b61c4f1233a355ce3892581",
+      "mupdfExactText": true,
+      "mupdfExactRaster": true,
+      "pypdfExactText": true,
+      "mupdfText": "Old words\nNeighbor\n",
+      "pypdfText": "Old words\nNeighbor"
+    }
+  ]
+}

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.11.0
+
+- Edit verified single text runs with rotation, scale, shear, horizontal scaling and text rise while preserving their affine placement.
+- Preserve explicit character/word spacing and bounded TJ adjustments for uniquely mapped same-font edits, including spacing activated only by a new replacement. Existing font substitution remains restricted on explicitly spaced pages.
+- Retain original font resources, source isolation, no-op glyph/raster validation, crop/collision checks and immutable undo/recovery sources. Ambiguous mappings and edits that move relative neighboring runs are refused.
+- Add native reference-PDF comparisons, independent MuPDF/pypdf verification, embedded multibyte-font coverage, and tests for dormant spacing, shorthand operators and split streams. Issue #15 remains open for selected adjacent groups and isolated nested forms.
+
 ## 0.10.1
 
 - Shaped text boxes can exceed 255 distinct character definitions using one bounded semantic CID font; existing smaller boxes keep their original representation.

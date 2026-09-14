@@ -6,6 +6,9 @@ use super::*;
 mod embedded_font;
 use embedded_font::{FontProofs, VerifiedFont};
 
+#[path = "positioned_text.rs"]
+mod positioned_text;
+
 const EPSILON: f32 = 0.02;
 
 fn invalid(message: &str) -> EngineError {
@@ -137,13 +140,15 @@ fn snapshot(page: &PdfPage<'_>, proofs: Option<&FontProofs>) -> EngineResult<Vec
         } else if mode != PdfPageTextRenderMode::FilledUnstroked || color.alpha() != 255 {
             reason =
                 Some("Invisible, clipped, stroked, or transparent text is not supported.".into());
-        } else if (matrix[0] - 1.0).abs() > EPSILON
-            || matrix[1].abs() > EPSILON
-            || matrix[2].abs() > EPSILON
-            || (matrix[3] - 1.0).abs() > EPSILON
+        } else if matrix
+            .iter()
+            .any(|v| !v.is_finite() || v.abs() > 1_000_000.0)
+            || (matrix[0] * matrix[3] - matrix[1] * matrix[2]).abs() < 0.0001
+            || matrix[..4].iter().any(|v| v.abs() > 100.0)
         {
-            reason = Some("Rotated, scaled, or skewed text objects are not supported. Page rotation is supported.".into());
+            reason = Some("This text transform is singular or exceeds safe editing bounds.".into());
         }
+
         if reason.is_none() {
             if let Some(proof) = &proof {
                 if let Err(error) = proof.supports(&value) {
@@ -525,7 +530,7 @@ fn substitute_in_bytes(
 
 // Conservative page-level exclusions: these features can hide glyphs, change
 // their meaning, or affect other graphics when PDFium regenerates the stream.
-fn preflight(bytes: &[u8], proofs: &FontProofs, substitution: bool) -> EngineResult<()> {
+fn preflight(bytes: &[u8], proofs: &FontProofs, substitution: bool) -> EngineResult<bool> {
     let pdf = lopdf::Document::load_mem(bytes)
         .map_err(|_| invalid("The page content could not be inspected safely."))?;
     let page = *pdf
@@ -538,7 +543,25 @@ fn preflight(bytes: &[u8], proofs: &FontProofs, substitution: bool) -> EngineRes
         .map_err(|_| invalid("The page content is too complex for safe text editing."))?;
     let content = lopdf::content::Content::decode(&content)
         .map_err(|_| invalid("The page content could not be inspected safely."))?;
+    let mut preserve_state = false;
     for operation in content.operations {
+        let explicit_state = match operation.operator.as_str() {
+            "Tc" | "Tw" => {
+                !matches!(operation.operands.as_slice(), [value] if value.as_float().is_ok_and(|n| n == 0.0))
+            }
+            "\"" => true,
+            "TJ" => operation
+                .operands
+                .iter()
+                .filter_map(|v| v.as_array().ok())
+                .flatten()
+                .any(|v| v.as_float().is_ok_and(|n| n != 0.0)),
+            _ => false,
+        };
+        preserve_state |= explicit_state;
+        if substitution && explicit_state {
+            return Err(invalid("Font substitution with explicit character positioning or word spacing is not supported."));
+        }
         if substitution && matches!(operation.operator.as_str(), "BMC" | "BDC") {
             return Err(invalid(
                 "Font substitution on marked-content or tagged text is not supported.",
@@ -556,16 +579,6 @@ fn preflight(bytes: &[u8], proofs: &FontProofs, substitution: bool) -> EngineRes
             return Err(invalid(
                 "Pages with clipping paths cannot be edited safely.",
             ));
-        }
-        if operation.operator == "TJ"
-            && operation
-                .operands
-                .iter()
-                .filter_map(|o| o.as_array().ok())
-                .flatten()
-                .any(|o| o.as_float().is_ok_and(|n| n.abs() > EPSILON))
-        {
-            return Err(invalid("This page uses custom character positioning (kerning). Its text cannot be edited safely."));
         }
     }
     for (id, object) in &pdf.objects {
@@ -610,7 +623,7 @@ fn preflight(bytes: &[u8], proofs: &FontProofs, substitution: bool) -> EngineRes
             }
         }
     }
-    Ok(())
+    Ok(preserve_state)
 }
 
 impl WorkerRuntime {
@@ -662,6 +675,7 @@ impl WorkerRuntime {
         baseline: &[u8],
         before: &[RunSnapshot],
         index: usize,
+        preserve_stream: bool,
     ) -> EngineResult<()> {
         let run = before
             .iter()
@@ -673,8 +687,12 @@ impl WorkerRuntime {
         let copy = self.pdfium.load_pdf_from_byte_slice(baseline, None)?;
         let original_glyphs = glyph_snapshot(&copy.pages().get(0)?)?;
         let original_raster = raster(&copy.pages().get(0)?)?;
-        replace_in_page(&copy, index, &run.text)?;
-        let bytes = copy.save_to_bytes()?;
+        let bytes = if preserve_stream {
+            positioned_text::replace(baseline, run, before, &run.text)?
+        } else {
+            replace_in_page(&copy, index, &run.text)?;
+            copy.save_to_bytes()?
+        };
         let reopened = self.pdfium.load_pdf_from_byte_slice(&bytes, None)?;
         let page = reopened.pages().get(0)?;
         let after = snapshot(&page, None)?;
@@ -791,8 +809,19 @@ impl WorkerRuntime {
         } else if let Some(proof) = &selected.proof {
             proof.supports(replacement)?;
         }
-        preflight(&baseline, &proofs, substitute.is_some())?;
-        self.prove_editable(&baseline, &before, object_index)?;
+        let preserve_state = preflight(&baseline, &proofs, substitute.is_some())?;
+        // A no-op cannot expose dormant Tc/Tw or a trailing TJ gap. Retain
+        // those operators even when their current string shows no displacement.
+        // On ordinary pages keep native editing, which preserves the absolute
+        // positions of following relative text objects and proven backgrounds.
+        let positioned = if preserve_state && substitute.is_none() {
+            let bytes = positioned_text::replace(&baseline, selected, &before, replacement)?;
+            self.prove_editable(&baseline, &before, object_index, true)?;
+            Some(bytes)
+        } else {
+            self.prove_editable(&baseline, &before, object_index, false)?;
+            None
+        };
         let original_raster = raster(
             &self
                 .document(source_id)?
@@ -823,6 +852,8 @@ impl WorkerRuntime {
                 font,
             )?
             .into()
+        } else if let Some(bytes) = positioned {
+            bytes.into()
         } else {
             replace_in_page(&copy, object_index, replacement)?;
             copy.save_to_bytes()?.into()
@@ -860,7 +891,7 @@ impl WorkerRuntime {
             ));
         }
         if substitute.is_some() {
-            self.prove_editable(&bytes, &after, object_index)?;
+            self.prove_editable(&bytes, &after, object_index, false)?;
         }
         // The style check retains the font size and baseline. Width can grow
         // wherever the visible page has room without covering nearby content.

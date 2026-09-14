@@ -619,3 +619,47 @@ fn type3_font_without_extractable_program_does_not_hide_standard_text_candidates
     assert!(runs.runs.iter().any(|run| run.text == "Neighbor"));
     engine.close_document(&source.id).unwrap();
 }
+
+#[test]
+fn positioned_cid_segments_preserve_complete_codes_and_original_font() {
+    let _guard = TEST_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+    let temp = tempfile::tempdir().unwrap();
+    let engine = engine();
+    for rotation in [0, 90, 180, 270] {
+        let path = temp.path().join(format!("positioned-cid-{rotation}.pdf"));
+        cid_fixture(&path, rotation);
+        let mut pdf = Document::load(&path).unwrap();
+        let page = *pdf.get_pages().values().next().unwrap();
+        let data = pdf.get_page_content(page);
+        let data = String::from_utf8(data)
+            .unwrap()
+            .replace("<004F006C0064> Tj", "[<004F> 30 <006C0064>] TJ");
+        let stream = pdf.add_object(Stream::new(dictionary! {}, data.into_bytes()));
+        pdf.get_dictionary_mut(page)
+            .unwrap()
+            .set("Contents", stream);
+        pdf.save(&path).unwrap();
+        let source = engine.open_document(&path).unwrap();
+        let original = engine.source_bytes(&source.id).unwrap();
+        let run = engine.list_text_runs(&source.id, 0).unwrap().runs.remove(0);
+        for replacement in ["Old", "Edit café", "Ed"] {
+            let edited = engine
+                .replace_text(&source.id, 0, run.object_index, "Old", replacement)
+                .unwrap();
+            let after = engine.list_text_runs(&edited.id, 0).unwrap();
+            assert_eq!(after.runs[0].text, replacement);
+            assert_eq!(after.runs[0].font_name, run.font_name);
+            let output = temp.path().join("cid-edited.pdf");
+            engine.export_pdf(request(&edited), &output).unwrap();
+            let reopened = engine.open_document(&output).unwrap();
+            assert!(engine
+                .extract_text(&reopened.id, 0)
+                .unwrap()
+                .contains(replacement));
+            assert_eq!(engine.source_bytes(&source.id).unwrap(), original);
+            engine.close_document(&reopened.id).unwrap();
+            engine.close_document(&edited.id).unwrap();
+        }
+        engine.close_document(&source.id).unwrap();
+    }
+}
