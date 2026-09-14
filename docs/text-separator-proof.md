@@ -76,3 +76,8 @@ The probe refuses an existing output directory. It uses the installed MuPDF
 1.27.1/pypdf 6.14.2 and the bundled PDFium identified by its hash. The unresolved
 copying requirement remains a release gate for #16; #14 retains the repeated-space
 reader issue. No Folio-only clipboard replacement is accepted as its resolution.
+
+Follow-up: [tagged PDF and native selection-copy investigation](text-selection-proof.md)
+distinguishes page-extractor terminal newlines from selection behavior and exposes
+MuPDF origin/selection failures in the single-TJ candidate. Passing PDFium cell
+boxes alone must not be interpreted as cross-reader selection compatibility.

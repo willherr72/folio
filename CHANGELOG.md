@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Add tagged-PDF and native selection-copy diagnostics plus an exact external-viewer clipboard checker. Retain the 100-case evidence, including cross-reader selection geometry failures; text areas remain unreleased.
 - Require exact external-reader text in the text-area verifier by default; diagnostic results cannot satisfy the release gate. Retain 80 experimental separator-encoding cases with their copying failures.
 
 - Add a development-only native Latin text-area layout API with measured wrapping, alignment, exact logical source ranges and explicit overflow. Existing desktop overlays are unchanged.
