@@ -20,8 +20,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     let first = arguments.next();
     let preview = first.as_deref() == Some(std::ffi::OsStr::new("--semantic-preview"));
     let long_text = first.as_deref() == Some(std::ffi::OsStr::new("--semantic-long"));
+    let wide = first.as_deref() == Some(std::ffi::OsStr::new("--semantic-wide"));
     let bank_actual = first.as_deref() == Some(std::ffi::OsStr::new("--semantic-banks-actualtext"));
-    let banked = bank_actual || first.as_deref() == Some(std::ffi::OsStr::new("--semantic-banks"));
+    let banked =
+        wide || bank_actual || first.as_deref() == Some(std::ffi::OsStr::new("--semantic-banks"));
     let semantic = preview
         || banked
         || long_text
@@ -31,6 +33,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         .unwrap_or_else(|| {
             root.join(if preview {
                 "artifacts/shaped-text/shared-preview-native"
+            } else if wide {
+                "artifacts/shaped-text/semantic-wide-native"
             } else if bank_actual {
                 "artifacts/shaped-text/semantic-banks-actualtext"
             } else if banked {
@@ -45,7 +49,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         });
     if arguments.next().is_some() {
         return Err(
-            "Usage: shaped-text-probe [--semantic-preview|--semantic|--semantic-long|--semantic-banks|--semantic-banks-actualtext] [new-output-directory]".into(),
+            "Usage: shaped-text-probe [--semantic-wide|--semantic-preview|--semantic|--semantic-long|--semantic-banks|--semantic-banks-actualtext] [new-output-directory]".into(),
         );
     }
     // Evidence is immutable: use another directory for subsequent runs.
@@ -111,7 +115,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             true,
         ),
     ];
-    let cases: Vec<_> = if banked {
+    let mut cases: Vec<_> = if banked {
         let fixture = "corpus/fonts/DejaVuSerif.ttf";
         let font =
             FontAsset::parse_for_shaping(fs::read(root.join("tests/fixtures").join(fixture))?)?;
@@ -210,6 +214,31 @@ fn main() -> Result<(), Box<dyn Error>> {
             })
             .collect()
     };
+    if wide {
+        for (name, fixture, suffix) in [
+            ("wide-ligatures", "corpus/fonts/DejaVuSerif.ttf", "office"),
+            (
+                "wide-marks",
+                "shaped-text/DejaVuSans.ttf",
+                "q\u{307}\u{323}",
+            ),
+            (
+                "wide-supplementary",
+                "corpus/fonts/DejaVuSerif.ttf",
+                "A\u{1d434}B",
+            ),
+        ] {
+            let font =
+                FontAsset::parse_for_shaping(fs::read(root.join("tests/fixtures").join(fixture))?)?;
+            let face = font.face()?;
+            let prefix: String = (0x41..=0x52f)
+                .filter_map(char::from_u32)
+                .filter(|c| c.is_alphabetic() && face.glyph_index(*c).is_some())
+                .take(256)
+                .collect();
+            cases.push((name, fixture, format!("{prefix}{suffix}"), true, 24.));
+        }
+    }
     let mut evidence = Vec::new();
     let mut refused = Vec::new();
     for (name, fixture, text, ligatures, font_size) in cases {
@@ -233,7 +262,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     );
                     prepared.into_pdf()
                 })
-            } else if banked {
+            } else if banked && !wide {
                 create_semantic_font_banks_probe(
                     &font,
                     &text,
@@ -341,9 +370,9 @@ fn main() -> Result<(), Box<dyn Error>> {
     fs::write(
         output.join("results.json"),
         serde_json::to_vec_pretty(&json!({
-        "matrix": if bank_actual { "font-banks-actualtext-negative" } else if banked { "font-banks" } else if long_text { "long-text" } else { "original" },
+        "matrix": if wide { "wide-semantic" } else if bank_actual { "font-banks-actualtext-negative" } else if banked { "font-banks" } else if long_text { "long-text" } else { "original" },
         "pdfiumSha256": hash(&fs::read(dll)?), "cases": evidence, "refused": refused,
-        "representation": if semantic { "outlines-with-type3-semantic-text" } else { "allocated-cid-with-whole-line-actualtext" },
+        "representation": if wide { "outlines-with-wide-cid-semantic-text" } else if semantic { "outlines-with-type3-semantic-text" } else { "allocated-cid-with-whole-line-actualtext" },
         "scope": "Experimental native representation. Reader Unicode, cluster geometry, rendering and resource limits require separate checks before editor support."
         }))?,
     )?;

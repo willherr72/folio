@@ -6,6 +6,7 @@ import { Trash2 } from "lucide-react";
 import type { Overlay } from "../editor/types";
 import { TEXT_FONTS, textFont, type TextFontName } from "../editor/text-fonts";
 import { resizeInk } from "../editor/geometry";
+import { graphemeDeletionRange } from "../editor/grapheme-deletion";
 
 export function OverlayProperties({ disabled = false, overlay, onChange, onDelete, autoEdit, onAutoEdited, pageWidth, pageHeight, onChooseFont }: {
   overlay: Overlay; onChange(update: (value: Overlay) => Overlay): void; onDelete(): void;
@@ -32,6 +33,26 @@ export function OverlayProperties({ disabled = false, overlay, onChange, onDelet
     onChange(value => value.id === id && value.type !== "ink" ? { ...value, text } : value);
   };
   const contentRef = useRef<HTMLTextAreaElement>(null);
+  const nativeDeletionBlocked = useRef(false);
+  const shapedContent = overlay.type === "text" && !!overlay.shaping;
+  const prepareDeletion = (input: HTMLTextAreaElement, direction: "backward" | "forward") => {
+    const range = graphemeDeletionRange(input.value, input.selectionStart, input.selectionEnd, direction);
+    if (range) input.setSelectionRange(range[0], range[1], input.selectionDirection);
+  };
+  useLayoutEffect(() => {
+    nativeDeletionBlocked.current = false;
+    const input = contentRef.current;
+    if (!input || disabled || !shapedContent) return;
+    // React 18's synthetic beforeinput does not expose native deletion inputTypes.
+    // Keep the browser's default edit and undo transaction, including non-keyboard input.
+    const beforeInput = (event: InputEvent) => {
+      if (event.defaultPrevented || !event.cancelable || event.isComposing || composing.current || nativeDeletionBlocked.current) return;
+      if (event.inputType === "deleteContentBackward") prepareDeletion(input, "backward");
+      if (event.inputType === "deleteContentForward") prepareDeletion(input, "forward");
+    };
+    input.addEventListener("beforeinput", beforeInput);
+    return () => input.removeEventListener("beforeinput", beforeInput);
+  }, [disabled, shapedContent, overlay.id]);
   useLayoutEffect(() => {
     if (!disabled && autoEdit && contentRef.current) { contentRef.current.focus(); contentRef.current.select(); onAutoEdited(); }
   }, [disabled, autoEdit, overlay.id, onAutoEdited]);
@@ -50,7 +71,16 @@ export function OverlayProperties({ disabled = false, overlay, onChange, onDelet
             setDraft(text);
             commitText(text);
           }}
-          onKeyDown={event => { if (composing.current || event.nativeEvent.isComposing || event.keyCode === 229) event.stopPropagation(); }}
+          onKeyDown={event => {
+            const inComposition = composing.current || event.nativeEvent.isComposing || event.keyCode === 229;
+            nativeDeletionBlocked.current = inComposition || event.ctrlKey || event.metaKey || event.altKey || event.shiftKey;
+            if (inComposition) event.stopPropagation();
+            if (disabled || !shapedContent || nativeDeletionBlocked.current || event.defaultPrevented) return;
+            if (event.key === "Backspace") prepareDeletion(event.currentTarget, "backward");
+            if (event.key === "Delete") prepareDeletion(event.currentTarget, "forward");
+          }}
+          onKeyUp={() => { nativeDeletionBlocked.current = false; }}
+          onBlur={() => { nativeDeletionBlocked.current = false; }}
           onChange={event => {
             if (disabled) return;
             const text = event.currentTarget.value;

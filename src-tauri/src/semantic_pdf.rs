@@ -1,6 +1,6 @@
 //! Experimental exact outlines plus a scalar Unicode layer with cluster boxes.
 //! Scalar origins divide cluster advances equally; they are not caret positions.
-//! Mixed directional runs and more than 255 distinct definitions are refused.
+//! Mixed directional runs remain refused. Wide definitions use one CID font.
 //! The explicitly named font-bank probe retains known reader failures only.
 //! RTL separators and joiners await a proven reader-order strategy.
 use crate::{
@@ -13,6 +13,7 @@ use ttf_parser::{GlyphId, OutlineBuilder};
 use unicode_bidi::{bidi_class, BidiClass};
 
 const CODES_PER_FONT: usize = 255;
+const WIDE_METRIC_SCALE: u16 = 16;
 const MAX_OUTLINE_OPS: usize = 100_000;
 const MAX_CONTENT_BYTES: usize = 8 * 1024 * 1024;
 const MAX_PDF_BYTES: usize = 32 * 1024 * 1024;
@@ -114,6 +115,73 @@ struct Cell {
     x: f32,
     width: f32,
     bounds: [f32; 4],
+}
+
+// The extra font is generated entirely by Folio. Uploaded font bytes are never
+// rewritten: their native outlines remain the visible text and original font resource.
+fn wide_semantic_font(pdf: &mut Document, definitions: &[&Cell]) -> EngineResult<lopdf::ObjectId> {
+    use crate::semantic_font::{build_semantic_font, SemanticGlyph};
+    let glyphs: Vec<_> = definitions
+        .iter()
+        .map(|cell| SemanticGlyph {
+            advance: cell.width,
+            bounds: cell.bounds,
+        })
+        .collect();
+    let bytes = build_semantic_font(&glyphs, WIDE_METRIC_SCALE)?;
+    let scale = f32::from(WIDE_METRIC_SCALE);
+    let mut bbox = [
+        f32::INFINITY,
+        f32::INFINITY,
+        f32::NEG_INFINITY,
+        f32::NEG_INFINITY,
+    ];
+    for glyph in &glyphs {
+        bbox[0] = bbox[0].min((glyph.bounds[0] * scale).round());
+        bbox[1] = bbox[1].min((glyph.bounds[1] * scale).round());
+        bbox[2] = bbox[2].max((glyph.bounds[2] * scale).round());
+        bbox[3] = bbox[3].max((glyph.bounds[3] * scale).round());
+    }
+    let program = pdf.add_object(Stream::new(
+        dictionary! {"Length1"=>bytes.len() as i64},
+        bytes,
+    ));
+    let descriptor = pdf.add_object(dictionary! {
+        "Type"=>"FontDescriptor", "FontName"=>"FolioSemanticWide", "Flags"=>4,
+        "FontBBox"=>numbers(&bbox), "ItalicAngle"=>0, "Ascent"=>bbox[3].max(0.),
+        "Descent"=>bbox[1].min(0.), "CapHeight"=>bbox[3].max(0.), "StemV"=>80, "FontFile2"=>program
+    });
+    let cid_map: Vec<u8> = (0..=definitions.len())
+        .flat_map(|id| (id as u16).to_be_bytes())
+        .collect();
+    let cid_map = pdf.add_object(Stream::new(dictionary! {}, cid_map));
+    let widths: Vec<Object> = definitions
+        .iter()
+        .map(|cell| Object::Real(cell.width * scale))
+        .collect();
+    let descendant = pdf.add_object(dictionary! {
+        "Type"=>"Font", "Subtype"=>"CIDFontType2", "BaseFont"=>"FolioSemanticWide",
+        "CIDSystemInfo"=>dictionary!{"Registry"=>Object::string_literal("Adobe"),"Ordering"=>Object::string_literal("Identity"),"Supplement"=>0},
+        "FontDescriptor"=>descriptor, "CIDToGIDMap"=>cid_map, "DW"=>0,
+        "W"=>vec![Object::Integer(1),Object::Array(widths)]
+    });
+    let mut cmap=String::from("/CIDInit /ProcSet findresource begin 12 dict begin begincmap /CIDSystemInfo << /Registry (Adobe) /Ordering (UCS) /Supplement 0 >> def /CMapName /FolioWideSemantic def /CMapType 2 def 1 begincodespacerange <0000> <FFFF> endcodespacerange\n");
+    for (chunk_index, chunk) in definitions.chunks(100).enumerate() {
+        writeln!(&mut cmap, "{} beginbfchar", chunk.len()).unwrap();
+        for (i, cell) in chunk.iter().enumerate() {
+            let unicode: String = cell
+                .unicode
+                .to_string()
+                .encode_utf16()
+                .map(|unit| format!("{unit:04X}"))
+                .collect();
+            writeln!(&mut cmap, "<{:04X}> <{unicode}>", chunk_index * 100 + i + 1).unwrap();
+        }
+        cmap.push_str("endbfchar\n");
+    }
+    cmap.push_str("endcmap CMapName currentdict /CMap defineresource pop end end\n");
+    let unicode = pdf.add_object(Stream::new(dictionary! {}, cmap.into_bytes()));
+    Ok(pdf.add_object(dictionary!{"Type"=>"Font","Subtype"=>"Type0","BaseFont"=>"FolioSemanticWide","Encoding"=>"Identity-H","DescendantFonts"=>vec![Object::Reference(descendant)],"ToUnicode"=>unicode}))
 }
 
 /// Research output only: unpainted Type3 character programs carry Unicode and
@@ -430,11 +498,6 @@ fn semantic_pdf(
         let code = if let Some(&code) = definition_codes.get(&key) {
             code
         } else {
-            if !font_banks && definitions.len() == CODES_PER_FONT {
-                return Err(invalid(
-                    "Semantic evidence supports at most 255 distinct character definitions (Unicode, advance and cluster bounds); font-bank probes fail reader order and selection.",
-                ));
-            }
             let code = definitions.len();
             definitions.push(cell);
             definition_codes.insert(key, code);
@@ -442,6 +505,7 @@ fn semantic_pdf(
         };
         codes.push(code);
     }
+    let wide = !font_banks && definitions.len() > CODES_PER_FONT;
     let mut pdf = Document::with_version("1.7");
     let program = pdf.add_object(Stream::new(
         dictionary! {"Length1"=>font.bytes.len() as i64},
@@ -454,7 +518,15 @@ fn semantic_pdf(
     let descendant=pdf.add_object(dictionary!{"Type"=>"Font","Subtype"=>"CIDFontType2","BaseFont"=>Object::Name(original_name.as_bytes().to_vec()),"CIDSystemInfo"=>dictionary!{"Registry"=>Object::string_literal("Adobe"),"Ordering"=>Object::string_literal("Identity"),"Supplement"=>0},"FontDescriptor"=>descriptor,"CIDToGIDMap"=>"Identity","DW"=>1000});
     let original=pdf.add_object(dictionary!{"Type"=>"Font","Subtype"=>"Type0","BaseFont"=>Object::Name(original_name.into_bytes()),"Encoding"=>"Identity-H","DescendantFonts"=>vec![Object::Reference(descendant)]});
     let mut font_resources = dictionary! {"Original" => original};
-    for (bank_index, bank) in definitions.chunks(CODES_PER_FONT).enumerate() {
+    if wide {
+        let resource = wide_semantic_font(&mut pdf, &definitions)?;
+        font_resources.set("S", resource);
+    }
+    for (bank_index, bank) in definitions
+        .chunks(CODES_PER_FONT)
+        .enumerate()
+        .filter(|_| !wide)
+    {
         let mut charprocs = lopdf::Dictionary::new();
         let mut differences = vec![Object::Integer(1)];
         let mut widths = Vec::new();
@@ -512,16 +584,33 @@ fn semantic_pdf(
             .collect();
         writeln!(&mut visible, "/Span << /ActualText <FEFF{actual}> >> BDC").unwrap();
     }
+    // Keep every semantic occurrence in one TJ. Switching fonts lets external
+    // PDFium reorder segments at 180 degrees. Rectangles remain invisible;
+    // the original native outlines above are the only visible ink.
+    if wide {
+        visible.push_str("q\n");
+    }
+    let metric_scale = if wide {
+        f32::from(WIDE_METRIC_SCALE)
+    } else {
+        1.
+    };
+    let semantic_size = if wide {
+        format!("{:.9}", font_size / metric_scale)
+    } else {
+        format!("{font_size:.7}")
+    };
+    let render_mode = if wide { "3 Tr " } else { "" };
     writeln!(
         &mut visible,
-        "BT /S {font_size:.7} Tf 1 0 0 1 {:.7} {:.7} Tm [",
+        "BT /S {semantic_size} Tf {render_mode}1 0 0 1 {:.7} {:.7} Tm [",
         origin.0 + cells[0].x,
         origin.1
     )
     .unwrap();
     for (i, cell) in cells.iter().enumerate() {
         let bank = codes[i] / CODES_PER_FONT;
-        if i > 0 && bank != codes[i - 1] / CODES_PER_FONT {
+        if !wide && i > 0 && bank != codes[i - 1] / CODES_PER_FONT {
             let name = if bank == 0 {
                 "S".to_owned()
             } else {
@@ -529,17 +618,26 @@ fn semantic_pdf(
             };
             writeln!(&mut visible, "] TJ /{name} {font_size:.7} Tf [").unwrap();
         }
-        write!(&mut visible, "<{:02X}> ", codes[i] % CODES_PER_FONT + 1).unwrap();
+        if wide {
+            write!(&mut visible, "<{:04X}> ", codes[i] + 1).unwrap();
+        } else {
+            write!(&mut visible, "<{:02X}> ", codes[i] % CODES_PER_FONT + 1).unwrap();
+        }
         if let Some(next) = cells.get(i + 1) {
             write!(
                 &mut visible,
                 "{:.7} ",
-                (cell.x + cell.width * font_size / 1000. - next.x) / font_size * 1000.
+                (cell.x + cell.width * font_size / 1000. - next.x) / font_size
+                    * 1000.
+                    * metric_scale
             )
             .unwrap();
         }
     }
     visible.push_str("] TJ ET\n");
+    if wide {
+        visible.push_str("Q\n");
+    }
     if actual_text {
         visible.push_str("EMC\n");
     }

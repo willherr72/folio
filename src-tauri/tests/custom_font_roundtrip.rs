@@ -579,3 +579,79 @@ fn unused_shared_resource_graph_is_rejected_without_expanding_its_streams() {
         .unwrap();
     assert_eq!(annotations(&Document::load(&preserved).unwrap()).len(), 1);
 }
+
+#[cfg(feature = "shaped-text")]
+#[test]
+fn wide_shaped_text_restores_editable_font_and_flattens_without_hiding_later_text() {
+    let _guard = TEST_LOCK.lock().unwrap_or_else(|error| error.into_inner());
+    let temp = tempfile::tempdir().unwrap();
+    let source_path = temp.path().join("source.pdf");
+    fixture(&source_path);
+    let mut pdf = Document::load(&source_path).unwrap();
+    let page_id = *pdf.get_pages().values().next().unwrap();
+    pdf.get_dictionary_mut(page_id).unwrap().set(
+        "MediaBox",
+        vec![0.into(), 0.into(), 3000.into(), 400.into()],
+    );
+    pdf.save(&source_path).unwrap();
+    let original = fs::read(&source_path).unwrap();
+    let engine = engine();
+    let source = engine.open_document(&source_path).unwrap();
+    let asset = folio_engine::FontAsset::parse(font_bytes()).unwrap();
+    let face = asset.face().unwrap();
+    let prefix: String = (0x41..=0x52f)
+        .filter_map(char::from_u32)
+        .filter(|c| c.is_alphabetic() && face.glyph_index(*c).is_some())
+        .take(256)
+        .collect();
+    let text = format!("{prefix}office");
+    let info = engine.fonts().register(font_bytes()).unwrap();
+    let mut value = plan(&source.id, &info.id);
+    value["width"] = json!(3000);
+    value["overlays"][0]["fontSize"] = json!(8);
+    value["overlays"][0]["text"] = json!(text);
+    value["overlays"][0]["shaping"] = json!({"version":1,"direction":"ltr","ligatures":true});
+    value["overlays"].as_array_mut().unwrap().push(json!({"type":"text","id":"later","x":30,"y":150,"text":"After wide text","fontSize":20,"fontName":"Helvetica","color":"#123456","rotation":0}));
+    let editable = temp.path().join("editable.pdf");
+    engine
+        .export_pdf(
+            serde_json::from_value(json!({"pages":[value]})).unwrap(),
+            &editable,
+        )
+        .unwrap();
+    engine.close_document(&source.id).unwrap();
+    engine.fonts().remove(&info.id).unwrap();
+    fs::rename(&source_path, temp.path().join("moved.pdf")).unwrap();
+    let reopened = engine.open_document(&editable).unwrap();
+    let overlays = serde_json::to_value(&reopened.pages[0].overlays).unwrap();
+    assert_eq!(overlays.as_array().unwrap().len(), 2);
+    assert_eq!(overlays[0]["text"], text);
+    assert_eq!(overlays[0]["shaping"]["direction"], "ltr");
+    assert_eq!(
+        engine.fonts().get(&info.id).unwrap().bytes.as_ref(),
+        font_bytes()
+    );
+    let flat_path = temp.path().join("flattened.pdf");
+    let page = &reopened.pages[0];
+    engine.export_pdf(serde_json::from_value(json!({"flatten":true,"pages":[{"id":"flat","sourceId":reopened.id,"pageIndex":0,"width":page.width,"height":page.height,"rotation":0,"overlays":page.overlays}]})).unwrap(), &flat_path).unwrap();
+    let flat = engine.open_document(&flat_path).unwrap();
+    assert!(flat.pages[0].overlays.is_empty());
+    let copied = engine.extract_text(&flat.id, 0).unwrap();
+    assert!(copied.contains(&text), "{copied}");
+    assert!(copied.contains("After wide text"));
+    // Verify the later standard text actually paints, not merely its semantics.
+    let png = engine.render_page(&flat.id, 0, 3000).unwrap();
+    let image = image::load_from_memory(&png).unwrap().to_rgb8();
+    let sx = image.width() as f32 / 3000.;
+    let sy = image.height() as f32 / 400.;
+    assert!(
+        image
+            .enumerate_pixels()
+            .filter(|(x, y, p)| (30. ..250.).contains(&(*x as f32 / sx))
+                && (150. ..180.).contains(&(*y as f32 / sy))
+                && p.0.iter().any(|v| *v < 180))
+            .count()
+            > 100
+    );
+    assert_eq!(fs::read(temp.path().join("moved.pdf")).unwrap(), original);
+}

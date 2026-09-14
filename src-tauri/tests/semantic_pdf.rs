@@ -325,9 +325,6 @@ fn font_bank_negative_controls_keep_unsafe_reader_order_out_of_the_writer() {
         // Return to earlier definitions after crossing one or two font banks.
         let text = format!("{prefix}AB{}CD", prefix.chars().last().unwrap());
         for rotation in [0, 90, 180, 270] {
-            assert!(
-                create_semantic_pdf(&font, &text, 4., TextDirection::Ltr, false, rotation).is_err()
-            );
             let output = create_semantic_font_banks_probe(
                 &font,
                 &text,
@@ -478,24 +475,84 @@ fn a_malformed_nonempty_outline_is_not_silently_omitted() {
 }
 
 #[test]
-fn semantic_code_capacity_refuses_overflow_instead_of_aliasing_unicode() {
+fn wide_semantic_codes_preserve_unicode_geometry_and_native_save_at_all_rotations() {
     let font = font("corpus/fonts/DejaVuSerif.ttf");
     let face = font.face().unwrap();
-    let alphabet: String = (0x41..=0x2ff)
+    let alphabet: String = (0x41..=0x52f)
         .filter_map(char::from_u32)
         .filter(|c| c.is_alphabetic() && face.glyph_index(*c).is_some())
-        .take(256)
+        .take(511)
         .collect();
-    assert_eq!(alphabet.chars().count(), 256);
-    let fitting: String = alphabet.chars().take(255).collect();
-    create_semantic_pdf(&font, &fitting, 4., TextDirection::Ltr, false, 0).unwrap();
-    let error = create_semantic_pdf(&font, &alphabet, 4., TextDirection::Ltr, false, 0)
-        .err()
-        .expect("An exhausted one-byte font must not reuse a different character's code");
-    assert!(
-        error.to_string().contains("distinct character definitions"),
-        "{error}"
-    );
+    assert_eq!(alphabet.chars().count(), 511);
+    let engine = PdfEngine::start(
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("resources/pdfium/pdfium.dll"),
+    )
+    .unwrap();
+    let temp = tempfile::tempdir().unwrap();
+    for count in [256, 511] {
+        let prefix: String = alphabet.chars().take(count).collect();
+        let text = format!("{prefix}AB{}CD", prefix.chars().last().unwrap());
+        for rotation in [0, 90, 180, 270] {
+            let output = create_semantic_pdf(&font, &text, 4., TextDirection::Ltr, false, rotation)
+                .expect("One wide semantic font must preserve definitions beyond 255");
+            assert!(contains_program(&output.bytes, &font.bytes));
+            let document = lopdf::Document::load_mem(&output.bytes).unwrap();
+            assert!(!document
+                .objects
+                .values()
+                .filter_map(|o| o.as_dict().ok())
+                .any(|d| d.get(b"Subtype").ok().and_then(|o| o.as_name().ok()) == Some(b"Type3")));
+            let path = temp.path().join(format!("wide-{count}-{rotation}.pdf"));
+            fs::write(&path, &output.bytes).unwrap();
+            let source = engine.open_document(&path).unwrap();
+            assert_eq!(engine.extract_text(&source.id, 0).unwrap(), text);
+            let geometry = engine.page_text(&source.id, 0).unwrap();
+            assert_eq!(
+                geometry
+                    .characters
+                    .iter()
+                    .map(|c| c.text.as_str())
+                    .collect::<String>(),
+                text
+            );
+            let first = &geometry.characters[0];
+            let last = geometry.characters.last().unwrap();
+            let span = if rotation % 180 == 0 {
+                (last.x - first.x).abs()
+            } else {
+                (last.y - first.y).abs()
+            };
+            assert!(
+                span > output.layout.width * 0.95,
+                "Wide copy must retain the full line geometry"
+            );
+            let before = engine.render_page(&source.id, 0, 1200).unwrap();
+            let saved = temp.path().join(format!("saved-{count}-{rotation}.pdf"));
+            let page = &source.pages[0];
+            engine
+                .export_pdf(
+                    ExportRequest {
+                        flatten: false,
+                        pages: vec![PagePlan {
+                            id: "wide".into(),
+                            source_id: source.id.clone(),
+                            page_index: 0,
+                            width: page.width,
+                            height: page.height,
+                            rotation: 0,
+                            overlays: vec![],
+                        }],
+                    },
+                    &saved,
+                )
+                .unwrap();
+            let reopened = engine.open_document(&saved).unwrap();
+            assert_eq!(engine.extract_text(&reopened.id, 0).unwrap(), text);
+            assert_eq!(engine.render_page(&reopened.id, 0, 1200).unwrap(), before);
+            engine.close_document(&reopened.id).unwrap();
+            engine.close_document(&source.id).unwrap();
+        }
+    }
 }
 
 #[test]

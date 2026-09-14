@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.10.1
+
+- Shaped text boxes can exceed 255 distinct character definitions using one bounded semantic CID font; existing smaller boxes keep their original representation.
+- Plain Backspace/Delete in shaped Content removes complete graphemes, including combining marks and supplementary Unicode, while preserving native undo/redo and IME behavior.
+- Native, independent-reader and browser checks cover wide text, ligature interiors, character geometry and editable/flattened save/reopen. Mixed direction and RTL word separator restrictions remain.
+
 ## 0.10.0
 
 - Add opt-in **Shaped text** for single-line custom-font text boxes, with native outline previews, direction and ligature controls, and font validation at the authored size.

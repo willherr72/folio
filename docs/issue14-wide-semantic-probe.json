@@ -1,0 +1,2120 @@
+{
+  "design": "Single Type0 Identity-H + CIDFontType2 synthetic rectangle glyphs, explicit CIDToGIDMap, per-code ToUnicode, 3 Tr, one TJ; original widths/adjustments and visible prefix preserved. Configurable UPM and metric enlargement, inverse font size and enlarged TJ adjustments.",
+  "pdfium_sha256": "04100c03e41cac1f979e36e5e26fb860bcb5a7461f53830d3c098716624a27a9",
+  "upm": 1000,
+  "metric_scale": 1,
+  "tolerance_points": 0.06,
+  "cases": [
+    {
+      "case": "bank-boundary-255",
+      "rotation": 0,
+      "definitions": 256,
+      "source_sha256": "8606cb69d072eae034428682f6f6288425aade8b73adb0539e571b26b98950b7",
+      "output_sha256": "9aaf1e02ae5456a004077bf9732c5c6511e535f7183f0e94d181362cf905cf52",
+      "pdfium": {
+        "exact": true,
+        "max_ink_edge_error": 0.05734257929687203,
+        "geometry_pass": true
+      },
+      "original_pdfium": {
+        "exact": true,
+        "max_ink_edge_error": 0.0018920648437514842,
+        "geometry_pass": true
+      },
+      "mupdf": {
+        "exact": true,
+        "max_ink_edge_error": 5.9296875,
+        "geometry_pass": false
+      },
+      "raster_unchanged": true,
+      "exact_all_readers": true,
+      "max_pdfium_delta_from_original_points": 0.056003570556640625,
+      "original_pdfium_raw_exact": true
+    },
+    {
+      "case": "bank-boundary-255",
+      "rotation": 90,
+      "definitions": 256,
+      "source_sha256": "91c6b84a134deaa05a414f7ed57e217dc9cb28e195ee8af7b22e0a1d0990489a",
+      "output_sha256": "89bf3436c8579ca8cdd2d42970c32a7a2c076a3e178f514925f4a85b5cbcfa53",
+      "pdfium": {
+        "exact": true,
+        "max_ink_edge_error": 0.05734257929687203,
+        "geometry_pass": true
+      },
+      "original_pdfium": {
+        "exact": true,
+        "max_ink_edge_error": 0.0018920648437514842,
+        "geometry_pass": true
+      },
+      "mupdf": {
+        "exact": true,
+        "max_ink_edge_error": 5.9296875,
+        "geometry_pass": false
+      },
+      "raster_unchanged": true,
+      "exact_all_readers": true,
+      "max_pdfium_delta_from_original_points": 0.056003570556640625,
+      "original_pdfium_raw_exact": true
+    },
+    {
+      "case": "bank-boundary-255",
+      "rotation": 180,
+      "definitions": 256,
+      "source_sha256": "a39bb1c064481aa36085c11e944a2f4626425e0043ce46ce107ecfcab39dbad5",
+      "output_sha256": "782feebc9ceb268ee7dcf228cbc6148f3ae78fb5c4fe99f46f04cd86cd21b509",
+      "pdfium": {
+        "exact": true,
+        "max_ink_edge_error": 0.05734257929687203,
+        "geometry_pass": true
+      },
+      "original_pdfium": {
+        "exact": false,
+        "max_ink_edge_error": null,
+        "geometry_pass": false
+      },
+      "mupdf": {
+        "exact": true,
+        "max_ink_edge_error": 5.9296875,
+        "geometry_pass": false
+      },
+      "raster_unchanged": true,
+      "exact_all_readers": true,
+      "max_pdfium_delta_from_original_points": 666.5092735290527,
+      "original_pdfium_raw_exact": false
+    },
+    {
+      "case": "bank-boundary-255",
+      "rotation": 270,
+      "definitions": 256,
+      "source_sha256": "02ed0e7279fd5f940346fa5bb09bd7af2b2a18ad285c25e702ca48990138ca03",
+      "output_sha256": "c41f4079aac9bb30ebd76e311340d6230cb60cf3750a1c9f405e9b9408f79be2",
+      "pdfium": {
+        "exact": true,
+        "max_ink_edge_error": 0.05734257929687203,
+        "geometry_pass": true
+      },
+      "original_pdfium": {
+        "exact": true,
+        "max_ink_edge_error": 0.0018920648437514842,
+        "geometry_pass": true
+      },
+      "mupdf": {
+        "exact": true,
+        "max_ink_edge_error": 5.9296875,
+        "geometry_pass": false
+      },
+      "raster_unchanged": true,
+      "exact_all_readers": true,
+      "max_pdfium_delta_from_original_points": 0.056003570556640625,
+      "original_pdfium_raw_exact": true
+    },
+    {
+      "case": "bank-boundary-256",
+      "rotation": 0,
+      "definitions": 257,
+      "source_sha256": "e4e883917f5755052b3c13d4182541ecd1b103298ce7c5d8e2c512d051cb4a54",
+      "output_sha256": "d12731b197399b303f7917779fffafaacd31035d98e568f9e24cd7cf425df8cb",
+      "pdfium": {
+        "exact": true,
+        "max_ink_edge_error": 0.05734257929687203,
+        "geometry_pass": true
+      },
+      "original_pdfium": {
+        "exact": true,
+        "max_ink_edge_error": 0.0018920648437514842,
+        "geometry_pass": true
+      },
+      "mupdf": {
+        "exact": true,
+        "max_ink_edge_error": 5.9296875,
+        "geometry_pass": false
+      },
+      "raster_unchanged": true,
+      "exact_all_readers": true,
+      "max_pdfium_delta_from_original_points": 0.056003570556640625,
+      "original_pdfium_raw_exact": true
+    },
+    {
+      "case": "bank-boundary-256",
+      "rotation": 90,
+      "definitions": 257,
+      "source_sha256": "708d95af18af048d6adad7671d25a2a6506c2c2725bef82da71708dcd3bc2239",
+      "output_sha256": "2602548b0acce6e3e4ec9dfcb2281ab8068c7c3410918f393a33f6e58ba8c272",
+      "pdfium": {
+        "exact": true,
+        "max_ink_edge_error": 0.05734257929687203,
+        "geometry_pass": true
+      },
+      "original_pdfium": {
+        "exact": true,
+        "max_ink_edge_error": 0.0018920648437514842,
+        "geometry_pass": true
+      },
+      "mupdf": {
+        "exact": true,
+        "max_ink_edge_error": 5.9296875,
+        "geometry_pass": false
+      },
+      "raster_unchanged": true,
+      "exact_all_readers": true,
+      "max_pdfium_delta_from_original_points": 0.056003570556640625,
+      "original_pdfium_raw_exact": true
+    },
+    {
+      "case": "bank-boundary-256",
+      "rotation": 180,
+      "definitions": 257,
+      "source_sha256": "eaa0a1104a1fa9e68917373801b74aae81553368c46e1cd50298da98878f4fb3",
+      "output_sha256": "8edb9f7bc7d7d128277510ff61d5c95dab2426d43cc7ba2b23da7edd3557ab33",
+      "pdfium": {
+        "exact": true,
+        "max_ink_edge_error": 0.05734257929687203,
+        "geometry_pass": true
+      },
+      "original_pdfium": {
+        "exact": false,
+        "max_ink_edge_error": null,
+        "geometry_pass": false
+      },
+      "mupdf": {
+        "exact": true,
+        "max_ink_edge_error": 5.9296875,
+        "geometry_pass": false
+      },
+      "raster_unchanged": true,
+      "exact_all_readers": true,
+      "max_pdfium_delta_from_original_points": 672.7565536499023,
+      "original_pdfium_raw_exact": false
+    },
+    {
+      "case": "bank-boundary-256",
+      "rotation": 270,
+      "definitions": 257,
+      "source_sha256": "a235f49faf36dcac9f9a0a6a1590e5ef9bd6b0498714c798381fb4064359fdab",
+      "output_sha256": "de89f52e1e9f729399948d78ba5db6d26946173cda84cc8963418349f5b1c09b",
+      "pdfium": {
+        "exact": true,
+        "max_ink_edge_error": 0.05734257929687203,
+        "geometry_pass": true
+      },
+      "original_pdfium": {
+        "exact": true,
+        "max_ink_edge_error": 0.0018920648437514842,
+        "geometry_pass": true
+      },
+      "mupdf": {
+        "exact": true,
+        "max_ink_edge_error": 5.9296875,
+        "geometry_pass": false
+      },
+      "raster_unchanged": true,
+      "exact_all_readers": true,
+      "max_pdfium_delta_from_original_points": 0.056003570556640625,
+      "original_pdfium_raw_exact": true
+    },
+    {
+      "case": "bank-boundary-511",
+      "rotation": 0,
+      "definitions": 512,
+      "source_sha256": "c6d0365764afbb260d657156985e2911afc845610b53d94922bcee4708e2522a",
+      "output_sha256": "b935930ee1338172c4b5493bc37b4e6e875be6a047d03d4860402af5bd6a05ba",
+      "pdfium": {
+        "exact": true,
+        "max_ink_edge_error": 0.06439206484375148,
+        "geometry_pass": false
+      },
+      "original_pdfium": {
+        "exact": true,
+        "max_ink_edge_error": 0.002723046874962165,
+        "geometry_pass": true
+      },
+      "mupdf": {
+        "exact": true,
+        "max_ink_edge_error": 5.9296875,
+        "geometry_pass": false
+      },
+      "raster_unchanged": true,
+      "exact_all_readers": true,
+      "max_pdfium_delta_from_original_points": 0.06400299072265625,
+      "original_pdfium_raw_exact": true
+    },
+    {
+      "case": "bank-boundary-511",
+      "rotation": 90,
+      "definitions": 512,
+      "source_sha256": "a13c7395d77fcdc63ccdb221b74c63c0079af3268451cc738396ca240f24d3aa",
+      "output_sha256": "cc1eac0f97309a9e933d34c6de560cf4f48ad474d2cdb82d843d3104b99f0364",
+      "pdfium": {
+        "exact": true,
+        "max_ink_edge_error": 0.06439206484375148,
+        "geometry_pass": false
+      },
+      "original_pdfium": {
+        "exact": true,
+        "max_ink_edge_error": 0.002723046874962165,
+        "geometry_pass": true
+      },
+      "mupdf": {
+        "exact": true,
+        "max_ink_edge_error": 5.9296875,
+        "geometry_pass": false
+      },
+      "raster_unchanged": true,
+      "exact_all_readers": true,
+      "max_pdfium_delta_from_original_points": 0.06400299072265625,
+      "original_pdfium_raw_exact": true
+    },
+    {
+      "case": "bank-boundary-511",
+      "rotation": 180,
+      "definitions": 512,
+      "source_sha256": "75d569cb1a72e9405f1e7fcaf59f8ee3f0ed2a1899cbec0e42b71d8e19cf6530",
+      "output_sha256": "98c8d13a8c838689c634c38b479ea1ff9ae0f827fc76e541085c0af46cddc822",
+      "pdfium": {
+        "exact": true,
+        "max_ink_edge_error": 0.06439206484375148,
+        "geometry_pass": false
+      },
+      "original_pdfium": {
+        "exact": false,
+        "max_ink_edge_error": null,
+        "geometry_pass": false
+      },
+      "mupdf": {
+        "exact": true,
+        "max_ink_edge_error": 5.9296875,
+        "geometry_pass": false
+      },
+      "raster_unchanged": true,
+      "exact_all_readers": true,
+      "max_pdfium_delta_from_original_points": 1348.4665145874023,
+      "original_pdfium_raw_exact": false
+    },
+    {
+      "case": "bank-boundary-511",
+      "rotation": 270,
+      "definitions": 512,
+      "source_sha256": "a665feb1281c8d9ed5002272c0d6ffc4294198c7b9a4ad8d759c08e4f1d778e3",
+      "output_sha256": "99d4aa20450b41a2d97bc12731b5f145bd30aa54e6b27345db23fe2e8875ac83",
+      "pdfium": {
+        "exact": true,
+        "max_ink_edge_error": 0.06439206484375148,
+        "geometry_pass": false
+      },
+      "original_pdfium": {
+        "exact": true,
+        "max_ink_edge_error": 0.002723046874962165,
+        "geometry_pass": true
+      },
+      "mupdf": {
+        "exact": true,
+        "max_ink_edge_error": 5.9296875,
+        "geometry_pass": false
+      },
+      "raster_unchanged": true,
+      "exact_all_readers": true,
+      "max_pdfium_delta_from_original_points": 0.06400299072265625,
+      "original_pdfium_raw_exact": true
+    },
+    {
+      "case": "ligatures-on",
+      "rotation": 0,
+      "definitions": 6,
+      "source_sha256": "f7e32d7b55f3c03b50df3102c404b26e8522c24bf1e013b833e7d7cb94a3f97b",
+      "output_sha256": "f41108b3e167fb5651398553ba9781394207970c8793779c56dbb3046afe8ab8",
+      "pdfium": {
+        "exact": true,
+        "max_ink_edge_error": 0.269622802734375,
+        "geometry_pass": false
+      },
+      "original_pdfium": {
+        "exact": true,
+        "max_ink_edge_error": 0.011810552734374369,
+        "geometry_pass": true
+      },
+      "mupdf": {
+        "exact": true,
+        "max_ink_edge_error": 35.203125,
+        "geometry_pass": false
+      },
+      "raster_unchanged": true,
+      "exact_all_readers": true,
+      "max_pdfium_delta_from_original_points": 0.26399993896484375,
+      "original_pdfium_raw_exact": true
+    },
+    {
+      "case": "ligatures-on",
+      "rotation": 90,
+      "definitions": 6,
+      "source_sha256": "96c01832606450db695c29740ac158c0eb71894d091829e4f585be6e815bd69e",
+      "output_sha256": "3196c7bdce3011e660a47324e0a3ebcd51b28a1f38bb120f7dc30a359e9487c4",
+      "pdfium": {
+        "exact": true,
+        "max_ink_edge_error": 0.269622802734375,
+        "geometry_pass": false
+      },
+      "original_pdfium": {
+        "exact": true,
+        "max_ink_edge_error": 0.011810552734374369,
+        "geometry_pass": true
+      },
+      "mupdf": {
+        "exact": true,
+        "max_ink_edge_error": 35.203125,
+        "geometry_pass": false
+      },
+      "raster_unchanged": true,
+      "exact_all_readers": true,
+      "max_pdfium_delta_from_original_points": 0.26399993896484375,
+      "original_pdfium_raw_exact": true
+    },
+    {
+      "case": "ligatures-on",
+      "rotation": 180,
+      "definitions": 6,
+      "source_sha256": "3345174500821631c996aa2fb74a4800a8a7a2a21e07c15ba86a397d80fcb637",
+      "output_sha256": "fa44262b59cb031532ba33eeb7c9452105f787b1dc4bd165c54e3817f037cec4",
+      "pdfium": {
+        "exact": true,
+        "max_ink_edge_error": 0.269622802734375,
+        "geometry_pass": false
+      },
+      "original_pdfium": {
+        "exact": true,
+        "max_ink_edge_error": 0.011810552734374369,
+        "geometry_pass": true
+      },
+      "mupdf": {
+        "exact": true,
+        "max_ink_edge_error": 35.203125,
+        "geometry_pass": false
+      },
+      "raster_unchanged": true,
+      "exact_all_readers": true,
+      "max_pdfium_delta_from_original_points": 0.26399993896484375,
+      "original_pdfium_raw_exact": true
+    },
+    {
+      "case": "ligatures-on",
+      "rotation": 270,
+      "definitions": 6,
+      "source_sha256": "42f1e5e18435094c2bc1ce31d4b46d1cdd2166b279ad9597c3cf7454b178e4bc",
+      "output_sha256": "748ed20282b7a0e4402e5fe9d52ca41f8ec7804e1272258f4662486576e5427c",
+      "pdfium": {
+        "exact": true,
+        "max_ink_edge_error": 0.269622802734375,
+        "geometry_pass": false
+      },
+      "original_pdfium": {
+        "exact": true,
+        "max_ink_edge_error": 0.011810552734374369,
+        "geometry_pass": true
+      },
+      "mupdf": {
+        "exact": true,
+        "max_ink_edge_error": 35.203125,
+        "geometry_pass": false
+      },
+      "raster_unchanged": true,
+      "exact_all_readers": true,
+      "max_pdfium_delta_from_original_points": 0.26399993896484375,
+      "original_pdfium_raw_exact": true
+    },
+    {
+      "case": "decomposed",
+      "rotation": 0,
+      "definitions": 5,
+      "source_sha256": "1553eb3b0eba5be3da86a3ad169f0e7b70e4d447e3cf5349916591651c8c848e",
+      "output_sha256": "d81802aa38fd69dc5be9b9a890ad07a23d27ef4acdfd850ccaf6d632dbafe467",
+      "pdfium": {
+        "exact": true,
+        "max_ink_edge_error": 0.2926869624023425,
+        "geometry_pass": false
+      },
+      "original_pdfium": {
+        "exact": true,
+        "max_ink_edge_error": 0.00562286376953125,
+        "geometry_pass": true
+      },
+      "mupdf": {
+        "exact": true,
+        "max_ink_edge_error": 35.203125,
+        "geometry_pass": false
+      },
+      "raster_unchanged": true,
+      "exact_all_readers": true,
+      "max_pdfium_delta_from_original_points": 0.28800201416015625,
+      "original_pdfium_raw_exact": true
+    },
+    {
+      "case": "decomposed",
+      "rotation": 90,
+      "definitions": 5,
+      "source_sha256": "24ae8f60e755cb89aa0b029bf81ad90f02fc5bdfe9f0cd61c3c817641c310116",
+      "output_sha256": "18b00f0617d2c33b9c5900a7a0a75f9c3611098630a6a524b2a1c4adb57339a3",
+      "pdfium": {
+        "exact": true,
+        "max_ink_edge_error": 0.2926869624023425,
+        "geometry_pass": false
+      },
+      "original_pdfium": {
+        "exact": true,
+        "max_ink_edge_error": 0.00562286376953125,
+        "geometry_pass": true
+      },
+      "mupdf": {
+        "exact": true,
+        "max_ink_edge_error": 35.203125,
+        "geometry_pass": false
+      },
+      "raster_unchanged": true,
+      "exact_all_readers": true,
+      "max_pdfium_delta_from_original_points": 0.28800201416015625,
+      "original_pdfium_raw_exact": true
+    },
+    {
+      "case": "decomposed",
+      "rotation": 180,
+      "definitions": 5,
+      "source_sha256": "6fec11ae2e5b0fbbdcbd145a234e5f2853debf9f470a5229675c71e252093b92",
+      "output_sha256": "bfae62a71413ad6c1bbaa81c4688548d4233602033b7df7e80f23fa21504f351",
+      "pdfium": {
+        "exact": true,
+        "max_ink_edge_error": 0.2926869624023425,
+        "geometry_pass": false
+      },
+      "original_pdfium": {
+        "exact": true,
+        "max_ink_edge_error": 0.00562286376953125,
+        "geometry_pass": true
+      },
+      "mupdf": {
+        "exact": true,
+        "max_ink_edge_error": 35.203125,
+        "geometry_pass": false
+      },
+      "raster_unchanged": true,
+      "exact_all_readers": true,
+      "max_pdfium_delta_from_original_points": 0.28800201416015625,
+      "original_pdfium_raw_exact": true
+    },
+    {
+      "case": "decomposed",
+      "rotation": 270,
+      "definitions": 5,
+      "source_sha256": "3ec940f7a6d3f5903ed4c8159ac4879ccff2ffa29e9308b106bc4eab376c576e",
+      "output_sha256": "43095dec041b93d3dfbed922e72869aec850350d016e8c71d8efe7c21e3d04de",
+      "pdfium": {
+        "exact": true,
+        "max_ink_edge_error": 0.2926869624023425,
+        "geometry_pass": false
+      },
+      "original_pdfium": {
+        "exact": true,
+        "max_ink_edge_error": 0.00562286376953125,
+        "geometry_pass": true
+      },
+      "mupdf": {
+        "exact": true,
+        "max_ink_edge_error": 35.203125,
+        "geometry_pass": false
+      },
+      "raster_unchanged": true,
+      "exact_all_readers": true,
+      "max_pdfium_delta_from_original_points": 0.28800201416015625,
+      "original_pdfium_raw_exact": true
+    },
+    {
+      "case": "two-axis-marks",
+      "rotation": 0,
+      "definitions": 3,
+      "source_sha256": "03de0e5fabb4ea9c2a42b81b69069a1148e19c777802eadb0b474bac9f520364",
+      "output_sha256": "02929a61c6e774a8f37d6fdda4468039fa927ab0a5ce05a55fa6fe44ad862022",
+      "pdfium": {
+        "exact": true,
+        "max_ink_edge_error": 0.269622802734375,
+        "geometry_pass": false
+      },
+      "original_pdfium": {
+        "exact": true,
+        "max_ink_edge_error": 0.01012420654296875,
+        "geometry_pass": true
+      },
+      "mupdf": {
+        "exact": true,
+        "max_ink_edge_error": 29.765625,
+        "geometry_pass": false
+      },
+      "raster_unchanged": true,
+      "exact_all_readers": true,
+      "max_pdfium_delta_from_original_points": 0.26399993896484375,
+      "original_pdfium_raw_exact": true
+    },
+    {
+      "case": "two-axis-marks",
+      "rotation": 90,
+      "definitions": 3,
+      "source_sha256": "03439b61e8022cc5274e739ddd90b71e03795228257678ad08f0c745d63a84c0",
+      "output_sha256": "f8d8786e6b5b69372241defa5f04e13bc409d240b7684f4131dde9dfe2c5e614",
+      "pdfium": {
+        "exact": true,
+        "max_ink_edge_error": 0.269622802734375,
+        "geometry_pass": false
+      },
+      "original_pdfium": {
+        "exact": true,
+        "max_ink_edge_error": 0.01012420654296875,
+        "geometry_pass": true
+      },
+      "mupdf": {
+        "exact": true,
+        "max_ink_edge_error": 29.765625,
+        "geometry_pass": false
+      },
+      "raster_unchanged": true,
+      "exact_all_readers": true,
+      "max_pdfium_delta_from_original_points": 0.26399993896484375,
+      "original_pdfium_raw_exact": true
+    },
+    {
+      "case": "two-axis-marks",
+      "rotation": 180,
+      "definitions": 3,
+      "source_sha256": "f88a309ec5fc032097943a5be8d72b0a0b46486c44aa1740ef794a5829fbec59",
+      "output_sha256": "0f7bbef115aca9f567ac8c1f0f81800498813fce9e184a7c0753709409fb7fde",
+      "pdfium": {
+        "exact": true,
+        "max_ink_edge_error": 0.269622802734375,
+        "geometry_pass": false
+      },
+      "original_pdfium": {
+        "exact": true,
+        "max_ink_edge_error": 0.01012420654296875,
+        "geometry_pass": true
+      },
+      "mupdf": {
+        "exact": true,
+        "max_ink_edge_error": 29.765625,
+        "geometry_pass": false
+      },
+      "raster_unchanged": true,
+      "exact_all_readers": true,
+      "max_pdfium_delta_from_original_points": 0.26399993896484375,
+      "original_pdfium_raw_exact": true
+    },
+    {
+      "case": "two-axis-marks",
+      "rotation": 270,
+      "definitions": 3,
+      "source_sha256": "5d3e3f5d264f3ac8f2b6200db6c095e31bfc6ffcf3af7026f21b7db8a2f4015c",
+      "output_sha256": "55835a2a4f0985d60a8b13fe9f3b41b10dbac375531bc8a4820990b70120bd6e",
+      "pdfium": {
+        "exact": true,
+        "max_ink_edge_error": 0.269622802734375,
+        "geometry_pass": false
+      },
+      "original_pdfium": {
+        "exact": true,
+        "max_ink_edge_error": 0.01012420654296875,
+        "geometry_pass": true
+      },
+      "mupdf": {
+        "exact": true,
+        "max_ink_edge_error": 29.765625,
+        "geometry_pass": false
+      },
+      "raster_unchanged": true,
+      "exact_all_readers": true,
+      "max_pdfium_delta_from_original_points": 0.26399993896484375,
+      "original_pdfium_raw_exact": true
+    },
+    {
+      "case": "arabic",
+      "rotation": 0,
+      "definitions": 4,
+      "source_sha256": "4338fe936b185aef68b2f5d599fc2eb784fa76432d541f2fd6dafcc52e1cc731",
+      "output_sha256": "f446f86e56d3676c38b504e9f357e7fd566960ee3838223c40ae8ed3f1eac648",
+      "pdfium": {
+        "exact": true,
+        "max_ink_edge_error": 0.26400073242187716,
+        "geometry_pass": false
+      },
+      "original_pdfium": {
+        "exact": true,
+        "max_ink_edge_error": 0.012001380371088999,
+        "geometry_pass": true
+      },
+      "mupdf": {
+        "exact": true,
+        "max_ink_edge_error": 38.831999206542974,
+        "geometry_pass": false
+      },
+      "raster_unchanged": true,
+      "exact_all_readers": true,
+      "max_pdfium_delta_from_original_points": 0.26399993896484375,
+      "original_pdfium_raw_exact": true
+    },
+    {
+      "case": "arabic",
+      "rotation": 90,
+      "definitions": 4,
+      "source_sha256": "2071d961decfcedbe24426e1494cc7cfb48dd57b8207cd3005cb374f26f11c5d",
+      "output_sha256": "890fdb538cbc87adef1852e44731992288788a766731d934091d22dc263808cb",
+      "pdfium": {
+        "exact": true,
+        "max_ink_edge_error": 0.26400073242187716,
+        "geometry_pass": false
+      },
+      "original_pdfium": {
+        "exact": true,
+        "max_ink_edge_error": 0.012001380371088999,
+        "geometry_pass": true
+      },
+      "mupdf": {
+        "exact": true,
+        "max_ink_edge_error": 38.831999206542974,
+        "geometry_pass": false
+      },
+      "raster_unchanged": true,
+      "exact_all_readers": true,
+      "max_pdfium_delta_from_original_points": 0.26399993896484375,
+      "original_pdfium_raw_exact": true
+    },
+    {
+      "case": "arabic",
+      "rotation": 180,
+      "definitions": 4,
+      "source_sha256": "8b650c082f0a9cca8635c4188e3d80affa39489bebbb31538b79e7227f02854b",
+      "output_sha256": "4c093afe95d04f6c3d143b29ab8b5bb3838372a77d16137f519003d89310fe71",
+      "pdfium": {
+        "exact": true,
+        "max_ink_edge_error": 0.26400073242187716,
+        "geometry_pass": false
+      },
+      "original_pdfium": {
+        "exact": true,
+        "max_ink_edge_error": 0.012001380371088999,
+        "geometry_pass": true
+      },
+      "mupdf": {
+        "exact": true,
+        "max_ink_edge_error": 38.831999206542974,
+        "geometry_pass": false
+      },
+      "raster_unchanged": true,
+      "exact_all_readers": true,
+      "max_pdfium_delta_from_original_points": 0.26399993896484375,
+      "original_pdfium_raw_exact": true
+    },
+    {
+      "case": "arabic",
+      "rotation": 270,
+      "definitions": 4,
+      "source_sha256": "bd57349f7df1c1782cf7462f0b6f3aeaa439eb32d10289ea69e529babf487ebd",
+      "output_sha256": "bae3d8c91e0b143f799b0dd3cf42cfbf888d1575213a34134aa8d5c757133aeb",
+      "pdfium": {
+        "exact": true,
+        "max_ink_edge_error": 0.26400073242187716,
+        "geometry_pass": false
+      },
+      "original_pdfium": {
+        "exact": true,
+        "max_ink_edge_error": 0.012001380371088999,
+        "geometry_pass": true
+      },
+      "mupdf": {
+        "exact": true,
+        "max_ink_edge_error": 38.831999206542974,
+        "geometry_pass": false
+      },
+      "raster_unchanged": true,
+      "exact_all_readers": true,
+      "max_pdfium_delta_from_original_points": 0.26399993896484375,
+      "original_pdfium_raw_exact": true
+    }
+  ],
+  "conclusion": "Baseline fails the original all-edge geometry gate; scale16 preserves cluster coincidence and non-top geometry within .002125pt, with top inflation explained by pinned PDFium source. Native implementation and acceptance remain required.",
+  "scale16_source_model": {
+    "sources": [
+      {
+        "url": "https://pdfium.googlesource.com/pdfium/+/refs/heads/chromium/8044/core/fxge/cfx_face.cpp",
+        "sha256": "43d1af62002f3ab42b5283f4856679f8be604e90c67a8b8d2ba38abdf48f5094"
+      },
+      {
+        "url": "https://pdfium.googlesource.com/pdfium/+/refs/heads/chromium/8044/core/fxge/fx_font.cpp",
+        "sha256": "7d7aee65265fbbae85e782ea347adf2515c1035096cd129112d164047f30dce1"
+      }
+    ],
+    "formula": "rect top += trunc(rect top/64), after trunc(value*1000/upm+0.5) normalization to 1000 font units; no glyph modification",
+    "cases": [
+      {
+        "case": "bank-boundary-255",
+        "rotation": 0,
+        "model_max_error_points": 0.00021486011200977373,
+        "max_cluster_coincidence_error_points": 0.0,
+        "max_non_top_native_edge_error_points": 0.00037558593749054126
+      },
+      {
+        "case": "bank-boundary-255",
+        "rotation": 90,
+        "model_max_error_points": 0.00021486011200977373,
+        "max_cluster_coincidence_error_points": 0.0,
+        "max_non_top_native_edge_error_points": 0.00037558593749054126
+      },
+      {
+        "case": "bank-boundary-255",
+        "rotation": 180,
+        "model_max_error_points": 0.00021486011200977373,
+        "max_cluster_coincidence_error_points": 0.0,
+        "max_non_top_native_edge_error_points": 0.00037558593749054126
+      },
+      {
+        "case": "bank-boundary-255",
+        "rotation": 270,
+        "model_max_error_points": 0.00021486011200977373,
+        "max_cluster_coincidence_error_points": 0.0,
+        "max_non_top_native_edge_error_points": 0.00037558593749054126
+      },
+      {
+        "case": "bank-boundary-256",
+        "rotation": 0,
+        "model_max_error_points": 0.00021486011200977373,
+        "max_cluster_coincidence_error_points": 0.0,
+        "max_non_top_native_edge_error_points": 0.00037558593749054126
+      },
+      {
+        "case": "bank-boundary-256",
+        "rotation": 90,
+        "model_max_error_points": 0.00021486011200977373,
+        "max_cluster_coincidence_error_points": 0.0,
+        "max_non_top_native_edge_error_points": 0.00037558593749054126
+      },
+      {
+        "case": "bank-boundary-256",
+        "rotation": 180,
+        "model_max_error_points": 0.00021486011200977373,
+        "max_cluster_coincidence_error_points": 0.0,
+        "max_non_top_native_edge_error_points": 0.00037558593749054126
+      },
+      {
+        "case": "bank-boundary-256",
+        "rotation": 270,
+        "model_max_error_points": 0.00021486011200977373,
+        "max_cluster_coincidence_error_points": 0.0,
+        "max_non_top_native_edge_error_points": 0.00037558593749054126
+      },
+      {
+        "case": "bank-boundary-511",
+        "rotation": 0,
+        "model_max_error_points": 0.0006752734298061114,
+        "max_cluster_coincidence_error_points": 0.0,
+        "max_non_top_native_edge_error_points": 0.00037558593749054126
+      },
+      {
+        "case": "bank-boundary-511",
+        "rotation": 90,
+        "model_max_error_points": 0.0006752734298061114,
+        "max_cluster_coincidence_error_points": 0.0,
+        "max_non_top_native_edge_error_points": 0.00037558593749054126
+      },
+      {
+        "case": "bank-boundary-511",
+        "rotation": 180,
+        "model_max_error_points": 0.0006752734298061114,
+        "max_cluster_coincidence_error_points": 0.0,
+        "max_non_top_native_edge_error_points": 0.00037558593749054126
+      },
+      {
+        "case": "bank-boundary-511",
+        "rotation": 270,
+        "model_max_error_points": 0.0006752734298061114,
+        "max_cluster_coincidence_error_points": 0.0,
+        "max_non_top_native_edge_error_points": 0.00037558593749054126
+      },
+      {
+        "case": "ligatures-on",
+        "rotation": 0,
+        "model_max_error_points": 4.347731248799391e-06,
+        "max_cluster_coincidence_error_points": 0.00089263916015625,
+        "max_non_top_native_edge_error_points": 0.001216888427734375
+      },
+      {
+        "case": "ligatures-on",
+        "rotation": 90,
+        "model_max_error_points": 4.347731248799391e-06,
+        "max_cluster_coincidence_error_points": 0.00089263916015625,
+        "max_non_top_native_edge_error_points": 0.001216888427734375
+      },
+      {
+        "case": "ligatures-on",
+        "rotation": 180,
+        "model_max_error_points": 4.347731248799391e-06,
+        "max_cluster_coincidence_error_points": 0.00089263916015625,
+        "max_non_top_native_edge_error_points": 0.001216888427734375
+      },
+      {
+        "case": "ligatures-on",
+        "rotation": 270,
+        "model_max_error_points": 4.347731248799391e-06,
+        "max_cluster_coincidence_error_points": 0.00089263916015625,
+        "max_non_top_native_edge_error_points": 0.001216888427734375
+      },
+      {
+        "case": "decomposed",
+        "rotation": 0,
+        "model_max_error_points": 3.2458984406957825e-06,
+        "max_cluster_coincidence_error_points": 0.0020599365234375,
+        "max_non_top_native_edge_error_points": 0.0020604365234362376
+      },
+      {
+        "case": "decomposed",
+        "rotation": 90,
+        "model_max_error_points": 3.2458984406957825e-06,
+        "max_cluster_coincidence_error_points": 0.0020599365234375,
+        "max_non_top_native_edge_error_points": 0.0020604365234362376
+      },
+      {
+        "case": "decomposed",
+        "rotation": 180,
+        "model_max_error_points": 3.2458984406957825e-06,
+        "max_cluster_coincidence_error_points": 0.0020599365234375,
+        "max_non_top_native_edge_error_points": 0.0020604365234362376
+      },
+      {
+        "case": "decomposed",
+        "rotation": 270,
+        "model_max_error_points": 3.2458984406957825e-06,
+        "max_cluster_coincidence_error_points": 0.0020599365234375,
+        "max_non_top_native_edge_error_points": 0.0020604365234362376
+      },
+      {
+        "case": "two-axis-marks",
+        "rotation": 0,
+        "model_max_error_points": 1.8310546892053026e-06,
+        "max_cluster_coincidence_error_points": 0.002124786376953125,
+        "max_non_top_native_edge_error_points": 0.002124786376953125
+      },
+      {
+        "case": "two-axis-marks",
+        "rotation": 90,
+        "model_max_error_points": 1.8310546892053026e-06,
+        "max_cluster_coincidence_error_points": 0.002124786376953125,
+        "max_non_top_native_edge_error_points": 0.002124786376953125
+      },
+      {
+        "case": "two-axis-marks",
+        "rotation": 180,
+        "model_max_error_points": 1.8310546892053026e-06,
+        "max_cluster_coincidence_error_points": 0.002124786376953125,
+        "max_non_top_native_edge_error_points": 0.002124786376953125
+      },
+      {
+        "case": "two-axis-marks",
+        "rotation": 270,
+        "model_max_error_points": 1.8310546892053026e-06,
+        "max_cluster_coincidence_error_points": 0.002124786376953125,
+        "max_non_top_native_edge_error_points": 0.002124786376953125
+      },
+      {
+        "case": "arabic",
+        "rotation": 0,
+        "model_max_error_points": 4.562531245255741e-06,
+        "max_cluster_coincidence_error_points": 0.001499176025390625,
+        "max_non_top_native_edge_error_points": 0.001500305175781591
+      },
+      {
+        "case": "arabic",
+        "rotation": 90,
+        "model_max_error_points": 4.562531245255741e-06,
+        "max_cluster_coincidence_error_points": 0.001499176025390625,
+        "max_non_top_native_edge_error_points": 0.001500305175781591
+      },
+      {
+        "case": "arabic",
+        "rotation": 180,
+        "model_max_error_points": 4.562531245255741e-06,
+        "max_cluster_coincidence_error_points": 0.001499176025390625,
+        "max_non_top_native_edge_error_points": 0.001500305175781591
+      },
+      {
+        "case": "arabic",
+        "rotation": 270,
+        "model_max_error_points": 4.562531245255741e-06,
+        "max_cluster_coincidence_error_points": 0.001499176025390625,
+        "max_non_top_native_edge_error_points": 0.001500305175781591
+      }
+    ]
+  },
+  "scale16_consistent_global_metrics": {
+    "design": "Single Type0 Identity-H + CIDFontType2 synthetic rectangle glyphs, explicit CIDToGIDMap, per-code ToUnicode, 3 Tr, one TJ; original widths/adjustments and visible prefix preserved. Configurable UPM and metric enlargement, inverse font size and enlarged TJ adjustments.",
+    "pdfium_sha256": "04100c03e41cac1f979e36e5e26fb860bcb5a7461f53830d3c098716624a27a9",
+    "upm": 1000,
+    "metric_scale": 16.0,
+    "tolerance_points": 0.06,
+    "cases": [
+      {
+        "case": "bank-boundary-255",
+        "rotation": 0,
+        "output_sha256": "c33c3be63641c87cfaee0f8bd3e4451003b5bc143cec937725adc7d4f8447c0d",
+        "pdfium": {
+          "exact": true,
+          "max_ink_edge_error": 0.058235193457029766,
+          "geometry_pass": true
+        },
+        "mupdf": {
+          "exact": true,
+          "max_ink_edge_error": 3.528518651757814,
+          "geometry_pass": false
+        },
+        "raster_unchanged": true,
+        "exact_all_readers": true
+      },
+      {
+        "case": "bank-boundary-255",
+        "rotation": 90,
+        "output_sha256": "343fe1bd8a35166460e01410e33089995682602e9341e309f6a6a3d6be64659e",
+        "pdfium": {
+          "exact": true,
+          "max_ink_edge_error": 0.058235193457029766,
+          "geometry_pass": true
+        },
+        "mupdf": {
+          "exact": true,
+          "max_ink_edge_error": 3.528518651757814,
+          "geometry_pass": false
+        },
+        "raster_unchanged": true,
+        "exact_all_readers": true
+      },
+      {
+        "case": "bank-boundary-255",
+        "rotation": 180,
+        "output_sha256": "89eb475d387574a0bfe05e69500390f02c26c139e54d6ae94b4a3ea2632632ce",
+        "pdfium": {
+          "exact": true,
+          "max_ink_edge_error": 0.058235193457029766,
+          "geometry_pass": true
+        },
+        "mupdf": {
+          "exact": true,
+          "max_ink_edge_error": 3.528518651757814,
+          "geometry_pass": false
+        },
+        "raster_unchanged": true,
+        "exact_all_readers": true
+      },
+      {
+        "case": "bank-boundary-255",
+        "rotation": 270,
+        "output_sha256": "2bd13d062d98a4d286b317ce88c43f0dd86cbc8b5fd401a3857af829f767c7f9",
+        "pdfium": {
+          "exact": true,
+          "max_ink_edge_error": 0.058235193457029766,
+          "geometry_pass": true
+        },
+        "mupdf": {
+          "exact": true,
+          "max_ink_edge_error": 3.528518651757814,
+          "geometry_pass": false
+        },
+        "raster_unchanged": true,
+        "exact_all_readers": true
+      },
+      {
+        "case": "bank-boundary-256",
+        "rotation": 0,
+        "output_sha256": "dd01cafa0fa4a138e6df31a050f94948d21023dfc007399a185c72c545b66005",
+        "pdfium": {
+          "exact": true,
+          "max_ink_edge_error": 0.058235193457029766,
+          "geometry_pass": true
+        },
+        "mupdf": {
+          "exact": true,
+          "max_ink_edge_error": 3.528518651757814,
+          "geometry_pass": false
+        },
+        "raster_unchanged": true,
+        "exact_all_readers": true
+      },
+      {
+        "case": "bank-boundary-256",
+        "rotation": 90,
+        "output_sha256": "a4c3f197bc6146de73cf3ca16ec11bd4bffb9436e2f7f64c0a845409eadcfcc7",
+        "pdfium": {
+          "exact": true,
+          "max_ink_edge_error": 0.058235193457029766,
+          "geometry_pass": true
+        },
+        "mupdf": {
+          "exact": true,
+          "max_ink_edge_error": 3.528518651757814,
+          "geometry_pass": false
+        },
+        "raster_unchanged": true,
+        "exact_all_readers": true
+      },
+      {
+        "case": "bank-boundary-256",
+        "rotation": 180,
+        "output_sha256": "f318d2fe7e3ed4df55128942b3603c032157ed9c9930a58a0db199b1243abeaa",
+        "pdfium": {
+          "exact": true,
+          "max_ink_edge_error": 0.058235193457029766,
+          "geometry_pass": true
+        },
+        "mupdf": {
+          "exact": true,
+          "max_ink_edge_error": 3.528518651757814,
+          "geometry_pass": false
+        },
+        "raster_unchanged": true,
+        "exact_all_readers": true
+      },
+      {
+        "case": "bank-boundary-256",
+        "rotation": 270,
+        "output_sha256": "a179a02cd0858138f05355e52a2fa40b402928375743f953e0850b16d4afd7a7",
+        "pdfium": {
+          "exact": true,
+          "max_ink_edge_error": 0.058235193457029766,
+          "geometry_pass": true
+        },
+        "mupdf": {
+          "exact": true,
+          "max_ink_edge_error": 3.528518651757814,
+          "geometry_pass": false
+        },
+        "raster_unchanged": true,
+        "exact_all_readers": true
+      },
+      {
+        "case": "bank-boundary-511",
+        "rotation": 0,
+        "output_sha256": "0ac1f0a0ec34cbb064fa32ccecc2ef20e1ae5d5e63e83dad9121c42e83931149",
+        "pdfium": {
+          "exact": true,
+          "max_ink_edge_error": 0.06512451171875,
+          "geometry_pass": false
+        },
+        "mupdf": {
+          "exact": true,
+          "max_ink_edge_error": 3.9757842517578155,
+          "geometry_pass": false
+        },
+        "raster_unchanged": true,
+        "exact_all_readers": true
+      },
+      {
+        "case": "bank-boundary-511",
+        "rotation": 90,
+        "output_sha256": "92cb995afd04cefed0893677385cae9f152d868c92dbed01f8c8fa8614c91e6b",
+        "pdfium": {
+          "exact": true,
+          "max_ink_edge_error": 0.06512451171875,
+          "geometry_pass": false
+        },
+        "mupdf": {
+          "exact": true,
+          "max_ink_edge_error": 3.9757842517578155,
+          "geometry_pass": false
+        },
+        "raster_unchanged": true,
+        "exact_all_readers": true
+      },
+      {
+        "case": "bank-boundary-511",
+        "rotation": 180,
+        "output_sha256": "f9a5b6c83dc3418f18fbd3522890aa250393034db74c2e04075f747c327aafa6",
+        "pdfium": {
+          "exact": true,
+          "max_ink_edge_error": 0.06512451171875,
+          "geometry_pass": false
+        },
+        "mupdf": {
+          "exact": true,
+          "max_ink_edge_error": 3.9757842517578155,
+          "geometry_pass": false
+        },
+        "raster_unchanged": true,
+        "exact_all_readers": true
+      },
+      {
+        "case": "bank-boundary-511",
+        "rotation": 270,
+        "output_sha256": "c5a95544ee9539f0a355547660a2c374242373c30cad2d7bac61a5b182141e04",
+        "pdfium": {
+          "exact": true,
+          "max_ink_edge_error": 0.06512451171875,
+          "geometry_pass": false
+        },
+        "mupdf": {
+          "exact": true,
+          "max_ink_edge_error": 3.9757842517578155,
+          "geometry_pass": false
+        },
+        "raster_unchanged": true,
+        "exact_all_readers": true
+      },
+      {
+        "case": "ligatures-on",
+        "rotation": 0,
+        "output_sha256": "81701f5ecdece3800da9fbbec6dbcdd377f31e1346499d61713168570fee598e",
+        "pdfium": {
+          "exact": true,
+          "max_ink_edge_error": 0.2831268310546875,
+          "geometry_pass": false
+        },
+        "mupdf": {
+          "exact": true,
+          "max_ink_edge_error": 17.034378051757812,
+          "geometry_pass": false
+        },
+        "raster_unchanged": true,
+        "exact_all_readers": true
+      },
+      {
+        "case": "ligatures-on",
+        "rotation": 90,
+        "output_sha256": "72fbcff12081e34dcb2dc65e8c6b5923ea3801a42152e8d59389bf14f07c60f8",
+        "pdfium": {
+          "exact": true,
+          "max_ink_edge_error": 0.2831268310546875,
+          "geometry_pass": false
+        },
+        "mupdf": {
+          "exact": true,
+          "max_ink_edge_error": 17.034378051757812,
+          "geometry_pass": false
+        },
+        "raster_unchanged": true,
+        "exact_all_readers": true
+      },
+      {
+        "case": "ligatures-on",
+        "rotation": 180,
+        "output_sha256": "880bcdbe673486df2a80f2e4c510c2c615783fa54fda25df335bbddf38cf608f",
+        "pdfium": {
+          "exact": true,
+          "max_ink_edge_error": 0.2831268310546875,
+          "geometry_pass": false
+        },
+        "mupdf": {
+          "exact": true,
+          "max_ink_edge_error": 17.034378051757812,
+          "geometry_pass": false
+        },
+        "raster_unchanged": true,
+        "exact_all_readers": true
+      },
+      {
+        "case": "ligatures-on",
+        "rotation": 270,
+        "output_sha256": "e3f438b48bf461285f676a209b0afb285f0baba3cfd51e7f3b2ecd93a10ccac5",
+        "pdfium": {
+          "exact": true,
+          "max_ink_edge_error": 0.2831268310546875,
+          "geometry_pass": false
+        },
+        "mupdf": {
+          "exact": true,
+          "max_ink_edge_error": 17.034378051757812,
+          "geometry_pass": false
+        },
+        "raster_unchanged": true,
+        "exact_all_readers": true
+      },
+      {
+        "case": "decomposed",
+        "rotation": 0,
+        "output_sha256": "a17bb1ba9da44d0e921865e9a5f81fb64d284593f0f042f96105d40b4955b0d9",
+        "pdfium": {
+          "exact": true,
+          "max_ink_edge_error": 0.29869129589843624,
+          "geometry_pass": false
+        },
+        "mupdf": {
+          "exact": true,
+          "max_ink_edge_error": 17.995315051757814,
+          "geometry_pass": false
+        },
+        "raster_unchanged": true,
+        "exact_all_readers": true
+      },
+      {
+        "case": "decomposed",
+        "rotation": 90,
+        "output_sha256": "007ba7ed1b4ba8bec9af3d72eb0cc873bde09fecf0d7d1b1a52ebfb181642d28",
+        "pdfium": {
+          "exact": true,
+          "max_ink_edge_error": 0.29869129589843624,
+          "geometry_pass": false
+        },
+        "mupdf": {
+          "exact": true,
+          "max_ink_edge_error": 17.995315051757814,
+          "geometry_pass": false
+        },
+        "raster_unchanged": true,
+        "exact_all_readers": true
+      },
+      {
+        "case": "decomposed",
+        "rotation": 180,
+        "output_sha256": "e18669d9e0f0e6d63e7635438ca68469b35f6b30aeab2bc2930dfc6a77121eb3",
+        "pdfium": {
+          "exact": true,
+          "max_ink_edge_error": 0.29869129589843624,
+          "geometry_pass": false
+        },
+        "mupdf": {
+          "exact": true,
+          "max_ink_edge_error": 17.995315051757814,
+          "geometry_pass": false
+        },
+        "raster_unchanged": true,
+        "exact_all_readers": true
+      },
+      {
+        "case": "decomposed",
+        "rotation": 270,
+        "output_sha256": "962cccf6e967318cd004337877979847f2cfeb8dd7272f9514665cbeafa217ad",
+        "pdfium": {
+          "exact": true,
+          "max_ink_edge_error": 0.29869129589843624,
+          "geometry_pass": false
+        },
+        "mupdf": {
+          "exact": true,
+          "max_ink_edge_error": 17.995315051757814,
+          "geometry_pass": false
+        },
+        "raster_unchanged": true,
+        "exact_all_readers": true
+      },
+      {
+        "case": "two-axis-marks",
+        "rotation": 0,
+        "output_sha256": "3787cd6e237320594841eafb8607b719bac31281cee84297f96103b0119c462c",
+        "pdfium": {
+          "exact": true,
+          "max_ink_edge_error": 0.2831268310546875,
+          "geometry_pass": false
+        },
+        "mupdf": {
+          "exact": true,
+          "max_ink_edge_error": 17.034378051757812,
+          "geometry_pass": false
+        },
+        "raster_unchanged": true,
+        "exact_all_readers": true
+      },
+      {
+        "case": "two-axis-marks",
+        "rotation": 90,
+        "output_sha256": "ffac460c2ef1839f9420cf13dd98206323e4672d58516092c1a3bd01668f247f",
+        "pdfium": {
+          "exact": true,
+          "max_ink_edge_error": 0.2831268310546875,
+          "geometry_pass": false
+        },
+        "mupdf": {
+          "exact": true,
+          "max_ink_edge_error": 17.034378051757812,
+          "geometry_pass": false
+        },
+        "raster_unchanged": true,
+        "exact_all_readers": true
+      },
+      {
+        "case": "two-axis-marks",
+        "rotation": 180,
+        "output_sha256": "80bd60168d8d6a76b9cdec2ec8a026bba3b2a1ac52c25b0ee556a3a2b5d39665",
+        "pdfium": {
+          "exact": true,
+          "max_ink_edge_error": 0.2831268310546875,
+          "geometry_pass": false
+        },
+        "mupdf": {
+          "exact": true,
+          "max_ink_edge_error": 17.034378051757812,
+          "geometry_pass": false
+        },
+        "raster_unchanged": true,
+        "exact_all_readers": true
+      },
+      {
+        "case": "two-axis-marks",
+        "rotation": 270,
+        "output_sha256": "35525e40873fcc1ebad348a33d59f7af374511903379f71cac6606b55607c2d4",
+        "pdfium": {
+          "exact": true,
+          "max_ink_edge_error": 0.2831268310546875,
+          "geometry_pass": false
+        },
+        "mupdf": {
+          "exact": true,
+          "max_ink_edge_error": 17.034378051757812,
+          "geometry_pass": false
+        },
+        "raster_unchanged": true,
+        "exact_all_readers": true
+      },
+      {
+        "case": "arabic",
+        "rotation": 0,
+        "output_sha256": "1f84c241b01fe5a4250785d283355973924a89c1d6b5584ee5f73119fd0dde5d",
+        "pdfium": {
+          "exact": true,
+          "max_ink_edge_error": 0.2669990844726584,
+          "geometry_pass": false
+        },
+        "mupdf": {
+          "exact": true,
+          "max_ink_edge_error": 15.936003845214842,
+          "geometry_pass": false
+        },
+        "raster_unchanged": true,
+        "exact_all_readers": true
+      },
+      {
+        "case": "arabic",
+        "rotation": 90,
+        "output_sha256": "771435b3885088bc39376d86da8b444af6c0318648180a469376582431eec031",
+        "pdfium": {
+          "exact": true,
+          "max_ink_edge_error": 0.2669990844726584,
+          "geometry_pass": false
+        },
+        "mupdf": {
+          "exact": true,
+          "max_ink_edge_error": 15.936003845214842,
+          "geometry_pass": false
+        },
+        "raster_unchanged": true,
+        "exact_all_readers": true
+      },
+      {
+        "case": "arabic",
+        "rotation": 180,
+        "output_sha256": "a21b87f059ca0dcbbdff8957577c4ef44c92f212faee832ef8551a0e86ea8cd9",
+        "pdfium": {
+          "exact": true,
+          "max_ink_edge_error": 0.2669990844726584,
+          "geometry_pass": false
+        },
+        "mupdf": {
+          "exact": true,
+          "max_ink_edge_error": 15.936003845214842,
+          "geometry_pass": false
+        },
+        "raster_unchanged": true,
+        "exact_all_readers": true
+      },
+      {
+        "case": "arabic",
+        "rotation": 270,
+        "output_sha256": "eb12bb702b5ebd61ed22036a8a9d36f019877d0629cd8024be3e35acd6e4bb03",
+        "pdfium": {
+          "exact": true,
+          "max_ink_edge_error": 0.2669990844726584,
+          "geometry_pass": false
+        },
+        "mupdf": {
+          "exact": true,
+          "max_ink_edge_error": 15.936003845214842,
+          "geometry_pass": false
+        },
+        "raster_unchanged": true,
+        "exact_all_readers": true
+      }
+    ]
+  },
+  "direction_format_probe": {
+    "scope": "Only Type3-to-wideCID conversion, original outlines and all scalar placements preserved. Repeated words require rightmost logical-start geometry, not merely copied-text equality.",
+    "conclusion": "Changing Type3 to the proven scale16 wide CID representation does not repair mixed bidi or RTL word-order geometry. Preserve both guards.",
+    "cases": [
+      {
+        "case": "mixed-bidi",
+        "order": "logical-tj",
+        "rotation": 0,
+        "source": "ABC \u0633\u0644\u0627\u0645 123 DEF",
+        "definitions": 16,
+        "original": {
+          "raw": {
+            "pdfium": "ABC \u0645\u0627\u0644\u0633 123 DEF",
+            "mupdf": "ABC \u0633\u0644\u0627\u0645 123\n DEF\n",
+            "pypdf": "123  DEF"
+          },
+          "exact": {
+            "pdfium": false,
+            "mupdf": false,
+            "pypdf": false
+          },
+          "first_box": [
+            48.0,
+            64.41600036621094,
+            53.765625,
+            71.26162719726562
+          ],
+          "last_box": [
+            248.80799865722656,
+            262.6080017089844,
+            53.765625,
+            71.26162719726562
+          ],
+          "rightmost_left": 248.80799865722656
+        },
+        "wide": {
+          "raw": {
+            "pdfium": "ABC \u0645\u0627\u0644\u0633 123 DEF",
+            "mupdf": "ABC \u0633\u0644\u0627\u0645 123\n DEF\n",
+            "pypdf": "123  DEF"
+          },
+          "exact": {
+            "pdfium": false,
+            "mupdf": false,
+            "pypdf": false
+          },
+          "first_box": [
+            48.0,
+            64.41749572753906,
+            53.765625,
+            71.53462219238281
+          ],
+          "last_box": [
+            248.8350067138672,
+            262.6395263671875,
+            53.765625,
+            71.53462219238281
+          ],
+          "rightmost_left": 248.8350067138672
+        }
+      },
+      {
+        "case": "mixed-bidi",
+        "order": "visual-tj",
+        "rotation": 0,
+        "source": "ABC \u0633\u0644\u0627\u0645 123 DEF",
+        "definitions": 16,
+        "original": {
+          "raw": {
+            "pdfium": "ABC 123 \u0633\u0644\u0627\u0645 DEF",
+            "mupdf": "ABC 123  \u0633\u0644\u0627\u0645DEF\n",
+            "pypdf": "DEF"
+          },
+          "exact": {
+            "pdfium": false,
+            "mupdf": false,
+            "pypdf": false
+          },
+          "first_box": [
+            48.0,
+            64.41600036621094,
+            53.765625,
+            71.26162719726562
+          ],
+          "last_box": [
+            248.80799865722656,
+            262.6080017089844,
+            53.765625,
+            71.26162719726562
+          ],
+          "rightmost_left": 248.80799865722656
+        },
+        "wide": {
+          "raw": {
+            "pdfium": "ABC 123 \u0633\u0644\u0627\u0645 DEF",
+            "mupdf": "ABC 123  \u0633\u0644\u0627\u0645DEF\n",
+            "pypdf": "DEF"
+          },
+          "exact": {
+            "pdfium": false,
+            "mupdf": false,
+            "pypdf": false
+          },
+          "first_box": [
+            48.0,
+            64.41749572753906,
+            53.765625,
+            71.53462219238281
+          ],
+          "last_box": [
+            248.8350067138672,
+            262.6395263671875,
+            53.765625,
+            71.53462219238281
+          ],
+          "rightmost_left": 248.8350067138672
+        }
+      },
+      {
+        "case": "mixed-bidi",
+        "order": "logical-tj",
+        "rotation": 90,
+        "source": "ABC \u0633\u0644\u0627\u0645 123 DEF",
+        "definitions": 16,
+        "original": {
+          "raw": {
+            "pdfium": "ABC \u0645\u0627\u0644\u0633 123 DEF",
+            "mupdf": "ABC \u0633\u0644\u0627\u0645 123\n DEF\n",
+            "pypdf": "123  DEF"
+          },
+          "exact": {
+            "pdfium": false,
+            "mupdf": false,
+            "pypdf": false
+          },
+          "first_box": [
+            48.0,
+            64.41600036621094,
+            53.765625,
+            71.26162719726562
+          ],
+          "last_box": [
+            248.80799865722656,
+            262.6080017089844,
+            53.765625,
+            71.26162719726562
+          ],
+          "rightmost_left": 248.80799865722656
+        },
+        "wide": {
+          "raw": {
+            "pdfium": "ABC \u0645\u0627\u0644\u0633 123 DEF",
+            "mupdf": "ABC \u0633\u0644\u0627\u0645 123\n DEF\n",
+            "pypdf": "123  DEF"
+          },
+          "exact": {
+            "pdfium": false,
+            "mupdf": false,
+            "pypdf": false
+          },
+          "first_box": [
+            48.0,
+            64.41749572753906,
+            53.765625,
+            71.53462219238281
+          ],
+          "last_box": [
+            248.8350067138672,
+            262.6395263671875,
+            53.765625,
+            71.53462219238281
+          ],
+          "rightmost_left": 248.8350067138672
+        }
+      },
+      {
+        "case": "mixed-bidi",
+        "order": "visual-tj",
+        "rotation": 90,
+        "source": "ABC \u0633\u0644\u0627\u0645 123 DEF",
+        "definitions": 16,
+        "original": {
+          "raw": {
+            "pdfium": "ABC 123 \u0633\u0644\u0627\u0645 DEF",
+            "mupdf": "ABC 123  \u0633\u0644\u0627\u0645DEF\n",
+            "pypdf": "DEF"
+          },
+          "exact": {
+            "pdfium": false,
+            "mupdf": false,
+            "pypdf": false
+          },
+          "first_box": [
+            48.0,
+            64.41600036621094,
+            53.765625,
+            71.26162719726562
+          ],
+          "last_box": [
+            248.80799865722656,
+            262.6080017089844,
+            53.765625,
+            71.26162719726562
+          ],
+          "rightmost_left": 248.80799865722656
+        },
+        "wide": {
+          "raw": {
+            "pdfium": "ABC 123 \u0633\u0644\u0627\u0645 DEF",
+            "mupdf": "ABC 123  \u0633\u0644\u0627\u0645DEF\n",
+            "pypdf": "DEF"
+          },
+          "exact": {
+            "pdfium": false,
+            "mupdf": false,
+            "pypdf": false
+          },
+          "first_box": [
+            48.0,
+            64.41749572753906,
+            53.765625,
+            71.53462219238281
+          ],
+          "last_box": [
+            248.8350067138672,
+            262.6395263671875,
+            53.765625,
+            71.53462219238281
+          ],
+          "rightmost_left": 248.8350067138672
+        }
+      },
+      {
+        "case": "mixed-bidi",
+        "order": "logical-tj",
+        "rotation": 180,
+        "source": "ABC \u0633\u0644\u0627\u0645 123 DEF",
+        "definitions": 16,
+        "original": {
+          "raw": {
+            "pdfium": "ABC \u0645\u0627\u0644\u0633 123 DEF",
+            "mupdf": "ABC \u0633\u0644\u0627\u0645 123\n DEF\n",
+            "pypdf": "123  DEF"
+          },
+          "exact": {
+            "pdfium": false,
+            "mupdf": false,
+            "pypdf": false
+          },
+          "first_box": [
+            48.0,
+            64.41600036621094,
+            53.765625,
+            71.26162719726562
+          ],
+          "last_box": [
+            248.80799865722656,
+            262.6080017089844,
+            53.765625,
+            71.26162719726562
+          ],
+          "rightmost_left": 248.80799865722656
+        },
+        "wide": {
+          "raw": {
+            "pdfium": "ABC \u0645\u0627\u0644\u0633 123 DEF",
+            "mupdf": "ABC \u0633\u0644\u0627\u0645 123\n DEF\n",
+            "pypdf": "123  DEF"
+          },
+          "exact": {
+            "pdfium": false,
+            "mupdf": false,
+            "pypdf": false
+          },
+          "first_box": [
+            48.0,
+            64.41749572753906,
+            53.765625,
+            71.53462219238281
+          ],
+          "last_box": [
+            248.8350067138672,
+            262.6395263671875,
+            53.765625,
+            71.53462219238281
+          ],
+          "rightmost_left": 248.8350067138672
+        }
+      },
+      {
+        "case": "mixed-bidi",
+        "order": "visual-tj",
+        "rotation": 180,
+        "source": "ABC \u0633\u0644\u0627\u0645 123 DEF",
+        "definitions": 16,
+        "original": {
+          "raw": {
+            "pdfium": "ABC 123 \u0633\u0644\u0627\u0645 DEF",
+            "mupdf": "ABC 123  \u0633\u0644\u0627\u0645DEF\n",
+            "pypdf": "DEF"
+          },
+          "exact": {
+            "pdfium": false,
+            "mupdf": false,
+            "pypdf": false
+          },
+          "first_box": [
+            48.0,
+            64.41600036621094,
+            53.765625,
+            71.26162719726562
+          ],
+          "last_box": [
+            248.80799865722656,
+            262.6080017089844,
+            53.765625,
+            71.26162719726562
+          ],
+          "rightmost_left": 248.80799865722656
+        },
+        "wide": {
+          "raw": {
+            "pdfium": "ABC 123 \u0633\u0644\u0627\u0645 DEF",
+            "mupdf": "ABC 123  \u0633\u0644\u0627\u0645DEF\n",
+            "pypdf": "DEF"
+          },
+          "exact": {
+            "pdfium": false,
+            "mupdf": false,
+            "pypdf": false
+          },
+          "first_box": [
+            48.0,
+            64.41749572753906,
+            53.765625,
+            71.53462219238281
+          ],
+          "last_box": [
+            248.8350067138672,
+            262.6395263671875,
+            53.765625,
+            71.53462219238281
+          ],
+          "rightmost_left": 248.8350067138672
+        }
+      },
+      {
+        "case": "mixed-bidi",
+        "order": "logical-tj",
+        "rotation": 270,
+        "source": "ABC \u0633\u0644\u0627\u0645 123 DEF",
+        "definitions": 16,
+        "original": {
+          "raw": {
+            "pdfium": "ABC \u0645\u0627\u0644\u0633 123 DEF",
+            "mupdf": "ABC \u0633\u0644\u0627\u0645 123\n DEF\n",
+            "pypdf": "123  DEF"
+          },
+          "exact": {
+            "pdfium": false,
+            "mupdf": false,
+            "pypdf": false
+          },
+          "first_box": [
+            48.0,
+            64.41600036621094,
+            53.765625,
+            71.26162719726562
+          ],
+          "last_box": [
+            248.80799865722656,
+            262.6080017089844,
+            53.765625,
+            71.26162719726562
+          ],
+          "rightmost_left": 248.80799865722656
+        },
+        "wide": {
+          "raw": {
+            "pdfium": "ABC \u0645\u0627\u0644\u0633 123 DEF",
+            "mupdf": "ABC \u0633\u0644\u0627\u0645 123\n DEF\n",
+            "pypdf": "123  DEF"
+          },
+          "exact": {
+            "pdfium": false,
+            "mupdf": false,
+            "pypdf": false
+          },
+          "first_box": [
+            48.0,
+            64.41749572753906,
+            53.765625,
+            71.53462219238281
+          ],
+          "last_box": [
+            248.8350067138672,
+            262.6395263671875,
+            53.765625,
+            71.53462219238281
+          ],
+          "rightmost_left": 248.8350067138672
+        }
+      },
+      {
+        "case": "mixed-bidi",
+        "order": "visual-tj",
+        "rotation": 270,
+        "source": "ABC \u0633\u0644\u0627\u0645 123 DEF",
+        "definitions": 16,
+        "original": {
+          "raw": {
+            "pdfium": "ABC 123 \u0633\u0644\u0627\u0645 DEF",
+            "mupdf": "ABC 123  \u0633\u0644\u0627\u0645DEF\n",
+            "pypdf": "DEF"
+          },
+          "exact": {
+            "pdfium": false,
+            "mupdf": false,
+            "pypdf": false
+          },
+          "first_box": [
+            48.0,
+            64.41600036621094,
+            53.765625,
+            71.26162719726562
+          ],
+          "last_box": [
+            248.80799865722656,
+            262.6080017089844,
+            53.765625,
+            71.26162719726562
+          ],
+          "rightmost_left": 248.80799865722656
+        },
+        "wide": {
+          "raw": {
+            "pdfium": "ABC 123 \u0633\u0644\u0627\u0645 DEF",
+            "mupdf": "ABC 123  \u0633\u0644\u0627\u0645DEF\n",
+            "pypdf": "DEF"
+          },
+          "exact": {
+            "pdfium": false,
+            "mupdf": false,
+            "pypdf": false
+          },
+          "first_box": [
+            48.0,
+            64.41749572753906,
+            53.765625,
+            71.53462219238281
+          ],
+          "last_box": [
+            248.8350067138672,
+            262.6395263671875,
+            53.765625,
+            71.53462219238281
+          ],
+          "rightmost_left": 248.8350067138672
+        }
+      },
+      {
+        "case": "rtl-word-boundaries",
+        "rotation": 0,
+        "source": "\u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645",
+        "definitions": 30,
+        "original": {
+          "raw": {
+            "pdfium": "\u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645",
+            "mupdf": "\u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645\n",
+            "pypdf": "\u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645"
+          },
+          "exact": {
+            "pdfium": true,
+            "mupdf": true,
+            "pypdf": true
+          },
+          "first_box": [
+            73.99200439453125,
+            92.80799865722656,
+            57.3120002746582,
+            67.10399627685547
+          ],
+          "last_box": [
+            3264.02001953125,
+            3275.635986328125,
+            48.0,
+            66.5999984741211
+          ],
+          "rightmost_left": 3290.011962890625
+        },
+        "wide": {
+          "raw": {
+            "pdfium": "\u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645",
+            "mupdf": "\u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645\n",
+            "pypdf": "\u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645"
+          },
+          "exact": {
+            "pdfium": true,
+            "mupdf": true,
+            "pypdf": true
+          },
+          "first_box": [
+            73.99200439453125,
+            92.80799865722656,
+            57.313499450683594,
+            67.25399780273438
+          ],
+          "last_box": [
+            3264.02001953125,
+            3275.635986328125,
+            48.00149917602539,
+            66.74250030517578
+          ],
+          "rightmost_left": 3290.011962890625
+        }
+      },
+      {
+        "case": "rtl-word-boundaries",
+        "rotation": 90,
+        "source": "\u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645",
+        "definitions": 30,
+        "original": {
+          "raw": {
+            "pdfium": "\u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645",
+            "mupdf": "\u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645\n",
+            "pypdf": "\u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645"
+          },
+          "exact": {
+            "pdfium": true,
+            "mupdf": true,
+            "pypdf": true
+          },
+          "first_box": [
+            73.99200439453125,
+            92.80799865722656,
+            57.3120002746582,
+            67.10399627685547
+          ],
+          "last_box": [
+            3264.02001953125,
+            3275.635986328125,
+            48.0,
+            66.5999984741211
+          ],
+          "rightmost_left": 3290.011962890625
+        },
+        "wide": {
+          "raw": {
+            "pdfium": "\u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645",
+            "mupdf": "\u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645\n",
+            "pypdf": "\u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645"
+          },
+          "exact": {
+            "pdfium": true,
+            "mupdf": true,
+            "pypdf": true
+          },
+          "first_box": [
+            73.99200439453125,
+            92.80799865722656,
+            57.313499450683594,
+            67.25399780273438
+          ],
+          "last_box": [
+            3264.02001953125,
+            3275.635986328125,
+            48.00149917602539,
+            66.74250030517578
+          ],
+          "rightmost_left": 3290.011962890625
+        }
+      },
+      {
+        "case": "rtl-word-boundaries",
+        "rotation": 180,
+        "source": "\u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645",
+        "definitions": 30,
+        "original": {
+          "raw": {
+            "pdfium": "\u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645",
+            "mupdf": "\u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645\n",
+            "pypdf": "\u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645"
+          },
+          "exact": {
+            "pdfium": true,
+            "mupdf": true,
+            "pypdf": true
+          },
+          "first_box": [
+            73.99200439453125,
+            92.80799865722656,
+            57.3120002746582,
+            67.10399627685547
+          ],
+          "last_box": [
+            3264.02001953125,
+            3275.635986328125,
+            48.0,
+            66.5999984741211
+          ],
+          "rightmost_left": 3290.011962890625
+        },
+        "wide": {
+          "raw": {
+            "pdfium": "\u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645",
+            "mupdf": "\u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645\n",
+            "pypdf": "\u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645"
+          },
+          "exact": {
+            "pdfium": true,
+            "mupdf": true,
+            "pypdf": true
+          },
+          "first_box": [
+            73.99200439453125,
+            92.80799865722656,
+            57.313499450683594,
+            67.25399780273438
+          ],
+          "last_box": [
+            3264.02001953125,
+            3275.635986328125,
+            48.00149917602539,
+            66.74250030517578
+          ],
+          "rightmost_left": 3290.011962890625
+        }
+      },
+      {
+        "case": "rtl-word-boundaries",
+        "rotation": 270,
+        "source": "\u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645",
+        "definitions": 30,
+        "original": {
+          "raw": {
+            "pdfium": "\u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645",
+            "mupdf": "\u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645\n",
+            "pypdf": "\u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645"
+          },
+          "exact": {
+            "pdfium": true,
+            "mupdf": true,
+            "pypdf": true
+          },
+          "first_box": [
+            73.99200439453125,
+            92.80799865722656,
+            57.3120002746582,
+            67.10399627685547
+          ],
+          "last_box": [
+            3264.02001953125,
+            3275.635986328125,
+            48.0,
+            66.5999984741211
+          ],
+          "rightmost_left": 3290.011962890625
+        },
+        "wide": {
+          "raw": {
+            "pdfium": "\u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645",
+            "mupdf": "\u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645\n",
+            "pypdf": "\u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645 \u0633\u0644\u0627\u0645"
+          },
+          "exact": {
+            "pdfium": true,
+            "mupdf": true,
+            "pypdf": true
+          },
+          "first_box": [
+            73.99200439453125,
+            92.80799865722656,
+            57.313499450683594,
+            67.25399780273438
+          ],
+          "last_box": [
+            3264.02001953125,
+            3275.635986328125,
+            48.00149917602539,
+            66.74250030517578
+          ],
+          "rightmost_left": 3290.011962890625
+        }
+      }
+    ]
+  }
+}

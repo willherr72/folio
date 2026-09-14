@@ -14,7 +14,8 @@ be toggled. Missing glyphs and unsupported layouts display an explanation.
 **Retry preview** retries failed preparation, including after freeing cache space.
 
 The canvas draws native glyph paths. The standard Content field provides typing,
-selection, copying and platform caret/deletion behavior. IME composition remains
+selection and copying. Since v0.10.1, plain Backspace/Delete selects whole
+graphemes before native deletion, preserving the browser’s undo transaction. IME composition remains
 local until compositionend, then becomes one committed workspace edit. Switching
 boxes/tabs discards obsolete composition; save/print/modal busy state disables
 controls and resets the local draft so it cannot diverge from saved data.
@@ -96,8 +97,9 @@ The native generator and browser harness write beneath `artifacts/shaped-text`.
 ## Remaining limits
 
 Supported evidence is bounded single-line text. Mixed directional runs, RTL word
-separators/joiners, whitespace-only lines and more than 255 distinct semantic
-character definitions are still refused. Empty boxes are supported. Font
+separators/joiners and whitespace-only lines are still refused. Since v0.10.1,
+a single wide semantic font handles over 255 definitions, within the existing
+4,096-scalar limit and bounded synthetic font metrics. Empty boxes are supported. Font
 fallback, paragraph wrapping, general existing-PDF complex-text replacement,
 variable/color/CFF fonts and glyph-level canvas caret editing are not introduced.
 No real-reader Acrobat/Foxit copy/selection or physical OS IME manual acceptance

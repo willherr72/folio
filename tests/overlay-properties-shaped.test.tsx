@@ -118,3 +118,99 @@ it("discards composition and prevents draft edits while the document is busy", (
   expect(input).toHaveValue("start");
   expect(input).toBeEnabled();
 });
+
+const shaping = { version: 1, direction: "auto", ligatures: true } as const;
+it.each([
+  ["a\u0301\u0323b", "Backspace", 3, 3, 0, 3, "b"],
+  ["x😀a\u0301y", "Delete", 2, 4, 1, 5, "xy"],
+  ["office", "Backspace", 3, 3, 2, 3, "ofice"],
+  ["אב\u05b0 ג", "Backspace", 3, 3, 1, 3, "א ג"],
+] as const)("prepares one native %s edit with a whole-grapheme selection", (text, key, start, end, expectedStart, expectedEnd, saved) => {
+  render(<Editor initial={{ ...note, text, shaping }}/>);
+  const input = screen.getByRole("textbox", { name: "Content" }) as HTMLTextAreaElement;
+  input.setSelectionRange(start, end);
+  expect(fireEvent.keyDown(input, { key })).toBe(true);
+  expect([input.selectionStart, input.selectionEnd]).toEqual([expectedStart, expectedEnd]);
+  expect(input.value).toBe(text);
+  expect(screen.getByTestId("commits")).toHaveTextContent("0");
+  // jsdom has no native editing: supply its resulting input once, then a duplicate event.
+  fireEvent.input(input, { target: { value: saved, selectionStart: expectedStart, selectionEnd: expectedStart } });
+  fireEvent.change(input, { target: { value: saved } });
+  expect(JSON.parse(screen.getByTestId("saved").textContent!).text).toBe(saved);
+  expect(screen.getByTestId("commits")).toHaveTextContent("1");
+  expect([input.selectionStart, input.selectionEnd]).toEqual([expectedStart, expectedStart]);
+});
+
+it("prepares a non-keyboard beforeinput deletion without canceling the native edit", () => {
+  render(<Editor initial={{ ...note, text: "a\u0301b", shaping }}/>);
+  const input = screen.getByRole("textbox", { name: "Content" }) as HTMLTextAreaElement;
+  input.setSelectionRange(2, 2);
+  expect(fireEvent(input, new InputEvent("beforeinput", { bubbles: true, cancelable: true, inputType: "deleteContentBackward" }))).toBe(true);
+  expect([input.selectionStart, input.selectionEnd]).toEqual([0, 2]);
+  expect(screen.getByTestId("commits")).toHaveTextContent("0");
+});
+
+it.each([{ ctrlKey: true }, { altKey: true }, { metaKey: true }, { shiftKey: true }, { isComposing: true }, { keyCode: 229 }])("leaves native special deletion alone: %j", keys => {
+  render(<Editor initial={{ ...note, text: "a\u0301b", shaping }}/>);
+  const input = screen.getByRole("textbox", { name: "Content" }) as HTMLTextAreaElement;
+  input.setSelectionRange(2, 2);
+  expect(fireEvent.keyDown(input, { key: "Backspace", ...keys })).toBe(true);
+  fireEvent(input, new InputEvent("beforeinput", { bubbles: true, cancelable: true, inputType: "deleteContentBackward" }));
+  expect([input.selectionStart, input.selectionEnd]).toEqual([2, 2]);
+});
+it("leaves legacy deletion and active composition selections alone", () => {
+  const view = render(<Editor initial={{ ...note, text: "a\u0301b" }}/>);
+  const input = screen.getByRole("textbox", { name: "Content" }) as HTMLTextAreaElement;
+  input.setSelectionRange(2, 2);
+  fireEvent.keyDown(input, { key: "Backspace" });
+  fireEvent(input, new InputEvent("beforeinput", { bubbles: true, cancelable: true, inputType: "deleteContentBackward" }));
+  expect([input.selectionStart, input.selectionEnd]).toEqual([2, 2]);
+  view.unmount();
+  render(<Editor initial={{ ...note, text: "a\u0301b", shaping }}/>);
+  const composingInput = screen.getByRole("textbox", { name: "Content" }) as HTMLTextAreaElement;
+  fireEvent.compositionStart(composingInput);
+  composingInput.setSelectionRange(2, 2);
+  fireEvent.keyDown(composingInput, { key: "Backspace" });
+  fireEvent(composingInput, new InputEvent("beforeinput", { bubbles: true, cancelable: true, inputType: "deleteContentBackward" }));
+  expect([composingInput.selectionStart, composingInput.selectionEnd]).toEqual([2, 2]);
+});
+
+it("does not prepare deletion while disabled, and removes beforeinput handling on legacy text", () => {
+  const onChange = vi.fn();
+  const overlay = { ...note, text: "a\u0301b", shaping };
+  const view = render(<OverlayProperties {...defaults} overlay={overlay} onChange={onChange} disabled/>);
+  const input = screen.getByRole("textbox", { name: "Content" }) as HTMLTextAreaElement;
+  input.setSelectionRange(2, 2);
+  fireEvent.keyDown(input, { key: "Backspace" });
+  fireEvent(input, new InputEvent("beforeinput", { bubbles: true, cancelable: true, inputType: "deleteContentBackward" }));
+  expect([input.selectionStart, input.selectionEnd]).toEqual([2, 2]);
+  view.rerender(<OverlayProperties {...defaults} overlay={overlay} onChange={onChange}/>);
+  fireEvent.keyDown(input, { key: "Backspace" });
+  expect([input.selectionStart, input.selectionEnd]).toEqual([0, 2]);
+  view.rerender(<OverlayProperties {...defaults} overlay={{ ...overlay, shaping: undefined }} onChange={onChange}/>);
+  input.setSelectionRange(2, 2);
+  fireEvent(input, new InputEvent("beforeinput", { bubbles: true, cancelable: true, inputType: "deleteContentBackward" }));
+  expect([input.selectionStart, input.selectionEnd]).toEqual([2, 2]);
+  expect(onChange).not.toHaveBeenCalled();
+});
+it("re-enables non-keyboard deletion after a modifier key is released", () => {
+  render(<Editor initial={{ ...note, text: "a\u0301b", shaping }}/>);
+  const input = screen.getByRole("textbox", { name: "Content" }) as HTMLTextAreaElement;
+  input.setSelectionRange(2, 2);
+  fireEvent.keyDown(input, { key: "Control", ctrlKey: true });
+  fireEvent.keyUp(input, { key: "Control" });
+  fireEvent(input, new InputEvent("beforeinput", { bubbles: true, cancelable: true, inputType: "deleteContentBackward" }));
+  expect([input.selectionStart, input.selectionEnd]).toEqual([0, 2]);
+});
+it.each([
+  { inputType: "insertText", cancelable: true },
+  { inputType: "historyUndo", cancelable: true },
+  { inputType: "deleteContentBackward", cancelable: false },
+  { inputType: "deleteContentBackward", cancelable: true, isComposing: true },
+])("does not alter unrelated or composing native input: %j", event => {
+  render(<Editor initial={{ ...note, text: "a\u0301b", shaping }}/>);
+  const input = screen.getByRole("textbox", { name: "Content" }) as HTMLTextAreaElement;
+  input.setSelectionRange(2, 2);
+  fireEvent(input, new InputEvent("beforeinput", { bubbles: true, ...event }));
+  expect([input.selectionStart, input.selectionEnd]).toEqual([2, 2]);
+});

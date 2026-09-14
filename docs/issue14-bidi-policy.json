@@ -1,0 +1,1030 @@
+{
+  "sourcePdfSha256": "61f07c4d0fbd17160bc997fc810544ec31c682fee21d07a7b06f9218dad80190",
+  "scope": "Existing native glyph positions unchanged; metadata/marked-content policy only. tagged-rtl is not a complete tagged-PDF implementation.",
+  "cases": [
+    {
+      "case": "arabic",
+      "order": "logical-tj",
+      "rotation": 0,
+      "policy": "original",
+      "expected": "سلام",
+      "mupdf": "سلام\n",
+      "pypdf": "مالس ",
+      "exact": {
+        "pdfium": false,
+        "mupdf": true,
+        "pypdf": false
+      },
+      "sha256": "ca421ea3ac005c180ac6254c44a532152fac5947774c4225ca80229fb8283961",
+      "pdfium": "مالس"
+    },
+    {
+      "case": "arabic",
+      "order": "logical-tj",
+      "rotation": 0,
+      "policy": "viewer-rtl",
+      "expected": "سلام",
+      "mupdf": "سلام\n",
+      "pypdf": "مالس ",
+      "exact": {
+        "pdfium": false,
+        "mupdf": true,
+        "pypdf": false
+      },
+      "sha256": "761e1079cd192633913dc42b7a4acbaa39d888625f0bea470a1127ed42f099cb",
+      "pdfium": "مالس"
+    },
+    {
+      "case": "arabic",
+      "order": "logical-tj",
+      "rotation": 0,
+      "policy": "reversed-chars",
+      "expected": "سلام",
+      "mupdf": "سلام\n",
+      "pypdf": "مالس ",
+      "exact": {
+        "pdfium": false,
+        "mupdf": true,
+        "pypdf": false
+      },
+      "sha256": "b91af9d8ed5597ac0ac5b32295dd602d6f23300214e68e60ad647bb721de9fc4",
+      "pdfium": "مالس"
+    },
+    {
+      "case": "arabic",
+      "order": "logical-tj",
+      "rotation": 0,
+      "policy": "tagged-rtl",
+      "expected": "سلام",
+      "mupdf": "سلام\n",
+      "pypdf": "مالس ",
+      "exact": {
+        "pdfium": false,
+        "mupdf": true,
+        "pypdf": false
+      },
+      "sha256": "70c2319bc8da947241f48455999a2b109658b2e2445e0088bf4f25ee07fe63fa",
+      "pdfium": "مالس"
+    },
+    {
+      "case": "arabic",
+      "order": "visual-tj",
+      "rotation": 0,
+      "policy": "original",
+      "expected": "سلام",
+      "mupdf": "سلام\n",
+      "pypdf": "سلام",
+      "exact": {
+        "pdfium": true,
+        "mupdf": true,
+        "pypdf": true
+      },
+      "sha256": "2b86975bdc857b98cf937a12991a065d0e6583cdd714374380eacb094261a466",
+      "pdfium": "سلام"
+    },
+    {
+      "case": "arabic",
+      "order": "visual-tj",
+      "rotation": 0,
+      "policy": "viewer-rtl",
+      "expected": "سلام",
+      "mupdf": "سلام\n",
+      "pypdf": "سلام",
+      "exact": {
+        "pdfium": true,
+        "mupdf": true,
+        "pypdf": true
+      },
+      "sha256": "172f57ef6b1e4059684044d5b975999c803d5815cff999a4e21b329a032f23a8",
+      "pdfium": "سلام"
+    },
+    {
+      "case": "arabic",
+      "order": "visual-tj",
+      "rotation": 0,
+      "policy": "reversed-chars",
+      "expected": "سلام",
+      "mupdf": "سلام\n",
+      "pypdf": "سلام",
+      "exact": {
+        "pdfium": true,
+        "mupdf": true,
+        "pypdf": true
+      },
+      "sha256": "8f8c1289b20ff3b48ecf2227c1d2a97c88087126bcc0c3b8bac2d92c273b5904",
+      "pdfium": "سلام"
+    },
+    {
+      "case": "arabic",
+      "order": "visual-tj",
+      "rotation": 0,
+      "policy": "tagged-rtl",
+      "expected": "سلام",
+      "mupdf": "سلام\n",
+      "pypdf": "سلام",
+      "exact": {
+        "pdfium": true,
+        "mupdf": true,
+        "pypdf": true
+      },
+      "sha256": "031c6544464001022f6be1cb3d6cf8c10000ecff7f50a0442b0742700b143d24",
+      "pdfium": "سلام"
+    },
+    {
+      "case": "arabic",
+      "order": "logical-tj",
+      "rotation": 90,
+      "policy": "original",
+      "expected": "سلام",
+      "mupdf": "سلام\n",
+      "pypdf": "مالس ",
+      "exact": {
+        "pdfium": false,
+        "mupdf": true,
+        "pypdf": false
+      },
+      "sha256": "0c15f9b8d66acbc69940e48137edd78b5be40eea2193e458123bbff8e0eacfa0",
+      "pdfium": "مالس"
+    },
+    {
+      "case": "arabic",
+      "order": "logical-tj",
+      "rotation": 90,
+      "policy": "viewer-rtl",
+      "expected": "سلام",
+      "mupdf": "سلام\n",
+      "pypdf": "مالس ",
+      "exact": {
+        "pdfium": false,
+        "mupdf": true,
+        "pypdf": false
+      },
+      "sha256": "040764b1ccacb70431ecf17040af1f14d713734b3e81bcd432febb00e5ba3eea",
+      "pdfium": "مالس"
+    },
+    {
+      "case": "arabic",
+      "order": "logical-tj",
+      "rotation": 90,
+      "policy": "reversed-chars",
+      "expected": "سلام",
+      "mupdf": "سلام\n",
+      "pypdf": "مالس ",
+      "exact": {
+        "pdfium": false,
+        "mupdf": true,
+        "pypdf": false
+      },
+      "sha256": "31b57c83fb06c574afc79c9c348ba9c80332d366a6c6cc0006f9b0f00c6c27c0",
+      "pdfium": "مالس"
+    },
+    {
+      "case": "arabic",
+      "order": "logical-tj",
+      "rotation": 90,
+      "policy": "tagged-rtl",
+      "expected": "سلام",
+      "mupdf": "سلام\n",
+      "pypdf": "مالس ",
+      "exact": {
+        "pdfium": false,
+        "mupdf": true,
+        "pypdf": false
+      },
+      "sha256": "7318dcab688e17ce35881648b685b2ecaea85954ff7fce798835dd5d68df29b2",
+      "pdfium": "مالس"
+    },
+    {
+      "case": "arabic",
+      "order": "visual-tj",
+      "rotation": 90,
+      "policy": "original",
+      "expected": "سلام",
+      "mupdf": "سلام\n",
+      "pypdf": "سلام",
+      "exact": {
+        "pdfium": true,
+        "mupdf": true,
+        "pypdf": true
+      },
+      "sha256": "ee0351043de3299d7cb29ac7bdea84a2c5a471a6fd25857dacf655740ab0c5eb",
+      "pdfium": "سلام"
+    },
+    {
+      "case": "arabic",
+      "order": "visual-tj",
+      "rotation": 90,
+      "policy": "viewer-rtl",
+      "expected": "سلام",
+      "mupdf": "سلام\n",
+      "pypdf": "سلام",
+      "exact": {
+        "pdfium": true,
+        "mupdf": true,
+        "pypdf": true
+      },
+      "sha256": "b97388a2bd77382a79ed320178d792f3b4efbabdcdac280463e9e159cf7aff67",
+      "pdfium": "سلام"
+    },
+    {
+      "case": "arabic",
+      "order": "visual-tj",
+      "rotation": 90,
+      "policy": "reversed-chars",
+      "expected": "سلام",
+      "mupdf": "سلام\n",
+      "pypdf": "سلام",
+      "exact": {
+        "pdfium": true,
+        "mupdf": true,
+        "pypdf": true
+      },
+      "sha256": "b069185f54e0b0535d08fabadfd13f87074f00bdbd5f3628afe2e9b1698fe76a",
+      "pdfium": "سلام"
+    },
+    {
+      "case": "arabic",
+      "order": "visual-tj",
+      "rotation": 90,
+      "policy": "tagged-rtl",
+      "expected": "سلام",
+      "mupdf": "سلام\n",
+      "pypdf": "سلام",
+      "exact": {
+        "pdfium": true,
+        "mupdf": true,
+        "pypdf": true
+      },
+      "sha256": "82d3061142efd48695fb1b76ab13cd7bebc536bd652660363e814f58ca0c5e53",
+      "pdfium": "سلام"
+    },
+    {
+      "case": "arabic",
+      "order": "logical-tj",
+      "rotation": 180,
+      "policy": "original",
+      "expected": "سلام",
+      "mupdf": "سلام\n",
+      "pypdf": "مالس ",
+      "exact": {
+        "pdfium": false,
+        "mupdf": true,
+        "pypdf": false
+      },
+      "sha256": "38f76c4d2e787f49343018f875b2a20d2774e3bc226bdc068b6b5ef0cc78572d",
+      "pdfium": "مالس"
+    },
+    {
+      "case": "arabic",
+      "order": "logical-tj",
+      "rotation": 180,
+      "policy": "viewer-rtl",
+      "expected": "سلام",
+      "mupdf": "سلام\n",
+      "pypdf": "مالس ",
+      "exact": {
+        "pdfium": false,
+        "mupdf": true,
+        "pypdf": false
+      },
+      "sha256": "005b99d00936bd54f7338fb052e8c2cf49778aa6f6ecddb3627587a44fafa63f",
+      "pdfium": "مالس"
+    },
+    {
+      "case": "arabic",
+      "order": "logical-tj",
+      "rotation": 180,
+      "policy": "reversed-chars",
+      "expected": "سلام",
+      "mupdf": "سلام\n",
+      "pypdf": "مالس ",
+      "exact": {
+        "pdfium": false,
+        "mupdf": true,
+        "pypdf": false
+      },
+      "sha256": "34d453be45eb3763aff71acd625226d8580e951d64ab17fa76bc42c5e8130721",
+      "pdfium": "مالس"
+    },
+    {
+      "case": "arabic",
+      "order": "logical-tj",
+      "rotation": 180,
+      "policy": "tagged-rtl",
+      "expected": "سلام",
+      "mupdf": "سلام\n",
+      "pypdf": "مالس ",
+      "exact": {
+        "pdfium": false,
+        "mupdf": true,
+        "pypdf": false
+      },
+      "sha256": "08fd49ff177f0b2269cd576e7b9feaed2a5582e1fdbda55de49003eae89fabf7",
+      "pdfium": "مالس"
+    },
+    {
+      "case": "arabic",
+      "order": "visual-tj",
+      "rotation": 180,
+      "policy": "original",
+      "expected": "سلام",
+      "mupdf": "سلام\n",
+      "pypdf": "سلام",
+      "exact": {
+        "pdfium": true,
+        "mupdf": true,
+        "pypdf": true
+      },
+      "sha256": "d17d9f9bc02889ac04d5c3d1f99667b6e959ae88a4679725e1487596d936c9fb",
+      "pdfium": "سلام"
+    },
+    {
+      "case": "arabic",
+      "order": "visual-tj",
+      "rotation": 180,
+      "policy": "viewer-rtl",
+      "expected": "سلام",
+      "mupdf": "سلام\n",
+      "pypdf": "سلام",
+      "exact": {
+        "pdfium": true,
+        "mupdf": true,
+        "pypdf": true
+      },
+      "sha256": "4092df03d1a47487b4448b96c660b20ecd95edbacc061a6eef631136a9199b88",
+      "pdfium": "سلام"
+    },
+    {
+      "case": "arabic",
+      "order": "visual-tj",
+      "rotation": 180,
+      "policy": "reversed-chars",
+      "expected": "سلام",
+      "mupdf": "سلام\n",
+      "pypdf": "سلام",
+      "exact": {
+        "pdfium": true,
+        "mupdf": true,
+        "pypdf": true
+      },
+      "sha256": "adc5ce48457b6390558c3800d3e05dcfdb7d006a1088aa726b62b0496a6c5dbb",
+      "pdfium": "سلام"
+    },
+    {
+      "case": "arabic",
+      "order": "visual-tj",
+      "rotation": 180,
+      "policy": "tagged-rtl",
+      "expected": "سلام",
+      "mupdf": "سلام\n",
+      "pypdf": "سلام",
+      "exact": {
+        "pdfium": true,
+        "mupdf": true,
+        "pypdf": true
+      },
+      "sha256": "20ada613795f99a89f76d8a93907b0380c417a13e3cbcec01e10118044909051",
+      "pdfium": "سلام"
+    },
+    {
+      "case": "arabic",
+      "order": "logical-tj",
+      "rotation": 270,
+      "policy": "original",
+      "expected": "سلام",
+      "mupdf": "سلام\n",
+      "pypdf": "مالس ",
+      "exact": {
+        "pdfium": false,
+        "mupdf": true,
+        "pypdf": false
+      },
+      "sha256": "4d05c24bc632930f7cc86f9a63233a822421ebc7d5a91cb3bb8889313c39aa10",
+      "pdfium": "مالس"
+    },
+    {
+      "case": "arabic",
+      "order": "logical-tj",
+      "rotation": 270,
+      "policy": "viewer-rtl",
+      "expected": "سلام",
+      "mupdf": "سلام\n",
+      "pypdf": "مالس ",
+      "exact": {
+        "pdfium": false,
+        "mupdf": true,
+        "pypdf": false
+      },
+      "sha256": "c2d738617f9d7893467141d3c0e1255ec82a752ee629279c9407072d57d1642e",
+      "pdfium": "مالس"
+    },
+    {
+      "case": "arabic",
+      "order": "logical-tj",
+      "rotation": 270,
+      "policy": "reversed-chars",
+      "expected": "سلام",
+      "mupdf": "سلام\n",
+      "pypdf": "مالس ",
+      "exact": {
+        "pdfium": false,
+        "mupdf": true,
+        "pypdf": false
+      },
+      "sha256": "e2f17b209e97151a9a1470df373e1367dd113489e1787e3d409ec35d1562dff9",
+      "pdfium": "مالس"
+    },
+    {
+      "case": "arabic",
+      "order": "logical-tj",
+      "rotation": 270,
+      "policy": "tagged-rtl",
+      "expected": "سلام",
+      "mupdf": "سلام\n",
+      "pypdf": "مالس ",
+      "exact": {
+        "pdfium": false,
+        "mupdf": true,
+        "pypdf": false
+      },
+      "sha256": "65a3f8ea64de3864d112d908bcc31aa9a4721deee983a3048bb66e2804d17709",
+      "pdfium": "مالس"
+    },
+    {
+      "case": "arabic",
+      "order": "visual-tj",
+      "rotation": 270,
+      "policy": "original",
+      "expected": "سلام",
+      "mupdf": "سلام\n",
+      "pypdf": "سلام",
+      "exact": {
+        "pdfium": true,
+        "mupdf": true,
+        "pypdf": true
+      },
+      "sha256": "805a2f2214f9a1d815db690b89fdbf9268968d5b9a5d9a924adfc7aebfa08445",
+      "pdfium": "سلام"
+    },
+    {
+      "case": "arabic",
+      "order": "visual-tj",
+      "rotation": 270,
+      "policy": "viewer-rtl",
+      "expected": "سلام",
+      "mupdf": "سلام\n",
+      "pypdf": "سلام",
+      "exact": {
+        "pdfium": true,
+        "mupdf": true,
+        "pypdf": true
+      },
+      "sha256": "ac03955c6721301a4d470bb98f177fb44b775f022f9ea5497a01d03f21d1e9d2",
+      "pdfium": "سلام"
+    },
+    {
+      "case": "arabic",
+      "order": "visual-tj",
+      "rotation": 270,
+      "policy": "reversed-chars",
+      "expected": "سلام",
+      "mupdf": "سلام\n",
+      "pypdf": "سلام",
+      "exact": {
+        "pdfium": true,
+        "mupdf": true,
+        "pypdf": true
+      },
+      "sha256": "6b9c036591afa5f7f200966cf4840b004fa0f85fa86e41ae215936714ab19f65",
+      "pdfium": "سلام"
+    },
+    {
+      "case": "arabic",
+      "order": "visual-tj",
+      "rotation": 270,
+      "policy": "tagged-rtl",
+      "expected": "سلام",
+      "mupdf": "سلام\n",
+      "pypdf": "سلام",
+      "exact": {
+        "pdfium": true,
+        "mupdf": true,
+        "pypdf": true
+      },
+      "sha256": "e867769eaa075591b1a69aa3f92034d76144122646c080d16b12ad8256d71711",
+      "pdfium": "سلام"
+    },
+    {
+      "case": "mixed-bidi",
+      "order": "logical-tj",
+      "rotation": 0,
+      "policy": "original",
+      "expected": "ABC سلام 123 DEF",
+      "mupdf": "ABC سلام 123\n DEF\n",
+      "pypdf": "123  DEF",
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "sha256": "458945be448fcbd70f0e22490eef5f4e5958eb0c0ea563d17f51bf1d6bc9bbd5",
+      "pdfium": "ABC مالس 123 DEF"
+    },
+    {
+      "case": "mixed-bidi",
+      "order": "logical-tj",
+      "rotation": 0,
+      "policy": "viewer-rtl",
+      "expected": "ABC سلام 123 DEF",
+      "mupdf": "ABC سلام 123\n DEF\n",
+      "pypdf": "123  DEF",
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "sha256": "c9a80c78198f64e2bbed919fcef8f1900a6abe245eff49306821fb31beb6519d",
+      "pdfium": "DEF 123 مالس ABC"
+    },
+    {
+      "case": "mixed-bidi",
+      "order": "logical-tj",
+      "rotation": 0,
+      "policy": "reversed-chars",
+      "expected": "ABC سلام 123 DEF",
+      "mupdf": "ABC سلام 123\n DEF\n",
+      "pypdf": "123  DEF",
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "sha256": "05b0f147b1d3dec5566b3323ee234640f166a5bc1813539e5e44b55e8f6cb14d",
+      "pdfium": "ABC مالس 123 DEF"
+    },
+    {
+      "case": "mixed-bidi",
+      "order": "logical-tj",
+      "rotation": 0,
+      "policy": "tagged-rtl",
+      "expected": "ABC سلام 123 DEF",
+      "mupdf": "ABC سلام 123\n DEF\n",
+      "pypdf": "123  DEF",
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "sha256": "57e4bdd0f8a60eda587d7101cdd8e129845cdfed2272dee7f72fe82d6c0ee840",
+      "pdfium": "DEF 123 مالس ABC"
+    },
+    {
+      "case": "mixed-bidi",
+      "order": "visual-tj",
+      "rotation": 0,
+      "policy": "original",
+      "expected": "ABC سلام 123 DEF",
+      "mupdf": "ABC 123  سلامDEF\n",
+      "pypdf": "DEF",
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "sha256": "27b1d3c197e23c497aba813d48070e7f01c6b9d2243b84e1e0f8b74c02928842",
+      "pdfium": "ABC 123 سلام DEF"
+    },
+    {
+      "case": "mixed-bidi",
+      "order": "visual-tj",
+      "rotation": 0,
+      "policy": "viewer-rtl",
+      "expected": "ABC سلام 123 DEF",
+      "mupdf": "ABC 123  سلامDEF\n",
+      "pypdf": "DEF",
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "sha256": "dc629a8207ffa3fbf776c4fbdd6684e3abbe907aeca245ce46b55f88b0ed8c8e",
+      "pdfium": "DEF سلام 123 ABC"
+    },
+    {
+      "case": "mixed-bidi",
+      "order": "visual-tj",
+      "rotation": 0,
+      "policy": "reversed-chars",
+      "expected": "ABC سلام 123 DEF",
+      "mupdf": "ABC 123  سلامDEF\n",
+      "pypdf": "DEF",
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "sha256": "2b620da706f117bcae8b6761f10822bab22a5c111693a9c42c18fa065a95a885",
+      "pdfium": "ABC 123 سلام DEF"
+    },
+    {
+      "case": "mixed-bidi",
+      "order": "visual-tj",
+      "rotation": 0,
+      "policy": "tagged-rtl",
+      "expected": "ABC سلام 123 DEF",
+      "mupdf": "ABC 123  سلامDEF\n",
+      "pypdf": "DEF",
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "sha256": "476e9f93b2f69030dde1c85600fe335d59f895ac4024b1623fd9d5d66e3e2e10",
+      "pdfium": "DEF سلام 123 ABC"
+    },
+    {
+      "case": "mixed-bidi",
+      "order": "logical-tj",
+      "rotation": 90,
+      "policy": "original",
+      "expected": "ABC سلام 123 DEF",
+      "mupdf": "ABC سلام 123\n DEF\n",
+      "pypdf": "123  DEF",
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "sha256": "0427d415e66806bc57af95e1bbf53adeb420aaac81db75e524a2b1125f4ed638",
+      "pdfium": "ABC مالس 123 DEF"
+    },
+    {
+      "case": "mixed-bidi",
+      "order": "logical-tj",
+      "rotation": 90,
+      "policy": "viewer-rtl",
+      "expected": "ABC سلام 123 DEF",
+      "mupdf": "ABC سلام 123\n DEF\n",
+      "pypdf": "123  DEF",
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "sha256": "6ff7652865c423415feb22801733f0b8c50ea6a94665df4a163229a7245e18f4",
+      "pdfium": "DEF 123 مالس ABC"
+    },
+    {
+      "case": "mixed-bidi",
+      "order": "logical-tj",
+      "rotation": 90,
+      "policy": "reversed-chars",
+      "expected": "ABC سلام 123 DEF",
+      "mupdf": "ABC سلام 123\n DEF\n",
+      "pypdf": "123  DEF",
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "sha256": "8974502ffd745bf26beb4de26bda6149e5cdbb601a79561c2115c1d1dcf972c5",
+      "pdfium": "ABC مالس 123 DEF"
+    },
+    {
+      "case": "mixed-bidi",
+      "order": "logical-tj",
+      "rotation": 90,
+      "policy": "tagged-rtl",
+      "expected": "ABC سلام 123 DEF",
+      "mupdf": "ABC سلام 123\n DEF\n",
+      "pypdf": "123  DEF",
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "sha256": "9866ad1a598ce00aa100141ee34aa3a2322b057d04149d454e4721afe9a08c8b",
+      "pdfium": "DEF 123 مالس ABC"
+    },
+    {
+      "case": "mixed-bidi",
+      "order": "visual-tj",
+      "rotation": 90,
+      "policy": "original",
+      "expected": "ABC سلام 123 DEF",
+      "mupdf": "ABC 123  سلامDEF\n",
+      "pypdf": "DEF",
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "sha256": "50ac78cd0da5a1b156bfc8355f7db246c00cf68447082595f9eacd841f4aabf2",
+      "pdfium": "ABC 123 سلام DEF"
+    },
+    {
+      "case": "mixed-bidi",
+      "order": "visual-tj",
+      "rotation": 90,
+      "policy": "viewer-rtl",
+      "expected": "ABC سلام 123 DEF",
+      "mupdf": "ABC 123  سلامDEF\n",
+      "pypdf": "DEF",
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "sha256": "9f62dd32ae913699ec7c888e1eaa5d1a1c2cf63292468d5629f3918aae0a4b75",
+      "pdfium": "DEF سلام 123 ABC"
+    },
+    {
+      "case": "mixed-bidi",
+      "order": "visual-tj",
+      "rotation": 90,
+      "policy": "reversed-chars",
+      "expected": "ABC سلام 123 DEF",
+      "mupdf": "ABC 123  سلامDEF\n",
+      "pypdf": "DEF",
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "sha256": "e01672fd541244d641c4777c2b794845fcbb7bfa9dadeb569c309131b98cf325",
+      "pdfium": "ABC 123 سلام DEF"
+    },
+    {
+      "case": "mixed-bidi",
+      "order": "visual-tj",
+      "rotation": 90,
+      "policy": "tagged-rtl",
+      "expected": "ABC سلام 123 DEF",
+      "mupdf": "ABC 123  سلامDEF\n",
+      "pypdf": "DEF",
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "sha256": "ee9d623e4b3c538a2ef4751334656dece52074bc205b1e2a8f95514a247bbb10",
+      "pdfium": "DEF سلام 123 ABC"
+    },
+    {
+      "case": "mixed-bidi",
+      "order": "logical-tj",
+      "rotation": 180,
+      "policy": "original",
+      "expected": "ABC سلام 123 DEF",
+      "mupdf": "ABC سلام 123\n DEF\n",
+      "pypdf": "123  DEF",
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "sha256": "6111115521aabc0b497d1dcc314b70766126f49f1784dd34acad6fbfc083fab4",
+      "pdfium": "ABC مالس 123 DEF"
+    },
+    {
+      "case": "mixed-bidi",
+      "order": "logical-tj",
+      "rotation": 180,
+      "policy": "viewer-rtl",
+      "expected": "ABC سلام 123 DEF",
+      "mupdf": "ABC سلام 123\n DEF\n",
+      "pypdf": "123  DEF",
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "sha256": "99f2187b53c08b51119a4cd8f77c6f7d658dd9f6d63968162d0be3216a7606a3",
+      "pdfium": "DEF 123 مالس ABC"
+    },
+    {
+      "case": "mixed-bidi",
+      "order": "logical-tj",
+      "rotation": 180,
+      "policy": "reversed-chars",
+      "expected": "ABC سلام 123 DEF",
+      "mupdf": "ABC سلام 123\n DEF\n",
+      "pypdf": "123  DEF",
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "sha256": "93270caba9e69b1159eb44a5fe786d801887e5e3847753767e916b4f82d75ca7",
+      "pdfium": "ABC مالس 123 DEF"
+    },
+    {
+      "case": "mixed-bidi",
+      "order": "logical-tj",
+      "rotation": 180,
+      "policy": "tagged-rtl",
+      "expected": "ABC سلام 123 DEF",
+      "mupdf": "ABC سلام 123\n DEF\n",
+      "pypdf": "123  DEF",
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "sha256": "9a827bb2995df9c9a0a316bacf7a9d60467d6aaabbb42c6c70b5155d38495c83",
+      "pdfium": "DEF 123 مالس ABC"
+    },
+    {
+      "case": "mixed-bidi",
+      "order": "visual-tj",
+      "rotation": 180,
+      "policy": "original",
+      "expected": "ABC سلام 123 DEF",
+      "mupdf": "ABC 123  سلامDEF\n",
+      "pypdf": "DEF",
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "sha256": "458157af85ddee6b153ec99ccd3f49f57e7888a54082f7c7bc4dbd727dfddbbb",
+      "pdfium": "ABC 123 سلام DEF"
+    },
+    {
+      "case": "mixed-bidi",
+      "order": "visual-tj",
+      "rotation": 180,
+      "policy": "viewer-rtl",
+      "expected": "ABC سلام 123 DEF",
+      "mupdf": "ABC 123  سلامDEF\n",
+      "pypdf": "DEF",
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "sha256": "9a0c74d61f3860be370c9a502fd17648d0d261af8bc906b90e572d991b728f51",
+      "pdfium": "DEF سلام 123 ABC"
+    },
+    {
+      "case": "mixed-bidi",
+      "order": "visual-tj",
+      "rotation": 180,
+      "policy": "reversed-chars",
+      "expected": "ABC سلام 123 DEF",
+      "mupdf": "ABC 123  سلامDEF\n",
+      "pypdf": "DEF",
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "sha256": "31b3e2a3594713df5e855a4a60c0444eb4ece7b78b3c4ee7d302eb5eb69afe6c",
+      "pdfium": "ABC 123 سلام DEF"
+    },
+    {
+      "case": "mixed-bidi",
+      "order": "visual-tj",
+      "rotation": 180,
+      "policy": "tagged-rtl",
+      "expected": "ABC سلام 123 DEF",
+      "mupdf": "ABC 123  سلامDEF\n",
+      "pypdf": "DEF",
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "sha256": "30f3b25789fefd4d7c79bb2fc909340c2a96559be4cc0f8ce92bb22874068919",
+      "pdfium": "DEF سلام 123 ABC"
+    },
+    {
+      "case": "mixed-bidi",
+      "order": "logical-tj",
+      "rotation": 270,
+      "policy": "original",
+      "expected": "ABC سلام 123 DEF",
+      "mupdf": "ABC سلام 123\n DEF\n",
+      "pypdf": "123  DEF",
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "sha256": "db551434a4ab61720a22e72a61162f979622b8ef2a0944ff781a78f8a89f4f94",
+      "pdfium": "ABC مالس 123 DEF"
+    },
+    {
+      "case": "mixed-bidi",
+      "order": "logical-tj",
+      "rotation": 270,
+      "policy": "viewer-rtl",
+      "expected": "ABC سلام 123 DEF",
+      "mupdf": "ABC سلام 123\n DEF\n",
+      "pypdf": "123  DEF",
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "sha256": "03c3ee23870e173f20623fb6c392df23c0a59ad005c2caafe0d432929a4269f6",
+      "pdfium": "DEF 123 مالس ABC"
+    },
+    {
+      "case": "mixed-bidi",
+      "order": "logical-tj",
+      "rotation": 270,
+      "policy": "reversed-chars",
+      "expected": "ABC سلام 123 DEF",
+      "mupdf": "ABC سلام 123\n DEF\n",
+      "pypdf": "123  DEF",
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "sha256": "4d00b3a98d28b7e627bbe461c8c23d03bed121841f1f1c53de3b918739900789",
+      "pdfium": "ABC مالس 123 DEF"
+    },
+    {
+      "case": "mixed-bidi",
+      "order": "logical-tj",
+      "rotation": 270,
+      "policy": "tagged-rtl",
+      "expected": "ABC سلام 123 DEF",
+      "mupdf": "ABC سلام 123\n DEF\n",
+      "pypdf": "123  DEF",
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "sha256": "8877ec424ae51a1a20a2a7ece4a1132e0b9e5e2c040184e550b0c1e966676c2c",
+      "pdfium": "DEF 123 مالس ABC"
+    },
+    {
+      "case": "mixed-bidi",
+      "order": "visual-tj",
+      "rotation": 270,
+      "policy": "original",
+      "expected": "ABC سلام 123 DEF",
+      "mupdf": "ABC 123  سلامDEF\n",
+      "pypdf": "DEF",
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "sha256": "014a0f332175b3daa98af8d71b4b004f2c1c2f6ab4b5e316ec0aa20f676e8788",
+      "pdfium": "ABC 123 سلام DEF"
+    },
+    {
+      "case": "mixed-bidi",
+      "order": "visual-tj",
+      "rotation": 270,
+      "policy": "viewer-rtl",
+      "expected": "ABC سلام 123 DEF",
+      "mupdf": "ABC 123  سلامDEF\n",
+      "pypdf": "DEF",
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "sha256": "3a2158f89976ab229ab74115b168013ebcffdf5a049cadef7271b00ab291046d",
+      "pdfium": "DEF سلام 123 ABC"
+    },
+    {
+      "case": "mixed-bidi",
+      "order": "visual-tj",
+      "rotation": 270,
+      "policy": "reversed-chars",
+      "expected": "ABC سلام 123 DEF",
+      "mupdf": "ABC 123  سلامDEF\n",
+      "pypdf": "DEF",
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "sha256": "44c416ead936333a6252fc20777596edf6526e45299483e9959fdf4544438e91",
+      "pdfium": "ABC 123 سلام DEF"
+    },
+    {
+      "case": "mixed-bidi",
+      "order": "visual-tj",
+      "rotation": 270,
+      "policy": "tagged-rtl",
+      "expected": "ABC سلام 123 DEF",
+      "mupdf": "ABC 123  سلامDEF\n",
+      "pypdf": "DEF",
+      "exact": {
+        "pdfium": false,
+        "mupdf": false,
+        "pypdf": false
+      },
+      "sha256": "f7963e12eacf54e832120a350d0b23978257abdc6aa775431c38ae1b9de31a5b",
+      "pdfium": "DEF سلام 123 ABC"
+    }
+  ]
+}

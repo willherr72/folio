@@ -1,0 +1,63 @@
+{
+  "release": "0.10.1",
+  "date": "2026-09-13",
+  "frontendTests": 276,
+  "frontendFiles": 49,
+  "nativeTests": 143,
+  "nativeIgnored": 3,
+  "chromiumEditingCases": 11,
+  "nativeWidePdfs": 48,
+  "dependencyRecords": 551,
+  "manualFoxitAcceptance": false,
+  "physicalImeAcceptance": false,
+  "issue14Closed": false,
+  "desktop": {
+    "passed": true,
+    "binarySha256": "3110249d2944772a2d5277e33a3ce9f505f90e96b616355ad2b647dbbab5c332",
+    "sourceSha256": "65d61a2942add01e77c73be095297eab2a54744d01e0eb9f048c899917961b78",
+    "editableSha256": "733eb94e1b7f0150ef04daa5dbc4b78d14dd06cc4eccccd42669faf4a7141426",
+    "flatSha256": "cc965fb576303f33cc28f35fa8968d09493d97af28a9239734191f74d3e7ef2b",
+    "checks": [
+      "native PDF open",
+      "native font import and shaped outline preview",
+      "ligature controls change native glyphs",
+      "shaped text undo and redo",
+      "WebView composition commits as one undo step",
+      "editable/flattened export preserves source",
+      "editable reopen without source or imported font",
+      "shaped annotation search",
+      "flattened native reader text",
+      "flattened drag selection copies exact Unicode",
+      "print setup and cancel",
+      "tab return retains native preparation"
+    ],
+    "errors": []
+  },
+  "recovery": {
+    "passed": true,
+    "binarySha256": "3110249d2944772a2d5277e33a3ce9f505f90e96b616355ad2b647dbbab5c332",
+    "checks": [
+      "crash checkpoint contains shaped draft",
+      "restore with all source PDFs and imported font moved",
+      "native outlines regenerated",
+      "shaping controls restored",
+      "recovered logical text searchable"
+    ]
+  },
+  "wideAndDeletion": {
+    "passed": true,
+    "binarySha256": "3110249d2944772a2d5277e33a3ce9f505f90e96b616355ad2b647dbbab5c332",
+    "checks": [
+      "production WebView whole-grapheme and supplementary deletion; ligature letters independent; native undo/redo",
+      "wide native preview, editable/flattened saves and reader Unicode beyond255definitions"
+    ]
+  },
+  "scripts": {
+    "passed": true,
+    "checks": [
+      "Arabic native import, shaped preview, flattened save, reader Unicode",
+      "Indic native import, shaped preview, flattened save, reader Unicode"
+    ],
+    "binarySha256": "3110249d2944772a2d5277e33a3ce9f505f90e96b616355ad2b647dbbab5c332"
+  }
+}

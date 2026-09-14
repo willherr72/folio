@@ -2,6 +2,8 @@ mod app;
 mod engine;
 mod fonts;
 #[cfg(feature = "shaped-text")]
+mod semantic_font;
+#[cfg(feature = "shaped-text")]
 mod semantic_pdf;
 #[cfg(feature = "shaped-text")]
 mod shaped_pdf;

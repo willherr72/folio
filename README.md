@@ -12,8 +12,8 @@ Extract it and open **Folio.exe**. Keep the resources folder beside the executab
 Microsoft Edge WebView2 Runtime is required.
 
 In this development checkout, double-click **Launch Folio.cmd** after building.
-Version 0.10.0 lives in **artifacts/Folio-v0.10.0/Folio.exe**.
-The ZIP is **artifacts/Folio-v0.10.0-windows-x64.zip**.
+Version 0.10.1 lives in **artifacts/Folio-v0.10.1/Folio.exe**.
+The ZIP is **artifacts/Folio-v0.10.1-windows-x64.zip**.
 
 ## Everyday editing
 
@@ -190,10 +190,15 @@ words. RTL separators and joiners now produce an explicit refusal; they still
 need a proven reader-order strategy before editor integration.
 
 [Font-resource boundary experiments](docs/semantic-font-banks.md) record why
-splitting definitions across fonts does not yet remove the 255-definition gate:
+splitting definitions across fonts failed to remove the original 255-definition gate:
 PDFium can reorder copied text on rotated pages, and whole-line ActualText loses
 selection geometry. These negative probes remain outside the editor.
 
 The [rotated reader-order investigation](docs/reader-order-workaround.md) reduces
 the defect to ordinary same-font text and documents Folio's conservative
 correction for eligible simple-text pages, including explicit fallback cases.
+
+Starting with v0.10.1, [one wide semantic font](docs/issue14-wide-semantic-probe.md)
+handles more than 255 definitions while keeping the 4,096-scalar input bound.
+Shaped Content uses whole-grapheme Backspace/Delete and preserves native undo.
+[Issue #14 acceptance status](docs/issue14-status.md) records the remaining gates.
