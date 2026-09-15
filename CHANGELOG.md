@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Correct multiline selection geometry in an experimental export candidate using real row baselines; add original/resaved reader comparisons. Exact multiline copying remains an unresolved release gate.
 - Measure native text-area copying with fresh PDFium range text and MuPDF selection text before/after save, retaining page extraction separately. Preserve exact whitespace requirements and reject missing selection evidence.
 - Add tagged-PDF and native selection-copy diagnostics plus an exact external-viewer clipboard checker. Retain the 100-case evidence, including cross-reader selection geometry failures; text areas remain unreleased.
 - Require exact external-reader text in the text-area verifier by default; diagnostic results cannot satisfy the release gate. Retain 80 experimental separator-encoding cases with their copying failures.

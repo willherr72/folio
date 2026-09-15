@@ -41,7 +41,7 @@ def expanded(cells):
     return result
 
 
-def type3(writer,cells):
+def type3(writer,cells,tight_bounds=False):
     procs=D();diff=A([I(1)]);widths=A();mappings=[]
     for index,cell in enumerate(cells,1):
         name=N(f'/g{index}');diff.append(name);width=cell['width']*50;dy=(cell['y']-120)*50
@@ -49,14 +49,25 @@ def type3(writer,cells):
         widths.append(F(width)); unicode=cell['text'].encode('utf-16-be').hex().upper()
         mappings.append(f'<{index:02X}> <{unicode}>')
     cmap='/CIDInit /ProcSet findresource begin 12 dict begin begincmap /CIDSystemInfo << /Registry (Adobe) /Ordering (UCS) /Supplement 0 >> def /CMapName /Separators def /CMapType 2 def 1 begincodespacerange <00> <FF> endcodespacerange\n'+str(len(cells))+' beginbfchar\n'+'\n'.join(mappings)+'\nendbfchar endcmap CMapName currentdict /CMap defineresource pop end end'
-    return writer._add_object(D({N('/Type'):N('/Font'),N('/Subtype'):N('/Type3'),N('/FontBBox'):A(map(I,[0,-3000,6000,800])),N('/FontMatrix'):A(map(F,[.001,0,0,.001,0,0])),N('/CharProcs'):procs,N('/Encoding'):D({N('/Type'):N('/Encoding'),N('/Differences'):diff}),N('/FirstChar'):I(1),N('/LastChar'):I(len(cells)),N('/Widths'):widths,N('/Resources'):D(),N('/ToUnicode'):writer._add_object(reader.stream(cmap.encode()))}))
+    return writer._add_object(D({N('/Type'):N('/Font'),N('/Subtype'):N('/Type3'),N('/FontBBox'):A(map(I,[0,-200,600,800] if tight_bounds else [0,-3000,6000,800])),N('/FontMatrix'):A(map(F,[.001,0,0,.001,0,0])),N('/CharProcs'):procs,N('/Encoding'):D({N('/Type'):N('/Encoding'),N('/Differences'):diff}),N('/FirstChar'):I(1),N('/LastChar'):I(len(cells)),N('/Widths'):widths,N('/Resources'):D(),N('/ToUnicode'):writer._add_object(reader.stream(cmap.encode()))}))
 
 
 def write_case(path,text,wrap,strategy,rotation):
     original=cells_for(text,wrap);cells=expanded(original) if strategy=='expanded-unicode' else original
     writer=PdfWriter();page=writer.add_blank_page(width=240,height=180);page[N('/Rotate')]=I(rotation)
     ink=visible(original)
-    if strategy=='courier-objects':
+    if strategy=='positioned-cells':
+        # Actual row origins, with ordinary tight glyph/font bounds. Hard breaks
+        # change the baseline; never encode a newline as a visible text glyph.
+        cells=[cell for cell in original if cell['text']!='\n']
+        font=type3(writer,[dict(cell,y=120) for cell in cells],tight_bounds=True)
+        lines=[]
+        for index,cell in enumerate(cells,1):
+            if not lines or lines[-1]['y']!=cell['y']:
+                lines.append({'x':cell['x'],'y':cell['y'],'codes':[]})
+            lines[-1]['codes'].append(f'{index:02X}')
+        semantic='\n'.join(f"BT /S 20 Tf 1 0 0 1 {line['x']} {line['y']} Tm <{''.join(line['codes'])}> Tj ET" for line in lines)
+    elif strategy=='courier-objects':
         font=reader.font(writer,'courier');semantic=[]
         for cell in cells:
             code=ord(cell['text']);semantic.append(f"BT /S 20 Tf 3 Tr 1 0 0 1 {cell['x']} {cell['y']} Tm <{code:02X}> Tj ET")

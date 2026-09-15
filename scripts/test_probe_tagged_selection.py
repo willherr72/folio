@@ -51,6 +51,28 @@ class ProbeTests(unittest.TestCase):
             self.probe.separator.write_case(path, 'A  B', False, 'scalar-cells', 0)
             self.assertEqual(self.probe.mupdf_selection(path)['selectionLf'], 'A  B')
 
+    def test_real_line_positions_select_both_rows(self):
+        with tempfile.TemporaryDirectory() as directory:
+            for rotation in [0, 90, 180, 270]:
+                path = Path(directory) / f'rows-{rotation}.pdf'
+                self.probe.separator.write_case(path, 'A B C D', True, 'positioned-cells', rotation)
+                result = self.probe.mupdf_selection(path)
+                self.assertEqual(result['selectionLf'], 'A B \nC D')
+                chars = result['characters']
+                self.assertEqual(''.join(char['c'] for char in chars), 'A B C D')
+                self.assertAlmostEqual(chars[0]['origin'][1], 60)
+                self.assertAlmostEqual(chars[4]['origin'][1], 88)
+                self.assertLess(chars[0]['bbox'][3], chars[4]['bbox'][1])
+
+    def test_hard_break_uses_real_rows_without_a_fake_newline_glyph(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'hard.pdf'
+            self.probe.separator.write_case(path, 'A\nB', False, 'positioned-cells', 0)
+            result = self.probe.mupdf_selection(path)
+            self.assertEqual(result['selectionLf'], 'A\nB')
+            self.assertEqual(result['selectionCrlf'], 'A\r\nB')
+            self.assertEqual([char['c'] for char in result['characters']], ['A', 'B'])
+
 
 if __name__ == '__main__':
     unittest.main()
