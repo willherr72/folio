@@ -6,6 +6,13 @@ import { shapedTextApi } from "../src/editor/shaped-text";
 const id = "e".repeat(64);
 const info = { id, name: "Arabic face", weight: 400, italic: false, coverage: [[32,126]] as [number,number][], shapedCoverage: [[32,126],[0x600,0x6ff]] as [number,number][] };
 const shaping = { version: 1, direction: "auto", ligatures: true } as const;
+it("validates candidate fonts against the saved multiline area", async () => {
+ const area={version:1 as const,width:180,height:240,inset:5,lineSpacing:1.2,alignment:"left" as const};
+ vi.spyOn(shapedTextApi,"prepare").mockResolvedValue(prepared("A\r\nB"));
+ render(<FontPicker text={"A\r\nB"} shaping={{...shaping,direction:"ltr"}} area={area} onChoose={()=>{}} onClose={()=>{}}/>);
+ fireEvent.click(await screen.findByRole("button",{name:"Arabic face"}));
+ await waitFor(()=>expect(shapedTextApi.prepare).toHaveBeenCalledWith(expect.objectContaining({area,text:"A\r\nB"})));
+});
 function prepared(text: string) {
   return { preview: { version: 1 as const, fontId: id, text, width: 100, height: 100, rotation: 0 as const, color: [0,0,0] as [number,number,number], outlines: [{ glyphId: 3, path: "M0 0L5 0L5 10Z" }], glyphs: [{ glyphId: 3, transform: [1,0,0,1,0,0] as [number,number,number,number,number,number] }] }, origin: [0,0] as [number,number], bounds: { x: 0, y: 0, width: 20, height: 24 }, characters: [] };
 }

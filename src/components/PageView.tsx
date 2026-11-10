@@ -1,14 +1,30 @@
+import type {CanvasParagraphView} from "../editor/paragraph-canvas";
+import {ParagraphCanvasControls} from "./ParagraphCanvasControls";
+import type {CanvasImageView} from "../editor/existing-image-canvas";
+import {ExistingImageEditingControls} from "./ExistingImageEditingControls";
+import {ExistingImageLayer} from "./ExistingImageLayer";
+import type {ExistingImage} from "../editor/types";
+import {NativeCommentLayer} from "./NativeCommentLayer";
+import {ImageHandles,useImageGesture} from "./ImageControls";
+import {screenArrowDelta} from "../editor/geometry";
+import {moveImage} from "../editor/image-geometry";
+import {imageBounds} from "../editor/image-geometry";
+import {useComposedPage} from "../editor/use-composed-page";
+import {pageAllows,toolAllowed} from "../editor/protection";
 import { subscribeShapedText, shapedTextRevision } from "../editor/shaped-text";
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import type { FolioAdapter } from "../editor/adapter";
-import { clientPointToPage, displayDimensions, pageTransform, placeInkPaths } from "../editor/geometry";
-import { textOverlayBounds } from "../editor/text-overlay-geometry";
+import { clientPointToPage, displayDimensions, pageVisibleRect, rectVisibleOnPage, pageTransform, placeInkPaths } from "../editor/geometry";
+import { textOverlayBounds, textOverlayTransform } from "../editor/text-overlay-geometry";
+import { TextAreaHandles, useTextAreaGesture } from "./TextAreaControls";
 import { TextOverlayPresentation } from "./TextOverlayPresentation";
 import type { SearchMatch } from "../editor/search";
 import "./search.css";
 import { CommentIcon, HighlightMarks } from "./AnnotationPresentation";
-import type { AnnotationRect, EditableTextRun, InkPoint, Overlay, PagePlan } from "../editor/types";
+import type { AnnotationRect, EditableTextRun, EditorTool, InkPoint, Overlay, PagePlan } from "../editor/types";
 import { ExistingTextLayer } from "./ExistingTextLayer";
+import {clearExistingTextCache} from "../editor/existing-text-cache";
+import {CanvasFormLayer} from "./CanvasFormLayer";
 
 import { PdfTextLayer, clearPageTextCache } from "./PdfTextLayer";
 
@@ -31,6 +47,7 @@ function releaseEntry(key: string, entry: RenderEntry) {
 }
 
 export function clearRenderCache(sourceIds: string[]) {
+  clearExistingTextCache(sourceIds);
   clearPageTextCache(sourceIds);
   const targets = new Set(sourceIds);
   for (const [key, entry] of renderCache) {
@@ -50,10 +67,11 @@ function pruneRenderCache() {
   }
 }
 
-function usePageImage(adapter: FolioAdapter, page: PagePlan, pixelWidth: number) {
+export function usePageImage(adapter: FolioAdapter, page: Pick<PagePlan,"sourceId"|"pageIndex"|"width"|"height">, pixelWidth: number, enabled=true, revision=0) {
   const key = `${adapter.kind}:${page.sourceId}:${page.pageIndex}:${Math.round(pixelWidth)}`;
   const [state, setState] = useState<{ key: string; url?: string; error?: string }>({ key });
   useEffect(() => {
+    if(!enabled)return;
     let active = true;
     setState({ key });
     let entry = renderCache.get(key);
@@ -82,8 +100,8 @@ function usePageImage(adapter: FolioAdapter, page: PagePlan, pixelWidth: number)
       if (entry.disposalRequested && entry.references === 0) releaseEntry(key, entry);
       else pruneRenderCache();
     };
-  }, [adapter, key, page.pageIndex, page.sourceId, pixelWidth, page.width, page.height]);
-  return state.key === key ? state : { key };
+  }, [adapter, key, page.pageIndex, page.sourceId, pixelWidth, page.width, page.height,enabled,revision]);
+  return enabled&&state.key === key ? state : { key };
 }
 
 function useNearViewport(ref: React.RefObject<HTMLDivElement | null>) {
@@ -101,6 +119,7 @@ function useNearViewport(ref: React.RefObject<HTMLDivElement | null>) {
   return visible;
 }
 function bounds(overlay: Overlay) {
+  if(overlay.type === "image")return imageBounds(overlay);
   if (overlay.type === "text") return textOverlayBounds(overlay);
   if (overlay.type === "comment") return { x: overlay.x, y: overlay.y, width: 20, height: 20 };
   if (overlay.type === "highlight") {
@@ -117,14 +136,31 @@ function bounds(overlay: Overlay) {
 }
 
 interface PageViewProps {
+  canvasImage?:CanvasImageView;
+  canvasParagraph?:CanvasParagraphView;
+  paragraphEditingActive?:boolean;
+  imageEditingActive?:boolean;
+  formSelectedAnnotationIndex?:number;
+  formDirty?:boolean;
+  onFormAnchor?:import('../editor/form-canvas-entry').FormAnchorCallback;
+  onSelectPageFormField?(field:import("../editor/types").FormField):void;
+  nativeComments?:import("../editor/types").NativeComment[];
+  onOpenPageComment?(note:import("../editor/types").NativeComment):void;
+  onMovePageComment?(note:import("../editor/types").NativeComment,position:InkPoint):Promise<string|null>;
+  imageAspectLocked?:boolean;
+  onTransformImage?(before:import("../editor/types").ImageOverlay,after:import("../editor/types").ImageOverlay):void;
+  pendingImage?: import("../editor/types").ImageOverlay | null;
+  onMoveImage?(point:InkPoint):void;
+  onPlaceImage?(point:InkPoint):void;
   searchMatches?: SearchMatch[];
   activeSearchMatchId?: string | null;
   adapter: FolioAdapter;
   page: PagePlan;
   pageNumber: number;
   zoom: number;
-  tool: "select" | "text" | "signature" | "draw" | "highlight" | "comment" | "edit";
+  tool: EditorTool;
   onEditText?(run: EditableTextRun): void;
+  onEditImage?(image:ExistingImage):void;
   selectedOverlayId: string | null;
   pendingSignature: InkPoint[][] | null;
   onDraw?(path: InkPoint[]): void;
@@ -136,29 +172,61 @@ interface PageViewProps {
   interactionDisabled?: boolean;
   onSelectOverlay(id: string | null): void;
   onAddText(point: InkPoint): void;
+  onAddTextArea?(rect: AnnotationRect): void;
+  onResizeTextArea?(id: string, rect: AnnotationRect): void;
   onPlaceSignature(point: InkPoint): void;
   onMoveOverlay(id: string, x: number, y: number, phase: "start" | "move" | "end"): void;
 }
 
 export function PageView(props: PageViewProps) {
-  const { adapter, page, pageNumber, zoom, tool, selectedOverlayId, pendingSignature } = props;
+  const { adapter, page, pageNumber, zoom, tool:requestedTool, selectedOverlayId, pendingSignature } = props;
+  const tool=toolAllowed(page,requestedTool)?requestedTool:"select";
+  const canAnnotate=pageAllows(page,"annotate");
   const svgRef = useRef<SVGSVGElement>(null);
+  const [nativeStatus,setNativeStatus]=useState<{text:string;error?:boolean}|null>(null);
+  const imageGesture=useImageGesture({page,tool,zoom,selectedId:selectedOverlayId,disabled:!!props.interactionDisabled||!canAnnotate,locked:props.imageAspectLocked!==false,svg:svgRef,onChange:props.onTransformImage});
+  const areaGesture = useTextAreaGesture({page,tool,zoom,selectedId:selectedOverlayId,disabled:props.interactionDisabled||!canAnnotate,svg:svgRef,onAdd:props.onAddTextArea,onResize:props.onResizeTextArea});
+  const overlays = useMemo(()=>page.overlays.map(overlay => imageGesture.draft?.id===overlay.id?imageGesture.draft:areaGesture.draft?.overlay?.id === overlay.id ? areaGesture.draft.overlay : overlay),[page.overlays,areaGesture.draft?.overlay,imageGesture.draft]);
+  const selectedImage=overlays.find(overlay=>overlay.id===selectedOverlayId&&overlay.type==="image"&&(!page.crop||rectVisibleOnPage(bounds(overlay),page)));
+  const selectedArea = overlays.find(overlay => overlay.id === selectedOverlayId && overlay.type === "text" && overlay.area&&(!page.crop||rectVisibleOnPage(bounds(overlay),page)));
   const dragRef = useRef<{ id: string; pointer: number; offset: InkPoint } | null>(null);
-  const dimensions = displayDimensions(page.width, page.height, page.rotation);
+  const dimensions = pageVisibleRect(page);
+  const fullDimensions = displayDimensions(page.width,page.height,page.rotation);
   const strokeRef = useRef<{ pointer: number; path: InkPoint[] } | null>(null);
   const [draft, setDraft] = useState<InkPoint[]>([]);
   const [signaturePoint, setSignaturePoint] = useState<InkPoint | null>(null);
   const [signatureCancelled, setSignatureCancelled] = useState(false);
   const previewEnabled = !!pendingSignature && tool === "signature" && !props.interactionDisabled && !signatureCancelled;
-  const previewPaths = previewEnabled && signaturePoint ? placeInkPaths(pendingSignature!, signaturePoint, page.width, page.height) : [];
+  const previewPaths = useMemo(()=>previewEnabled && signaturePoint ? placeInkPaths(pendingSignature!, signaturePoint, page.width, page.height) : [],[previewEnabled,signaturePoint,pendingSignature,page.width,page.height]);
   const cssWidth = dimensions.width * zoom / 100;
-  const rendered = usePageImage(adapter, page, Math.min(2400, Math.max(600, Math.round(cssWidth * devicePixelRatio))));
+  const pendingImage=tool==="image"&&!props.interactionDisabled?props.pendingImage:null;
+  const nativeRotation=page.rotation!==0&&adapter.kind==="native"&&!!adapter.renderPagePlan;
+  const rasterDimensions=nativeRotation&&!props.canvasParagraph?fullDimensions:{width:page.width,height:page.height};
+  const rasterTransform=nativeRotation&&!props.canvasParagraph?pageTransform(fullDimensions.width,fullDimensions.height,((360-page.rotation)%360) as import("../editor/types").Rotation):undefined;
+  const composite=!!props.canvasParagraph||!!props.canvasImage||nativeRotation||!!pendingImage||page.overlays.some(overlay=>overlay.type==="image");
+  const interactionOverlays=composite
+    ? [...overlays.filter(overlay=>overlay.type!=="highlight"&&overlay.type!=="comment"),...overlays.filter(overlay=>overlay.type==="highlight"||overlay.type==="comment")]
+    : overlays;
+  const pixelWidth=Math.min(2400, Math.max(600, Math.round(fullDimensions.width * zoom / 100 * devicePixelRatio)));
+  const original=usePageImage(adapter,page,pixelWidth,!composite);
+  const composedOverlays=useMemo(()=>{
+    if(!composite||(!pendingImage&&!previewPaths.length&&draft.length<2))return overlays;
+    const next=pendingImage?[...overlays,pendingImage]:[...overlays];
+    for(const paths of [previewPaths,draft.length>1?[draft]:[]])if(paths.length){
+      let id="folio-preview-ink";while(next.some(overlay=>overlay.id===id))id+="-";
+      next.push({type:"ink",id,paths,color:props.drawColor??"#2D2A26",strokeWidth:props.drawWidth??2});
+    }
+    return next;
+  },[composite,overlays,pendingImage,previewPaths,draft,props.drawColor,props.drawWidth]);
+  // The raster keeps the full source frame; the SVG viewBox performs cropping.
+  const composed=useComposedPage(adapter,{...page,crop:undefined,overlays:composedOverlays},pixelWidth,composite&&!props.canvasImage&&!props.canvasParagraph,nativeRotation);
+  const rendered=props.canvasParagraph?.raster??props.canvasImage?.raster??(composite?composed:original);
   useSyncExternalStore(subscribeShapedText, shapedTextRevision);
-  const cursor = pendingSignature || tool === "draw" || tool === "comment" ? "crosshair" : tool === "text" || tool === "highlight" ? "text" : "default";
+  const cursor = pendingSignature || tool === "image" || tool === "draw" || tool === "comment" || tool === "area" ? "crosshair" : tool === "text" || tool === "highlight" ? "text" : "default";
 
   const originalPoint = (event: React.PointerEvent) => {
     const rect = svgRef.current!.getBoundingClientRect();
-    return clientPointToPage(event.clientX, event.clientY, rect, page.width, page.height, page.rotation);
+    return clientPointToPage(event.clientX, event.clientY, rect, page.width, page.height, page.rotation,page.crop);
   };
 
   const releasePointer = (pointer: number) => {
@@ -170,7 +238,7 @@ export function PageView(props: PageViewProps) {
     const stroke = strokeRef.current;
     if (stroke) releasePointer(stroke.pointer);
     strokeRef.current = null;
-    setDraft([]);
+    setDraft(value=>value.length?[]:value);
     const drag = dragRef.current;
     if (drag) {
       dragRef.current = null;
@@ -194,12 +262,14 @@ export function PageView(props: PageViewProps) {
   }, [pendingSignature]);
 
   const handleBackground = (event: React.PointerEvent<SVGSVGElement>) => {
-    if (props.interactionDisabled || event.button !== 0 || strokeRef.current || dragRef.current) return;
-    if (tool === "edit") { props.onActivate?.(); return; }
-    if (tool !== "draw" && event.target !== event.currentTarget && (event.target as Element).closest("[data-overlay]")) return;
+    if (props.interactionDisabled || event.button !== 0 || strokeRef.current || dragRef.current || areaGesture.active || imageGesture.isActive()) return;
+    if(tool==="image"){event.preventDefault();if(pendingImage&&!rendered.error)props.onPlaceImage?.(originalPoint(event));return;}
+    if (tool === "edit" || tool === "form" || tool === "images") { props.onActivate?.(); return; }
+    if (tool !== "draw" && tool !== "area" && event.target !== event.currentTarget && (event.target as Element).closest("[data-overlay]")) return;
     props.onActivate?.();
     const point = originalPoint(event);
-    if (tool === "draw") {
+    if (tool === "area") { areaGesture.beginCreate(event,point); }
+    else if (tool === "draw") {
       event.preventDefault();
       strokeRef.current = { pointer: event.pointerId, path: [point] };
       setDraft([point]);
@@ -214,14 +284,15 @@ export function PageView(props: PageViewProps) {
   };
 
   const startDrag = (event: React.PointerEvent, overlay: Overlay) => {
-    if (tool === "edit") { event.stopPropagation(); return; }
-    if (tool === "draw") return;
+    if (tool === "edit" || tool === "form" || tool === "images") { event.stopPropagation(); return; }
+    if (tool === "draw" || tool === "area" || tool === "image") return;
     event.stopPropagation();
-    if (props.interactionDisabled || event.button !== 0 || dragRef.current) return;
+    if (props.interactionDisabled || event.button !== 0 || dragRef.current || areaGesture.isActive() || imageGesture.isActive()) return;
     props.onActivate?.();
     props.onSelectOverlay(overlay.id);
-    if (tool !== "select" || overlay.type === "highlight") return;
+    if (!canAnnotate || tool !== "select" || overlay.type === "highlight") return;
     const value = originalPoint(event);
+    if(overlay.type==="image"&&props.onTransformImage){imageGesture.begin(event,overlay,value);return;}
     const box = bounds(overlay);
     dragRef.current = { id: overlay.id, pointer: event.pointerId, offset: { x: value.x - box.x, y: value.y - box.y } };
     svgRef.current?.setPointerCapture(event.pointerId);
@@ -237,6 +308,9 @@ export function PageView(props: PageViewProps) {
 
   const moveDrag = (event: React.PointerEvent<SVGSVGElement>) => {
     if (props.interactionDisabled) return;
+    if(pendingImage){props.onMoveImage?.(originalPoint(event));return;}
+    if(imageGesture.move(event,originalPoint(event)))return;
+    if (areaGesture.move(event,originalPoint(event))) return;
     if (previewEnabled) setSignaturePoint(originalPoint(event));
     const stroke = strokeRef.current;
     if (stroke?.pointer === event.pointerId) {
@@ -253,6 +327,8 @@ export function PageView(props: PageViewProps) {
   };
 
   const finishPointer = (event: React.PointerEvent<SVGSVGElement>, cancelled = false) => {
+    if(imageGesture.finish(event,cancelled?null:originalPoint(event),cancelled))return;
+    if (areaGesture.finish(event,cancelled ? null : originalPoint(event),cancelled)) return;
     const stroke = strokeRef.current;
     if (stroke?.pointer === event.pointerId) {
       if (!cancelled && !props.interactionDisabled) appendPoint(originalPoint(event));
@@ -268,32 +344,56 @@ export function PageView(props: PageViewProps) {
     props.onMoveOverlay(drag.id, 0, 0, "end");
   };
   return (
-    <div className="page-stage" aria-label={`Page ${pageNumber}`} style={{ width: cssWidth }}>
-      <svg ref={svgRef} className="page-canvas" viewBox={`0 0 ${dimensions.width} ${dimensions.height}`} style={{ cursor }}
+    <div className="page-stage" aria-label={`Page ${pageNumber}`} aria-busy={props.canvasParagraph?props.canvasParagraph.raster.loading:props.canvasImage?props.canvasImage.raster.loading:composite?composed.loading:!original.url&&!original.error} style={{ width: cssWidth }}>
+      <svg ref={svgRef} className="page-canvas" viewBox={`${dimensions.x} ${dimensions.y} ${dimensions.width} ${dimensions.height}`} style={{ cursor }}
         onPointerLeave={() => setSignaturePoint(null)} onPointerDown={handleBackground} onPointerMove={moveDrag} onPointerUp={(event) => finishPointer(event)} onPointerCancel={(event) => finishPointer(event, true)} onLostPointerCapture={(event) => finishPointer(event, true)}>
         <g transform={pageTransform(page.width, page.height, page.rotation) || undefined}>
-          {rendered.url ? <image href={rendered.url} width={page.width} height={page.height} preserveAspectRatio="none" /> : <rect width={page.width} height={page.height} fill="#fff" />}
-          {page.overlays.map(overlay => overlay.type === "highlight" ? <HighlightMarks key={overlay.id} overlay={overlay} selected={overlay.id === selectedOverlayId} /> : null)}
+          {!rendered.url && <rect width={page.width} height={page.height} fill="#fff" />}
+          <image key="page-raster" href={rendered.url} width={rasterDimensions.width} height={rasterDimensions.height} transform={rasterTransform} preserveAspectRatio="none" />
+          {!composite && page.overlays.map(overlay => overlay.type === "highlight" ? <HighlightMarks key={overlay.id} overlay={overlay} selected={overlay.id === selectedOverlayId} /> : null)}
           {!!props.searchMatches?.length && <g className="search-highlights" aria-hidden="true">{props.searchMatches.map((match) => match.rects.map((rect, index) =>
             <rect key={`${match.id}:${index}`} {...rect} className={`search-highlight${match.id === props.activeSearchMatchId ? " active" : ""}`} />))}</g>}
           <PdfTextLayer adapter={adapter} page={page} pageNumber={pageNumber} selectable={(tool === "select" || tool === "highlight") && !pendingSignature && !props.interactionDisabled} highlighting={tool === "highlight"} onHighlight={props.onHighlight} />
-          {previewPaths.length > 0 && <g className="signature-preview" aria-hidden="true">{previewPaths.map((path, index) => <polyline key={index} points={path.map((point) => `${point.x},${point.y}`).join(" ")} fill="none" stroke={props.drawColor ?? "#2D2A26"} strokeWidth={props.drawWidth ?? 2} strokeLinecap="round" strokeLinejoin="round" />)}</g>}
-          {draft.length > 0 && <polyline className="draft-ink" points={draft.map((point) => `${point.x},${point.y}`).join(" ")} fill="none" stroke={props.drawColor ?? "#2D2A26"} strokeWidth={props.drawWidth ?? 2} strokeLinecap="round" strokeLinejoin="round" pointerEvents="none" />}
-          {page.overlays.map((overlay) => {
-            if (overlay.type === "highlight") return null;
+          {!composite && previewPaths.length > 0 && <g className="signature-preview" aria-hidden="true">{previewPaths.map((path, index) => <polyline key={index} points={path.map((point) => `${point.x},${point.y}`).join(" ")} fill="none" stroke={props.drawColor ?? "#2D2A26"} strokeWidth={props.drawWidth ?? 2} strokeLinecap="round" strokeLinejoin="round" />)}</g>}
+          {!composite && draft.length > 0 && <polyline className="draft-ink" points={draft.map((point) => `${point.x},${point.y}`).join(" ")} fill="none" stroke={props.drawColor ?? "#2D2A26"} strokeWidth={props.drawWidth ?? 2} strokeLinecap="round" strokeLinejoin="round" pointerEvents="none" />}
+          <NativeCommentLayer nativeRotation={nativeRotation} page={page} notes={props.nativeComments??[]} zoom={zoom} enabled={tool==="select"&&!pendingSignature&&!pendingImage} disabled={!!props.interactionDisabled||!rendered.url}
+            onSelect={()=>{props.onActivate?.();props.onSelectOverlay(null);}} onOpen={note=>props.onOpenPageComment?.(note)} onMove={props.onMovePageComment} onStatus={setNativeStatus}/>
+          {interactionOverlays.map((overlay) => {
+            if(page.crop&&!rectVisibleOnPage(bounds(overlay),page))return null;
+            if (overlay.type === "highlight" && !composite) return null;
             const selected = overlay.id === selectedOverlayId;
             const box = bounds(overlay);
-            return <g key={overlay.id} data-overlay={overlay.id} className={`overlay ${selected ? "selected" : ""}`} role="button" tabIndex={props.interactionDisabled || tool === "edit" ? -1 : 0} aria-label={overlay.type === "comment" ? `Comment: ${overlay.text || "Empty comment"}` : overlay.type === "text" ? `Text: ${overlay.text}` : "Ink annotation"} onKeyDown={(event) => { if (!props.interactionDisabled && tool !== "edit" && (event.key === "Enter" || event.key === " ")) { event.preventDefault(); props.onActivate?.(); props.onSelectOverlay(overlay.id); } }} onPointerDown={(event) => startDrag(event, overlay)}>
-              {overlay.type === "text" ? <TextOverlayPresentation overlay={overlay} /> : overlay.type === "comment" ? <CommentIcon overlay={overlay} /> : overlay.paths.map((path, index) => <polyline key={index} points={path.map((point) => `${point.x},${point.y}`).join(" ")} fill="none" stroke={overlay.color} strokeWidth={overlay.strokeWidth} strokeLinecap="round" strokeLinejoin="round" />)}
-              {selected && <rect className="selection-box" x={box.x} y={box.y} width={box.width} height={box.height} />}
+            return <g key={overlay.id} data-overlay={overlay.id} className={`overlay ${selected ? "selected" : ""}`} role="button" tabIndex={props.interactionDisabled || tool === "edit" || tool === "form" || tool === "images" ? -1 : 0} aria-label={overlay.type === "image" ? "Image" : overlay.type === "highlight" ? "Highlight" : overlay.type === "comment" ? `Comment: ${overlay.text || "Empty comment"}` : overlay.type === "text" ? `Text: ${overlay.text}` : "Ink annotation"} onKeyDown={(event) => {
+                if(overlay.type==="image"&&tool==="select"&&canAnnotate&&!props.interactionDisabled&&!imageGesture.isActive()&&!event.ctrlKey&&!event.metaKey&&!event.altKey){
+                  const delta=screenArrowDelta(event.key,event.shiftKey,page.rotation);
+                  if(delta){event.preventDefault();event.stopPropagation();const next=moveImage(overlay,overlay.x+delta.x,overlay.y+delta.y,page.width,page.height);if(next!==overlay)props.onTransformImage?.(overlay,next);return;}
+                }
+                if (!props.interactionDisabled && tool !== "edit" && tool !== "form" && tool !== "images" && tool !== "image" && (event.key === "Enter" || event.key === " ")) { event.preventDefault(); props.onActivate?.(); props.onSelectOverlay(overlay.id); } }} onPointerDown={(event) => startDrag(event, overlay)}>
+              {composite && (overlay.type === "highlight" ? overlay.rects.map((rect,index)=><rect key={index} {...rect} fill="transparent" pointerEvents="all"/>) : <rect {...box} fill="transparent" pointerEvents="all"/>)}
+              {overlay.type === "text" && overlay.area && <rect className="text-area-hit" x={overlay.x} y={overlay.y} width={overlay.area.width} height={overlay.area.height} transform={textOverlayTransform(overlay)}/>}
+              {!composite && (overlay.type === "text" ? <TextOverlayPresentation overlay={overlay} /> : overlay.type === "comment" ? <CommentIcon overlay={overlay} /> : overlay.type === "ink" ? overlay.paths.map((path, index) => <polyline key={index} points={path.map((point) => `${point.x},${point.y}`).join(" ")} fill="none" stroke={overlay.color} strokeWidth={overlay.strokeWidth} strokeLinecap="round" strokeLinejoin="round" />) : null)}
+              {overlay.type === "text" && overlay.area ? (selected || !overlay.text) && <rect className={selected ? "selection-box" : "text-area-empty"} x={overlay.x} y={overlay.y} width={overlay.area.width} height={overlay.area.height} transform={textOverlayTransform(overlay)}/> : selected && <rect className="selection-box" x={box.x} y={box.y} width={box.width} height={box.height} />}
             </g>;
           })}
-          {tool === "edit" && <ExistingTextLayer adapter={adapter} page={page} disabled={props.interactionDisabled} onEditText={run => { props.onActivate?.(); props.onEditText?.(run); }} />}
+          {pendingImage&&<rect className="selection-box" {...imageBounds(pendingImage)} pointerEvents="none"/>}
+          {selectedImage?.type==="image"&&tool==="select"&&canAnnotate&&!props.interactionDisabled&&<ImageHandles image={selectedImage} page={page} zoom={zoom} locked={props.imageAspectLocked!==false}
+            onStart={(event,image,corner)=>{event.stopPropagation();if(!dragRef.current&&!areaGesture.isActive())imageGesture.begin(event,image,originalPoint(event),corner);}}
+            onChange={(before,after)=>{if(!dragRef.current&&!areaGesture.isActive()&&!imageGesture.isActive())props.onTransformImage?.(before,after);}}/>}
+          {areaGesture.draft?.rect && <rect className="text-area-draft" {...areaGesture.draft.rect}/>}
+          {selectedArea?.type === "text" && selectedArea.area && tool === "select" && canAnnotate && !props.interactionDisabled && <TextAreaHandles overlay={selectedArea} page={page} zoom={zoom}
+            onStart={(event,overlay,corner)=>{event.stopPropagation();if(!dragRef.current)areaGesture.beginResize(event,overlay,corner);}}
+            onResize={(id,rect)=>{if(!dragRef.current&&!areaGesture.isActive())props.onResizeTextArea?.(id,rect);}}/>}
+          {props.canvasParagraph&&<ParagraphCanvasControls view={props.canvasParagraph} page={page} zoom={zoom}/>}
+          {props.canvasImage&&<ExistingImageEditingControls view={props.canvasImage} page={page} zoom={zoom}/>}
+          {tool === "images" && !props.imageEditingActive && <ExistingImageLayer adapter={adapter} page={page} disabled={props.interactionDisabled} onEditImage={image=>{props.onActivate?.();props.onEditImage?.(image);}}/>}
+          {tool === "edit" && !props.paragraphEditingActive && <ExistingTextLayer adapter={adapter} page={page} disabled={props.interactionDisabled} onEditText={run => { props.onActivate?.(); props.onEditText?.(run); }} />}
         </g>
+        {tool==="form"&&<CanvasFormLayer adapter={adapter} page={page} selectedAnnotationIndex={props.formSelectedAnnotationIndex} onAnchor={props.onFormAnchor} disabled={!!props.interactionDisabled||!rendered.url} dirty={!!props.formDirty} onSelect={field=>props.onSelectPageFormField?.(field)}/>}
       </svg>
+      {nativeStatus&&<div className={`native-comment-cue${nativeStatus.error?" error":""}`} role={nativeStatus.error?"alert":"status"}>{nativeStatus.text}</div>}
       {previewPaths.length > 0 && <div className="signature-placement-cue">Click to place · Esc to cancel</div>}
       {!rendered.url && !rendered.error && <div className="page-loading"><span /> Rendering page…</div>}
-      {rendered.error && <div className="page-error">Couldn’t render this page<br/><small>{rendered.error}</small></div>}
+      {rendered.error && <div className="page-error" role="alert">Couldn’t render this page<br/><small>{rendered.error}</small>{composite&&<button className="button" onClick={props.canvasParagraph?.raster.retry??props.canvasImage?.raster.retry??composed.retry}>Retry preview</button>}</div>}
     </div>
   );
 }
@@ -307,17 +407,24 @@ export function Thumbnail({ adapter, page }: { adapter: FolioAdapter; page: Page
 }
 
 function ThumbnailImage({ adapter, page }: { adapter: FolioAdapter; page: PagePlan }) {
-  const dimensions = displayDimensions(page.width, page.height, page.rotation);
-  const rendered = usePageImage(adapter, page, 240);
+  const dimensions = pageVisibleRect(page);
+  const fullDimensions = displayDimensions(page.width,page.height,page.rotation);
+  const nativeRotation=page.rotation!==0&&adapter.kind==="native"&&!!adapter.renderPagePlan;
+  const rasterDimensions=nativeRotation?fullDimensions:{width:page.width,height:page.height};
+  const rasterTransform=nativeRotation?pageTransform(fullDimensions.width,fullDimensions.height,((360-page.rotation)%360) as import("../editor/types").Rotation):undefined;
+  const composite=nativeRotation||page.overlays.some(overlay=>overlay.type==="image");
+  const original=usePageImage(adapter,page,240,!composite);
+  const composed=useComposedPage(adapter,{...page,crop:undefined},240,composite,nativeRotation);
+  const rendered=composite?composed:original;
   const transform = useMemo(() => pageTransform(page.width, page.height, page.rotation), [page]);
-  return <svg className="thumbnail-canvas" viewBox={`0 0 ${dimensions.width} ${dimensions.height}`}>
+  return <svg className="thumbnail-canvas" viewBox={`${dimensions.x} ${dimensions.y} ${dimensions.width} ${dimensions.height}`}>
     <g transform={transform || undefined}>
-      {rendered.url ? <image href={rendered.url} width={page.width} height={page.height} /> : <rect width={page.width} height={page.height} fill="#fff" />}
-      {page.overlays.map((overlay) => overlay.type === "text"
+      {rendered.url ? <image href={rendered.url} width={rasterDimensions.width} height={rasterDimensions.height} transform={rasterTransform} /> : <rect width={page.width} height={page.height} fill="#fff" />}
+      {!composite && page.overlays.map((overlay) => overlay.type === "text"
         ? <TextOverlayPresentation key={overlay.id} overlay={overlay} />
         : overlay.type === "highlight" ? <HighlightMarks key={overlay.id} overlay={overlay} />
         : overlay.type === "comment" ? <CommentIcon key={overlay.id} overlay={overlay} />
-        : <g key={overlay.id}>{overlay.paths.map((path, i) => <polyline key={i} points={path.map((point) => `${point.x},${point.y}`).join(" ")} fill="none" stroke={overlay.color} strokeWidth={overlay.strokeWidth} />)}</g>)}
+        : overlay.type === "ink" ? <g key={overlay.id}>{overlay.paths.map((path, i) => <polyline key={i} points={path.map((point) => `${point.x},${point.y}`).join(" ")} fill="none" stroke={overlay.color} strokeWidth={overlay.strokeWidth} />)}</g> : null)}
     </g>
   </svg>;
 }

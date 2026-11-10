@@ -1,12 +1,13 @@
-"""Inspect the #16 development fixture without disguising soft-wrap copy failures.
+"""Inspect the #16 development fixture under an explicit reader-copy policy.
 
 Exact logical copy is compared byte-for-byte as Python Unicode strings. A separate
 painted-line check ignores only CR/LF conventions and reader terminal line breaks;
 it does not establish exact logical copying. Native/resaved raster and text must
 remain stable for the evidence to be valid. No PDF is written or modified here.
-Default success requires exact PDFium character-range text, MuPDF selection text,
-and pypdf extraction, before and after save. Page extraction is retained separately.
---diagnostic is explicitly not acceptance. Interactive viewer approval is separate.
+Default success permits documented external whitespace differences while retaining
+content and word boundaries. --copy-policy exact retains the original strict gate.
+Both use PDFium range text, MuPDF selection and pypdf extraction before/after save.
+Raw/exact results remain separate. Passing is not complete desktop acceptance.
 """
 import argparse
 import hashlib
@@ -38,8 +39,39 @@ def reader_text_result(logical, painted_lines, actual):
     if lines and lines[-1] == '':
         lines.pop()
     return {'actualText': actual, 'exactLogicalText': actual == logical,
+            'readerCompatibleText': reader_compatible_text(logical, actual),
             'logicalTextIgnoringOneTerminalEol': actual in [logical, logical + '\n', logical + '\r\n'],
             'paintedLineText': lines == painted_lines}
+
+
+def reader_compatible_text(logical, actual):
+    """Compare only; never rewrite stored source or raw reader evidence.
+
+    Collapse runs of ASCII space, NBSP, LF and CRLF, and ignore those at edges.
+    All other scalars and boundaries remain exact. In particular A\nB != AB.
+    This checkpoint's shaper refuses whitespace-only exports.
+    """
+    if not isinstance(logical, str) or not isinstance(actual, str):
+        return False
+    expected = re.sub(r'(?:[ \u00a0]|\r\n|\n)+', ' ', logical).strip(' ')
+    copied = re.sub(r'(?:[ \u00a0]|\r\n|\n)+', ' ', actual).strip(' ')
+    return bool(expected) and expected == copied
+
+
+def reader_compatible_case(row):
+    readers = row.get('readers', {})
+    return bool(row.get('roundtripStable') and row.get('exactSourceRanges')
+                and all(reader_compatible_text(row.get('logicalText'), readers.get(reader, {}).get(key))
+                        for reader in ['pdfium', 'mupdf'] for key in ['copyText', 'resavedCopyText'])
+                and all(reader_compatible_text(row.get('logicalText'), readers.get('pypdf', {}).get(key))
+                        for key in ['actualText', 'resavedText']))
+
+
+def reader_compatibility_gate(report):
+    """Necessary reader check; native exactness and desktop acceptance are separate."""
+    exported = [row for row in report.get('results', []) if 'readers' in row]
+    return bool(report.get('evidenceValid') and exported and len(exported) == report.get('exports')
+                and all(reader_compatible_case(row) for row in exported))
 
 
 def validate_case_names(cases, expected):
@@ -151,9 +183,12 @@ def inspect(input_path, expected):
         for reader in ['pdfium', 'mupdf', 'pypdf']:
             row['readers'][reader] = reader_text_result(row['logicalText'], painted, texts[0][reader])
             row['readers'][reader]['resavedText'] = texts[1][reader]
+            row['readers'][reader]['readerCompatibleResavedText'] = reader_compatible_text(row['logicalText'], texts[1][reader])
             if reader in copies[0]:
                 row['readers'][reader].update(copyText=copies[0][reader], resavedCopyText=copies[1][reader],
                                              exactCopyText=copies[0][reader] == row['logicalText'],
+                                             readerCompatibleCopy=reader_compatible_text(row['logicalText'], copies[0][reader]),
+                                             readerCompatibleResavedCopy=reader_compatible_text(row['logicalText'], copies[1][reader]),
                                              copyMethod='FPDFText_GetText full character range' if reader == 'pdfium' else 'fz_copy_selection page corners, crlf=0')
         row['readers']['mupdf'].update(selectionCrlf=windows_copies[0], resavedSelectionCrlf=windows_copies[1])
         row['mupdfRawDictionaryEqual'] = geometry[0] == geometry[1]
@@ -168,6 +203,7 @@ def inspect(input_path, expected):
         row['exactSelectionAndExtraction'] = all(value == row['logicalText'] for copy in copies for value in copy.values()) and all(text['pypdf'] == row['logicalText'] for text in texts)
         row['allReadersLogicalIgnoringOneTerminalEol'] = all(r['logicalTextIgnoringOneTerminalEol'] for r in row['readers'].values())
         row['allReadersPaintedLineText'] = all(r['paintedLineText'] for r in row['readers'].values())
+        row['readerCompatible'] = reader_compatible_case(row)
         results.append(row)
     exported = [row for row in results if 'readers' in row]
     assert exported, 'At least one exported case is required'
@@ -178,13 +214,14 @@ def inspect(input_path, expected):
             'evidenceValid': valid, 'cases': len(results), 'exports': len(exported),
             'exactLogicalCopyCases': sum(row['allReadersExactLogicalText'] for row in exported),
             'exactSelectionAndExtractionCases': sum(row['exactSelectionAndExtraction'] for row in exported),
+            'readerCompatibleCases': sum(row['readerCompatible'] for row in exported),
             'logicalIgnoringOneTerminalEolCases': sum(row['allReadersLogicalIgnoringOneTerminalEol'] for row in exported),
             'paintedLineCases': sum(row['allReadersPaintedLineText'] for row in exported),
             'results': results}
 
 
 def exact_copy_gate(report):
-    """Necessary release gate only; this does not establish all area acceptance."""
+    """Original strict diagnostic, retained without relaxing raw equality."""
     exported = [row for row in report.get('results', []) if 'readers' in row]
     if not report.get('evidenceValid') or not exported or len(exported) != report.get('exports'):
         return False
@@ -200,16 +237,23 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--input', type=Path, default=Path('artifacts/text-area-native'))
     parser.add_argument('--expected-cases', type=int, required=True)
+    parser.add_argument('--copy-policy', choices=['reader-compatible', 'exact'], default='reader-compatible',
+                        help='Reader-compatible permits specified whitespace differences; exact retains raw Unicode equality.')
     parser.add_argument('--diagnostic', action='store_true', help='Report failed copying without treating it as release acceptance; still require valid fixture/roundtrip evidence.')
     parser.add_argument('--output', type=Path, default=Path('artifacts/text-area-reader-results.json'))
     args = parser.parse_args()
     report = inspect(args.input, args.expected_cases)
     report['exactCopyGatePassed'] = exact_copy_gate(report)
+    report['readerCompatibilityGatePassed'] = reader_compatibility_gate(report)
+    report['readerCompatibilityPolicy'] = 'whitespace-v1'
+    report['copyPolicy'] = args.copy_policy
+    report['copyGatePassed'] = report['exactCopyGatePassed'] if args.copy_policy == 'exact' else report['readerCompatibilityGatePassed']
+    report['releaseAcceptance'] = False
     report['diagnosticOnly'] = args.diagnostic
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(report, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     print(json.dumps({key: value for key, value in report.items() if key != 'results'}))
-    if not report['evidenceValid'] or (not args.diagnostic and not report['exactCopyGatePassed']):
+    if not report['evidenceValid'] or (not args.diagnostic and not report['copyGatePassed']):
         raise SystemExit(1)
 
 if __name__ == '__main__':

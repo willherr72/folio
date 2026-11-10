@@ -1,0 +1,51 @@
+{
+  "package": "lopdf",
+  "version": "0.45.0",
+  "archiveSha256": "bfffda0fe1ab0157e1a13c14bebd3f28671f2fccb7922f0722ec53926e6922d3",
+  "source": "https://crates.io/api/v1/crates/lopdf/0.45.0/download",
+  "modifiedFiles": [
+    {
+      "path": ".gitattributes",
+      "upstreamSha256": "44835b8a9c5f53076e7311b08f6629ba1f9ced0deda5b8006d1fe369c3bacc89",
+      "patchedSha256": "863a7fb980c09bd03fca57e01fd5ec4bdf4fe0140fb3fd4c967ab10db76e0256"
+    },
+    {
+      "path": ".gitignore",
+      "upstreamSha256": "55be28a9a835cc05869490ce451515f9bd361eff47c72837a9ba9164c841113a",
+      "patchedSha256": "032714318612471052b008412414f5b22f8fd628cbfd5175f8e37d18a8b15a13"
+    },
+    {
+      "path": "src/document.rs",
+      "upstreamSha256": "734216343aba19ff45c137e2930a1aee4e8b3ae023cfe488dd966996674c5a10",
+      "patchedSha256": "776d0313fff5f0e0fd40304becf3d05a20f289815d1f08c56cdacb0b2f77d4ce"
+    },
+    {
+      "path": "src/encryption/algorithms.rs",
+      "upstreamSha256": "183ba3a2e0a83b7e484251a37588def9c37a481029f7519cca6b4ade69d52167",
+      "patchedSha256": "5ddd97455b74ba8aee9065855aeb516181f63e826f35b029a6d8e75c8e41327c"
+    },
+    {
+      "path": "src/encryption.rs",
+      "upstreamSha256": "85bbba13ad16aab5ed7a7170c6556b81fd56d0ff2b7b7e24f8a82af0b84860c5",
+      "patchedSha256": "10d70788db068225a1bd2ef39557b632eff6637dd4bce9f438f2982601581671"
+    },
+    {
+      "path": "src/load_options.rs",
+      "upstreamSha256": "3c1d77defc936afb2378612059ae9c84432da0873f214ba3d95eaa132d569a07",
+      "patchedSha256": "674cb882bebbfe5fc028b7e05bb24bc1c6a640808faa97dd5b4a3b6bce2b2367"
+    },
+    {
+      "path": "src/reader.rs",
+      "upstreamSha256": "a8cc0990a27d17c80f769009e731256f178c12b835139be8cfd2d1438379069d",
+      "patchedSha256": "8fd6a48b0f4c667b4175ab81ece073162c16bac6e0256734b5b0af0572bd3ee9"
+    }
+  ],
+  "addedFiles": [
+    {
+      "path": "assets/example.pdf",
+      "sha256": "42dbab50f5a47f7738ad0e83f248f20eb97772d23d344538562fdecab02d7004",
+      "source": "https://raw.githubusercontent.com/J-F-Liu/lopdf/1e3d646ca249ebf1a6ff479278c07e9c0f9377a8/assets/example.pdf",
+      "purpose": "Upstream unit-test fixture omitted from the published crate archive"
+    }
+  ]
+}

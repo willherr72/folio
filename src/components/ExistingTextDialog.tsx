@@ -2,6 +2,7 @@ import { FontPicker } from "./FontPicker";
 import { customFontState, customTextError, holdCustomFont, type FontInfo } from "../editor/custom-fonts";
 import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import type { EditableTextRun } from "../editor/types";
+import type {ExistingTextDraft} from "../editor/paragraph-draft";
 import { Modal } from "./Modal";
 import "./existing-text.css";
 
@@ -12,11 +13,14 @@ interface ExistingTextDialogProps {
   onApply(replacement: string, fontId?: string): void | Promise<void>;
   onDraftChange?(): void;
   onEditTogether?(): void;
+  onEditParagraph?(draft:ExistingTextDraft): void;
   onCancel(): void;
 }
 
-export function ExistingTextDialog({ run, busy, error, onApply, onCancel, onDraftChange, onEditTogether }: ExistingTextDialogProps) {
-  const [replacement, setReplacement] = useState(run.text);
+export function ExistingTextDialog({ run, busy, error, onApply, onCancel, onDraftChange, onEditTogether, onEditParagraph }: ExistingTextDialogProps) {
+  const originalText = run.sourceText ?? run.text;
+  const displayFontSize = run.displayFontSize ?? run.fontSize;
+  const [replacement, setReplacement] = useState(originalText);
   const [font, setFont] = useState<FontInfo | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
   const fontLease = useRef<(() => Promise<void>) | null>(null);
@@ -47,7 +51,7 @@ export function ExistingTextDialog({ run, busy, error, onApply, onCancel, onDraf
       void pending.catch(() => {}).finally(() => { if (applying.current === pending) applying.current = null; });
     }
   };
-  const canSubstitute = !run.objectPath && run.canSubstitute;
+  const canSubstitute = run.canSubstitute;
   const editable = run.supported || !!canSubstitute;
   const [pasteError, setPasteError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -57,14 +61,20 @@ export function ExistingTextDialog({ run, busy, error, onApply, onCancel, onDraf
   const invalid = !replacement.trim() ? "Enter replacement text."
     : /[\u0000-\u001f\u007f-\u009f]/.test(replacement) ? "Use a single line without control characters."
     : replacement.length > 1000 ? "Use at most 1,000 characters." : font ? customTextError(font, replacement) : null;
-  const canApply = (run.supported || (!!canSubstitute && !!font)) && !busy && !invalid && (replacement !== run.text || !!font);
-  const message = pasteError ?? error ?? (replacement !== run.text ? invalid : null);
+  const canApply = (run.supported || (!!canSubstitute && !!font)) && !busy && !invalid && (replacement !== originalText || !!font);
+  const message = pasteError ?? error ?? (replacement !== originalText ? invalid : null);
   const cancel = () => { if (!busy) onCancel(); };
+  const editParagraph=()=>{
+    const input=inputRef.current;
+    const copied=font?{...font,coverage:font.coverage.map(range=>Object.freeze([...range]) as [number,number]),...(font.shapedCoverage?{shapedCoverage:font.shapedCoverage.map(range=>Object.freeze([...range]) as [number,number])}:{})}:null;
+    if(copied){Object.freeze(copied.coverage);if(copied.shapedCoverage)Object.freeze(copied.shapedCoverage);Object.freeze(copied);}
+    onEditParagraph?.(Object.freeze({originalText,replacement,selection:Object.freeze({start:input?.selectionStart??0,end:input?.selectionEnd??0,direction:input?.selectionDirection==="backward"?"backward":"forward"}),font:copied}));
+  };
   if (pickerOpen) return <FontPicker text={replacement} currentFontId={font?.id} title="Choose a substitute font" description="Preview a font for this replacement. Your PDF changes only when you apply the text edit." onChoose={chooseFont} onClose={()=>setPickerOpen(false)}/>;
   return <Modal title="Edit existing text" onClose={cancel} className="existing-text-dialog" initialFocusRef={editable ? inputRef : undefined}>
     <form aria-busy={busy} onSubmit={event => { event.preventDefault(); submit(); }}>
       <div className="existing-text-fields">
-        <p className="existing-text-font">{run.fontName} · {Number(run.fontSize.toFixed(2))} pt</p>
+        <p className="existing-text-font">{run.fontDisplayName??run.fontName} · {Number(displayFontSize.toFixed(2))} pt</p>
         {run.objectPath && <p>Only this occurrence will change. Other copies of this text stay as they are.</p>}
         {editable ? <>
           <label>Replacement text<input ref={inputRef} type="text" value={replacement} maxLength={1000} readOnly={busy}
@@ -75,17 +85,21 @@ export function ExistingTextDialog({ run, busy, error, onApply, onCancel, onDraf
           <p id={hintId}>Longer text can extend into available space at the same size and position. Folio checks page edges and nearby source text and graphics; the page does not reflow.</p>
         </> : <><p className="existing-text-original">{run.text}</p><p>{run.reason ?? "This text cannot be edited safely with its original font and layout."}</p></>}
         {run.isEmbedded && <p>The embedded font may contain only some characters.</p>}
+        {!canSubstitute && (run.fontSubstitutionReason
+          ? <p>{run.fontSubstitutionReason}</p>
+          : run.isEmbedded && run.objectPath && <p>Font substitution is not available for this occurrence.</p>)}
         {canSubstitute && <div className="existing-text-font-choice">
           <div><span>Replacement font</span><strong>{font?.name ?? "Original PDF font"}</strong></div>
           <button type="button" className="button" disabled={busy} onClick={()=>setPickerOpen(true)}>Choose substitute font…</button>
           {font && <>
-            <p className="existing-text-preview" aria-label="Replacement font preview" style={{fontFamily:customFontState(font.id)?.family,fontSize:Math.min(28,Math.max(16,run.fontSize)),fontKerning:"none",fontVariantLigatures:"none",fontSynthesis:"none"}}>{invalid ? "Update the replacement text to preview this font." : replacement}</p>
+            <p className="existing-text-preview" aria-label="Replacement font preview" style={{fontFamily:customFontState(font.id)?.family,fontSize:Math.min(28,Math.max(16,displayFontSize)),fontKerning:"none",fontVariantLigatures:"none",fontSynthesis:"none"}}>{invalid ? "Update the replacement text to preview this font." : replacement}</p>
             <button type="button" className="existing-text-original-button" disabled={busy} onClick={useOriginal}>Use original font</button>
           </>}
         </div>}
         {message && <p id={errorId} className="existing-text-error" role="alert">{message}</p>}
       </div>
       <footer className="dialog-actions">
+        {onEditParagraph && <button type="button" className="button" disabled={busy} onClick={editParagraph}>Edit paragraph…</button>}
         {onEditTogether && !run.objectPath && <button type="button" className="button" disabled={busy} onClick={onEditTogether}>Edit together…</button>}
         <button type="button" className="button" disabled={busy} onClick={cancel}>Cancel</button>
         {editable && <button type="submit" className="button primary" disabled={!canApply}>{busy ? "Applying…" : "Apply changes"}</button>}

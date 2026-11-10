@@ -27,7 +27,7 @@ export const subscribeShapedText = (listener: () => void) => { listeners.add(lis
 export const shapedTextRevision = () => revision;
 function emit() { revision++; listeners.forEach(listener => listener()); }
 export function shapedTextKey(overlay: TextOverlay) {
-  return JSON.stringify([overlay.fontId, overlay.text, overlay.fontSize, overlay.color, overlay.shaping]);
+  return JSON.stringify([overlay.fontId, overlay.text, overlay.fontSize, overlay.color, overlay.shaping, overlay.area]);
 }
 export function shapedTextState(overlay: TextOverlay) { return overlay.shaping ? entries.get(shapedTextKey(overlay))?.state : undefined; }
 function drop(entry: Entry) {
@@ -87,7 +87,7 @@ export function acquireShapedText(overlay: TextOverlay): {promise: Promise<Prepa
     let resolve!: Entry["resolve"], reject!: Entry["reject"];
     const promise = new Promise<PreparedTextOverlay>((ok, fail) => { resolve = ok; reject = fail; });
     void promise.catch(() => {});
-    entry = {key, overlay: {...overlay, id: "preview", x: 0, y: 0, rotation: 0, shaping: {...overlay.shaping}}, state: loading,
+    entry = {key, overlay: {...overlay, id: "preview", x: 0, y: 0, rotation: 0, shaping: {...overlay.shaping}, ...(overlay.area && {area:{...overlay.area}})}, state: loading,
       users: 0, started: false, bytes: 0, promise, resolve, reject, releaseFont: holdCustomFont(overlay.fontId)};
     entries.set(key, entry);
   }

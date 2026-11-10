@@ -1,0 +1,9 @@
+.text-area-draft { fill: rgba(187, 98, 68, .08); stroke: var(--accent); stroke-width: 1; stroke-dasharray: 5 3; vector-effect: non-scaling-stroke; pointer-events: none; }
+.text-area-hit { fill: transparent; pointer-events: all; }
+.text-area-empty { fill: none; stroke: var(--accent); stroke-width: 1; stroke-dasharray: 4 3; vector-effect: non-scaling-stroke; pointer-events: none; }
+.area-handle-target { fill: transparent; pointer-events: all; }
+.area-handle-mark { fill: #fff; stroke: var(--accent); stroke-width: 1.5; vector-effect: non-scaling-stroke; pointer-events: none; }
+.text-area-handles > g:focus { outline: none; }
+.text-area-handles > g:focus-visible .area-handle-mark { fill: var(--accent); stroke: #fff; stroke-width: 2; }
+.area-dimensions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.area-dimensions input { min-width: 0; width: 100%; }

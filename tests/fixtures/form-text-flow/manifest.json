@@ -1,0 +1,16 @@
+{
+  "generator": "scripts/generate-form-text-flow-fixtures.py",
+  "reportlab": "4.5.1",
+  "source": "Locally generated original text and geometry; no third-party documents.",
+  "files": {
+    "draw-string-line-0-reference.pdf": "4fa430a33037743ff0ba0930055b381fb59376c433e7579d082411b0fd2586db",
+    "draw-string-line-1-reference.pdf": "e9fe25e34436ef06b8d24f5d5113b7f0c3e311b164fb03bda2eee30c52284c81",
+    "draw-string-original.pdf": "06491ac53142cd3c6973f6fa052511d116c53191b02546b0069e2e15133fa7b2",
+    "explicit-lines-line-0-reference.pdf": "570408d71eab522ea2e17f8ce067f8ce5dd3633b0963a39bd5d727c459a4187c",
+    "explicit-lines-line-1-reference.pdf": "ed85c184b30887b4a006836d77729162acf03931918e508513c8297bbc3b0d05",
+    "explicit-lines-original.pdf": "dfddae9e88fa1c979af3d6330d919b3f3e08738e169b84c3800176866f927454",
+    "text-lines-line-0-reference.pdf": "59d054708fe628b6639973125880bffc4679346379af415d757967456d66c843",
+    "text-lines-line-1-reference.pdf": "334a5cb6f7ff3775631012e92ea1f648b3f613aeb5167472d34fa0d08876bf4b",
+    "text-lines-original.pdf": "45caf40f0250b7af9c8f9ca0f5ed94ec14bde22cb44591997b8d9602dad51ded"
+  }
+}

@@ -1,0 +1,9 @@
+# Readable precise paragraph numbers
+
+The desktop quiz acceptance exposed long coordinate decimals. Improve both styled and uniform paragraph inputs without changing PDF geometry or formatting merely by viewing, focusing, blurring, previewing or resetting.
+
+Approaches: round model values (rejected: changes geometry); maintain a second edited-value model in each dialog (unnecessary state/risk); shared number-input presentation that keeps existing exact drafts and compacts only the unfocused display (chosen). Full precision appears on focus. Existing onChange validation, history, preview invalidation and reset behavior remain authoritative.
+
+Use at most three fractional places for ordinary finite idle values, strip trailing zeroes, and preserve tiny nonzero magnitudes through three significant digits when rounding to three places would show zero. Empty/invalid drafts stay empty/invalid. Focus reveals the exact string; blur changes display only. Explicit edits retain their full precision. Do not add formatting-only requests or history entries. Use one native number input wrapper in both paragraph dialogs, including size/spacing/position/area. Uniform spacing currently rounds its draft to four places while separately tracking edits; the shared presentation allows retaining that draft's full source precision too.
+
+Constraints: no native PDF algorithm change; preserve original source documents and accepted package. Work in existing isolated checkout without commits or cleanup. Fresh frontend regression/build, scoped exact native-request tests and owned current desktop validation. Reuse native test evidence only with explicit unchanged native-input evidence; frontend source is intentionally changed. One integrated review and one Important correction pass, no re-review. Broad parity/performance work remains active.

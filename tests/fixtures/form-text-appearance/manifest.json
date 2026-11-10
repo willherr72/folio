@@ -1,0 +1,186 @@
+{
+  "synthetic": true,
+  "privateData": false,
+  "cases": [
+    {
+      "file": "fields-r0-u1.pdf",
+      "sha256": "6e3bd1cb98c019da974e66af11b39ddbdb68abe2dfe26321764c8efc85ed7dc4",
+      "unit": 1,
+      "rotation": 0,
+      "widgets": [
+        2,
+        1
+      ],
+      "independentOpen": true,
+      "renderSize": [
+        300,
+        400
+      ]
+    },
+    {
+      "file": "fields-r90-u1.pdf",
+      "sha256": "ca6c150d699bf1e58c8197ff9554283c5ae16b9ed474c97e4c1c519b98e8f07d",
+      "unit": 1,
+      "rotation": 90,
+      "widgets": [
+        2,
+        1
+      ],
+      "independentOpen": true,
+      "renderSize": [
+        400,
+        300
+      ]
+    },
+    {
+      "file": "fields-r180-u1.pdf",
+      "sha256": "24c062aa7f2d0bbf6aec4b9fa301daf3c831742e1ea7ba762d18080a51b16b12",
+      "unit": 1,
+      "rotation": 180,
+      "widgets": [
+        2,
+        1
+      ],
+      "independentOpen": true,
+      "renderSize": [
+        300,
+        400
+      ]
+    },
+    {
+      "file": "fields-r270-u1.pdf",
+      "sha256": "a31dbba59357713741565772a17c79d3894f04120e444f1fa038b65084481a4d",
+      "unit": 1,
+      "rotation": 270,
+      "widgets": [
+        2,
+        1
+      ],
+      "independentOpen": true,
+      "renderSize": [
+        400,
+        300
+      ]
+    },
+    {
+      "file": "fields-r0-u1.7.pdf",
+      "sha256": "2e16890437ab00656eaf745df6fbb42f9b4883e450203a4eab804d6f3a7487c5",
+      "unit": 1.7,
+      "rotation": 0,
+      "widgets": [
+        2,
+        1
+      ],
+      "independentOpen": true,
+      "renderSize": [
+        510,
+        680
+      ]
+    },
+    {
+      "file": "fields-r90-u1.7.pdf",
+      "sha256": "7c3ff3f7033ede58815cf702e851f4f59268f89e5301a97434c82f18801c4fd7",
+      "unit": 1.7,
+      "rotation": 90,
+      "widgets": [
+        2,
+        1
+      ],
+      "independentOpen": true,
+      "renderSize": [
+        680,
+        510
+      ]
+    },
+    {
+      "file": "fields-r180-u1.7.pdf",
+      "sha256": "0390238e4980b7ea2d1448a77629eec9d71aab744eb7eb12979f2f7706da8665",
+      "unit": 1.7,
+      "rotation": 180,
+      "widgets": [
+        2,
+        1
+      ],
+      "independentOpen": true,
+      "renderSize": [
+        510,
+        680
+      ]
+    },
+    {
+      "file": "fields-r270-u1.7.pdf",
+      "sha256": "5b260dcdf96380a1ebf631ce643893b9183c91ad5b06ee0d6357d7b35f652f3c",
+      "unit": 1.7,
+      "rotation": 270,
+      "widgets": [
+        2,
+        1
+      ],
+      "independentOpen": true,
+      "renderSize": [
+        680,
+        510
+      ]
+    },
+    {
+      "file": "fields-r0-u2.pdf",
+      "sha256": "08fe5a885c59399a508437213da0017f572fd2e451422c2991d5ccc84fa90540",
+      "unit": 2,
+      "rotation": 0,
+      "widgets": [
+        2,
+        1
+      ],
+      "independentOpen": true,
+      "renderSize": [
+        600,
+        800
+      ]
+    },
+    {
+      "file": "fields-r90-u2.pdf",
+      "sha256": "96164b09c5361364f3bcb572b711ea911db3790b25d90fb6c59a29b2a4ee3b01",
+      "unit": 2,
+      "rotation": 90,
+      "widgets": [
+        2,
+        1
+      ],
+      "independentOpen": true,
+      "renderSize": [
+        800,
+        600
+      ]
+    },
+    {
+      "file": "fields-r180-u2.pdf",
+      "sha256": "3e18c572dcfb8ab4218f5cced2403ea83aca5164258a8092ca27b14319f2dff0",
+      "unit": 2,
+      "rotation": 180,
+      "widgets": [
+        2,
+        1
+      ],
+      "independentOpen": true,
+      "renderSize": [
+        600,
+        800
+      ]
+    },
+    {
+      "file": "fields-r270-u2.pdf",
+      "sha256": "754ab7f50b128ef5a9c70438c41eac6ed66857d4f6b3fb46e02c347a9f7b6860",
+      "unit": 2,
+      "rotation": 270,
+      "widgets": [
+        2,
+        1
+      ],
+      "independentOpen": true,
+      "renderSize": [
+        800,
+        600
+      ]
+    }
+  ]
+}

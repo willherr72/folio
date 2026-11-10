@@ -1,0 +1,15 @@
+{
+  "generator": "scripts/generate-form-paragraph-fixtures.py",
+  "reportlab": "4.5.1",
+  "pymupdf": "1.27.1",
+  "source": "Original locally authored text. ReportLab Paragraph layout in shared nested forms; MuPDF imported-page wrapper.",
+  "font": "tests\\fixtures\\corpus\\fonts\\DejaVuSerif.ttf",
+  "fontSha256": "107244956e9962b9e96faccdc551825e0ae0898ae13737133e1b921a2fd35ffa",
+  "license": "tests/fixtures/corpus/fonts/LICENSE_DEJAVU.txt",
+  "files": {
+    "embedded.pdf": "8958f513d2301e426749fd48a450ad824dc7d50ff87c72d0c31eca5c27955d9a",
+    "imported.pdf": "064c438e1faed0e9c1afa38024fd93776b6c468fe3ccea8d164d7157da890eda",
+    "mixed.pdf": "2d83b87a3a05572788c2fffc7892ee15fc304ec990b5fa2de1dced37a7043af1",
+    "standard.pdf": "c88371d91d0ccd4fd7666732c3d97ca8583133e979a365b3a23cf3223cd9d6c3"
+  }
+}

@@ -19,7 +19,7 @@ export function textOverlayTransform(overlay: TextOverlay): string | undefined {
 
 export function textOverlayBounds(overlay: TextOverlay): AnnotationRect {
   if (overlay.shaping) {
-    const box = shapedTextState(overlay)?.result?.bounds;
+    const box = shapedTextState(overlay)?.result?.bounds ?? (overlay.area ? {x:0,y:0,width:overlay.area.width,height:overlay.area.height} : undefined);
     return rotateTextRect(overlay, box ? {x:box.x-4,y:box.y-4,width:Math.max(16,box.width)+8,height:Math.max(overlay.fontSize,box.height)+8} : {x:-4,y:-3,width:100,height:overlay.fontSize+8});
   }
   const lines = overlay.text.split("\n");

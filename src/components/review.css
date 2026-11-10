@@ -6,4 +6,6 @@
 .review-entry > span {min-width:0;display:grid;gap:4px}
 .review-entry small {color:var(--muted);font-size:10px}
 .review-entry > span > span {overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;font-size:12px;line-height:1.4}
-.toolbar {overflow-x:auto;flex-shrink:0}
+
+.native-comment-text { display: grid; gap: 8px; }
+.native-comment-text textarea { width: 100%; box-sizing: border-box; resize: vertical; min-height: 160px; padding: 10px; border: 1px solid var(--line); border-radius: 7px; background: var(--control); color: var(--ink); font: inherit; line-height: 1.5; }

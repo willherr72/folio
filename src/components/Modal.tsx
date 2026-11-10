@@ -57,6 +57,7 @@ export function Modal({ title, children, onClose, className = "", description, i
 
   const handleKeyDown = (event: KeyboardEvent<HTMLElement>) => {
     event.stopPropagation();
+    if (event.nativeEvent.isComposing || event.keyCode === 229) return;
     if (event.key === "Escape") { event.preventDefault(); onClose(); return; }
     if (event.key !== "Tab") return;
     const elements = Array.from(dialogRef.current?.querySelectorAll<HTMLElement>(focusableSelector) ?? [])

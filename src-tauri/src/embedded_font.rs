@@ -28,6 +28,45 @@ pub(super) fn base_name(name: &str) -> &str {
     }
 }
 
+// Match FPDFFont_GetBaseFontName: embedded simple fonts discard their subset
+// prefix; composite fonts expose the descendant's name, including its prefix.
+// A program hash alone cannot identify a PDF resource's character encoding.
+pub(super) fn renderer_name(pdf: &Document, font: &Dictionary) -> EngineResult<String> {
+    let cid = font.get(b"Subtype").and_then(Object::as_name).ok() == Some(b"Type0");
+    let resource = if cid {
+        let children = array(pdf, field(font, b"DescendantFonts")?)?;
+        if children.len() != 1 { return Err(invalid("The composite font name is ambiguous.")); }
+        dict(pdf, &children[0])?
+    } else { font };
+    let name = pdf.dereference(field(resource, b"BaseFont")?)
+        .ok().and_then(|(_, v)| v.as_name().ok())
+        .and_then(|v| std::str::from_utf8(v).ok())
+        .ok_or_else(|| invalid("The embedded font name cannot be identified safely."))?;
+    Ok(if cid { name } else { base_name(name) }.to_owned())
+}
+
+pub(super) fn matches_name(pdf: &Document, font: &Dictionary, native: &str, embedded: bool) -> bool {
+    if embedded {
+        renderer_name(pdf, font).is_ok_and(|name| name == native)
+    } else {
+        font.get(b"BaseFont").ok().and_then(|v| pdf.dereference(v).ok())
+            .and_then(|(_, v)| v.as_name().ok()).and_then(|v| std::str::from_utf8(v).ok())
+            .is_some_and(|name| base_name(name) == base_name(native))
+    }
+}
+
+/// Reuse only an exact verified full-font program, mapping and integral advances.
+pub(super) fn matches_asset_resource(pdf:&Document,font:&Dictionary,asset:&crate::fonts::FontAsset,text:&str)->EngineResult<bool>{
+    let bytes=program(pdf,font)?;
+    if key(&bytes)!=asset.info.id{return Ok(false);}
+    let proof=verify(pdf,font,&bytes)?;
+    for ch in text.chars(){
+        let s=ch.to_string();let encoded=s.encode_utf16().flat_map(u16::to_be_bytes).collect::<Vec<_>>();
+        if proof.encode(&s)?!=encoded||proof.glyph(ch)!=Some(asset.glyph_id(ch)?)||proof.advance(&s)?!=(asset.advance(ch)?*1000.).round()/1000.{return Ok(false);}
+    }
+    Ok(true)
+}
+
 pub(super) fn latin(text: &str) -> bool {
     !text.trim().is_empty() && text.len() <= 4096 && text.chars().all(latin_character)
 }
@@ -42,9 +81,51 @@ pub(super) struct VerifiedFont {
     // Unicode -> (PDF character code, actual TrueType glyph, advance in 1000 em).
     characters: BTreeMap<char, (u16, u16, f32)>,
     code_len: usize,
+    // A partial ToUnicode repertoire is safe only with an exact source operand
+    // proof. Native extraction may omit an excluded code or expand a ligature.
+    pub(super) requires_source_operands: bool,
+    // Historical Folio maps need our proved CID encoder; native regeneration
+    // may choose a different reverse mapping for their old cross-byte range.
+    pub(super) preserve_source_encoding: bool,
+    pub(super) display_name: Option<String>,
 }
 
 impl VerifiedFont {
+    pub(super) fn sample(&self)->Option<char> {self.characters.keys().copied().find(|c|!c.is_whitespace())}
+    pub(super) fn glyph(&self,c:char)->Option<u16> {self.characters.get(&c).map(|v|v.1)}
+    pub(super) fn advance(&self, text: &str) -> EngineResult<f32> {
+        self.supports(text)?;
+        Ok(text.chars().map(|c| self.characters[&c].2 / 1000.0).sum())
+    }
+    pub(super) fn decode(&self, bytes: &[u8]) -> EngineResult<String> {
+        if bytes.len() % self.code_len != 0 {
+            return Err(invalid("A paragraph character code is incomplete."));
+        }
+        bytes
+            .chunks(self.code_len)
+            .map(|chunk| {
+                let code = if self.code_len == 1 {
+                    chunk[0] as u16
+                } else {
+                    u16::from_be_bytes([chunk[0], chunk[1]])
+                };
+                let mut matches = self.characters.iter().filter(|(_, value)| value.0 == code);
+                let c = matches.next().map(|(c, _)| *c).ok_or_else(|| {
+                    invalid("A paragraph character has no verified Unicode mapping.")
+                })?;
+                if matches.next().is_some() {
+                    return Err(invalid(
+                        "A paragraph character has ambiguous Unicode mappings.",
+                    ));
+                }
+                Ok(c)
+            })
+            .collect()
+    }
+    pub(super) fn single_byte(&self) -> bool {
+        self.code_len == 1
+    }
+
     pub(super) fn encode(&self, text: &str) -> EngineResult<Vec<u8>> {
         self.supports(text)?;
         Ok(text
@@ -178,12 +259,7 @@ impl FontProofs {
             if verified.is_ok() {
                 result.allowed.insert(*id);
             }
-            let name = font
-                .get(b"BaseFont")
-                .and_then(Object::as_name)
-                .map_err(|_| invalid("The embedded font name is missing."))?;
-            let name = String::from_utf8(name.to_vec())
-                .map_err(|_| invalid("The embedded font name cannot be identified safely."))?;
+            let name = renderer_name(&pdf, font)?;
             result
                 .programs
                 .entry((name, hash))
@@ -202,18 +278,33 @@ impl FontProofs {
             .programs
             .iter()
             .filter(|((candidate, program), _)| {
-                program == hash && base_name(candidate) == base_name(name)
+                program == hash && candidate == name
             })
             .flat_map(|(_, entries)| entries.iter());
-        let first = entries
+        let mut first = entries
             .next()
             .ok_or("The embedded TrueType program or its Unicode mapping could not be verified.")?
             .clone()?;
+        let mut requires_source_operands = first.requires_source_operands;
+        let mut preserve_source_encoding = first.preserve_source_encoding;
         for entry in entries {
             let other = entry.clone()?;
-            if other != first {
+            if other.characters != first.characters || other.code_len != first.code_len
+                || other.display_name != first.display_name
+            {
                 return Err("The same embedded program has ambiguous PDF font mappings; it cannot be edited safely.".into());
             }
+            requires_source_operands |= other.requires_source_operands;
+            preserve_source_encoding |= other.preserve_source_encoding;
+        }
+        // Resource representation can add safety requirements without changing
+        // its proved encoding. Never let object order select the weaker route.
+        if first.requires_source_operands != requires_source_operands
+            || first.preserve_source_encoding != preserve_source_encoding
+        {
+            let merged = Arc::make_mut(&mut first);
+            merged.requires_source_operands = requires_source_operands;
+            merged.preserve_source_encoding = preserve_source_encoding;
         }
         Ok(first)
     }
@@ -288,10 +379,11 @@ fn hex(value: &Object, length: usize) -> EngineResult<u16> {
         .iter()
         .fold(0u16, |n, byte| n * 256 + u16::from(*byte)))
 }
-fn unicode(value: &Object) -> EngineResult<char> {
-    let bytes = value
-        .as_str()
-        .map_err(|_| invalid("The font Unicode mapping is malformed."))?;
+#[cfg(test)]
+#[path = "embedded_cmap_tests.rs"]
+mod cmap_tests;
+
+fn unicode(bytes: &[u8]) -> EngineResult<char> {
     if !matches!(bytes.len(), 2 | 4) {
         return Err(invalid("The font maps one glyph to multiple characters or a ligature. Its text cannot be edited safely."));
     }
@@ -311,10 +403,49 @@ fn unicode(value: &Object) -> EngineResult<char> {
     Ok(character)
 }
 
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum CMapPolicy {
+    Complete,
+    LatinEditing,
+}
+
+// PDF ToUnicode ranges increment only the final encoded byte. Do not invent
+// scalar arithmetic, carry into an earlier byte, or repair invalid UTF-16.
+fn destination(value: &Object, offset: u16, policy: CMapPolicy) -> EngineResult<Option<char>> {
+    let bytes = value.as_str()
+        .map_err(|_| invalid("The font Unicode mapping contains a non-string destination."))?;
+    let character = if matches!(bytes.len(), 2 | 4) {
+        let mut encoded = [0u8; 4];
+        encoded[..bytes.len()].copy_from_slice(bytes);
+        u8::try_from(offset).ok()
+            .and_then(|offset| bytes[bytes.len() - 1].checked_add(offset))
+            .and_then(|last| {
+                encoded[bytes.len() - 1] = last;
+                unicode(&encoded[..bytes.len()]).ok()
+            })
+    } else {
+        None
+    };
+    if character.is_none() && policy == CMapPolicy::Complete {
+        return Err(invalid("The font Unicode destination is unavailable: it is not one valid UTF-16 character or its range overflows."));
+    }
+    Ok(character)
+}
+
 // Parse the data sections ourselves: the general PDF CMap parser builds an
 // unbounded reverse map and overwrites overlapping definitions. Both behaviors
 // are unsuitable for positively proving an untrusted font's unique mapping.
+#[cfg(test)]
 fn cmap(bytes: &[u8], code_len: usize) -> EngineResult<BTreeMap<u16, u32>> {
+    Ok(cmap_with_policy(bytes, code_len, CMapPolicy::Complete)?
+        .into_iter().filter_map(|(code, character)| character.map(|c| (code, c as u32)))
+        .collect())
+}
+
+fn cmap_with_policy(bytes: &[u8], code_len: usize, policy: CMapPolicy) -> EngineResult<BTreeMap<u16, Option<char>>> {
+    if bytes.len() > MAX_CMAP {
+        return Err(invalid("The embedded font ToUnicode map exceeds its size limit."));
+    }
     let content = lopdf::content::Content::decode(bytes)
         .map_err(|_| invalid("The embedded font ToUnicode map is malformed."))?;
     let mut result = BTreeMap::new();
@@ -373,18 +504,18 @@ fn cmap(bytes: &[u8], code_len: usize) -> EngineResult<BTreeMap<u16, u32>> {
                 }
                 let target = &item[arity - 1];
                 if let Object::Array(values) = target {
+                    if name != "endbfrange" {
+                        return Err(invalid("Only font Unicode ranges may have array destinations."));
+                    }
                     if values.len() != usize::from(last - first) + 1 {
                         return Err(invalid("The font Unicode mapping array is incomplete."));
                     }
                 }
                 for code in first..=last {
                     let character = if let Object::Array(values) = target {
-                        unicode(&values[usize::from(code - first)])? as u32
+                        destination(&values[usize::from(code - first)], 0, policy)?
                     } else {
-                        let base = unicode(target)? as u32;
-                        base.checked_add(u32::from(code - first))
-                            .filter(|value| *value <= 0x10ffff)
-                            .ok_or_else(|| invalid("The font Unicode range is invalid."))?
+                        destination(target, code - first, policy)?
                     };
                     if result.insert(code, character).is_some() {
                         return Err(invalid(
@@ -500,9 +631,39 @@ fn win_ansi(code: u16) -> Option<char> {
     (value != 0).then(|| char::from_u32(value as u32)).flatten()
 }
 
+/// Exact represented source codes and PDF widths for structural removal.
+pub(crate) fn redaction_font_codes(pdf:&Document,font:&Dictionary)->EngineResult<(usize,BTreeMap<u16,(char,f32)>)>{
+    let bytes=program(pdf,font)?;
+    let proof=verify(pdf,font,&bytes)?;
+    let mut codes=BTreeMap::new();
+    for (ch,(code,_,width)) in proof.characters {if codes.insert(code,(ch,width)).is_some(){return Err(invalid("The source character code is ambiguous."));}}
+    Ok((proof.code_len,codes))
+}
+
 fn verify(pdf: &Document, font: &Dictionary, bytes: &[u8]) -> EngineResult<VerifiedFont> {
+    verify_domain(pdf, font, bytes, false)
+}
+
+/// Separate from the Latin editing policy: prove the resource's represented
+/// scalars, not merely the characters allowed by the paragraph editor.
+pub(crate) fn choice_font_codes(
+    pdf: &Document,
+    font: &Dictionary,
+) -> EngineResult<(usize, BTreeMap<char, u16>)> {
+    let bytes = program(pdf, font)?;
+    let proof = verify_domain(pdf, font, &bytes, true)?;
+    Ok((proof.code_len, proof.characters.into_iter().map(|(c, v)| (c, v.0)).collect()))
+}
+
+fn verify_domain(pdf: &Document, font: &Dictionary, bytes: &[u8], all_scalars: bool) -> EngineResult<VerifiedFont> {
     let face = ttf_parser::Face::parse(bytes, 0)
         .map_err(|_| invalid("The embedded TrueType program is malformed."))?;
+    if all_scalars {
+        crate::fonts::bounded_cmap_coverage(
+            face.raw_face().table(ttf_parser::Tag::from_bytes(b"cmap"))
+                .ok_or_else(|| invalid("The embedded font has no glyph character map."))?,
+        )?;
+    }
     if face.tables().glyf.is_none() || face.tables().hmtx.is_none() || face.is_variable() {
         return Err(invalid(
             "Only static embedded TrueType outlines and horizontal metrics can be edited.",
@@ -524,7 +685,7 @@ fn verify(pdf: &Document, font: &Dictionary, bytes: &[u8]) -> EngineResult<Verif
     let legacy = !cid && encoding.is_none();
     if !cid
         && !legacy
-        && encoding.and_then(|value| value.as_name().ok()) != Some(b"WinAnsiEncoding")
+        && encoding.and_then(|value| super::equivalent_encoding::name(pdf, value)) != Some(b"WinAnsiEncoding")
     {
         return Err(invalid(
             "This embedded simple font encoding cannot be verified safely.",
@@ -549,19 +710,67 @@ fn verify(pdf: &Document, font: &Dictionary, bytes: &[u8]) -> EngineResult<Verif
             "The embedded simple font has an ambiguous implicit character encoding.",
         ));
     }
-    let unicode=stream(pdf,font.get(b"ToUnicode").map_err(|_|invalid("The embedded font has no ToUnicode mapping; its characters cannot be verified safely."))?,MAX_CMAP)?;
-    let unicode = cmap(&unicode, if cid { 2 } else { 1 })?;
     let widths = widths(pdf, child, cid)?;
-    let glyph_map = if cid {
-        let value = field(child, b"CIDToGIDMap")?;
-        if value.as_name().ok() == Some(b"Identity") {
-            None
+    let mut requires_source_operands = false;
+    let mut preserve_source_encoding = false;
+    let unicode: BTreeMap<u16, u32> = if let Ok(value) = font.get(b"ToUnicode") {
+        let policy = if all_scalars { CMapPolicy::Complete } else { CMapPolicy::LatinEditing };
+        // Excluded entries have already participated in all structural checks.
+        // They never enter VerifiedFont, so exact source decoding and replacement
+        // encoding cannot gain authority from native extraction alone.
+        let unicode_bytes = stream(pdf, value, MAX_CMAP)?;
+        let map = if !all_scalars && cid
+            && super::persistence::legacy_encoding_matches(pdf, font, bytes, &unicode_bytes)
+        {
+            preserve_source_encoding = true;
+            // Known historical Folio resources encode CIDs as Unicode. This
+            // exception proves the whole writer resource, not just its name or
+            // malformed range, and leaves complete form repertoire proof strict.
+            (0..=u16::MAX).filter_map(|code| char::from_u32(code as u32).map(|c| (code, Some(c)))).collect()
         } else {
-            let bytes = stream(pdf, value, 65536 * 2)?;
-            if bytes.len() % 2 != 0 {
-                return Err(invalid("The CID glyph mapping is incomplete."));
+            cmap_with_policy(&unicode_bytes, if cid { 2 } else { 1 }, policy)?
+        };
+        requires_source_operands = map.values().any(Option::is_none);
+        map.into_iter().filter_map(|(code, character)| character.map(|c| (code, c as u32)))
+            .collect()
+    } else if !cid && !legacy {
+        // An explicit WinAnsi encoding supplies the character semantics even
+        // when a printer omits ToUnicode. The embedded Unicode cmap and PDF
+        // widths must still independently prove every represented glyph below.
+        let descriptor = dict(pdf, field(child, b"FontDescriptor")?)?;
+        let flags = field(descriptor, b"Flags")?.as_i64().unwrap_or(0);
+        if flags & 32 == 0 || flags & 4 != 0 {
+            return Err(invalid(
+                "A font without ToUnicode must explicitly declare a nonsymbolic WinAnsi encoding.",
+            ));
+        }
+        widths
+            .keys()
+            .filter_map(|&code| {
+                win_ansi(code)
+                    .filter(|c| all_scalars || latin_character(*c))
+                    .map(|c| (code, c as u32))
+            })
+            .collect()
+    } else {
+        return Err(invalid(
+            "The embedded font has no ToUnicode mapping; its characters cannot be verified safely.",
+        ));
+    };
+    let glyph_map = if cid {
+        match child.get(b"CIDToGIDMap") {
+            // The Type2 CIDFont default is Identity. Keep complete form proof's
+            // existing explicit-map requirement, and never default a bad value.
+            Err(_) if !all_scalars => None,
+            Err(_) => return Err(invalid("The embedded font is missing a required mapping or metric.")),
+            Ok(value) if value.as_name().ok() == Some(b"Identity") => None,
+            Ok(value) => {
+                let bytes = stream(pdf, value, 65536 * 2)?;
+                if bytes.len() % 2 != 0 {
+                    return Err(invalid("The CID glyph mapping is incomplete."));
+                }
+                Some(bytes)
             }
-            Some(bytes)
         }
     } else {
         None
@@ -573,11 +782,12 @@ fn verify(pdf: &Document, font: &Dictionary, bytes: &[u8]) -> EngineResult<Verif
         // subtable. All Unicode subtables must agree for a represented scalar;
         // otherwise a newly introduced character could render a different glyph
         // while extraction and the original-text no-op still appear correct.
-        // CID fonts choose the glyph through their explicit CIDToGIDMap, and
-        // the legacy subset path has exactly one verified Macintosh charmap.
-        // Only WinAnsi relies on the engine's choice of nominal Unicode map.
+        // The legacy editing policy checks WinAnsi's nominal Unicode map.
+        // Choice repertoire proof also checks CID Unicode subtable agreement;
+        // the explicit CIDToGIDMap must still agree with its selected glyph below.
+        // The legacy subset path has exactly one verified Macintosh charmap.
         if let Some(character) =
-            character.filter(|character| !cid && !legacy && latin_character(*character))
+            character.filter(|character| (all_scalars || !cid) && !legacy && (all_scalars || latin_character(*character)))
         {
             let mut agreed: Option<Option<ttf_parser::GlyphId>> = None;
             for table in maps.subtables.into_iter().filter(|table| {
@@ -587,6 +797,21 @@ fn verify(pdf: &Document, font: &Dictionary, bytes: &[u8]) -> EngineResult<Verif
                         ttf_parser::cmap::Format::UnicodeVariationSequences(_)
                     )
             }) {
+                // Absence outside a subtable format's representable scalar
+                // range is not contradictory evidence. Keep checking every
+                // capable Unicode subtable, including missing glyphs within
+                // that range. This does not change the old Latin policy.
+                if all_scalars {
+                    use ttf_parser::cmap::Format;
+                    let maximum = match table.format {
+                        Format::ByteEncodingTable(_) => 0xff,
+                        Format::HighByteMappingThroughTable(_)
+                        | Format::SegmentMappingToDeltaValues(_)
+                        | Format::TrimmedTableMapping(_) => 0xffff,
+                        _ => 0x10ffff,
+                    };
+                    if character as u32 > maximum { continue; }
+                }
                 let gid = table.glyph_index(character as u32);
                 if agreed.is_some_and(|previous| previous != gid) {
                     return Err(invalid(
@@ -645,25 +870,31 @@ fn verify(pdf: &Document, font: &Dictionary, bytes: &[u8]) -> EngineResult<Verif
             as f32
             * 1000.0
             / face.units_per_em() as f32;
-        let width = widths
-            .get(&code)
-            .copied()
-            .or_else(|| {
-                cid.then(|| {
-                    child
-                        .get(b"DW")
-                        .ok()
-                        .and_then(|value| value.as_float().ok())
-                        .unwrap_or(1000.0)
-                })
-            })
-            .ok_or_else(|| invalid("The embedded glyph has no PDF width."))?;
-        if (actual - width).abs() > 1.01 {
+        let width = if let Some(width) = widths.get(&code) {
+            *width
+        } else if cid {
+            match child.get(b"DW") {
+                Ok(value) => value.as_float().map_err(|_| invalid("The embedded default glyph width is malformed."))?,
+                Err(_) => 1000.0,
+            }
+        } else {
+            return Err(invalid("The embedded glyph has no PDF width."));
+        };
+        // Some producers leave zero placeholders for unused WinAnsi slots. With
+        // no explicit Unicode assertion, editing may use the remaining proven
+        // repertoire. Never invent an advance or allow this code in source or
+        // replacement text. Explicit maps and form repertoire proof stay strict.
+        if !all_scalars && !cid && !legacy && !font.has(b"ToUnicode")
+            && width == 0.0 && actual > 1.01
+        {
+            continue;
+        }
+        if !width.is_finite() || !(0.0..=10000.0).contains(&width) || (actual - width).abs() > 1.01 {
             return Err(invalid(
                 "The PDF glyph width disagrees with the embedded TrueType program.",
             ));
         }
-        if !latin_character(character) {
+        if !all_scalars && !latin_character(character) {
             continue;
         }
         if characters.insert(character, (code, gid, width)).is_some() {
@@ -672,12 +903,15 @@ fn verify(pdf: &Document, font: &Dictionary, bytes: &[u8]) -> EngineResult<Verif
     }
     if characters.is_empty() {
         return Err(invalid(
-            "The embedded font has no verified Latin characters.",
+            if all_scalars { "The embedded font has no verified characters." } else { "The embedded font has no verified Latin characters." },
         ));
     }
     Ok(VerifiedFont {
         characters,
         code_len: if cid { 2 } else { 1 },
+        requires_source_operands,
+        preserve_source_encoding,
+        display_name: crate::fonts::font_display_name(&face),
     })
 }
 
@@ -685,6 +919,82 @@ fn verify(pdf: &Document, font: &Dictionary, bytes: &[u8]) -> EngineResult<Verif
 mod tests {
     use super::*;
     use lopdf::{dictionary, Stream};
+
+    #[test]
+    fn sparse_winansi_keeps_only_verified_editing_codes() {
+        let bytes = include_bytes!("../../tests/fixtures/embedded-text/DejaVuSerif-subset.ttf");
+        let face = ttf_parser::Face::parse(bytes, 0).unwrap();
+        let width = face.glyph_hor_advance(face.glyph_index('O').unwrap()).unwrap() as f32
+            * 1000.0 / face.units_per_em() as f32;
+        assert!(face.glyph_hor_advance(face.glyph_index('l').unwrap()).unwrap() > 0);
+        let mut widths = vec![Object::Integer(0); 108 - 79 + 1];
+        widths[0] = Object::Real(width);
+        let font = dictionary! {"Subtype"=>"TrueType", "Encoding"=>"WinAnsiEncoding",
+            "FirstChar"=>79, "LastChar"=>108, "Widths"=>widths,
+            "FontDescriptor"=>dictionary!{"Flags"=>32}};
+        let mut pdf = Document::with_version("1.7");
+        let proof = verify(&pdf, &font, bytes).unwrap();
+        assert_eq!(proof.encode("O").unwrap(), b"O");
+        assert_eq!(proof.decode(b"O").unwrap(), "O");
+        assert!(proof.encode("l").is_err());
+        assert!(proof.decode(b"l").is_err());
+        // Form repertoire proof has a broader contract and must not inherit this
+        // editing-only exclusion of unproven codes.
+        assert!(verify_domain(&pdf, &font, bytes, true).is_err());
+        let mut explicit = font.clone();
+        let cmap = pdf.add_object(Stream::new(dictionary! {},
+            b"1 begincodespacerange <00> <FF> endcodespacerange 2 beginbfchar <4F> <004F> <6C> <006C> endbfchar".to_vec()));
+        explicit.set("ToUnicode", cmap);
+        assert!(verify(&pdf, &explicit, bytes).unwrap_err().to_string().contains("width disagrees"));
+        let mut nonzero = font.clone();
+        nonzero.get_mut(b"Widths").unwrap().as_array_mut().unwrap()[108 - 79] = 1.into();
+        assert!(verify(&pdf, &nonzero, bytes).unwrap_err().to_string().contains("width disagrees"));
+    }
+
+    #[test]
+    fn winansi_without_unicode_requires_flags_and_width_evidence() {
+        let bytes = include_bytes!("../../tests/fixtures/embedded-text/DejaVuSerif-subset.ttf");
+        let face = ttf_parser::Face::parse(bytes, 0).unwrap();
+        let width = face
+            .glyph_hor_advance(face.glyph_index('O').unwrap())
+            .unwrap() as f32
+            * 1000.0
+            / face.units_per_em() as f32;
+        let mut pdf = Document::with_version("1.7");
+        let font = dictionary! {"Subtype"=>"TrueType","Encoding"=>"WinAnsiEncoding","FirstChar"=>79,"LastChar"=>79,"Widths"=>vec![Object::Real(width)],"FontDescriptor"=>dictionary!{"Flags"=>32}};
+        assert!(verify(&pdf, &font, bytes).unwrap().supports("O").is_ok());
+        for flags in [
+            None,
+            Some(Object::Integer(0)),
+            Some(Object::Integer(4)),
+            Some(Object::Integer(36)),
+            Some(Object::Real(32.0)),
+            Some(Object::Name(b"invalid".to_vec())),
+        ] {
+            let mut bad = font.clone();
+            let descriptor = bad
+                .get_mut(b"FontDescriptor")
+                .unwrap()
+                .as_dict_mut()
+                .unwrap();
+            if let Some(flags) = flags {
+                descriptor.set("Flags", flags);
+            } else {
+                descriptor.remove(b"Flags");
+            }
+            assert!(verify(&pdf, &bad, bytes).is_err());
+        }
+        let mut bad = font.clone();
+        bad.set("Widths", vec![Object::Real(width + 10.0)]);
+        assert!(verify(&pdf, &bad, bytes)
+            .unwrap_err()
+            .to_string()
+            .contains("width disagrees"));
+        let broken = pdf.add_object(Stream::new(dictionary! {}, b"not a cmap".to_vec()));
+        let mut bad = font.clone();
+        bad.set("ToUnicode", broken);
+        assert!(verify(&pdf, &bad, bytes).is_err());
+    }
 
     fn bytes(pdf: &mut Document) -> Vec<u8> {
         let mut bytes = Vec::new();
@@ -731,7 +1041,7 @@ mod tests {
         value.push_str(
             "<0000> <FFFF>\nendcodespacerange\n1 beginbfrange <0000> <FFFF> <0000> endbfrange",
         );
-        let error = cmap(value.as_bytes(), 2).unwrap_err().to_string();
+        let error = cmap_with_policy(value.as_bytes(), 2, CMapPolicy::LatinEditing).unwrap_err().to_string();
         assert!(error.contains("codespaces overlap"), "{error}");
     }
 }

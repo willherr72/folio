@@ -1,5 +1,9 @@
 # Compatibility and performance corpus
 
+The [2026-10-23 source checkpoint](2026-10-23-source.md) records the latest
+six-process native measurements, separate portable desktop baseline, export-memory
+fix and final debug desktop acceptance. Historical v0.6 results below remain intact.
+
 The corpus is generated locally and redistributable. The versioned set covers dense tables, non-default page sizes, all four intrinsic rotations, crop boxes, source highlights/comments, embedded Unicode TrueType, and image-only scans. Bulk workloads add a 300-page table document and a 96 MiB synthetic scan. Font provenance and its full redistribution license accompany the fixtures; no external PDF, photo, private record, or third-party document text is used.
 
 The included unmodified DejaVu Serif font exercises Latin accents, Greek, Cyrillic and mathematical symbols. Its licensing notice is preserved under `tests/fixtures/corpus/fonts`; the [upstream license](https://dejavu-fonts.github.io/License.html) permits redistribution with its notices. This is not a comprehensive PDF standard, complex-script shaping, OCR, malicious-document, or arbitrary third-party-reader conformance suite.

@@ -1,0 +1,12 @@
+.modal-dialog.form-properties-dialog{width:min(40rem,calc(100vw - 2rem))}
+.form-properties-controls{display:grid;gap:.7rem;min-width:0;padding:0 24px}
+.form-properties-controls p{margin:0;overflow-wrap:anywhere}
+.form-properties-controls label{display:grid;gap:.3rem}
+.form-properties-controls input:not([type=checkbox]),.form-properties-controls textarea{width:100%;min-width:0;box-sizing:border-box;padding:8px;color:var(--ink);background:var(--control);border:1px solid var(--line);border-radius:5px;font:inherit}
+.form-properties-controls .form-properties-check{display:flex;align-items:center;gap:.5rem}
+.form-properties-controls .form-properties-check input{width:auto}
+.form-properties-controls>.button{justify-self:start}
+.form-properties-dialog>p{margin:12px 24px}
+.form-properties-dialog .dialog-actions{padding:18px 24px 24px;display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+.document-properties-dialog dl{display:grid;grid-template-columns:auto minmax(0,1fr);gap:.35rem 1rem;margin:.3rem 0}
+.document-properties-dialog dd{margin:0;overflow-wrap:anywhere}

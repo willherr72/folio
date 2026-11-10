@@ -21,6 +21,7 @@ export function SearchBar({ query, onQueryChange, index, total, searching, error
   const status = !query.trim() ? "Find words or phrases" : searching ? "Searching…" : total > 0 ? `${Math.max(0, Math.min(index, total - 1)) + 1} of ${total}` : error ? "Search incomplete" : hasText ? "No matches" : "No searchable text";
   return <section className="search-bar" aria-label="Document search" onKeyDown={(event) => {
     event.stopPropagation();
+    if (event.nativeEvent.isComposing || event.keyCode === 229) return;
     if (event.key === "Escape") { event.preventDefault(); onClose(); }
     else if (event.key === "Enter") { event.preventDefault(); if (total) { if (event.shiftKey) onPrevious(); else onNext(); } }
   }}>

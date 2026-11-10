@@ -6,3 +6,16 @@
 
 .release-dialog > .release-form, .release-dialog > .recovery-description {margin:0;padding:0 24px 20px;}
 .release-dialog > .dialog-actions {padding:4px 24px 24px;justify-content:flex-end;flex-wrap:wrap;}
+.password-dialog form > .release-form {margin:0;padding:0 24px 20px;}
+.password-dialog form > .dialog-actions {padding:4px 24px 24px;justify-content:flex-end;flex-wrap:wrap;}
+
+.native-comment-position { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
+.native-comment-position input { width:100%; box-sizing:border-box; }
+.pdf-split-parts {max-height:180px;overflow:auto;border:1px solid var(--line);border-radius:6px;}
+.modal-dialog.pdf-split-dialog {display:flex;flex-direction:column;overflow:hidden;}
+.pdf-split-dialog > .modal-heading {flex-shrink:0;}
+.pdf-split-parts table {width:100%;border-collapse:collapse;font-size:13px;}
+.pdf-split-parts th,.pdf-split-parts td {padding:7px 12px;text-align:left;}
+.pdf-split-parts th {position:sticky;top:0;background:var(--panel);}
+.pdf-split-dialog > .release-form {overflow:auto;min-height:0;grid-auto-rows:max-content;align-content:start;}
+.pdf-split-dialog > .dialog-actions {flex-shrink:0;}

@@ -1,13 +1,27 @@
+import {rectVisibleOnPage} from "./geometry";
 import { acquireShapedText } from "./shaped-text";
 import { fontRevision, subscribeFonts } from "./custom-fonts";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import type { FolioAdapter } from "./adapter";
 import { textOverlayCharacters, rotateTextRect } from "./text-overlay-geometry";
-import type { PagePlan, PageText, PdfTextCharacter } from "./types";
+import type { PagePlan, PageText, PdfTextCharacter,PageSearchResult } from "./types";
 
 /** Coordinates are page units, after source rotation and before editor rotation. */
 export interface SearchRect { x: number; y: number; width: number; height: number }
 export interface SearchMatch { id: string; pageId: string; rects: SearchRect[] }
+
+/** Navigate to visible ink without changing the complete match used for highlighting. */
+export function searchNavigationRect(page: PagePlan, match: SearchMatch): SearchRect | undefined {
+  if(!page.crop)return match.rects[0];
+  const crop=page.crop;
+  for(const rect of match.rects){
+    const x=Math.max(rect.x,crop.x),y=Math.max(rect.y,crop.y);
+    const width=Math.min(rect.x+rect.width,crop.x+crop.width)-x;
+    const height=Math.min(rect.y+rect.height,crop.y+crop.height)-y;
+    if(width>0&&height>0)return {x,y,width,height};
+  }
+  return undefined;
+}
 
 interface TextEntry { adapter: FolioAdapter; sourceId: string; request: Promise<PageText>; characters: number }
 const textCache = new Map<string, TextEntry>();
@@ -117,7 +131,7 @@ export function findPageMatches(page: PagePlan, text: PageText, query: string): 
   for (const overlay of page.overlays) {
     if (overlay.type === "text") matches.push(...findTextMatches(page.id, `overlay:${overlay.id}`, textOverlayCharacters(overlay), needle));
   }
-  return matches;
+  return page.crop?matches.filter(match=>match.rects.some(rect=>rectVisibleOnPage(rect,page))):matches;
 }
 
 interface SearchResult { matches: SearchMatch[]; searching: boolean; error: string | null; hasText: boolean }
@@ -136,11 +150,23 @@ export function useDocumentSearch(adapter: FolioAdapter, pages: PagePlan[], quer
         const matches: SearchMatch[] = [];
         let hasText = false;
         const errors: string[] = [];
+        const restricted=new Map<string,Promise<PageSearchResult>>();
         for (let index = 0; index < pages.length; index++) {
           if (cancelled) return;
           const page = pages[index];
           let text: PageText = { characters: [] };
-          try { text = await readSearchPageText(adapter, page.sourceId, page.pageIndex); }
+          try {
+            if(page.protection?.permissions.copyContent===false) {
+              if(!adapter.searchPage)throw new Error("Search for this protected PDF requires the desktop search service.");
+              const key=JSON.stringify([page.sourceId,page.pageIndex]);
+              let request=restricted.get(key);
+              if(!request){request=adapter.searchPage(page.sourceId,page.pageIndex,needle);restricted.set(key,request);}
+              const found=await request;if(cancelled)return;
+              matches.push(...found.matches.map((rects,index)=>({id:`${page.id}:source:${index}`,pageId:page.id,rects})));
+              hasText ||= found.hasText;
+              if(found.truncated)errors.push(`Page ${index+1}: search result limit reached. Refine the query to find more specific text.`);
+            } else text = await readSearchPageText(adapter, page.sourceId, page.pageIndex);
+          }
           catch (error) { errors.push(`Page ${index + 1}: ${error instanceof Error ? error.message : String(error)}`); }
           if (cancelled) return;
           matches.push(...findTextMatches(page.id, "source", text, needle));
@@ -160,7 +186,7 @@ export function useDocumentSearch(adapter: FolioAdapter, pages: PagePlan[], quer
             if (cancelled) return;
           }
           hasText ||= text.characters.some((character) => !!character.text.trim()) || page.overlays.some((overlay) => overlay.type === "text" && !!overlay.text.trim());
-          setState({ adapter, pages, query: needle, matches: [...matches], hasText, error: errors.length ? `Some pages could not be searched. ${errors[0]}` : null, searching: index < pages.length - 1 });
+          setState({ adapter, pages, query: needle, matches: matches.filter(match=>{const owner=pages.find(page=>page.id===match.pageId);return !owner?.crop||match.rects.some(rect=>rectVisibleOnPage(rect,owner));}), hasText, error: errors.length ? `Some pages could not be searched. ${errors[0]}` : null, searching: index < pages.length - 1 });
           // Let rendering and input run even when every extraction is cached.
           if (index < pages.length - 1) await new Promise<void>((resolve) => setTimeout(resolve, 0));
         }

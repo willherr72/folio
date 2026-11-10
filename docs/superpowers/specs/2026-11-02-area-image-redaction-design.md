@@ -1,0 +1,27 @@
+# Image samples in structural area redaction
+
+## Outcome and authority
+
+Continue the complete area-redaction design by publishing actual sanitized image samples alongside editable retained text and drawings. The preceding native-selection checkpoint is progress: 141 native tests and independent saved-output audits passed. This slice remains private until the combined host/UI workflow is ready. Standing autonomous authorization applies; preserve sources, the dirty checkout, failed evidence and the accepted 0.30 package.
+
+## Chosen implementation
+
+Admit bounded image XObjects with 8-bit DeviceGray or DeviceRGB samples, positive dimensions up to 32,768 and at most 16 million pixels per image. Support raw and FlateDecode payloads with exact decoded lengths. This first integration accepts only absent/default Decode arrays, absent or false Interpolate, and no predictors beyond 1. JPEG, masks, profiles, indexed colors, inline images and Forms require further dedicated admission; unknown used image semantics refuse. These restrictions are milestones toward the full workflow, not its completion definition.
+
+Decode into owned samples, and publish new minimal image dictionaries/streams. Do not copy original image streams, metadata or unused resources into an output. Bound aggregate retained decoded input to 64 MiB and unique images to 256; follow reference chains at most 64 steps with cycle rejection. Resolve aliases by source object identity before decoding again. Page resources are canonicalized only when referenced by a validated Do operator. A separate area preparation mode preserves existing text-only admission and source selection IDs on documents with no images.
+
+Track the image CTM through validated q/Q/cm state. Reuse the drawing planner's directed interval arithmetic for transformed pixel rectangles, including reflection, rotation and shear. Image row zero is the top row. A source pixel is selected when its conservatively transformed cell bounds touch a mark; boundary contact counts. A quadtree rejects disjoint blocks and selects fully contained blocks without walking every pixel. Intersecting leaf cells are selected conservatively. Outward rounding includes division by integer image dimensions. Unsafe or collapsed transforms refuse, with the existing finite coordinate and determinant safeguards. Limit geometric mark comparisons to 8 million and image occurrences to 4,096 per document.
+
+A request also has a shared 64-million-pixel sample-work budget, charged before allocating the first mask for each affected occurrence. This bounds repeated large-image mask/hash/sanitization work even when output deduplication retains only one variant. A reproduced five-occurrence test established that geometry comparisons and retained bytes alone were insufficient; the fifth 16-million-pixel occurrence must refuse.
+
+Overwrite every selected sample component with zero, publish a new image resource for that occurrence, and return affected pixel count and conservative page bounds for later preview disclosure. The bound can extend beyond the requested mark because of pixel coverage, affine envelopes and boundary contact. Interpolation is refused in this slice because its support would require a wider sample influence envelope. Never retain covered original samples behind a clip or mask.
+
+Shared input resources remain immutable. A marked occurrence gets its own sanitized sample copy; an unmarked occurrence keeps its original samples. If selected information is also visible in another unmarked occurrence, that occurrence intentionally remains and must be disclosed by the eventual UI policy. If every occurrence is sanitized, no original image resource may survive merely because it remains in a preparation vector. Publication installs only resources referenced by final Do operators. Aggregate unique output sample retention, including sanitized variants, is bounded to 64 MiB before allocating each variant.
+
+Area glyph inspection, text-range removal and combined publication use the area-aware preparation route. Existing text-only callers retain their current behavior. Image admission must work even when a mark selects only text or drawings, and unmarked pages must preserve admitted image samples. The native space probe must preserve admitted image rendering while changing only extraction mappings.
+
+## Verification
+
+Write failing tests before implementation: partial pixels, shared occurrences, two marked copies, unchanged page, first-row orientation, reflections/quarter turns/shears, q/Q isolation, text plus image plus drawing removal, source immutability, unsupported image semantics and allocation/work limits. Use original source pixels with fixed independently derived expected masks. Include corruptions that hide pixels with a cover, retain an orphan original image, change an unselected pixel, or alter an unmarked occurrence. Independently decode every saved image stream and render actual saved PDFs, preserving editable text and expected outside pixels. Compare full expected rasters for the owned fixtures. Run the full redaction-related native suite serially and review the scoped delta before checkpointing.
+
+This slice does not prove arbitrary PDF sanitization, JPEG/mask/color-profile behavior, end-user adoption, Windows acceptance, practical worst-case memory/latency, or commercial parity. Those remain required future work.

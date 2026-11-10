@@ -1,0 +1,65 @@
+--- a/core/fpdftext/cpdf_textpage.cpp
++++ b/core/fpdftext/cpdf_textpage.cpp
+@@ -11,6 +11,7 @@
+ 
+ #include <algorithm>
+ #include <array>
++#include <cmath>
+ #include <utility>
+ #include <vector>
+ 
+@@ -1207,8 +1208,39 @@
+ 
+   CPDF_TextObject::Item prev_item = prev_text_obj_->GetItemInfo(nItem - 1);
+   CPDF_TextObject::Item item = text_obj->GetItemInfo(0);
+-  const CFX_FloatRect& this_rect = text_obj->GetRect();
++  CFX_FloatRect this_rect = text_obj->GetRect();
+   const CFX_FloatRect& prev_rect = prev_text_obj_->GetRect();
++  CFX_PointF this_pos = text_obj->GetPos();
++  // These line-overlap tests are in the preceding object's Form space.
++  // Distinct translated/scaled Forms cannot compare their local rectangles.
++  // Keep the existing non-axis-aligned and vertical heuristics unchanged.
++  if (writing_mode == TextOrientation::kHorizontal &&
++      form_matrix.a > 0 && form_matrix.d > 0 && form_matrix.b == 0 &&
++      form_matrix.c == 0 && prev_matrix_.a > 0 && prev_matrix_.d > 0 &&
++      prev_matrix_.b == 0 && prev_matrix_.c == 0 &&
++      form_matrix != prev_matrix_) {
++    // GetInverse() returns identity when its float determinant underflows.
++    // Retain the old path if normalization cannot be represented safely.
++    const float determinant = prev_matrix_.a * prev_matrix_.d;
++    if (determinant > 0 && std::isfinite(determinant)) {
++      const CFX_Matrix relative = form_matrix * prev_matrix_.GetInverse();
++      if (relative.a > 0 && relative.d > 0 &&
++          std::isfinite(relative.a) && std::isfinite(relative.b) &&
++          std::isfinite(relative.c) && std::isfinite(relative.d) &&
++          std::isfinite(relative.e) && std::isfinite(relative.f)) {
++        const CFX_FloatRect normalized_rect = relative.TransformRect(this_rect);
++        const CFX_PointF normalized_pos = relative.Transform(this_pos);
++        if (std::isfinite(normalized_rect.left) &&
++            std::isfinite(normalized_rect.bottom) &&
++            std::isfinite(normalized_rect.right) &&
++            std::isfinite(normalized_rect.top) &&
++            std::isfinite(normalized_pos.x) && std::isfinite(normalized_pos.y)) {
++          this_rect = normalized_rect;
++          this_pos = normalized_pos;
++        }
++      }
++    }
++  }
+   WideString unicode =
+       text_obj->GetFont()->UnicodeFromCharCode(item.char_code_);
+   if (unicode.IsEmpty()) {
+@@ -1266,11 +1298,10 @@
+             m.c < 0.1) {
+           CFX_FloatRect re(0, prev_text_obj_->GetRect().bottom, 1000,
+                            prev_text_obj_->GetRect().top);
+-          if (re.Contains(text_obj->GetPos())) {
++          if (re.Contains(this_pos)) {
+             is_newline = false;
+           } else {
+-            if (CFX_FloatRect(0, text_obj->GetRect().bottom, 1000,
+-                              text_obj->GetRect().top)
++            if (CFX_FloatRect(0, this_rect.bottom, 1000, this_rect.top)
+                     .Contains(prev_text_obj_->GetPos())) {
+               is_newline = false;
+             }

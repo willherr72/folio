@@ -40,14 +40,18 @@ Eligibility deliberately requires:
   per-object character scans.
 - At least two text objects; every text object has positive finite font size and
   a finite, positive, axis-aligned matrix.
-- Every text object has at least two printable ASCII characters with finite,
-  constant-Y origins, nondecreasing X, and a positive total advance.
+- Each text object contains precomposed Latin or ordinary spacing/punctuation/
+  currency scalars with finite constant-Y origins and nondecreasing X. Objects
+  containing two or more characters must have positive total advance.
+- A single-character object requires another object on the same exact baseline.
+  Those objects must advance strictly between members in original object order,
+  with a positive overall advance. Isolated or coincident singletons keep fallback.
 - No form XObjects or unknown object types. Paths, images and shading do not
   establish text orientation.
 
-Counterrotation, negative advances, vertical/mixed orientation, singleton text
-objects, non-ASCII text and ambiguous/unavailable geometry retain the existing
-PDFium path. This is a bounded workaround for simple forward ASCII text, not
+Counterrotation, negative advances, vertical/mixed orientation, unsupported
+singleton arrangements, non-Latin/combining text and ambiguous/unavailable geometry
+retain the existing PDFium path. This is a bounded workaround for forward Latin text, not
 general reading-order reconstruction or newly enabled complex-script input.
 
 Unrotated pages avoid the scan/copy path. Rotated-page eligibility and copying
@@ -56,7 +60,7 @@ requests for warm pages. Copying an eligible page also copies its resource graph
 so image-heavy pages can incur additional transient memory and latency even with
 the object/character caps. No new large-document performance claim is made.
 
-## Verification and reproduction
+## Original ASCII checkpoint verification and reproduction
 
 Native regressions cover split versus joined text and each character's box,
 multiple lines, all source rotations, nonzero crop origins, inherited rotation,
@@ -90,3 +94,22 @@ Folio's reader correction must not turn external-reader failures into passing
 writer evidence. The 255-definition writer limit, RTL boundaries, and the other
 portable complex-text gates remain unchanged. No upstream PDFium change or
 upstream issue was submitted by this work.
+
+
+## Rotated Latin reader extension (2026-10-24)
+
+The accented fixture split after its first character reproduced `afé old C` instead
+of `Café old` at 180 degrees. Reader admission now lives in `reader_order.rs` and
+also supports positive singleton sequences; raw `extract_text` is unchanged.
+Initial native geometry suite passes all 11 cases, including 28 accented split/
+rotation combinations, text/search matches, display boxes, exact source raster
+and bytes, save/reopen, inherited geometry, and original fallback controls.
+Expanded verification passed 221 native tests (four existing ignored), 26 frontend
+tests, 28 independent source/saved pairs, and actual Windows mouse-copy/Find before
+and after native save/reopen at all four rotations. Protected search returns only
+locations while copying remains denied. The final 270-degree copied phrase also
+matched the Windows OS clipboard. No actionable defects were found in the scoped
+review. Evidence: `artifacts/rotated-latin-reading-20261024/checkpoint/verification.json`
+and `acceptance-supplement.json` beside it. No source PDF rewrite or renderer
+dependency change is needed for reading. These are scoped development checks,
+not whole-project release or parity certification.

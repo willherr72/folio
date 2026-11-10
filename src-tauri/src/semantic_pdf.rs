@@ -735,6 +735,9 @@ pub fn prepare_text_overlay(
             .map_err(|_| invalid("Invalid text color."))? as f32
             / 255.;
     }
+    if overlay.area.is_some() {
+        return crate::text_area_overlay::prepare(font, overlay, color);
+    }
     if overlay.text.is_empty() {
         return Ok(PreparedTextOverlay {
             preview: NativeTextPreview {

@@ -1,0 +1,9 @@
+.image-pages-dialog {max-height:calc(100dvh - 32px);display:flex;flex-direction:column;}
+.image-pages-body {overflow:auto;min-height:0;padding:0 24px 16px;}
+.image-pages-body>p {color:var(--muted);font-size:12px;}
+.image-pages-list {padding-left:24px;max-height:220px;overflow:auto;}
+.image-pages-list li {padding:4px 0;}
+.image-pages-list li:focus-visible {outline:2px solid var(--accent);outline-offset:2px;}
+.image-pages-list li>span {display:inline-block;vertical-align:middle;width:calc(100% - 174px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.image-pages-list .button {padding:5px 8px;margin-left:4px;}
+.image-pages-dialog .dialog-actions {flex-shrink:0;}

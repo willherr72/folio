@@ -2,6 +2,22 @@
 //! This font never supplies the visible original-font outlines.
 use crate::{EngineError, EngineResult};
 
+#[cfg(test)]
+mod ocr_capacity_tests {
+    use super::*;
+    #[test]
+    fn ocr_font_supports_full_cid_capacity_without_widening_shaped_text() {
+        let glyphs=vec![SemanticGlyph{advance:500.,bounds:[0.,0.,500.,1000.]};65_534];
+        assert!(build_semantic_font(&glyphs[..4097],16).is_err());
+        let bytes=build_ocr_semantic_font(&glyphs).unwrap();
+        let face=ttf_parser::Face::parse(&bytes,0).unwrap();
+        assert_eq!(face.number_of_glyphs(),65_535);
+        assert_eq!(face.glyph_index(char::from_u32(0xf0000).unwrap()),Some(ttf_parser::GlyphId(1)));
+        assert_eq!(face.glyph_index(char::from_u32(0xffffd).unwrap()),Some(ttf_parser::GlyphId(65_534)));
+        let mut too_many=glyphs;too_many.push(too_many[0]);assert!(build_ocr_semantic_font(&too_many).is_err());
+    }
+}
+
 #[derive(Clone, Copy)]
 pub(crate) struct SemanticGlyph {
     pub advance: f32,
@@ -14,8 +30,18 @@ pub(crate) fn build_semantic_font(
     glyphs: &[SemanticGlyph],
     magnification: u16,
 ) -> EngineResult<Vec<u8>> {
-    if glyphs.is_empty() || glyphs.len() > 4096 {
-        return Err(invalid("requires 1 to 4096 glyph definitions"));
+    build_font(glyphs,magnification,false)
+}
+
+/// OCR uses a single wide CID font so a line is not split into font banks.
+pub(crate) fn build_ocr_semantic_font(glyphs:&[SemanticGlyph])->EngineResult<Vec<u8>> {
+    build_font(glyphs,1,true)
+}
+
+fn build_font(glyphs:&[SemanticGlyph],magnification:u16,ocr:bool)->EngineResult<Vec<u8>> {
+    let maximum=if ocr {65_534}else{4096};
+    if glyphs.is_empty() || glyphs.len() > maximum {
+        return Err(invalid(if ocr {"requires 1 to 65534 OCR glyph definitions"}else{"requires 1 to 4096 glyph definitions"}));
     }
     if !(1..=32).contains(&magnification) {
         return Err(invalid("magnification must be between 1 and 32"));
@@ -159,7 +185,16 @@ pub(crate) fn build_semantic_font(
     put_u16(&mut maxp, 8, if ink.is_empty() { 0 } else { 1 });
     put_u16(&mut maxp, 14, 1); // only glyph zone, no hinting/twilight zone
 
-    // A format-4 private-use cmap supports font readers; PDF ToUnicode owns text.
+    // PDF ToUnicode owns logical text. The wider OCR font uses a format12 cmap
+    // in supplementary private-use plane15 without changing shaped-text fonts.
+    let cmap = if ocr {
+        let mut cmap=vec![0;40];
+        put_u16(&mut cmap,2,1);put_u16(&mut cmap,4,3);put_u16(&mut cmap,6,10);
+        put_u32(&mut cmap,8,12);put_u16(&mut cmap,12,12);put_u32(&mut cmap,16,28);
+        put_u32(&mut cmap,24,1);put_u32(&mut cmap,28,0xf0000);
+        put_u32(&mut cmap,32,0xf0000+glyphs.len() as u32-1);put_u32(&mut cmap,36,1);
+        cmap
+    }else{
     let mut cmap = vec![0; 44];
     put_u16(&mut cmap, 2, 1);
     put_u16(&mut cmap, 4, 3); // Windows Unicode BMP
@@ -180,28 +215,36 @@ pub(crate) fn build_semantic_font(
     ] {
         put_u16(&mut cmap, offset, value);
     }
+    cmap
+    };
     let mut os2 = vec![0; 78]; // OS/2 version 0; own outlines allow embedding
     put_i16(&mut os2, 2, average);
     put_u16(&mut os2, 4, 400);
     put_u16(&mut os2, 6, 5);
-    put_u32(&mut os2, 46, 1 << 28); // Unicode range bit 60: private use area
+    if ocr {
+        put_u32(&mut os2,46,1<<25); // bit57: non-plane0
+        put_u32(&mut os2,50,1<<26); // bit90: supplementary private use
+    }else{
+        put_u32(&mut os2, 46, 1 << 28); // bit60: BMP private use area
+    }
     os2[58..62].copy_from_slice(b"FOLI");
     put_u16(&mut os2, 62, 0x40); // regular style
-    put_u16(&mut os2, 64, 0xE000);
-    put_u16(&mut os2, 66, 0xE000 + glyphs.len() as u16 - 1);
+    put_u16(&mut os2, 64, if ocr {0xFFFF}else{0xE000});
+    put_u16(&mut os2, 66, if ocr {0xFFFF}else{0xE000 + glyphs.len() as u16 - 1});
     put_i16(&mut os2, 68, ascender);
     put_i16(&mut os2, 70, descender);
     put_u16(&mut os2, 74, ascender as u16);
     put_u16(&mut os2, 76, (-i32::from(descender)) as u16);
     let mut post = vec![0; 32];
     put_u32(&mut post, 0, 0x0003_0000); // no PostScript glyph name array
+    let family=if ocr {"FolioOCRSemantic"}else{"FolioSemanticWide"};
     let names = [
-        (1, "FolioSemanticWide"),
+        (1, family),
         (2, "Regular"),
-        (3, "FolioSemanticWide"),
-        (4, "FolioSemanticWide"),
+        (3, family),
+        (4, family),
         (5, "Version 1.0"),
-        (6, "FolioSemanticWide"),
+        (6, family),
     ];
     let mut name = vec![0; 6 + names.len() * 12];
     put_u16(&mut name, 2, names.len() as u16);
@@ -238,8 +281,8 @@ pub(crate) fn build_semantic_font(
             .iter()
             .map(|(_, data)| (data.len() + 3) & !3)
             .sum::<usize>();
-    if length > 256 * 1024 {
-        return Err(invalid("font exceeds the 256 KiB allocation bound"));
+    if length > if ocr {4*1024*1024}else{256*1024} {
+        return Err(invalid(if ocr {"OCR font exceeds the 4 MiB allocation bound"}else{"font exceeds the 256 KiB allocation bound"}));
     }
     let mut font = Vec::with_capacity(length);
     font.resize(12 + tables.len() * 16, 0);

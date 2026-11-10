@@ -1,5 +1,9 @@
 # Selection-aware copy gate and form-field feasibility
 
+Historical September evidence. The [October copying contract](text-area-copy-policy.md)
+supersedes the strict external requirement. Use `--copy-policy exact` to reproduce
+the strict CLI failures described here; raw measurements remain unchanged.
+
 The user confirmed that their Foxit testing works. This is retained as a
 user-reported result; no exact viewer version or clipboard report was provided.
 It does not imply that the separately reproduced PDFium/MuPDF failures passed.

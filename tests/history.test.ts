@@ -12,6 +12,30 @@ const document: EditorDocument = {
 };
 
 describe("immutable editor history", () => {
+  it("keeps the nearest 100 actions and exact endpoints through a full undo/redo traversal", () => {
+    const states = Array.from({length:106}, (_,id) => ({id}));
+    let history = createHistory(states[0]);
+    for (let i=1;i<=105;i++) history=commit(history,()=>states[i]);
+    expect(history.past).toHaveLength(100);
+    expect(history.present).toBe(states[105]);
+    for (let i=104;i>=5;i--) {history=undo(history);expect(history.present).toBe(states[i]);}
+    expect(undo(history)).toBe(history);
+    for (let i=6;i<=105;i++) {history=redo(history);expect(history.present).toBe(states[i]);}
+    expect(redo(history)).toBe(history);
+  });
+
+  it("preserves no-op redo and branches without resurrecting evicted states", () => {
+    let history=createHistory(0);
+    for(let i=1;i<=105;i++) history=commit(history,()=>i);
+    history=undo(undo(history));
+    expect(commit(history,current=>current)).toBe(history);
+    expect(redo(history).present).toBe(104);
+    history=commit(history,()=>200);
+    expect(history.future).toEqual([]);
+    for(let i=0;i<100;i++) history=undo(history);
+    expect(history.present).toBe(5);
+    expect(history.past).toEqual([]);
+  });
   it("restores an edit exactly through undo and redo", () => {
     const original = createHistory(document);
     const edited = commit(original, (current) => ({

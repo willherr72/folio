@@ -1,0 +1,130 @@
+--- a/core/fpdfdoc/cpdf_defaultappearance.cpp
++++ b/core/fpdfdoc/cpdf_defaultappearance.cpp
+@@ -7,6 +7,7 @@
+ #include "core/fpdfdoc/cpdf_defaultappearance.h"
+ 
+ #include <algorithm>
++#include <cmath>
+ #include <vector>
+ 
+ #include "core/fpdfapi/parser/cpdf_dictionary.h"
+@@ -117,25 +118,100 @@
+     return std::nullopt;
+   }
+ 
+-  CPDF_SimpleParser syntax(da_.AsStringView().unsigned_span());
+-  if (FindTagParamFromStart(&syntax, "g", 1)) {
+-    float gray = StringToFloat(syntax.GetWord());
+-    return CFX_Color::MakeGray(gray);
+-  }
+-  if (FindTagParamFromStart(&syntax, "rg", 3)) {
+-    float r = StringToFloat(syntax.GetWord());
+-    float g = StringToFloat(syntax.GetWord());
+-    float b = StringToFloat(syntax.GetWord());
+-    return CFX_Color::MakeRGB(r, g, b);
+-  }
+-  if (FindTagParamFromStart(&syntax, "k", 4)) {
+-    float c = StringToFloat(syntax.GetWord());
+-    float m = StringToFloat(syntax.GetWord());
+-    float y = StringToFloat(syntax.GetWord());
+-    float k = StringToFloat(syntax.GetWord());
+-    return CFX_Color::MakeCMYK(c, m, y, k);
+-  }
+-  return std::nullopt;
++  // DA is a sequence of text-state and color instructions. Its final valid
++  // nonstroking color wins, regardless of the device color space used earlier.
++  auto data = da_.AsStringView().unsigned_span();
++  size_t position = 0;
++  std::optional<CFX_Color> color;
++  std::vector<float> operands;
++  operands.reserve(4);
++  while (position < data.size()) {
++    // Handle literal strings here: the simple parser's parenthesis counter
++    // does not recognize escapes. Do not change GetFont() or its tokenizer.
++    while (position < data.size()) {
++      if (PDFCharIsWhitespace(data[position])) {
++        ++position;
++      } else if (data[position] == '%') {
++        while (position < data.size() && !PDFCharIsLineEnding(data[position])) {
++          ++position;
++        }
++      } else {
++        break;
++      }
++    }
++    if (position == data.size()) {
++      break;
++    }
++    if (data[position] == '(') {
++      ++position;
++      size_t nesting = 1;
++      while (position < data.size() && nesting > 0) {
++        uint8_t ch = data[position++];
++        if (ch == '\\') {
++          if (position < data.size()) {
++            uint8_t escaped = data[position++];
++            if (escaped == '\r' && position < data.size() &&
++                data[position] == '\n') {
++              ++position;
++            }
++          }
++        } else if (ch == '(') {
++          ++nesting;
++        } else if (ch == ')') {
++          --nesting;
++        }
++      }
++      operands.clear();
++      continue;
++    }
++    CPDF_SimpleParser syntax(data.subspan(position));
++    ByteStringView word = syntax.GetWord();
++    position += syntax.GetCurrentPosition();
++    if (word.IsEmpty()) {
++      break;
++    }
++    bool numeric = true;
++    bool digit = false;
++    bool dot = false;
++    size_t index = 0;
++    for (uint8_t ch : word.unsigned_span()) {
++      if (ch >= '0' && ch <= '9') {
++        digit = true;
++      } else if (ch == '.' && !dot) {
++        dot = true;
++      } else if ((ch != '+' && ch != '-') || index != 0) {
++        numeric = false;
++        break;
++      }
++      ++index;
++    }
++    if (numeric && digit) {
++      float value = StringToFloat(word);
++      if (!std::isfinite(value)) {
++        operands.clear();
++        continue;
++      }
++      if (operands.size() == 4) {
++        operands.erase(operands.begin());
++      }
++      operands.push_back(std::clamp(value, 0.0f, 1.0f));
++      continue;
++    }
++    size_t count = operands.size();
++    if (word == "g" && count >= 1) {
++      color = CFX_Color::MakeGray(operands[count - 1]);
++    } else if (word == "rg" && count >= 3) {
++      color = CFX_Color::MakeRGB(operands[count - 3], operands[count - 2],
++                                 operands[count - 1]);
++    } else if (word == "k" && count == 4) {
++      color = CFX_Color::MakeCMYK(operands[0], operands[1], operands[2],
++                                  operands[3]);
++    }
++    // Names, strings and other operators cannot supply numeric arguments to a
++    // later color operator. Never retain more than four operands while scanning.
++    operands.clear();
++  }
++  return color;
+ }
+ 
+ std::optional<CFX_Color::TypeAndARGB> CPDF_DefaultAppearance::GetColorARGB()

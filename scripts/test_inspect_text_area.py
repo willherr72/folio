@@ -121,5 +121,72 @@ class InspectorTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             module.validate_case_names([{'name':'x'}], 2)
 
+    def test_reader_policy_accepts_documented_whitespace_differences(self):
+        pairs = [
+            ('A  B', 'A B'),
+            ('A B C D', 'A B \r\nC D'),
+            ('office\r\n\ncafé\ncafe\u0301\n', 'office\ncafé\ncafe\u0301'),
+            ('one  two three\u00a0four', 'one two\nthree four'),
+            ('A B', ' A B \r\n'),
+            ('A\nB', 'A B'),
+        ]
+        for logical, actual in pairs:
+            with self.subTest(logical=logical, actual=actual):
+                self.assertTrue(module.reader_compatible_text(logical, actual))
+                self.assertNotEqual(logical, actual)
+
+    def test_reader_policy_rejects_content_loss_and_changed_boundaries(self):
+        pairs = [
+            ('A\nB', 'AB'), ('Hello world', 'Helloworld'),
+            ('Hello world', 'Hel lo world'), ('A B C', 'A B'),
+            ('A B C', 'A C B'), ('A B', 'A A B'), ('café', 'cafe'),
+            ('cafe\u0301', 'café'), ('A B', 'A\u2028B'), ('A B', 'A\tB'),
+            ('A B', 'A\rB'), ('A B', 'A\u200b B'), ('A B', ''),
+        ]
+        for logical, actual in pairs:
+            with self.subTest(logical=logical, actual=actual):
+                self.assertFalse(module.reader_compatible_text(logical, actual))
+
+    def test_reader_policy_rejects_missing_or_whitespace_only_evidence(self):
+        for logical, actual in [('A B', None), (None, 'A B'), ('A B', 123),
+                                ('', ''), (' \n', '\r\n '), ('\u00a0', ' ')]:
+            with self.subTest(logical=logical, actual=actual):
+                self.assertFalse(module.reader_compatible_text(logical, actual))
+
+    def test_compatibility_gate_does_not_relabel_raw_exact_results(self):
+        report = self.gate_report()
+        for reader in ['pdfium', 'mupdf', 'pypdf']:
+            keys = ['actualText', 'resavedText'] if reader == 'pypdf' else ['copyText', 'resavedCopyText']
+            for key in keys:
+                report['results'][0]['readers'][reader][key] = 'A \nB '
+        before = deepcopy(report)
+        self.assertTrue(module.reader_compatibility_gate(report))
+        self.assertFalse(module.exact_copy_gate(report))
+        self.assertEqual(report, before)
+
+    def test_compatibility_gate_checks_each_reader_before_and_after_save(self):
+        for reader in ['pdfium', 'mupdf', 'pypdf']:
+            keys = ['actualText', 'resavedText'] if reader == 'pypdf' else ['copyText', 'resavedCopyText']
+            for key in keys:
+                for actual in ['AB', 'A C', 'B A', None]:
+                    with self.subTest(reader=reader, key=key, actual=actual):
+                        report = self.gate_report()
+                        report['results'][0]['readers'][reader][key] = actual
+                        self.assertFalse(module.reader_compatibility_gate(report))
+                report = self.gate_report()
+                report['results'][0]['readers'][reader].pop(key)
+                self.assertFalse(module.reader_compatibility_gate(report))
+
+    def test_compatibility_gate_cannot_use_summary_flags_or_skip_source_geometry(self):
+        changes = [lambda r: r.update(results=[]), lambda r: r.update(evidenceValid=False),
+                   lambda r: r.update(exports=2), lambda r: r['results'][0]['readers'].pop('pypdf'),
+                   lambda r: r['results'][0].update(roundtripStable=False),
+                   lambda r: r['results'][0].update(exactSourceRanges=False)]
+        for mutate in changes:
+            report = self.gate_report()
+            report['readerCompatibilityGatePassed'] = True
+            mutate(report)
+            self.assertFalse(module.reader_compatibility_gate(report))
+
 if __name__ == '__main__':
     unittest.main()

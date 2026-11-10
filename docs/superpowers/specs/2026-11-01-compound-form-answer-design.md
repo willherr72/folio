@@ -1,0 +1,15 @@
+# Preserve compound text-field appearances when filling
+
+The original PyMuPDF-generated printing fixture places the border and answer in one `/Tx` marked section. Folio refuses because they use different clips. A person should be able to fill, clear and refill this common field while its border, background, clip, font context, defaults and unrelated pages remain intact.
+
+Approaches considered: replacing the entire marker is unsafe because it erases frame paint; relaxing the common-clip check can enlarge the answer's visible area. Chosen approach: prove static frame paint geometrically with the existing FramePaint classifier, then canonicalize only the text interval into a separately isolated answer slot. This is the implementer's choice under standing autonomous authorization.
+
+Validate the original grammar and balanced marked graphics first. For a text field with marked text plus vector paint, require a valid BBox and a complete existing frame proof after removing only the untagged `/Tx` marker tokens. Every non-text paint inside that original marker must be a proved border/background/compound-edge operation outside the text interval. Do/shading or ambiguous other artwork in that marker remains a refusal. Keep unrelated artwork outside the marker unchanged.
+
+The answer interval spans its first BT through last ET. It must be balanced and use one coherent clip for all answer paint; interleaved static paint and different clip branches stay refused. Preserve the original paint order, matrices, clipping paths and other operations. Wrap the text interval in q/Q and a unique `/Tx` marker, replay its non-painting text state afterward so retained following content sees the original state. No original glyph paint may remain. Clear/refill must retain a persistent slot and bounded resource/program size. Keep text-kind behavior separate from list selection paint.
+
+Bound all normalization copies and encoding before expansion using existing operation/byte/object budgets. Avoid producer-name detection. Preserve existing refusal semantics for malformed, ambiguous, clipped-text and unsupported programs; do not infer safety from identical pixels alone. The current immutable transaction, native appearance generation, dependency proof and final verification remain in charge of publication.
+
+Verify the original, unrestructured PyMuPDF fixture through native fill/clear/refill/save/reopen and the real desktop. Add structural and raster tests for frame/background, multiple text objects, inherited text state, source clips, ambiguous paint/branches, repeated edits and bounded input. Compare complete unchanged pages and pixels outside fixed widget/answer regions using independent readers. Recheck printing of the filled original. A fresh candidate build is required after source changes; the accepted0.28 portable stays unchanged.
+
+No frontend redesign, new dependencies, physical printing, source overwrites, commits or parity claim. One final scoped review; retain failed attempts and evidence.

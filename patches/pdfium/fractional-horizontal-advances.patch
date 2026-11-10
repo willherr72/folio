@@ -1,0 +1,275 @@
+diff --git a/core/fpdfapi/font/cpdf_cidfont.cpp b/core/fpdfapi/font/cpdf_cidfont.cpp
+index 588e1e9..d20ba56 100644
+--- a/core/fpdfapi/font/cpdf_cidfont.cpp
++++ b/core/fpdfapi/font/cpdf_cidfont.cpp
+@@ -8,6 +8,7 @@
+ 
+ #include <algorithm>
+ #include <array>
++#include <cmath>
+ #include <functional>
+ #include <limits>
+ #include <utility>
+@@ -22,6 +23,7 @@
+ #include "core/fpdfapi/font/cpdf_fontglobals.h"
+ #include "core/fpdfapi/parser/cpdf_array.h"
+ #include "core/fpdfapi/parser/cpdf_dictionary.h"
++#include "core/fpdfapi/parser/cpdf_number.h"
+ #include "core/fpdfapi/parser/cpdf_stream.h"
+ #include "core/fpdfapi/parser/cpdf_stream_acc.h"
+ #include "core/fxcrt/check.h"
+@@ -496,8 +498,15 @@ bool CPDF_CIDFont::Load() {
+     }
+   }
+   default_width_ = pCIDFontDict->GetIntegerFor("DW", 1000);
++  const float precise_default = pCIDFontDict->KeyExist("DW")
++                                    ? pCIDFontDict->GetFloatFor("DW")
++                                    : 1000.0f;
++  if (std::isfinite(precise_default) && precise_default >= 0 && precise_default <= 65535) {
++    precise_default_width_ = precise_default;
++  }
+   RetainPtr<const CPDF_Array> pWidthArray = pCIDFontDict->GetArrayFor("W");
+   if (pWidthArray) {
++    LoadPreciseWidths(pWidthArray.Get());
+     LoadMetricsArray(std::move(pWidthArray), &width_list_, 1);
+   }
+   if (!IsEmbedded()) {
+@@ -570,6 +579,66 @@ FX_RECT CPDF_CIDFont::GetCharBBox(uint32_t charcode) {
+   return rect;
+ }
+ 
++void CPDF_CIDFont::LoadPreciseWidths(const CPDF_Array* widths) {
++  // Reject malformed range structure as a whole, retaining legacy fallback.
++  std::vector<PreciseWidthRange> ranges;
++  auto precise = [](float value) -> std::optional<float> {
++    return std::isfinite(value) && value >= 0 && value <= 65535
++               ? std::optional<float>(value) : std::nullopt;
++  };
++  size_t index = 0;
++  while (index < widths->size()) {
++    if (!widths->GetNumberAt(index) || index + 1 >= widths->size()) {
++      return;
++    }
++    const int first = widths->GetIntegerAt(index++);
++    if (first < 0 || first > 65535) {
++      return;
++    }
++    if (auto values = widths->GetArrayAt(index)) {
++      if (values->size() > 65536u - first) {
++        return;
++      }
++      for (size_t offset = 0; offset < values->size(); ++offset) {
++        const auto code = static_cast<uint16_t>(first + offset);
++        ranges.push_back({code, code, precise(values->GetFloatAt(offset))});
++      }
++      ++index;
++    } else {
++      if (!widths->GetNumberAt(index) || index + 1 >= widths->size()) {
++        return;
++      }
++      const int last = widths->GetIntegerAt(index++);
++      if (last < first || last > 65535) {
++        return;
++      }
++      ranges.push_back({static_cast<uint16_t>(first), static_cast<uint16_t>(last),
++                        precise(widths->GetFloatAt(index++))});
++    }
++  }
++  precise_widths_ = std::move(ranges);
++}
++
++float CPDF_CIDFont::GetCharAdvance(uint32_t charcode) {
++  if (charcode < 0x80 && ansi_widths_fixed_) {
++    return GetCharWidth(charcode);
++  }
++  const uint16_t cid = CIDFromCharCode(charcode);
++  for (const auto& range : precise_widths_) {
++    if (cid >= range.first && cid <= range.last) {
++      return range.width ? *range.width : GetCharWidth(charcode);
++    }
++  }
++  // Invalid/unsupported W entries must not fall through to a different DW.
++  auto ranges = fxcrt::reinterpret_span<const LowHighVal>(pdfium::span(width_list_));
++  for (const auto& range : ranges) {
++    if (IsMetricForCID(range, cid)) {
++      return range.val;
++    }
++  }
++  return precise_default_width_ ? *precise_default_width_ : GetCharWidth(charcode);
++}
++
+ int CPDF_CIDFont::GetCharWidth(uint32_t charcode) {
+   if (charcode < 0x80 && ansi_widths_fixed_) {
+     return (charcode >= 32 && charcode < 127) ? 500 : 0;
+diff --git a/core/fpdfapi/font/cpdf_cidfont.h b/core/fpdfapi/font/cpdf_cidfont.h
+index beeddf4..895c102 100644
+--- a/core/fpdfapi/font/cpdf_cidfont.h
++++ b/core/fpdfapi/font/cpdf_cidfont.h
+@@ -11,6 +11,7 @@
+ 
+ #include <array>
+ #include <memory>
++#include <optional>
+ #include <vector>
+ 
+ #include "core/fpdfapi/font/cpdf_font.h"
+@@ -57,6 +58,7 @@ class CPDF_CIDFont final : public CPDF_Font {
+   CPDF_CIDFont* AsCIDFont() override;
+   int GlyphFromCharCode(uint32_t charcode, bool* pVertGlyph) override;
+   int GetCharWidth(uint32_t charcode) override;
++  float GetCharAdvance(uint32_t charcode) override;
+   FX_RECT GetCharBBox(uint32_t charcode) override;
+   uint32_t GetNextChar(ByteStringView pString, size_t* pOffset) const override;
+   size_t CountChar(ByteStringView pString) const override;
+@@ -81,6 +83,7 @@ class CPDF_CIDFont final : public CPDF_Font {
+ 
+   CPDF_CIDFont(CPDF_Document* document, RetainPtr<CPDF_Dictionary> font_dict);
+ 
++  void LoadPreciseWidths(const CPDF_Array* widths);
+   void LoadGB2312();
+   int GetGlyphIndex(uint32_t unicodeb, bool* pVertGlyph);
+   int GetVerticalGlyph(int index, bool* pVertGlyph);
+@@ -99,6 +102,13 @@ class CPDF_CIDFont final : public CPDF_Font {
+   int16_t default_width_ = 1000;
+   int16_t default_vy_ = 880;
+   int16_t default_w1_ = -1000;
++  struct PreciseWidthRange {
++    uint16_t first;
++    uint16_t last;
++    std::optional<float> width;
++  };
++  std::optional<float> precise_default_width_;
++  std::vector<PreciseWidthRange> precise_widths_;
+   std::vector<int> width_list_;
+   std::vector<int> vert_metrics_;
+   std::array<FX_RECT, 256> char_bbox_;
+diff --git a/core/fpdfapi/font/cpdf_facebasedsimplefont.cpp b/core/fpdfapi/font/cpdf_facebasedsimplefont.cpp
+index f67eb8c..8e3be65 100644
+--- a/core/fpdfapi/font/cpdf_facebasedsimplefont.cpp
++++ b/core/fpdfapi/font/cpdf_facebasedsimplefont.cpp
+@@ -6,6 +6,7 @@
+ 
+ #include <algorithm>
+ #include <array>
++#include <cmath>
+ #include <utility>
+ 
+ #include "core/fpdfapi/parser/cpdf_array.h"
+@@ -96,6 +97,10 @@ void CPDF_FaceBasedSimpleFont::LoadCharWidths(
+   if (font_desc && font_desc->KeyExist("MissingWidth")) {
+     int missing_width = font_desc->GetIntegerFor("MissingWidth");
+     std::ranges::fill(char_width_, missing_width);
++    const float precise = font_desc->GetFloatFor("MissingWidth");
++    if (std::isfinite(precise) && precise >= 0 && precise <= 65535) {
++      precise_width_.fill(precise);
++    }
+   }
+ 
+   size_t width_start = font_dict_->GetIntegerFor("FirstChar", 0);
+@@ -112,7 +117,19 @@ void CPDF_FaceBasedSimpleFont::LoadCharWidths(
+   }
+   for (size_t i = width_start; i <= width_end; i++) {
+     char_width_[i] = width_array->GetIntegerAt(i - width_start);
++    const float precise = width_array->GetFloatAt(i - width_start);
++    precise_width_[i] = std::isfinite(precise) && precise >= 0 && precise <= 65535
++                            ? std::optional<float>(precise)
++                            : std::nullopt;
++  }
++}
++
++float CPDF_FaceBasedSimpleFont::GetCharAdvance(uint32_t charcode) {
++  if (charcode > 0xff) {
++    charcode = 0;
+   }
++  return precise_width_[charcode] ? *precise_width_[charcode]
++                                  : GetCharWidth(charcode);
+ }
+ 
+ int CPDF_FaceBasedSimpleFont::GetCharWidth(uint32_t charcode) {
+@@ -176,6 +193,7 @@ bool CPDF_FaceBasedSimpleFont::LoadCommon() {
+         glyph_index_[i] = glyph_index_[j];
+         if (char_width_[j]) {
+           char_width_[i] = char_width_[j];
++          precise_width_[i] = precise_width_[j];
+           char_bbox_[i] = char_bbox_[j];
+         }
+       }
+diff --git a/core/fpdfapi/font/cpdf_facebasedsimplefont.h b/core/fpdfapi/font/cpdf_facebasedsimplefont.h
+index 4c160a2..c495a8d 100644
+--- a/core/fpdfapi/font/cpdf_facebasedsimplefont.h
++++ b/core/fpdfapi/font/cpdf_facebasedsimplefont.h
+@@ -8,6 +8,7 @@
+ #include <stdint.h>
+ 
+ #include <array>
++#include <optional>
+ 
+ #include "core/fpdfapi/font/cpdf_fontencoding.h"
+ #include "core/fpdfapi/font/cpdf_simplefont.h"
+@@ -25,6 +26,7 @@ class CPDF_FaceBasedSimpleFont : public CPDF_SimpleFont {
+ 
+   // CPDF_Font:
+   int GetCharWidth(uint32_t charcode) override;
++  float GetCharAdvance(uint32_t charcode) override;
+   FX_RECT GetCharBBox(uint32_t charcode) override;
+   int GlyphFromCharCode(uint32_t charcode, bool* pVertGlyph) override;
+   bool HasFontWidths() const override;
+@@ -43,6 +45,7 @@ class CPDF_FaceBasedSimpleFont : public CPDF_SimpleFont {
+   bool use_font_width_ = false;
+   std::array<uint16_t, kInternalTableSize> glyph_index_;
+   std::array<uint16_t, kInternalTableSize> char_width_;
++  std::array<std::optional<float>, kInternalTableSize> precise_width_{};
+   std::array<FX_RECT, kInternalTableSize> char_bbox_;
+ };
+ 
+diff --git a/core/fpdfapi/font/cpdf_font.h b/core/fpdfapi/font/cpdf_font.h
+index b5dff86..b5370d4 100644
+--- a/core/fpdfapi/font/cpdf_font.h
++++ b/core/fpdfapi/font/cpdf_font.h
+@@ -142,6 +142,11 @@ class CPDF_Font : public Retainable, public Observable {
+   std::optional<int> GetFontWeight() const;
+ 
+   virtual int GetCharWidth(uint32_t charcode) = 0;
++  // Horizontal text positioning must retain fractional PDF widths. Integer
++  // glyph/hint consumers keep the existing interface and fallback behavior.
++  virtual float GetCharAdvance(uint32_t charcode) {
++    return static_cast<float>(GetCharWidth(charcode));
++  }
+   virtual FX_RECT GetCharBBox(uint32_t charcode) = 0;
+ 
+   // Can return nullptr for stock Type1 fonts. Always returns non-null for other
+diff --git a/core/fpdfapi/page/cpdf_textobject.cpp b/core/fpdfapi/page/cpdf_textobject.cpp
+index d6336c9..91b6acc 100644
+--- a/core/fpdfapi/page/cpdf_textobject.cpp
++++ b/core/fpdfapi/page/cpdf_textobject.cpp
+@@ -252,7 +252,7 @@ float CPDF_TextObject::GetCharWidth(uint32_t char_code) const {
+   RetainPtr<CPDF_Font> font = GetFont();
+   const CPDF_CIDFont* cid_font = font->AsCIDFont();
+   if (!IsVertWritingCIDFont(cid_font)) {
+-    return font->GetCharWidth(char_code) * font_size;
++    return font->GetCharAdvance(char_code) * font_size;
+   }
+ 
+   uint16_t cid = cid_font->CIDFromCharCode(char_code);
+@@ -330,7 +330,7 @@ float CPDF_TextObject::CalcPositionDataInternal(
+           current_position + char_rect.right * font_size / 1000;
+       min_x = std::min({min_x, char_left, char_right});
+       max_x = std::max({max_x, char_left, char_right});
+-      char_width = font->GetCharWidth(char_code) * font_size / 1000;
++      char_width = font->GetCharAdvance(char_code) * font_size / 1000;
+     }
+     current_position += char_width;
+     current_position += GetWordSpaceIfNeeded(cid_font, char_code, word_space);
+diff --git a/fpdfsdk/fpdf_edittext.cpp b/fpdfsdk/fpdf_edittext.cpp
+index 727d302..780024c 100644
+--- a/fpdfsdk/fpdf_edittext.cpp
++++ b/fpdfsdk/fpdf_edittext.cpp
+@@ -826,7 +826,7 @@ FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDFFont_GetGlyphWidth(FPDF_FONT font,
+     uint16_t cid = pCIDFont->CIDFromCharCode(charcode);
+     *width = pCIDFont->GetVertWidth(cid) * font_size / 1000.f;
+   } else {
+-    *width = pFont->GetCharWidth(charcode) * font_size / 1000.f;
++    *width = pFont->GetCharAdvance(charcode) * font_size / 1000.f;
+   }
+ 
+   return true;

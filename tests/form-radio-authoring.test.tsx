@@ -1,0 +1,35 @@
+import {cleanup,fireEvent,render,waitFor} from '@testing-library/react';
+import {afterEach,expect,it,vi} from 'vitest';
+import {FormAuthorDialog} from '../src/components/FormAuthorDialog';
+import type {EditorDocument,PagePlan,PageContentReplacement} from '../src/editor/types';
+import type {FolioAdapter} from '../src/editor/adapter';
+import {validateFieldDraft,type CreateFormFieldRequest} from '../src/editor/form-authoring';
+afterEach(cleanup);
+const page:PagePlan={id:'p',sourceId:'source',pageIndex:0,width:300,height:400,rotation:0,overlays:[]};
+const document={id:'d',name:'Document',pages:[page],selectedPageId:'p',selectedOverlayId:null} as EditorDocument;
+const candidate:PageContentReplacement={document:{id:'candidate',name:'Created',pages:[{width:300,height:400,overlays:[]}]},pageIndices:[0]};
+it('creates an exclusive labeled radio group and invalidates its preview when choices change',async()=>{
+ const adapter={renderPagePlan:vi.fn().mockResolvedValue('data:image/png;base64,AA'),closeDocument:vi.fn().mockResolvedValue(undefined),createFormField:vi.fn().mockResolvedValue(candidate)} as unknown as FolioAdapter;
+ const onApply=vi.fn().mockReturnValue(true);
+ const v=render(<FormAuthorDialog {...{adapter,document,page,sourceIds:['source'],onApply,onCancel:vi.fn()}}/>);
+ fireEvent.change(v.getByRole('combobox',{name:'Field type'}),{target:{value:'radio'}});
+ expect(v.getByRole('option',{name:'Radio group'})).toBeInTheDocument();
+ fireEvent.change(v.getByLabelText('Choices (one per line)'),{target:{value:'Yes\nCafé €\nNo'}});
+ fireEvent.change(v.getByLabelText('Height (pt)'),{target:{value:'90'}});
+ fireEvent.click(v.getByRole('button',{name:'Preview field'}));
+ await waitFor(()=>expect(v.getByRole('button',{name:'Apply field'})).toBeEnabled());
+ expect(adapter.createFormField).toHaveBeenCalledWith('source',[0],0,expect.objectContaining({field:{kind:'radio',options:['Yes','Café €','No']}}));
+ fireEvent.change(v.getByLabelText('Choices (one per line)'),{target:{value:'Yes'}});
+ expect(v.getByRole('button',{name:'Apply field'})).toBeDisabled();expect(v.getByRole('button',{name:'Preview field'})).toBeDisabled();expect(onApply).not.toHaveBeenCalled();
+ await waitFor(()=>expect(adapter.closeDocument).toHaveBeenCalledWith('candidate'));
+});
+it('validates group count, labels and row height in the rotated view',()=>{
+ const p={...page,width:500,height:500};
+ const r:CreateFormFieldRequest={bounds:{x:20,y:20,width:60,height:180},rotation:90,name:'answer',label:'Answer',required:false,fontSize:12,field:{kind:'radio',options:['Yes','No']}};
+ expect(validateFieldDraft(p,r)).toBeNull();
+ expect(validateFieldDraft(p,{...r,bounds:{...r.bounds,width:20}})).toMatch(/taller/);
+ expect(validateFieldDraft(p,{...r,field:{kind:'radio',options:['One']}})).toMatch(/2–32/);
+ expect(validateFieldDraft(p,{...r,field:{kind:'radio',options:['One','One']}})).toMatch(/unique/);
+ expect(validateFieldDraft(p,{...r,field:{kind:'radio',options:['Yes','漢字']}})).toMatch(/Helvetica/);
+ expect(validateFieldDraft(p,{...r,field:{kind:'radio',options:Array.from({length:33},(_,i)=>String(i))}})).toMatch(/2–32/);
+});

@@ -1,6 +1,25 @@
 import {expect,it,vi} from "vitest";
 import {nativeAdapter} from "../src/editor/adapter";
 const ipc=vi.hoisted(()=>vi.fn());vi.mock("@tauri-apps/api/core",()=>({invoke:ipc}));
+it("omits an unchanged form font and forwards an explicit font with the full occurrence path",async()=>{
+ ipc.mockClear();ipc.mockResolvedValue({id:"derived"});
+ await nativeAdapter.replaceFormText!("source",2,[1,0,0],"Café old","Café edit");
+ expect(ipc).toHaveBeenLastCalledWith("replace_form_text",{sourceId:"source",pageIndex:2,objectPath:[1,0,0],expectedText:"Café old",replacement:"Café edit"});
+ await nativeAdapter.replaceFormText!("source",2,[1,0,0],"Café old","Cafè edit","font");
+ expect(ipc).toHaveBeenLastCalledWith("replace_form_text",{sourceId:"source",pageIndex:2,objectPath:[1,0,0],expectedText:"Café old",replacement:"Cafè edit",fontId:"font"});ipc.mockClear();
+});
+it("sends explicit paragraph color alongside other formatting",async()=>{
+ ipc.mockClear();ipc.mockResolvedValue({id:"preview"});const bounds={x:0,y:0,width:100,height:50};
+ await nativeAdapter.previewTextParagraph!("source",0,[0],"Old","New",bounds,16,"right",1.5,"font","#1A80EF");
+ expect(ipc).toHaveBeenLastCalledWith("preview_text_paragraph",{sourceId:"source",pageIndex:0,objectIndices:[0],expectedText:"Old",replacement:"New",bounds,fontSize:16,alignment:"right",lineSpacing:1.5,fontId:"font",color:"#1A80EF"});ipc.mockClear();
+});
+it("omits paragraph substitution by default and sends the explicit chosen font",async()=>{
+ const bounds={x:0,y:0,width:100,height:50};ipc.mockResolvedValue({id:"preview"});
+ await nativeAdapter.previewTextParagraph!("source",0,[0],"Old","New",bounds);
+ expect(ipc).toHaveBeenLastCalledWith("preview_text_paragraph",{sourceId:"source",pageIndex:0,objectIndices:[0],expectedText:"Old",replacement:"New",bounds});
+ await nativeAdapter.previewTextParagraph!("source",0,[0],"Old","New",bounds,16,"right",1.5,"font");
+ expect(ipc).toHaveBeenLastCalledWith("preview_text_paragraph",{sourceId:"source",pageIndex:0,objectIndices:[0],expectedText:"Old",replacement:"New",bounds,fontSize:16,alignment:"right",lineSpacing:1.5,fontId:"font"});ipc.mockClear();
+});
 it("sends explicit group membership and verified original to separate inspect and replace commands",async()=>{
  ipc.mockClear();ipc.mockResolvedValue({objectIndices:[2,3],text:"Hello world",fontName:"Helvetica",fontSize:12});
  await nativeAdapter.inspectTextGroup!("source",1,[2,3]);

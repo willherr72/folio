@@ -20,6 +20,7 @@ fn request(source: &DocumentInfo) -> ExportRequest {
     ExportRequest {
         flatten: false,
         pages: vec![PagePlan {
+            crop: None,
             id: "page".into(),
             source_id: source.id.clone(),
             page_index: 0,
@@ -31,11 +32,15 @@ fn request(source: &DocumentInfo) -> ExportRequest {
     }
 }
 fn cid_fixture(path: &Path, rotation: u16) {
+    cid_fixture_with_space(path, rotation, true);
+}
+fn cid_fixture_with_space(path: &Path, rotation: u16, include_space: bool) {
     let bytes = fs::read(fixture_path("DejaVuSerif-subset.ttf")).unwrap();
     let face = ttf_parser::Face::parse(&bytes, 0).unwrap();
     let mut chars: Vec<char> = "Old Cafe Edit café Neighbor safe ".chars().collect();
     chars.sort();
     chars.dedup();
+    if !include_space { chars.retain(|c| *c != ' '); }
     let mut map = vec![0u8; 512];
     let mut widths = Vec::new();
     let mut unicode=String::from("/CIDInit /ProcSet findresource begin 12 dict begin begincmap /CIDSystemInfo << /Registry (Adobe) /Ordering (UCS) /Supplement 0 >> def /CMapName /Fixture def /CMapType 2 def 1 begincodespacerange <0000> <FFFF> endcodespacerange\n");
@@ -75,6 +80,535 @@ fn cid_fixture(path: &Path, rotation: u16) {
     let root = pdf.add_object(dictionary! {"Type"=>"Catalog","Pages"=>pages});
     pdf.trailer.set("Root", root);
     pdf.save(path).unwrap();
+}
+
+fn subset_separator_fixture(path: &Path, rotation: u16) {
+    cid_fixture_with_space(path, rotation, false);
+    let mut pdf = Document::load(path).unwrap();
+    let page = *pdf.get_pages().values().next().unwrap();
+    let content = String::from_utf8(pdf.get_page_content(page)).unwrap().replace("30 240 Tm", "150 300 Tm");
+    let stream = pdf.add_object(Stream::new(dictionary!{}, content.into_bytes()));
+    pdf.get_dictionary_mut(page).unwrap().set("Contents", stream);
+    pdf.save(path).unwrap();
+}
+
+fn font_programs(bytes: &[u8]) -> Vec<Vec<u8>> {
+    let pdf = Document::load_mem(bytes).unwrap();
+    let mut programs:Vec<_> = pdf.objects.values().filter_map(|v|v.as_dict().ok())
+        .filter_map(|d|d.get(b"FontFile2").ok())
+        .map(|v|pdf.dereference(v).unwrap().1.as_stream().unwrap().get_plain_content().unwrap()).collect();
+    programs.sort();programs.dedup();programs
+}
+
+fn sparse_simple_fixture(path: &Path, source_text: &str) {
+    cid_fixture(path, 0);
+    let mut pdf = Document::load(path).unwrap();
+    let page = pdf.get_pages()[&1];
+    let fonts = pdf.get_dictionary(page).unwrap().get(b"Resources").unwrap().as_dict().unwrap()
+        .get(b"Font").unwrap().as_dict().unwrap();
+    let font_id = fonts.get(b"F1").unwrap().as_reference().unwrap();
+    let font = pdf.get_dictionary(font_id).unwrap();
+    let child = font.get(b"DescendantFonts").unwrap().as_array().unwrap()[0].as_reference().unwrap();
+    let descriptor = pdf.get_dictionary(child).unwrap().get(b"FontDescriptor").unwrap().clone();
+    let bytes = fs::read(fixture_path("DejaVuSerif-subset.ttf")).unwrap();
+    let face = ttf_parser::Face::parse(&bytes, 0).unwrap();
+    let mut widths = vec![Object::Integer(0); 256];
+    for c in ['O', 'd'] {
+        widths[c as usize] = Object::Real(face.glyph_hor_advance(face.glyph_index(c).unwrap()).unwrap() as f32 * 1000.0 / face.units_per_em() as f32);
+    }
+    pdf.objects.insert(font_id, dictionary! {"Type"=>"Font", "Subtype"=>"TrueType",
+        "BaseFont"=>"ABCDEF+DejaVuSerif", "Encoding"=>"WinAnsiEncoding",
+        "FirstChar"=>0, "LastChar"=>255, "Widths"=>widths, "FontDescriptor"=>descriptor}.into());
+    let content = pdf.add_object(Stream::new(dictionary!{}, format!(
+        "BT /F1 16 Tf 1 0 0 1 30 300 Tm ({source_text}) Tj ET BT /F2 16 Tf 1 0 0 1 30 240 Tm (Neighbor) Tj ET").into_bytes()));
+    pdf.get_dictionary_mut(page).unwrap().set("Contents", content);
+    pdf.save(path).unwrap();
+}
+
+#[test]
+fn sparse_winansi_edits_proven_codes_but_refuses_unproven_source_and_replacement() {
+    let _guard = TEST_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+    let temp = tempfile::tempdir().unwrap();
+    let engine = engine();
+    for text in ["Od", "Ol"] {
+        let path = temp.path().join(format!("sparse-{text}.pdf"));
+        sparse_simple_fixture(&path, text);
+        let source = engine.open_document(&path).unwrap();
+        let original = engine.source_bytes(&source.id).unwrap();
+        let runs = engine.list_occurrence_text_runs(&source.id, 0).unwrap().runs;
+        let run = &runs[0];
+        assert_eq!(run.text, text);
+        assert_eq!(run.supported, text == "Od", "{run:?}");
+        if text == "Od" {
+            let edit = engine.replace_text_occurrence(&source.id, &[0], 0, run.object_index, text, "Odd", None).unwrap();
+            let after = engine.list_occurrence_text_runs(&edit.document.id, 0).unwrap().runs;
+            assert_eq!(after[0].text, "Odd");
+            assert_eq!(after[0].font_name, run.font_name);
+            assert_eq!(after[1].text, runs[1].text);
+            assert_eq!(after[1].bounds, runs[1].bounds);
+            assert_eq!(font_programs(&engine.source_bytes(&edit.document.id).unwrap()), font_programs(&original));
+            engine.close_document(&edit.document.id).unwrap();
+            assert!(engine.replace_text_occurrence(&source.id, &[0], 0, run.object_index, text, "Ol", None).is_err());
+        } else {
+            assert!(engine.replace_text_occurrence(&source.id, &[0], 0, run.object_index, text, "Od", None).is_err());
+        }
+        assert_eq!(engine.source_bytes(&source.id).unwrap(), original);
+        engine.close_document(&source.id).unwrap();
+    }
+}
+
+fn shared_program_fixture(path: &Path, different_parent: bool, positioned: bool, collision: bool) {
+    cid_fixture(path, 0);
+    let mut pdf = Document::load(path).unwrap();
+    let page = pdf.get_pages()[&1];
+    let cid_id = pdf.get_dictionary(page).unwrap().get(b"Resources").unwrap().as_dict().unwrap()
+        .get(b"Font").unwrap().as_dict().unwrap().get(b"F1").unwrap().as_reference().unwrap();
+    let cid = pdf.get_dictionary(cid_id).unwrap().clone();
+    let child = cid.get(b"DescendantFonts").unwrap().as_array().unwrap()[0].as_reference().unwrap();
+    let descriptor = pdf.get_dictionary(child).unwrap().get(b"FontDescriptor").unwrap().clone();
+    let bytes = fs::read(fixture_path("DejaVuSerif-subset.ttf")).unwrap();
+    let face = ttf_parser::Face::parse(&bytes, 0).unwrap();
+    let mut widths = vec![Object::Integer(0); 256];
+    let mut chars: Vec<char> = "Old Edit café ".chars().collect();
+    chars.sort(); chars.dedup();
+    let mut cmap = format!("1 begincodespacerange <00> <FF> endcodespacerange {} beginbfchar\n", chars.len());
+    for c in chars {
+        let code = c as usize;
+        widths[code] = Object::Real(face.glyph_hor_advance(face.glyph_index(c).unwrap()).unwrap() as f32 * 1000.0 / face.units_per_em() as f32);
+        cmap.push_str(&format!("<{code:02X}> <{code:04X}>\n"));
+    }
+    cmap.push_str("endbfchar");
+    let unicode = pdf.add_object(Stream::new(dictionary!{}, cmap.into_bytes()));
+    let simple = pdf.add_object(dictionary!{"Type"=>"Font", "Subtype"=>"TrueType",
+        "BaseFont"=>"ABCDEF+DejaVuSerif", "Encoding"=>"WinAnsiEncoding",
+        "FirstChar"=>0, "LastChar"=>255, "Widths"=>widths, "FontDescriptor"=>descriptor,
+        "ToUnicode"=>unicode});
+    if different_parent { pdf.get_dictionary_mut(cid_id).unwrap().set("BaseFont", "Different Parent Name"); }
+    if collision {
+        // Same native identity/program but an invalid resource mapping cannot
+        // borrow the neighboring valid resource's proof.
+        let broken = pdf.add_object(Stream::new(dictionary!{}, b"not a cmap".to_vec()));
+        let mut alias = cid.clone(); alias.set("ToUnicode", broken);
+        let alias = pdf.add_object(alias);
+        pdf.get_dictionary_mut(page).unwrap().get_mut(b"Resources").unwrap().as_dict_mut().unwrap()
+            .get_mut(b"Font").unwrap().as_dict_mut().unwrap().set("F4", alias);
+    }
+    pdf.get_dictionary_mut(page).unwrap().get_mut(b"Resources").unwrap().as_dict_mut().unwrap()
+        .get_mut(b"Font").unwrap().as_dict_mut().unwrap().set("F3", simple);
+    let cid_show = if positioned { "[<004F> -15 <006C0064>] TJ" } else { "<004F006C0064> Tj" };
+    let simple_show = if positioned { "[(O) -15 (ld)] TJ" } else { "(Old) Tj" };
+    let content = pdf.add_object(Stream::new(dictionary!{}, format!(
+        "BT /F1 16 Tf 1 0 0 1 30 300 Tm {cid_show} ET BT /F2 16 Tf 1 0 0 1 30 240 Tm (Neighbor) Tj ET BT /F3 16 Tf 1 0 0 1 30 180 Tm {simple_show} ET").into_bytes()));
+    pdf.get_dictionary_mut(page).unwrap().set("Contents", content);
+    pdf.save(path).unwrap();
+}
+
+#[test]
+fn renderer_identity_distinguishes_same_program_simple_and_cid_resources() {
+    use folio_engine::{ParagraphAlignment, StyledParagraphLayoutRequest};
+    let _guard = TEST_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+    let temp = tempfile::tempdir().unwrap(); let engine = engine();
+    for different_parent in [false, true] { for positioned in [false, true] {
+        let label = format!("identity-{different_parent}-{positioned}");
+        let path = temp.path().join(format!("{label}.pdf"));
+        shared_program_fixture(&path, different_parent, positioned, false);
+        let source = engine.open_document(&path).unwrap();
+        let original = engine.source_bytes(&source.id).unwrap();
+        let before = engine.list_occurrence_text_runs(&source.id, 0).unwrap().runs;
+        assert_eq!(before.len(), 3);
+        assert_eq!(before[0].font_name, "ABCDEF+DejaVuSerif");
+        assert_eq!(before[2].font_name, "DejaVuSerif");
+        assert_eq!(font_programs(&original).len(), 1);
+        for index in [0, 2] {
+            let run = &before[index];
+            assert!(run.supported, "{label}: {run:?}");
+            assert_eq!(run.source_text.as_deref().unwrap_or(&run.text), "Old");
+            for paragraph in [false, true] {
+                let edited = if paragraph {
+                    let selection = engine.inspect_styled_paragraph(&source.id, 0, &[run.object_index]).unwrap();
+                    let mut draft = StyledParagraphLayoutRequest { baseline_anchor:None,object_indices:selection.object_indices,
+                        expected_text:selection.text, runs:selection.runs, style_changes:vec![], bounds:selection.bounds,
+                        alignment:ParagraphAlignment::Left, line_spacing:1.2 };
+                    draft.runs[0].text = "Edit".into();
+                    draft.bounds.width = 100.; draft.bounds.height = 40.;
+                    engine.preview_styled_paragraph_occurrence(&source.id, &[0], 0, &draft).unwrap().document
+                } else {
+                    engine.replace_text_occurrence(&source.id, &[0], 0, run.object_index, &run.text, "Edit", None).unwrap().document
+                };
+                let saved = temp.path().join(format!("{label}-{index}-{paragraph}.pdf"));
+                engine.export_pdf(request(&edited), &saved).unwrap();
+                let reopened = engine.open_document(&saved).unwrap();
+                let after = engine.list_occurrence_text_runs(&reopened.id, 0).unwrap().runs;
+                let changed = after.iter().find(|r| r.text.trim() == "Edit").unwrap();
+                assert_eq!(changed.font_name, run.font_name);
+                let neighbor = after.iter().find(|r| r.text == "Neighbor").unwrap();
+                assert_eq!(neighbor.bounds, before[1].bounds);
+                let untouched = after.iter().find(|r| r.text.trim() == "Old").unwrap();
+                assert_eq!(untouched.bounds, before[2 - index].bounds);
+                assert_eq!(font_programs(&fs::read(&saved).unwrap()), font_programs(&original));
+                if let Some(root) = std::env::var_os("FOLIO_FONT_IDENTITY_ARTIFACTS") {
+                    let root = PathBuf::from(root); fs::create_dir_all(&root).unwrap();
+                    for file in [&path, &saved] { fs::copy(file, root.join(file.file_name().unwrap())).unwrap(); }
+                }
+                engine.close_document(&reopened.id).unwrap(); engine.close_document(&edited.id).unwrap();
+            }
+        }
+        assert_eq!(engine.source_bytes(&source.id).unwrap(), original);
+        assert_eq!(fs::read(&path).unwrap(), original.as_ref());
+        engine.close_document(&source.id).unwrap();
+    }}
+}
+
+#[test]
+fn renderer_identity_collision_does_not_borrow_a_valid_mapping() {
+    let _guard = TEST_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+    let temp = tempfile::tempdir().unwrap(); let path = temp.path().join("collision.pdf");
+    shared_program_fixture(&path, false, false, true);
+    let engine = engine(); let source = engine.open_document(&path).unwrap();
+    let original = engine.source_bytes(&source.id).unwrap();
+    let run = engine.list_occurrence_text_runs(&source.id, 0).unwrap().runs.remove(0);
+    assert!(!run.supported);
+    assert!(engine.replace_text_occurrence(&source.id, &[0], 0, run.object_index, &run.text, "Edit", None).is_err());
+    assert_eq!(engine.source_bytes(&source.id).unwrap(), original);
+    engine.close_document(&source.id).unwrap();
+}
+
+#[test]
+fn renderer_identity_rejects_two_valid_but_different_repertoires() {
+    let _guard = TEST_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+    let temp = tempfile::tempdir().unwrap(); let engine = engine();
+    for mode in [0, 1, 2] {
+        let path = temp.path().join(format!("valid-collision-{mode}.pdf"));
+        shared_program_fixture(&path, false, false, false);
+        let mut pdf = Document::load(&path).unwrap();
+        let page = pdf.get_pages()[&1];
+        let id = pdf.get_dictionary(page).unwrap().get(b"Resources").unwrap().as_dict().unwrap()
+            .get(b"Font").unwrap().as_dict().unwrap().get(b"F1").unwrap().as_reference().unwrap();
+        let mut alias = pdf.get_dictionary(id).unwrap().clone();
+        let map_id = alias.get(b"ToUnicode").unwrap().as_reference().unwrap();
+        let text = String::from_utf8(pdf.get_object(map_id).unwrap().as_stream().unwrap().get_plain_content().unwrap()).unwrap();
+        let count = text.lines().find(|line| line.ends_with("beginbfchar")).unwrap().split_whitespace().next().unwrap().parse::<usize>().unwrap();
+        assert!(text.contains("<0066> <0066>\n"));
+        let text = text.replace("<0066> <0066>\n", "").replace(&format!("{count} beginbfchar"), &format!("{} beginbfchar", count-1));
+        let shorter = pdf.add_object(Stream::new(dictionary!{}, text.into_bytes()));
+        alias.set("ToUnicode", shorter);
+        if mode == 1 { pdf.objects.insert(id, alias.into()); }
+        else if mode == 2 {
+            let alias = pdf.add_object(alias);
+            pdf.get_dictionary_mut(page).unwrap().get_mut(b"Resources").unwrap().as_dict_mut().unwrap()
+                .get_mut(b"Font").unwrap().as_dict_mut().unwrap().set("F4", alias);
+        }
+        pdf.save(&path).unwrap();
+        let source = engine.open_document(&path).unwrap();
+        let original = engine.source_bytes(&source.id).unwrap();
+        let run = engine.list_occurrence_text_runs(&source.id, 0).unwrap().runs.remove(0);
+        assert_eq!(run.supported, mode != 2, "mode {mode}: {run:?}");
+        if mode == 2 {
+            assert!(run.reason.as_deref().unwrap().contains("ambiguous PDF font mappings"));
+            assert!(engine.replace_text_occurrence(&source.id, &[0], 0, run.object_index, &run.text, "Edit", None).is_err());
+        }
+        assert_eq!(engine.source_bytes(&source.id).unwrap(), original);
+        engine.close_document(&source.id).unwrap();
+    }
+}
+
+#[test]
+fn renderer_identity_allows_explicit_substitution_with_a_different_cid_parent_name() {
+    let _guard = TEST_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+    let temp = tempfile::tempdir().unwrap(); let path = temp.path().join("substitute-parent.pdf");
+    shared_program_fixture(&path, true, false, false);
+    let engine = engine(); let source = engine.open_document(&path).unwrap();
+    let original = engine.source_bytes(&source.id).unwrap();
+    let before = engine.list_occurrence_text_runs(&source.id, 0).unwrap().runs;
+    let font_bytes = fs::read(PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../tests/fixtures/corpus/fonts/DejaVuSerif.ttf")).unwrap();
+    let font = engine.fonts().register(font_bytes).unwrap();
+    let edited = engine.replace_text_occurrence(&source.id, &[0], 0, before[0].object_index, &before[0].text, "Cafè edit", Some(&font.id)).unwrap();
+    engine.fonts().remove(&font.id).unwrap();
+    let saved = temp.path().join("substituted.pdf");
+    engine.export_pdf(request(&edited.document), &saved).unwrap();
+    let reopened = engine.open_document(&saved).unwrap();
+    let after = engine.list_occurrence_text_runs(&reopened.id, 0).unwrap().runs;
+    assert_eq!(after[0].text, "Cafè edit");
+    assert!(after[0].supported, "{:?}", after[0].reason);
+    assert_eq!(after[1].bounds, before[1].bounds);
+    assert_eq!(after[1].text, before[1].text);
+    assert_eq!(after[2].bounds, before[2].bounds);
+    assert_eq!(after[2].text, before[2].text);
+    assert_eq!(engine.source_bytes(&source.id).unwrap(), original);
+    for id in [&reopened.id, &edited.document.id, &source.id] { engine.close_document(id).unwrap(); }
+}
+
+#[test]
+fn subset_without_space_mapping_edits_real_text_despite_generated_separator() {
+    let _guard = TEST_LOCK.lock().unwrap_or_else(|error| error.into_inner());
+    let temp = tempfile::tempdir().unwrap();
+    let path = temp.path().join("subset-no-space.pdf");
+    subset_separator_fixture(&path, 0);
+    let engine = engine();
+    let source = engine.open_document(&path).unwrap();
+    let original = engine.source_bytes(&source.id).unwrap();
+    let run = engine.list_occurrence_text_runs(&source.id, 0).unwrap().runs.remove(0);
+    assert_eq!(run.text, "Old ");
+    assert_eq!(run.source_text.as_deref(), Some("Old"));
+    assert!(run.supported, "Verified source text must be eligible: {:?}", run.reason);
+    let legacy = engine.replace_text(&source.id, 0, run.object_index, &run.text, "Edit").unwrap();
+    let complete = engine.replace_text_occurrence(&source.id, &[0], 0, run.object_index, &run.text, "Edit", None).unwrap();
+    for id in [&legacy.id, &complete.document.id] {
+        let after = engine.list_occurrence_text_runs(id, 0).unwrap().runs;
+        assert!(after[0].supported, "{:?}", after[0].reason);
+        assert_eq!(after[0].source_text.as_deref().unwrap_or(&after[0].text), "Edit");
+        assert_eq!(after[0].font_name, run.font_name);
+        assert_eq!(after[1].text, "Neighbor");
+        engine.close_document(id).unwrap();
+    }
+    let missing = engine.replace_text(&source.id, 0, run.object_index, &run.text, "Edit ").unwrap_err().to_string();
+    assert!(missing.contains("U+0020"), "{missing}");
+    assert_eq!(engine.source_bytes(&source.id).unwrap(), original);
+    engine.close_document(&source.id).unwrap();
+}
+
+#[test]
+fn subset_source_eligibility_preserves_saved_rotations_font_and_reediting() {
+    let _guard = TEST_LOCK.lock().unwrap_or_else(|error| error.into_inner());
+    let temp = tempfile::tempdir().unwrap();
+    let engine = engine();
+    for rotation in [0,90,180,270] {
+        let path = temp.path().join(format!("source-{rotation}.pdf"));
+        subset_separator_fixture(&path, rotation);
+        let original_file = fs::read(&path).unwrap();
+        let source = engine.open_document(&path).unwrap();
+        let original = engine.source_bytes(&source.id).unwrap();
+        let before = engine.list_occurrence_text_runs(&source.id, 0).unwrap().runs;
+        let run = &before[0];assert!(run.supported && run.can_substitute);
+        let legacy = engine.replace_text(&source.id,0,run.object_index,&run.text,"Edit").unwrap();
+        let complete = engine.replace_text_occurrence(&source.id,&[0],0,run.object_index,&run.text,"Edit",None).unwrap();
+        for (route,edited) in [("legacy",legacy),("complete",complete.document)] {
+            let output = temp.path().join(format!("saved-{rotation}-{route}.pdf"));
+            engine.export_pdf(request(&edited), &output).unwrap();
+            assert_eq!(font_programs(&fs::read(&output).unwrap()),font_programs(&original_file));
+            let reopened = engine.open_document(&output).unwrap();
+            let after = engine.list_occurrence_text_runs(&reopened.id,0).unwrap().runs;
+            assert!(after[0].supported);assert_eq!(after[0].source_text.as_deref().unwrap_or(&after[0].text),"Edit");
+            assert_eq!(after[1].text,before[1].text);assert_eq!(after[1].bounds,before[1].bounds);
+            let restored = engine.replace_text_occurrence(&reopened.id,&[0],0,after[0].object_index,&after[0].text,"Old",None).unwrap();
+            let restored_path=temp.path().join(format!("restored-{rotation}-{route}.pdf"));
+            engine.export_pdf(request(&restored.document), &restored_path).unwrap();
+            if let Some(root)=std::env::var_os("FOLIO_SUBSET_ARTIFACTS") {
+                let root=PathBuf::from(root);fs::create_dir_all(&root).unwrap();
+                for p in [&path,&output,&restored_path] { fs::copy(p,root.join(p.file_name().unwrap())).unwrap(); }
+            }
+            for id in [&edited.id,&reopened.id,&restored.document.id] {engine.close_document(id).unwrap();}
+        }
+        assert_eq!(engine.source_bytes(&source.id).unwrap(), original);
+        assert_eq!(fs::read(&path).unwrap(),original_file);
+        engine.close_document(&source.id).unwrap();
+    }
+}
+
+#[test]
+fn subset_source_eligibility_allows_explicit_substitution_for_real_missing_space() {
+    let _guard = TEST_LOCK.lock().unwrap_or_else(|error| error.into_inner());
+    let temp=tempfile::tempdir().unwrap();let engine=engine();
+    let font_bytes=fs::read(PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../tests/fixtures/corpus/fonts/DejaVuSerif.ttf")).unwrap();
+    let font=engine.fonts().register(font_bytes.clone()).unwrap();
+    for rotation in [0,90,180,270] {
+        let path=temp.path().join(format!("source-{rotation}.pdf"));subset_separator_fixture(&path,rotation);
+        let source=engine.open_document(&path).unwrap();let original=engine.source_bytes(&source.id).unwrap();
+        let run=engine.list_occurrence_text_runs(&source.id,0).unwrap().runs.remove(0);
+        let legacy=engine.replace_text_with_font(&source.id,0,run.object_index,&run.text,"Edit ",Some(&font.id)).unwrap();
+        let complete=engine.replace_text_occurrence(&source.id,&[0],0,run.object_index,&run.text,"Edit ",Some(&font.id)).unwrap();
+        for (route,edited) in [("legacy",legacy),("complete",complete.document)] {
+            let output=temp.path().join(format!("substituted-{rotation}-{route}.pdf"));
+            engine.export_pdf(request(&edited),&output).unwrap();
+            assert!(font_programs(&fs::read(&output).unwrap()).contains(&font_bytes));
+            let reopened=engine.open_document(&output).unwrap();
+            let after=engine.list_occurrence_text_runs(&reopened.id,0).unwrap().runs;
+            assert!(after[0].supported);assert_eq!(after[0].source_text.as_deref().unwrap_or(&after[0].text),"Edit ");
+            assert_eq!(after[1].source_text.as_deref().unwrap_or(&after[1].text),"Neighbor");
+            if let Some(root)=std::env::var_os("FOLIO_SUBSET_ARTIFACTS") {
+                let root=PathBuf::from(root);fs::create_dir_all(&root).unwrap();
+                fs::copy(&output,root.join(output.file_name().unwrap())).unwrap();
+            }
+            engine.close_document(&reopened.id).unwrap();engine.close_document(&edited.id).unwrap();
+        }
+        assert_eq!(engine.source_bytes(&source.id).unwrap(),original);engine.close_document(&source.id).unwrap();
+    }
+}
+
+#[test]
+fn subset_paragraph_inspection_uses_source_characters_not_generated_space() {
+    let _guard = TEST_LOCK.lock().unwrap_or_else(|error| error.into_inner());
+    let temp=tempfile::tempdir().unwrap();let path=temp.path().join("paragraph-subset.pdf");
+    subset_separator_fixture(&path,0);let engine=engine();let source=engine.open_document(&path).unwrap();
+    let original=engine.source_bytes(&source.id).unwrap();
+    let selection=engine.inspect_text_paragraph(&source.id,0,&[0]).unwrap();
+    assert_eq!(selection.text,"Old");
+    let styled=engine.inspect_styled_paragraph(&source.id,0,&[0]).unwrap();
+    assert_eq!(styled.text,"Old");
+    assert_eq!(engine.source_bytes(&source.id).unwrap(),original);
+    engine.close_document(&source.id).unwrap();
+}
+
+#[test]
+fn subset_styled_paragraph_publication_uses_verified_output_operands() {
+    let _guard = TEST_LOCK.lock().unwrap_or_else(|error| error.into_inner());
+    let temp=tempfile::tempdir().unwrap();let path=temp.path().join("paragraph-subset.pdf");
+    subset_separator_fixture(&path,0);let engine=engine();let source=engine.open_document(&path).unwrap();
+    let selection=engine.inspect_styled_paragraph(&source.id,0,&[0]).unwrap();
+    let mut draft=folio_engine::StyledParagraphLayoutRequest {
+        baseline_anchor:None,object_indices:selection.object_indices,expected_text:selection.text,runs:selection.runs,
+        style_changes:vec![],bounds:selection.bounds,alignment:folio_engine::ParagraphAlignment::Left,line_spacing:1.2,
+    };
+    draft.runs[0].text="Edit".into();
+    draft.bounds=engine.fit_styled_paragraph(&source.id,0,&draft).unwrap();
+    let mut missing=draft.clone();missing.runs[0].text="Edit Old".into();
+    assert!(engine.preview_styled_paragraph(&source.id,0,&missing).unwrap_err().to_string().contains("U+0020"));
+    assert!(engine.preview_text_paragraph(&source.id,0,&[0],"Old","Edit Old",&draft.bounds).unwrap_err().to_string().contains("U+0020"));
+    let edited=engine.preview_styled_paragraph(&source.id,0,&draft).unwrap();
+    let after=engine.list_text_runs(&edited.id,0).unwrap().runs;
+    let run=after.iter().find(|run|run.text.trim()=="Edit").unwrap();
+    assert_eq!(engine.inspect_styled_paragraph(&edited.id,0,&[run.object_index]).unwrap().text,"Edit");
+    engine.close_document(&edited.id).unwrap();engine.close_document(&source.id).unwrap();
+}
+
+#[test]
+fn subset_paragraph_modes_preserve_fonts_neighbors_and_saved_replay_in_rotations() {
+    use folio_engine::{AnnotationRect,ParagraphAlignment,StyledParagraphLayoutRequest,StyledParagraphRun};
+    let _guard = TEST_LOCK.lock().unwrap_or_else(|error| error.into_inner());
+    let temp=tempfile::tempdir().unwrap();let engine=engine();
+    for rotation in [0,90,180,270] { for styled in [false,true] {
+        let mode=if styled {"styled"} else {"uniform"};
+        let path=temp.path().join(format!("source-{rotation}-{mode}.pdf"));subset_separator_fixture(&path,rotation);
+        let source=engine.open_document(&path).unwrap();let original=engine.source_bytes(&source.id).unwrap();
+        let before=engine.list_text_runs(&source.id,0).unwrap().runs;
+        assert_eq!(engine.suggest_text_paragraph(&source.id,0,0,&before[0].text).unwrap().text,"Old");
+        assert_eq!(engine.suggest_styled_paragraph(&source.id,0,0,&before[0].text).unwrap().text,"Old");
+        let (x,y,width,height)=match rotation {0=>(30.,80.,100.,60.),90=>(260.,30.,60.,100.),180=>(170.,260.,100.,60.),270=>(80.,170.,60.,100.),_=>unreachable!()};
+        let area=AnnotationRect{x,y,width,height};
+        let edited=if styled {
+            let draft=StyledParagraphLayoutRequest{baseline_anchor:None,object_indices:vec![0],expected_text:"Old".into(),runs:vec![StyledParagraphRun{text:"Edit".into(),style_id:0}],style_changes:vec![],bounds:area.clone(),alignment:ParagraphAlignment::Left,line_spacing:1.2};
+            engine.preview_styled_paragraph(&source.id,0,&draft).unwrap()
+        } else {engine.preview_text_paragraph(&source.id,0,&[0],"Old","Edit",&area).unwrap()};
+        let saved=temp.path().join(format!("saved-{rotation}-{mode}.pdf"));engine.export_pdf(request(&edited),&saved).unwrap();
+        let reopened=engine.open_document(&saved).unwrap();let after=engine.list_text_runs(&reopened.id,0).unwrap().runs;
+        assert_eq!(font_programs(&fs::read(&saved).unwrap()),font_programs(&original));
+        let neighbor=after.iter().find(|run|run.text.trim()=="Neighbor").unwrap();assert_eq!(neighbor.bounds,before[1].bounds);assert_eq!(neighbor.font_name,before[1].font_name);
+        let run=after.iter().find(|run|run.text.trim()=="Edit").unwrap();assert_eq!(run.font_name,before[0].font_name);
+        let replay=if styled {
+            let s=engine.suggest_styled_paragraph(&reopened.id,0,run.object_index,&run.text).unwrap();assert_eq!(s.text,"Edit");assert_eq!(s.bounds,area);
+            let draft=StyledParagraphLayoutRequest{baseline_anchor:None,object_indices:s.object_indices,expected_text:s.text,runs:s.runs,style_changes:vec![],bounds:s.bounds,alignment:s.alignment.unwrap(),line_spacing:s.line_spacing.unwrap()};
+            engine.preview_styled_paragraph(&reopened.id,0,&draft).unwrap()
+        } else {
+            let s=engine.suggest_text_paragraph(&reopened.id,0,run.object_index,&run.text).unwrap();assert_eq!(s.text,"Edit");assert_eq!(s.bounds,area);
+            engine.preview_text_paragraph(&reopened.id,0,&s.object_indices,&s.text,&s.text,&s.bounds).unwrap()
+        };
+        assert!(engine.render_page(&reopened.id,0,800).unwrap()==engine.render_page(&replay.id,0,800).unwrap(),"Replay pixels: {rotation} {mode}");
+        let repeated=temp.path().join(format!("repeated-{rotation}-{mode}.pdf"));engine.export_pdf(request(&replay),&repeated).unwrap();
+        if let Some(root)=std::env::var_os("FOLIO_SUBSET_PARAGRAPH_ARTIFACTS") {let root=PathBuf::from(root);fs::create_dir_all(&root).unwrap();for file in [&path,&saved,&repeated] {fs::copy(file,root.join(file.file_name().unwrap())).unwrap();}}
+        assert_eq!(engine.source_bytes(&source.id).unwrap(),original);assert_eq!(fs::read(&path).unwrap(),original.as_ref());
+        for id in [&source.id,&edited.id,&reopened.id,&replay.id] {engine.close_document(id).unwrap();}
+    }}
+}
+
+#[test]
+fn subset_source_eligibility_retains_appearance_and_missing_code_refusals() {
+    let _guard = TEST_LOCK.lock().unwrap_or_else(|error| error.into_inner());
+    let temp = tempfile::tempdir().unwrap();let engine=engine();
+    for case in ["stroke","transparent","singular","actual-space","unverified-font"] {
+        let path=temp.path().join(format!("{case}.pdf"));subset_separator_fixture(&path,0);
+        let mut pdf=Document::load(&path).unwrap();let page=*pdf.get_pages().values().next().unwrap();
+        let mut content=String::from_utf8(pdf.get_page_content(page)).unwrap();
+        match case {
+            "stroke"=>content=content.replacen("BT /F1","BT 2 Tr /F1",1),
+            "transparent"=>{
+                content=content.replacen("BT /F1","/Fade gs BT /F1",1);
+                pdf.get_dictionary_mut(page).unwrap().get_mut(b"Resources").unwrap().as_dict_mut().unwrap()
+                    .set("ExtGState",dictionary!{"Fade"=>dictionary!{"ca"=>0.5,"CA"=>0.5}});
+            },
+            "singular"=>content=content.replacen("1 0 0 1 30 300 Tm","0 0 0 1 30 300 Tm",1),
+            "actual-space"=>content=content.replacen("004F006C0064","004F0020006C0064",1),
+            "unverified-font"=>{
+                let id=pdf.get_dictionary(page).unwrap().get(b"Resources").unwrap().as_dict().unwrap()
+                    .get(b"Font").unwrap().as_dict().unwrap().get(b"F1").unwrap().as_reference().unwrap();
+                pdf.get_dictionary_mut(id).unwrap().remove(b"ToUnicode");
+            },
+            _=>unreachable!(),
+        }
+        let stream=pdf.add_object(Stream::new(dictionary!{},content.into_bytes()));
+        pdf.get_dictionary_mut(page).unwrap().set("Contents",stream);pdf.save(&path).unwrap();
+        let source=engine.open_document(&path).unwrap();let original=engine.source_bytes(&source.id).unwrap();
+        let run=engine.list_occurrence_text_runs(&source.id,0).unwrap().runs.remove(0);
+        assert!(!run.supported,"{case}: {run:?}");
+        assert!(engine.replace_text_occurrence(&source.id,&[0],0,run.object_index,&run.text,"Edit",None).is_err(),"{case}");
+        assert!(engine.inspect_text_paragraph(&source.id,0,&[run.object_index]).is_err(),"uniform {case}");
+        assert!(engine.inspect_styled_paragraph(&source.id,0,&[run.object_index]).is_err(),"styled {case}");
+        assert_eq!(engine.source_bytes(&source.id).unwrap(),original);
+        engine.close_document(&source.id).unwrap();
+    }
+}
+
+#[test]
+fn generated_separator_with_verified_cid_font_preserves_real_operand_text() {
+    let _guard = TEST_LOCK.lock().unwrap_or_else(|error| error.into_inner());
+    let temp = tempfile::tempdir().unwrap();
+    let path = temp.path().join("cid-separator.pdf");
+    cid_fixture(&path, 0);
+    let mut pdf = Document::load(&path).unwrap();
+    let page = *pdf.get_pages().values().next().unwrap();
+    let content = String::from_utf8(pdf.get_page_content(page)).unwrap()
+        .replace("30 240 Tm", "150 300 Tm");
+    let stream = pdf.add_object(Stream::new(dictionary!{}, content.into_bytes()));
+    pdf.get_dictionary_mut(page).unwrap().set("Contents", stream);
+    pdf.save(&path).unwrap();
+    let engine = engine();
+    let source = engine.open_document(&path).unwrap();
+    let original = engine.source_bytes(&source.id).unwrap();
+    let run = engine.list_occurrence_text_runs(&source.id, 0).unwrap().runs.remove(0);
+    assert_eq!(run.text, "Old ");
+    assert_eq!(run.source_text.as_deref(), Some("Old"));
+    assert!(run.supported, "{:?}", run.reason);
+    let edited = engine.replace_text_occurrence(&source.id, &[0], 0, run.object_index, &run.text, "Edit", None).unwrap();
+    let after = engine.list_occurrence_text_runs(&edited.document.id, 0).unwrap().runs;
+    assert_eq!(after[0].source_text.as_deref().unwrap_or(&after[0].text), "Edit");
+    assert_eq!(after[0].font_name, run.font_name);
+    assert_eq!(after[1].text, "Neighbor");
+    assert_eq!(engine.source_bytes(&source.id).unwrap(), original);
+    engine.close_document(&edited.document.id).unwrap();
+    engine.close_document(&source.id).unwrap();
+}
+
+#[test]
+fn oversized_embedded_operand_does_not_hide_or_block_a_valid_neighbor() {
+    let _guard = TEST_LOCK.lock().unwrap_or_else(|error| error.into_inner());
+    let temp = tempfile::tempdir().unwrap();
+    let engine = engine();
+    for positioned in [false, true] {
+        let path = temp.path().join(format!("oversized-{positioned}.pdf"));
+        cid_fixture(&path, 0);
+        let mut pdf = Document::load(&path).unwrap();
+        let page = *pdf.get_pages().values().next().unwrap();
+        let hex = "004F".repeat(5000);
+        let show = if positioned { format!("[<{}> 0 <{}>] TJ", &hex[..10000], &hex[10000..]) } else { format!("<{hex}> Tj") };
+        let content = format!("BT /F1 0.01 Tf 1 0 0 1 20 300 Tm {show} ET BT /F2 12 Tf 1 0 0 1 30 240 Tm (Neighbor) Tj ET");
+        let stream = pdf.add_object(Stream::new(dictionary!{}, content.into_bytes()));
+        pdf.get_dictionary_mut(page).unwrap().set("Contents", stream);
+        pdf.save(&path).unwrap();
+        let source = engine.open_document(&path).unwrap();
+        let original = engine.source_bytes(&source.id).unwrap();
+        let before = engine.list_occurrence_text_runs(&source.id, 0).unwrap().runs;
+        assert_eq!(before.len(), 2);
+        assert!(!before[0].supported);
+        assert!(before[0].source_text.is_none());
+        assert!(before[1].supported, "{:?}", before[1].reason);
+        let edited = engine.replace_text_occurrence(&source.id, &[0], 0, before[1].object_index, &before[1].text, "safe", None).unwrap();
+        let after = engine.list_occurrence_text_runs(&edited.document.id, 0).unwrap().runs;
+        assert_eq!(after[0].text, before[0].text);
+        assert_eq!(after[0].bounds, before[0].bounds);
+        assert_eq!(after[1].text, "safe");
+        assert_eq!(engine.source_bytes(&source.id).unwrap(), original);
+        engine.close_document(&edited.document.id).unwrap();
+        engine.close_document(&source.id).unwrap();
+    }
 }
 
 #[test]
@@ -404,7 +938,14 @@ fn winansi_unicode_subtables_must_agree_even_for_a_new_replacement_character() {
     let _guard = TEST_LOCK.lock().unwrap_or_else(|error| error.into_inner());
     let temp = tempfile::tempdir().unwrap();
     let engine = engine();
-    for kind in ["subset", "conflicting-cmap", "missing-cmap"] {
+    for (kind, omit_unicode) in [
+        ("subset", false),
+        ("conflicting-cmap", false),
+        ("missing-cmap", false),
+        ("subset", true),
+        ("conflicting-cmap", true),
+        ("missing-cmap", true),
+    ] {
         let conflicting = kind != "subset";
         let path = temp.path().join(format!("winansi-{kind}.pdf"));
         cid_fixture(&path, 0);
@@ -466,6 +1007,9 @@ fn winansi_unicode_subtables_must_agree_even_for_a_new_replacement_character() {
             .unwrap()
             .set_content(program);
         pdf.objects.insert(font,dictionary!{"Type"=>"Font","Subtype"=>"TrueType","BaseFont"=>"ABCDEF+DejaVuSerif","Encoding"=>"WinAnsiEncoding","FontDescriptor"=>child.get(b"FontDescriptor").unwrap().clone(),"FirstChar"=>0,"LastChar"=>255,"Widths"=>widths,"ToUnicode"=>unicode}.into());
+        if omit_unicode {
+            pdf.get_dictionary_mut(font).unwrap().remove(b"ToUnicode");
+        }
         let page = *pdf.get_pages().values().next().unwrap();
         let content = pdf
             .get_dictionary(page)

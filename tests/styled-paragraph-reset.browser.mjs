@@ -1,0 +1,11 @@
+import {chromium,expect} from '@playwright/test';
+import {mkdirSync,writeFileSync} from 'node:fs';import {resolve} from 'node:path';
+const root=resolve('artifacts/paragraph-highlights-20261024/reset-browser');mkdirSync(root,{recursive:true});
+const browser=await chromium.launch({headless:true}),page=await browser.newPage({viewport:{width:1100,height:850}}),errors=[],checks=[];page.on('pageerror',e=>errors.push(e.message));
+const button=name=>page.getByRole('button',{name,exact:true}),field=name=>page.getByRole('spinbutton',{name,exact:true}),editor=page.getByRole('textbox',{name:'Paragraph text',exact:true});
+try{
+ await page.goto('http://127.0.0.1:1442/tests/fixtures/styled-paragraph-dialog.html');await expect(editor).toHaveText('one two');await editor.focus();await page.keyboard.press('Control+End');await page.keyboard.type(' draft');
+ await field('Left (pt)').fill('');await field('Area width (pt)').fill('');await button('Reset position').click();await expect(field('Left (pt)')).toHaveValue('20');await expect(field('Top (pt)')).toHaveValue('30');await expect(field('Area width (pt)')).toHaveValue('');await expect(button('Preview paragraph')).toBeDisabled();await expect(editor).toHaveText('one two draft');await field('Area width (pt)').fill('200');await expect(button('Preview paragraph')).toBeEnabled();await button('Undo').click();await expect(editor).toHaveText('one two');checks.push('no-op position reset restores coordinates without discarding draft, clearing invalid width, or inserting an undo step');
+ await field('Top (pt)').fill('60');await field('Left (pt)').fill('');await button('Reset position').click();await expect(field('Left (pt)')).toHaveValue('20');await expect(field('Top (pt)')).toHaveValue('30');await button('Undo').click();await expect(field('Top (pt)')).toHaveValue('60');await expect(field('Left (pt)')).toHaveValue('20');checks.push('real position reset remains one undoable geometry change');
+ expect(errors).toEqual([]);writeFileSync(resolve(root,'results.json'),JSON.stringify({passed:true,checks,errors},null,2));console.log(JSON.stringify({passed:true,checks}));
+}catch(error){writeFileSync(resolve(root,'failure.json'),JSON.stringify({error:String(error.stack),checks,errors},null,2));await page.screenshot({path:resolve(root,'failure.png')});throw error;}finally{await browser.close();}

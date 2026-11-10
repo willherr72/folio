@@ -1,0 +1,27 @@
+# Bounded parse reuse within native text requests
+
+Continue Folio toward everyday commercial-editor usefulness by reducing the measured full-source inspection/publication cost without weakening PDF preservation. Native diagnosis checkpoint192b0be1317ba0a55ca0cb3361eaad9876df1b194b4e2f9bf66c697695535678 binds baseline3365a9a and optimized probe464090e2. Accepted portable036 and launcher remain unchanged until a separately qualified integration. User standing autonomy opts out of design questions; execute inline in the existing isolated worktree, without commit/push/publication.
+
+## Design choice
+
+Use a thread-local cache scoped to a complete-source text discovery/replacement operation. Share successful immutable parse templates through read-only views, returning independent owned Documents for mutation. An explicit request-context parameter through every parser caller would be more invasive; a persistent per-source/history cache would retain graphs across100 Undo states and conflict with the memory goal. Scoped reuse attacks the observed repeat work while preserving current ownership and policy checks.
+
+Cache keys require exact input bytes and one of three fixed loader policies: strict64MiB, compatible64MiB or compatible16MiB per-stream decompression, with all other options at their existing defaults. Do not merge policies, passwords, filters or skip-decryption variants. Existing outer source-size guards, error mappings and all post-load validation stay in place. Do not cache errors, encryption state, caller validation results or mutable document instances. Ineligible input follows the identical uncached parser path.
+
+The scope is entered by complete-source list_transaction_text_runs and replace_text_occurrence. Nested scopes share only their current thread's cache; last scope destruction clears it on success, error or unwind. Separate requests/threads cannot share entries. A generation prevents stale parser completion from filling a later scope.
+
+At most two entries: encoded input64KiB through8MiB, aggregate encoded keys8MiB, aggregate charged owned model payload/overhead16MiB and100000 actual PDF Object values, with direct nesting64. Count xref/object-map entries, keys, strings, arrays, dictionaries and stream contents before cloning. Skip documents with encryption state or unexpected populated bookmark tables. These are explicit admission/accounting limits, not allocator/continuous process-peak guarantees. Evict least recently used entries when needed; no disk/history/source eviction. Small/oversized/object-dense input remains supported without caching.
+
+## Validation and performance
+
+Write functional failing tests against a no-reuse implementation first. Cover parse-once within a scope, exact-byte/policy separation, independently mutable clones, nested/thread/error/unwind cleanup, stale completion, two-entry/LRU/aggregate-byte/model/node/depth limits, errors retried, ineligible inputs uncached, real strict-versus-repair parsing and unchanged16/64MiB policies. Tests use the actual patched lopdf; no parser policy is guessed or relaxed.
+
+Build the optimized unchanged native probe on the new implementation. Run fresh before/after control and observed seven-edit workloads on the same generated300/2-page fixtures, same renderer/profile/driver and copied audit/analysis code. Baseline comes from its sealed executable, not recycled timings. Independently check every saved page's raw glyphs/boxes/rotation and whole RGB72/144dpi against source/golden and pairs. Report scope, first-use/repeated timings and ordering variation; accept the optimization only with measured benefit and no substantive small-document regression.
+
+Run affected native/default compilation tests plus a normal compiled desktop/history acceptance with the original100-action history and memory/fidelity targets. Preserve all previous failures/bytes; no compiler/tests/resource workloads overlap. One final review, inline fixes and source/binary/helper/output checkpoint follow. Do not silently promote an instrumented executable or claim general producer, printing, peak memory or Adobe/Foxit parity.
+
+
+Evidence-led representation amendment: the initial counter charged dictionary keys and xref records as PDF values, rejecting the measured source despite its77,440 actual Object values and11,978,131 charged model bytes. Keys/xrefs/container storage remain fully charged to the unchanged16MiB model cap, with a separate100000xref-record bound. Different policies still independently parse once; only complete bit/order-sensitive equality permits sharing the one immutable template and recording that validated policy. No policy is inferred, failed parse cached, or performance/history/memory gate relaxed. Numeric caps are unchanged; two same-source policy clones no longer consume duplicate model storage.
+
+
+Read-only architecture amendment after correctly bound performance3 failed: inspection callers receive immutable shared Arc<Document> views, while writable load explicitly materializes an independent owned Document. SourceForm OnceCell stores that read view and exposes only borrowed Cow data. Primary-template retention prevents transient output parsing from evicting the hot original under fixed budgets; unrelated large inputs remain uncached. Scope bounds/error/policy/model equality remain, and caller-owned views can outlive the scope just as prior owned parses could; the cache itself retains nothing after its final guard. Tests now24, including pointer sharing, mutation separation and view lifetime.

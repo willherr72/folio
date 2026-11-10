@@ -1,0 +1,45 @@
+{
+  "purpose": "Synthetic isolated choice appearance fixtures; never user documents",
+  "fixtures": {
+    "combo-source.pdf": {
+      "source": "artifacts/form-choice-recon-20261025/probe-normalized/combo-selected-needFalse-saved.pdf",
+      "sha256": "84c4e9d049c05d93859f50369c5487972308ecb291a93ff753ef7810ac44c923"
+    },
+    "combo-generated.pdf": {
+      "source": "artifacts/form-choice-recon-20261025/probe-normalized/combo-selected-needFalse-changed-saved.pdf",
+      "sha256": "7a463f01b31ad2cfc60eecac7e62f1d71b3f2319a72bfbd2ee5c245d8241b6d5"
+    },
+    "list-source.pdf": {
+      "source": "artifacts/form-choice-recon-20261025/probe-normalized/list-selected-needFalse-saved.pdf",
+      "sha256": "609566520895c7721e36bb0f4cdb81a1534ae05106679e8e75999bb570175d6a"
+    },
+    "list-generated.pdf": {
+      "source": "artifacts/form-choice-recon-20261025/probe-normalized/list-selected-needFalse-changed-saved.pdf",
+      "sha256": "2790eee54d7308ac0bcbd7d78c6780e131f26b0a2fbab5c45356fbb1ec53ad57"
+    },
+    "empty-source.pdf": {
+      "source": "artifacts/form-choice-recon-20261025/probe-normalized/combo-empty-needFalse-saved.pdf",
+      "sha256": "55bd5ed4b6a2aa41ea7b75230716d19a30793f9a573b6bae5a0fff7e10360659"
+    },
+    "empty-generated.pdf": {
+      "source": "artifacts/form-choice-recon-20261025/probe-normalized/combo-empty-needFalse-changed-saved.pdf",
+      "sha256": "eaab881eacac48c8c96a74e9af04cfe6c5c6745e4655073f5254bfce530109ac"
+    },
+    "free-source.pdf": {
+      "source": "artifacts/form-choice-recon-20261025/probe-normalized/combo-free-needFalse-saved.pdf",
+      "sha256": "c75513ff24698816a9049a84c8109651f1dc39075022dde89f327f602e552168"
+    },
+    "free-generated.pdf": {
+      "source": "artifacts/form-choice-recon-20261025/probe-normalized/combo-free-needFalse-changed-saved.pdf",
+      "sha256": "b2978955d93356d5a204abea362e4295651eb97d335f1ced3f40b748026a6aa3"
+    },
+    "artwork-source.pdf": {
+      "source": "artifacts/form-choice-recon-20261025/probe-artwork/original.pdf",
+      "sha256": "7bace240eceb4d1f82a3f9044598b4bd71065f3086158423b532ca2fffb93b8e"
+    },
+    "artwork-generated.pdf": {
+      "source": "artifacts/form-choice-recon-20261025/probe-artwork/generated-True.pdf",
+      "sha256": "536132c2db58ddb39162466f3e61602c27d4f2195833292b08996e98da34e5a4"
+    }
+  }
+}

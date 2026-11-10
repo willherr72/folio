@@ -1,0 +1,20 @@
+.paragraph-page-preview {display:flex;flex-direction:column;min-width:0;min-height:0;flex:1.25;gap:10px;padding:0 24px 20px 0;}
+.paragraph-preview-toolbar {display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;}
+.paragraph-comparison {display:flex;gap:4px;}
+.paragraph-comparison button[aria-pressed="true"] {border-color:var(--accent);background:var(--panel);}
+.paragraph-preview-toolbar label {display:flex;align-items:center;gap:7px;color:var(--muted);font-size:12px;}
+.paragraph-preview-toolbar select {padding:7px;border:1px solid var(--line);border-radius:6px;background:var(--control);color:var(--ink);}
+.paragraph-preview-caption {margin:0;color:var(--muted);font-size:12px;line-height:1.5;}
+.paragraph-page-preview .existing-text-error {font-size:13px;color:var(--danger,#a33127);}
+.paragraph-page-scroll {min-height:220px;max-height:65vh;overflow:auto;border:1px solid var(--line);background:#d3d0ca;}
+.paragraph-page-surface {position:relative;min-width:100%;background:white;line-height:0;}
+.paragraph-page-surface > img {display:block;width:100%;height:100%;user-select:none;}
+.paragraph-page-targets {position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;}
+.paragraph-piece-target {fill:transparent;stroke:#8b5540;stroke-width:1;stroke-opacity:.5;vector-effect:non-scaling-stroke;cursor:pointer;pointer-events:auto;}
+.paragraph-piece-target.selected {fill:rgba(49,110,196,.18);stroke:#316ec4;stroke-opacity:1;}
+.paragraph-piece-target:hover,.paragraph-piece-target:focus-visible {stroke-width:2;stroke-opacity:1;fill:rgba(49,110,196,.25);outline:none;}
+.paragraph-piece-target[aria-disabled="true"] {cursor:not-allowed;stroke:#777;stroke-dasharray:2 3;stroke-opacity:.6;stroke-width:1;fill:transparent;}
+.paragraph-area-target {fill:none;stroke:#316ec4;stroke-width:1.5;stroke-dasharray:6 3;vector-effect:non-scaling-stroke;pointer-events:none;}
+.paragraph-area-move {fill:rgba(49,110,196,.04);pointer-events:all;cursor:grab;touch-action:none;}
+.paragraph-area-move.dragging {cursor:grabbing;fill:rgba(49,110,196,.12);}
+@media(max-width:700px){.paragraph-page-preview{padding:0 24px 20px;}.paragraph-page-scroll{max-height:55vh;}}

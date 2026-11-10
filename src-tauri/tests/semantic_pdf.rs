@@ -197,6 +197,7 @@ fn semantic_unicode_and_visible_outlines_survive_quarter_turns_and_native_export
                     ExportRequest {
                         flatten: false,
                         pages: vec![PagePlan {
+                            crop: None,
                             id: "page".into(),
                             source_id: source.id.clone(),
                             page_index: 0,
@@ -534,6 +535,7 @@ fn wide_semantic_codes_preserve_unicode_geometry_and_native_save_at_all_rotation
                     ExportRequest {
                         flatten: false,
                         pages: vec![PagePlan {
+                            crop: None,
                             id: "wide".into(),
                             source_id: source.id.clone(),
                             page_index: 0,
@@ -679,6 +681,7 @@ fn editor_shaped_export_reopens_flattens_and_rejects_tampered_metadata() {
         for rotation in [0, 90, 180, 270] {
             let overlay:Overlay=serde_json::from_value(serde_json::json!({"type":"text","id":"shape","x":250,"y":250,"text":text,"fontSize":24,"fontId":asset.info.id,"color":"#cc4422","rotation":rotation,"shaping":{"version":1,"direction":"auto","ligatures":true}})).unwrap();
             let plan = PagePlan {
+                crop: None,
                 id: "page".into(),
                 source_id: source.id.clone(),
                 page_index: 0,
@@ -938,6 +941,7 @@ fn editor_shaped_crop_and_intrinsic_rotation_matrix_preserves_geometry_and_ink()
                     }
                 };
                 let plan = PagePlan {
+                    crop: None,
                     id: "page".into(),
                     source_id: source.id.clone(),
                     page_index: 0,

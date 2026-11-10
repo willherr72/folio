@@ -1,0 +1,19 @@
+{
+  "package": "jpeg-decoder",
+  "version": "0.3.2",
+  "archiveSha256": "00810f1d8b74be64b13dbf3db89ac67740615d6c891f0e7b6179326533011a07",
+  "source": "https://crates.io/api/v1/crates/jpeg-decoder/0.3.2/download",
+  "modifiedFiles": [
+    {
+      "path": ".gitignore",
+      "upstreamSha256": "aea7ee9b968d1bcb76f04a6a089eceb631b3af6c3d72c001e3ee5fae8052d8d6",
+      "patchedSha256": "ecabeb106105cd82283637258d567c42b91ae0ae11e6dc14ea310a99bb350ee3"
+    },
+    {
+      "path": "src/huffman.rs",
+      "upstreamSha256": "80df6386478375e99614c4639af004aede2927763645b0a49df6b6d083eef5f0",
+      "patchedSha256": "fb9d69774922e6f76dcffe380fa9188eb82011ee944eeca9b3bd3e3dd654f683"
+    }
+  ],
+  "addedFiles": []
+}

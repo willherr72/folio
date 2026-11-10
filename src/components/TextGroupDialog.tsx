@@ -79,7 +79,7 @@ export function TextGroupDialog({anchor,runs,busy,error,loading=false,onInspect,
         {!consecutive && <p>Select consecutive pieces, including the text between them.</p>}
         <button type="button" className="button text-group-check" disabled={!canCheck} onClick={()=>void check()}>{checking ? "Checking selection…" : "Check selection"}</button>
         {preview && <>
-          <p className="existing-text-font">{preview.fontName} · {Number(preview.fontSize.toFixed(2))} pt</p>
+          <p className="existing-text-font">{preview.fontDisplayName??preview.fontName} · {Number((preview.displayFontSize??preview.fontSize).toFixed(2))} pt</p>
           <p className="existing-text-original" aria-label="Original text">{preview.text}</p>
           <label>Replacement text<input ref={input} value={replacement} maxLength={1000} readOnly={busy} aria-describedby={`${hintId}${message ? ` ${errorId}` : ""}`} aria-invalid={!!message}
             onChange={event=>{if(!busy){setReplacement(event.target.value);setPasteError(null);setCheckError(null);onDraftChange?.();}}}

@@ -1,6 +1,34 @@
 use folio_engine::{DocumentInfo, ExportRequest, PagePlan, PdfEngine};
 use lopdf::{dictionary, Document, Stream};
 use std::path::{Path, PathBuf};
+#[path="support/protected_fixture.rs"]
+mod protected_fixture;
+
+#[test]
+fn protected_shared_form_edit_retains_permissions_and_page_provenance() {
+    use folio_engine::{EngineError,protection::unlock_pdf};
+    let temp=tempfile::tempdir().unwrap();let path=temp.path().join("shared.pdf");fixture(&path,"Old");
+    let original=protected_fixture::encrypt(&std::fs::read(&path).unwrap(),lopdf::encryption::Permissions::MODIFIABLE);
+    std::fs::write(&path,&original).unwrap();let e=engine();let source=e.open_document_with_password(&path,"reader").unwrap();
+    let runs=e.list_form_text_runs(&source.id,0).unwrap();
+    let edited=e.replace_form_text(&source.id,0,&runs.runs[0].object_path,"Old","New").unwrap();
+    assert_eq!(edited.protection,source.protection);
+    assert!(matches!(e.extract_text(&edited.id,0),Err(EngineError::PermissionDenied(_))));
+    let output=temp.path().join("edited.pdf");
+    assert!(matches!(e.export_pdf(ExportRequest{pages:vec![plan(&edited,0)],flatten:false},&output),Err(EngineError::PermissionDenied(_))));
+    e.export_pdf(ExportRequest{pages:vec![plan(&edited,0),plan(&source,1)],flatten:false},&output).unwrap();
+    protected_fixture::record("shared-text",&original,&std::fs::read(&output).unwrap());
+    for password in ["reader","owner"] {
+        let unlocked=unlock_pdf(&std::fs::read(&output).unwrap(),Some(password)).unwrap();
+        assert_eq!(lopdf::Document::load_mem(&unlocked.bytes).unwrap().get_pages().len(),2);
+        let copy=e.open_document_with_password(&output,password).unwrap();
+        assert_eq!(e.list_form_text_runs(&copy.id,0).unwrap().runs[0].text,"New");
+        assert_eq!(e.list_form_text_runs(&copy.id,1).unwrap().runs[0].text,"Old");
+        e.close_document(&copy.id).unwrap();
+    }
+    assert_eq!(std::fs::read(path).unwrap(),original);
+    for id in [&source.id,&edited.id] {e.close_document(id).unwrap();}
+}
 fn engine() -> PdfEngine {
     PdfEngine::start(PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("resources/pdfium/pdfium.dll"))
         .unwrap()
@@ -94,6 +122,7 @@ fn shared_nested_occurrence_isolated_and_source_immutable() {
 
 fn plan(s: &DocumentInfo, index: usize) -> PagePlan {
     PagePlan {
+        crop: None,
         id: format!("page-{index}"),
         source_id: s.id.clone(),
         page_index: index,
@@ -219,8 +248,8 @@ fn mutate_fixture(path: &Path, kind: &str) {
             if let Ok(s) = object.as_stream_mut() {
                 if s.content.windows(4).any(|w| w == b"/F1 ") {
                     match kind {
-                        "spacing" => s.set_plain_content(
-                            b"BT /F1 16 Tf 1 Tc 1 0 0 1 5 10 Tm (Old) Tj ET".to_vec(),
+                        "render-mode" => s.set_plain_content(
+                            b"BT /F1 16 Tf 1 Tr 1 0 0 1 5 10 Tm (Old) Tj ET".to_vec(),
                         ),
                         "clip" => s.set_plain_content(
                             b"0 0 200 30 re W n BT /F1 16 Tf 1 0 0 1 5 10 Tm (Old) Tj ET".to_vec(),
@@ -240,7 +269,7 @@ fn mutate_fixture(path: &Path, kind: &str) {
 fn unsupported_state_tags_and_ancestor_clipping_are_refused() {
     let t = tempfile::tempdir().unwrap();
     let e = engine();
-    for kind in ["tagged", "spacing", "clip", "bbox"] {
+    for kind in ["tagged", "render-mode", "clip", "bbox"] {
         let p = t.path().join(format!("{kind}.pdf"));
         mutate_fixture(&p, kind);
         let bytes = std::fs::read(&p).unwrap();

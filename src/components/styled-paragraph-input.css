@@ -1,0 +1,4 @@
+.styled-paragraph-input{white-space:pre-wrap;overflow-wrap:anywhere;min-height:8rem;max-height:24rem;overflow:auto;padding:.7rem;border:1px solid var(--border,#c9c4bd);border-radius:.5rem;background:var(--paper,#fff);color:var(--text,#282521);font-family:ui-monospace,monospace;line-height:1.45;cursor:text;}
+.styled-paragraph-input:focus{outline:2px solid var(--accent,#9b5035);outline-offset:2px;}
+.styled-paragraph-input[aria-disabled=true]{opacity:.65;cursor:default;}
+.styled-paragraph-input [data-highlighted=true]{box-decoration-break:clone;-webkit-box-decoration-break:clone;}

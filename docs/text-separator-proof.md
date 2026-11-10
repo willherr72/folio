@@ -1,5 +1,9 @@
 # Strict external-copy separator gate (#14 / #16)
 
+Historical September evidence. The [October copying contract](text-area-copy-policy.md)
+supersedes the strict external requirement. Use `--copy-policy exact` to reproduce
+the strict CLI failures described here; raw measurements remain unchanged.
+
 Investigated after native layout checkpoint `10241d3`. The user explicitly
 requires identical copying in external viewers before release. No production
 writer, desktop feature, or downloadable release changes in this checkpoint.

@@ -6,8 +6,17 @@ use lopdf::{content::Content, dictionary, Document, Object, Stream, StringFormat
 
 const LIMIT: usize = 16 * 1024 * 1024;
 
-fn encoded(run: &RunSnapshot, value: &str) -> EngineResult<Vec<u8>> {
+// Numeric-only TJ moves the text cursor but creates no PDFium text object.
+// Keep this classification shared by all top-level operator/object mappings.
+pub(super) fn cursor_only(op: &lopdf::content::Operation) -> bool {
+    matches!((op.operator.as_str(), op.operands.as_slice()), ("TJ", [Object::Array(values)])
+        if values.iter().all(|v| v.as_float().is_ok_and(f32::is_finite)))
+}
+
+pub(super) fn encoded(run: &RunSnapshot, value: &str) -> EngineResult<Vec<u8>> {
     if let Some(proof) = &run.proof {
+        proof.encode(value)
+    } else if let Some(proof) = &run.standard {
         proof.encode(value)
     } else if !run.embedded && value.len() <= 4096 && value.bytes().all(|c| (32..=126).contains(&c))
     {
@@ -124,6 +133,9 @@ pub(super) fn replace(
                 if !in_text {
                     return Err(invalid("Text outside a text object is not supported."));
                 }
+                if cursor_only(op) {
+                    continue;
+                }
                 if seen == ordinal {
                     let (name, size) = active_font
                         .as_ref()
@@ -136,13 +148,7 @@ pub(super) fn replace(
                         )
                         .and_then(|(_, v)| v.as_dict())
                         .map_err(|_| invalid("Malformed font resource."))?;
-                    let base = font
-                        .get(b"BaseFont")
-                        .and_then(Object::as_name)
-                        .ok()
-                        .and_then(|v| std::str::from_utf8(v).ok())
-                        .unwrap_or_default();
-                    if embedded_font::base_name(base) != embedded_font::base_name(&selected.font)
+                    if !embedded_font::matches_name(&pdf, font, &selected.font, selected.embedded)
                         || (size - selected.font_size).abs() > EPSILON
                     {
                         return Err(invalid(
@@ -172,60 +178,10 @@ pub(super) fn replace(
             *value = Object::String(changed, StringFormat::Hexadecimal);
         }
         ("TJ", [Object::Array(values)]) => {
-            let mut original = Vec::new();
-            for value in values.iter() {
-                if let Ok(text) = value.as_str() {
-                    original.extend_from_slice(text);
-                } else if !value
-                    .as_float()
-                    .is_ok_and(|n| n.is_finite() && n.abs() <= 1_000_000.0)
-                {
-                    return Err(invalid("Unsupported positioned text adjustment."));
-                }
-            }
-            if original != expected {
-                return Err(invalid("Ambiguous positioned text mapping."));
-            }
-            // Boundaries are verified by encoding each complete logical character;
-            // never divide an embedded character code at a byte boundary.
-            let mut boundaries = vec![0];
-            for c in selected.text.chars() {
-                boundaries
-                    .push(boundaries.last().unwrap() + encoded(selected, &c.to_string())?.len());
-            }
-            let mut replacement_boundaries = vec![0];
-            for c in replacement.chars() {
-                replacement_boundaries.push(
-                    replacement_boundaries.last().unwrap()
-                        + encoded(selected, &c.to_string())?.len(),
-                );
-            }
-            let mut old_offset = 0;
-            let mut new_offset = 0;
-            let mut output = Vec::new();
-            for value in values.iter() {
-                if let Ok(text) = value.as_str() {
-                    old_offset += text.len();
-                    let slot = boundaries
-                        .binary_search(&old_offset)
-                        .map_err(|_| invalid("A TJ segment splits an encoded character."))?;
-                    let end = replacement_boundaries[slot.min(replacement_boundaries.len() - 1)];
-                    output.push(Object::String(
-                        changed[new_offset..end].to_vec(),
-                        StringFormat::Hexadecimal,
-                    ));
-                    new_offset = end;
-                } else if new_offset < changed.len() || replacement == selected.text {
-                    output.push(value.clone());
-                }
-            }
-            if new_offset < changed.len() {
-                output.push(Object::String(
-                    changed[new_offset..].to_vec(),
-                    StringFormat::Hexadecimal,
-                ));
-            }
-            *values = output;
+            let source_boundaries = text_show::boundaries(&selected.text, |c| encoded(selected, c))?;
+            let replacement_boundaries = text_show::boundaries(replacement, |c| encoded(selected, c))?;
+            *values = text_show::rewrite_array(values, &expected, &changed,
+                &source_boundaries, &replacement_boundaries, replacement == selected.text)?;
         }
         _ => return Err(invalid("Unsupported positioned text operator.")),
     }

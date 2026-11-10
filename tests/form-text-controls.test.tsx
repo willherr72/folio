@@ -27,9 +27,9 @@ it("ignores late form discovery after the source changes and retains top-level r
  await screen.findByRole("button",{name:"Edit text: Top level"});
  await act(async()=>resolve({runs:[form]}));expect(screen.queryByRole("button",{name:"Edit text: Shared words"})).not.toBeInTheDocument();
 });
-it("explains occurrence isolation and excludes grouping and substitution controls",()=>{
+it("explains occurrence isolation, excludes grouping, and offers supported substitution",()=>{
  render(<ExistingTextDialog run={{...form,objectIndex:2,canSubstitute:true}} busy={false} error={null} onApply={vi.fn()} onCancel={vi.fn()} onEditTogether={vi.fn()}/>);
  expect(screen.getByText(/Only this occurrence will change/)).toBeVisible();
  expect(screen.queryByRole("button",{name:"Edit together…"})).not.toBeInTheDocument();
- expect(screen.queryByRole("button",{name:"Choose substitute font…"})).not.toBeInTheDocument();
+ expect(screen.getByRole("button",{name:"Choose substitute font…"})).toBeEnabled();
 });

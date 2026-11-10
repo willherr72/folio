@@ -1,5 +1,9 @@
 # Real line origins: missing-row selection fix (development prototype)
 
+Historical September evidence. The [October copying contract](text-area-copy-policy.md)
+allows specified external whitespace differences, while retaining content and
+word boundaries. The short `A\nB` to `AB` failure below still violates that policy.
+
 The user reports that single-line and repeated-space checks work in Foxit and
 Chrome, while both multiline checks fail. The saved Foxit reports sharpen that
 observation: `soft-0-untagged.pdf` produced `A B` instead of `A B C D`, and

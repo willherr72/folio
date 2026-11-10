@@ -20,6 +20,7 @@ beforeEach(() => {
     .mockResolvedValueOnce({ id: "lifecycle-one", name: "One.pdf", pages: [{ width: 300, height: 400 }] })
     .mockResolvedValueOnce({ id: "lifecycle-two", name: "Two.pdf", pages: [{ width: 300, height: 400 }] });
   vi.spyOn(nativeAdapter, "renderPage").mockResolvedValue("data:image/png;base64,");
+  vi.spyOn(nativeAdapter as Required<typeof nativeAdapter>, "renderPagePlan").mockResolvedValue("data:image/png;base64,");
   vi.spyOn(nativeAdapter as Required<typeof nativeAdapter>, "getPageText").mockImplementation(async (source) => ({ characters: Array.from(source === "lifecycle-one" ? "first first second" : "other other", (text, index) => ({ text, x: 10 + index * 6, y: 40, width: 6, height: 12 })) }));
   vi.spyOn(nativeAdapter, "closeDocument").mockResolvedValue();
 });

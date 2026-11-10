@@ -1,0 +1,97 @@
+{
+  "generator": "scripts/generate-image-asset-fixtures.py",
+  "pillowVersion": "12.1.0",
+  "description": "Original deterministic pixels; JPEG encoding and reference decoding by Pillow/libjpeg.",
+  "cases": [
+    {
+      "name": "rgb-tiny",
+      "width": 1,
+      "height": 1,
+      "jpegSha256": "fbd00372f0202cc1a4742ba650baa509f55d5abc06524ccda6fd7beb6e1f026e"
+    },
+    {
+      "name": "rgb-odd",
+      "width": 17,
+      "height": 9,
+      "jpegSha256": "fce77aa642e0223a3665dc07accd144cbaf63fa86389e728969890e1ff040a04"
+    },
+    {
+      "name": "rgb-progressive",
+      "width": 17,
+      "height": 9,
+      "jpegSha256": "3242e321836bd16558c6b09eb0c420df281d2226c3abb2622da7049c3f9a66b1"
+    },
+    {
+      "name": "rgb-restart",
+      "width": 80,
+      "height": 40,
+      "jpegSha256": "9115d71e443fdcbe47b9ab374c4ce084a42e679d7d8554a0f3cb5bd33decd163"
+    },
+    {
+      "name": "rgb-progressive-restart",
+      "width": 80,
+      "height": 40,
+      "jpegSha256": "67fbdc132ee253a9b43337a4111828db1b80c1c804884b1d8b6001bf47ae068b"
+    },
+    {
+      "name": "l-tiny",
+      "width": 1,
+      "height": 1,
+      "jpegSha256": "3067e79a3e39f0782e4182729fa4300264c8f91f20d3c619ab34bf7eb6085c29"
+    },
+    {
+      "name": "l-odd",
+      "width": 17,
+      "height": 9,
+      "jpegSha256": "bfc52007e7d5b2c27019b65e88a8ccc67aa09b7acb8f291137057c7bb6965d7b"
+    },
+    {
+      "name": "l-progressive",
+      "width": 17,
+      "height": 9,
+      "jpegSha256": "091331147762349bd1127eb9dfe021f126f512dd38fd0e7ec4108320b874dc61"
+    },
+    {
+      "name": "l-restart",
+      "width": 80,
+      "height": 40,
+      "jpegSha256": "4a78d778ede790ce412b9e60e548fa008e874a8a6ab71bbf9673a53216247dcd"
+    },
+    {
+      "name": "l-progressive-restart",
+      "width": 80,
+      "height": 40,
+      "jpegSha256": "a710ea4a70ed59ab887ce4be3c060c5772c95101f717015c3b961cc071530e69"
+    },
+    {
+      "name": "cmyk-tiny",
+      "width": 1,
+      "height": 1,
+      "jpegSha256": "9904b7963408269eefa841dc4a5975f255bce0de2269a1f50e44938d116ac448"
+    },
+    {
+      "name": "cmyk-odd",
+      "width": 17,
+      "height": 9,
+      "jpegSha256": "c28ff53dd4868823d70282698e7b04cc960bee8577677e05c948bb29423c7511"
+    },
+    {
+      "name": "cmyk-progressive",
+      "width": 17,
+      "height": 9,
+      "jpegSha256": "76bc1565af66889561a2c0fbaabb3515868bf30d70fd00ae5cdea353268eba64"
+    },
+    {
+      "name": "cmyk-restart",
+      "width": 80,
+      "height": 40,
+      "jpegSha256": "0d68569322f138ae8500aa6d4675c41c3585fc034b60550cdadfaa7b1540aa07"
+    },
+    {
+      "name": "cmyk-progressive-restart",
+      "width": 80,
+      "height": 40,
+      "jpegSha256": "38fdcb9b134b61fb3e3b4c592e3ddaef0517dcd0026010c31c27a4cf11fa3c09"
+    }
+  ]
+}

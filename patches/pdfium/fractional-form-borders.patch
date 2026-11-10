@@ -1,0 +1,205 @@
+--- a/fpdfsdk/cpdfsdk_baannot.h
++++ b/fpdfsdk/cpdfsdk_baannot.h
+@@ -66,7 +66,7 @@
+   ByteString GetAppState() const;
+ 
+   void SetBorderWidth(int nWidth);
+-  int GetBorderWidth() const;
++  float GetBorderWidth() const;
+ 
+   void SetBorderStyle(BorderStyle nStyle);
+   BorderStyle GetBorderStyle() const;
+--- a/fpdfsdk/cpdfsdk_baannot.cpp
++++ b/fpdfsdk/cpdfsdk_baannot.cpp
+@@ -6,6 +6,8 @@
+ 
+ #include "fpdfsdk/cpdfsdk_baannot.h"
+ 
++#include <cmath>
++#include <limits>
+ #include <optional>
+ #include <vector>
+ 
+@@ -27,6 +29,23 @@
+ #include "fpdfsdk/cpdfsdk_formfillenvironment.h"
+ #include "fpdfsdk/cpdfsdk_pageview.h"
+ 
++namespace {
++
++float FiniteBorderWidth(const CPDF_Object* width, int legacy_width) {
++  if (width && width->IsNumber()) {
++    const float value = width->GetNumber();
++    // Keep legacy fallbacks for invalid or out-of-range widths. This also
++    // bounds later doubled/inset border arithmetic to finite values.
++    if (std::isfinite(value) && value >= 0.0f &&
++        value < static_cast<float>(std::numeric_limits<int>::max())) {
++      return value;
++    }
++  }
++  return static_cast<float>(legacy_width);
++}
++
++}  // namespace
++
+ CPDFSDK_BAAnnot::CPDFSDK_BAAnnot(CPDF_Annot* pAnnot,
+                                  CPDFSDK_PageView* pPageView)
+     : CPDFSDK_Annot(pPageView), annot_(pAnnot) {}
+@@ -128,16 +147,18 @@
+   pAnnotDict->GetOrCreateDictFor("BS")->SetNewFor<CPDF_Number>("W", nWidth);
+ }
+ 
+-int CPDFSDK_BAAnnot::GetBorderWidth() const {
++float CPDFSDK_BAAnnot::GetBorderWidth() const {
+   RetainPtr<const CPDF_Array> pBorder =
+       GetAnnotDict()->GetArrayFor(pdfium::annotation::kBorder);
+   if (pBorder) {
+-    return pBorder->GetIntegerAt(2);
++    auto width = pBorder->GetDirectObjectAt(2);
++    return FiniteBorderWidth(width.Get(), pBorder->GetIntegerAt(2));
+   }
+ 
+   RetainPtr<const CPDF_Dictionary> pBSDict = GetAnnotDict()->GetDictFor("BS");
+   if (pBSDict) {
+-    return pBSDict->GetIntegerFor("W", 1);
++    auto width = pBSDict->GetDirectObjectFor("W");
++    return FiniteBorderWidth(width.Get(), pBSDict->GetIntegerFor("W", 1));
+   }
+ 
+   return 1;
+--- a/fpdfsdk/pwl/cpwl_wnd.h
++++ b/fpdfsdk/pwl/cpwl_wnd.h
+@@ -102,7 +102,7 @@
+     Mask<Styles> dwFlags;
+     CFX_Color sBackgroundColor;
+     BorderStyle nBorderStyle = BorderStyle::kSolid;
+-    int32_t dwBorderWidth = 1;
++    float dwBorderWidth = 1.0f;
+     CFX_Color sBorderColor;
+     CFX_Color sTextColor;
+     int32_t nTransparency = 255;
+@@ -190,7 +190,7 @@
+   void DrawAppearance(CFX_RenderDevice* pDevice,
+                       const CFX_Matrix& mtUser2Device);
+ 
+-  int32_t GetBorderWidth() const;
++  float GetBorderWidth() const;
+   CFX_FloatRect GetWindowRect() const;
+ 
+   bool IsVisible() const { return visible_; }
+--- a/fpdfsdk/pwl/cpwl_wnd.cpp
++++ b/fpdfsdk/pwl/cpwl_wnd.cpp
+@@ -502,7 +502,7 @@
+   return creation_params_.nBorderStyle;
+ }
+ 
+-int32_t CPWL_Wnd::GetBorderWidth() const {
++float CPWL_Wnd::GetBorderWidth() const {
+   return HasFlag(Styles::kWindowBorder) ? creation_params_.dwBorderWidth : 0;
+ }
+ 
+--- a/fpdfsdk/cpdfsdk_appstream.cpp
++++ b/fpdfsdk/cpdfsdk_appstream.cpp
+@@ -494,7 +494,7 @@
+         sColor = GetStrokeColorAppStream(color);
+         if (sColor.GetLength() > 0) {
+           AutoClosedQCommand q2(&sAppStream);
+-          sAppStream << fWidth << " " << kSetLineWidthOperator << "\n"
++          WriteFloat(sAppStream, fWidth) << " " << kSetLineWidthOperator << "\n"
+                      << sColor << GetAP_Circle(rect_by_2) << " "
+                      << kStrokeOperator << "\n";
+         }
+@@ -503,7 +503,7 @@
+         sColor = GetStrokeColorAppStream(color);
+         if (sColor.GetLength() > 0) {
+           AutoClosedQCommand q2(&sAppStream);
+-          sAppStream << fWidth << " " << kSetLineWidthOperator << "\n"
++          WriteFloat(sAppStream, fWidth) << " " << kSetLineWidthOperator << "\n"
+                      << "[" << dash.nDash << " " << dash.nGap << "] "
+                      << dash.nPhase << " " << kSetDashOperator << "\n"
+                      << sColor << GetAP_Circle(rect_by_2) << " "
+@@ -514,21 +514,21 @@
+         sColor = GetStrokeColorAppStream(color);
+         if (sColor.GetLength() > 0) {
+           AutoClosedQCommand q2(&sAppStream);
+-          sAppStream << fHalfWidth << " " << kSetLineWidthOperator << "\n"
++          WriteFloat(sAppStream, fHalfWidth) << " " << kSetLineWidthOperator << "\n"
+                      << sColor << GetAP_Circle(rect) << " " << kStrokeOperator
+                      << "\n";
+         }
+         sColor = GetStrokeColorAppStream(crLeftTop);
+         if (sColor.GetLength() > 0) {
+           AutoClosedQCommand q2(&sAppStream);
+-          sAppStream << fHalfWidth << " " << kSetLineWidthOperator << "\n"
++          WriteFloat(sAppStream, fHalfWidth) << " " << kSetLineWidthOperator << "\n"
+                      << sColor << GetAP_HalfCircle(rect_by_75, FXSYS_PI / 4.0f)
+                      << " " << kStrokeOperator << "\n";
+         }
+         sColor = GetStrokeColorAppStream(crRightBottom);
+         if (sColor.GetLength() > 0) {
+           AutoClosedQCommand q2(&sAppStream);
+-          sAppStream << fHalfWidth << " " << kSetLineWidthOperator << "\n"
++          WriteFloat(sAppStream, fHalfWidth) << " " << kSetLineWidthOperator << "\n"
+                      << sColor
+                      << GetAP_HalfCircle(rect_by_75, FXSYS_PI * 5 / 4.0f) << " "
+                      << kStrokeOperator << "\n";
+@@ -538,21 +538,21 @@
+         sColor = GetStrokeColorAppStream(color);
+         if (sColor.GetLength() > 0) {
+           AutoClosedQCommand q2(&sAppStream);
+-          sAppStream << fHalfWidth << " " << kSetLineWidthOperator << "\n"
++          WriteFloat(sAppStream, fHalfWidth) << " " << kSetLineWidthOperator << "\n"
+                      << sColor << GetAP_Circle(rect) << " " << kStrokeOperator
+                      << "\n";
+         }
+         sColor = GetStrokeColorAppStream(crLeftTop);
+         if (sColor.GetLength() > 0) {
+           AutoClosedQCommand q2(&sAppStream);
+-          sAppStream << fHalfWidth << " " << kSetLineWidthOperator << "\n"
++          WriteFloat(sAppStream, fHalfWidth) << " " << kSetLineWidthOperator << "\n"
+                      << sColor << GetAP_HalfCircle(rect_by_75, FXSYS_PI / 4.0f)
+                      << " " << kStrokeOperator << "\n";
+         }
+         sColor = GetStrokeColorAppStream(crRightBottom);
+         if (sColor.GetLength() > 0) {
+           AutoClosedQCommand q2(&sAppStream);
+-          sAppStream << fHalfWidth << " " << kSetLineWidthOperator << "\n"
++          WriteFloat(sAppStream, fHalfWidth) << " " << kSetLineWidthOperator << "\n"
+                      << sColor
+                      << GetAP_HalfCircle(rect_by_75, FXSYS_PI * 5 / 4.0f) << " "
+                      << kStrokeOperator << "\n";
+@@ -1014,7 +1014,7 @@
+         sColor = GetStrokeColorAppStream(color);
+         if (sColor.GetLength() > 0) {
+           sAppStream << sColor;
+-          sAppStream << fWidth << " " << kSetLineWidthOperator << " ["
++          WriteFloat(sAppStream, fWidth) << " " << kSetLineWidthOperator << " ["
+                      << dash.nDash << " " << dash.nGap << "] " << dash.nPhase
+                      << " " << kSetDashOperator << "\n";
+           const CFX_PointF points[] = {
+@@ -1069,7 +1069,7 @@
+         sColor = GetStrokeColorAppStream(color);
+         if (sColor.GetLength() > 0) {
+           sAppStream << sColor;
+-          sAppStream << fWidth << " " << kSetLineWidthOperator << "\n";
++          WriteFloat(sAppStream, fWidth) << " " << kSetLineWidthOperator << "\n";
+           WriteMove(sAppStream, {fLeft, fBottom + fWidth / 2});
+           WriteLine(sAppStream, {fRight, fBottom + fWidth / 2});
+           sAppStream << kStrokeOperator << "\n";
+@@ -1781,7 +1781,7 @@
+             GetStrokeColorAppStream(widget_->GetBorderPWLColor());
+         if (sColor.GetLength() > 0) {
+           AutoClosedQCommand q(&sLines);
+-          sLines << widget_->GetBorderWidth() << " " << kSetLineWidthOperator
++          WriteFloat(sLines, widget_->GetBorderWidth()) << " " << kSetLineWidthOperator
+                  << "\n"
+                  << GetStrokeColorAppStream(widget_->GetBorderPWLColor())
+                  << " 2 " << kSetLineCapStyleOperator << " 0 "
+@@ -1803,7 +1803,7 @@
+         if (sColor.GetLength() > 0) {
+           CPWL_Dash dsBorder = CPWL_Dash{3, 3, 0};
+           AutoClosedQCommand q(&sLines);
+-          sLines << widget_->GetBorderWidth() << " " << kSetLineWidthOperator
++          WriteFloat(sLines, widget_->GetBorderWidth()) << " " << kSetLineWidthOperator
+                  << "\n"
+                  << GetStrokeColorAppStream(widget_->GetBorderPWLColor()) << "["
+                  << dsBorder.nDash << " " << dsBorder.nGap << "] "

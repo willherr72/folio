@@ -98,7 +98,7 @@ pub(crate) fn checked_face(bytes: &[u8]) -> EngineResult<ttf_parser::Face<'_>> {
     Ok(face)
 }
 
-fn bounded_cmap_coverage(data: &[u8]) -> EngineResult<()> {
+pub(crate) fn bounded_cmap_coverage(data: &[u8]) -> EngineResult<()> {
     let bad = || invalid("Font cmap coverage exceeds its work limit or is malformed.");
     let u16_at = |i: usize| {
         data.get(i..i + 2)
@@ -192,19 +192,155 @@ fn bounded_cmap_coverage(data: &[u8]) -> EngineResult<()> {
     Ok(())
 }
 
-fn display_name(face: &ttf_parser::Face<'_>) -> String {
+/// Informational name only: never use this value as proof of font identity or
+/// support. Bound decoding and exclude controls that can spoof or break labels.
+pub(crate) fn font_display_name(face: &ttf_parser::Face<'_>) -> Option<String> {
     for english in [true, false] {
-        for name in face.names() {
+        for name in face.names().into_iter().take(4096) {
             if name.name_id == ttf_parser::name_id::FULL_NAME
                 && (!english || name.language_id == 0x0409)
+                && name.name.len() <= 1024
+                // to_string decodes UTF-16 only, but silently drops an odd
+                // trailing byte. Reject incomplete code units before decoding.
+                && name.name.len() % 2 == 0
             {
-                if let Some(value) = name.to_string().filter(|value| !value.trim().is_empty()) {
-                    return value;
+                if let Some(value) = name.to_string().filter(|value| {
+                    !value.trim().is_empty() && value.len()<=1024 && value.chars().count()<=256
+                        && !value.chars().any(|c|c.is_control() || matches!(c as u32,0x061c|0x200b..=0x200f|0x202a..=0x202e|0x2060..=0x2069|0xfeff))
+                }) {
+                    return Some(value.trim().to_owned());
                 }
             }
         }
     }
-    "Imported font".into()
+    None
+}
+fn display_name(face: &ttf_parser::Face<'_>) -> String {
+    font_display_name(face).unwrap_or_else(|| "Imported font".into())
+}
+
+#[cfg(test)]
+mod font_label_tests {
+    use super::*;
+    #[test]
+    fn unusable_embedded_full_names_fall_back_without_rejecting_the_font() {
+        let original = std::fs::read(
+            PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+                .join("../tests/fixtures/corpus/fonts/DejaVuSerif.ttf"),
+        )
+        .unwrap();
+        assert_eq!(
+            display_name(&checked_face(&original).unwrap()),
+            "DejaVu Serif"
+        );
+        // Include an unpaired UTF-16 surrogate: a malformed label must not
+        // invalidate an otherwise usable font program.
+        for character in [0x000a_u16, 0x202e, 0x2066, 0xd800] {
+            let mut bytes = original.clone();
+            let count = u16::from_be_bytes(bytes[4..6].try_into().unwrap()) as usize;
+            let entry = (0..count)
+                .map(|i| 12 + i * 16)
+                .find(|i| &bytes[*i..*i + 4] == b"name")
+                .unwrap();
+            let table =
+                u32::from_be_bytes(bytes[entry + 8..entry + 12].try_into().unwrap()) as usize;
+            let records =
+                u16::from_be_bytes(bytes[table + 2..table + 4].try_into().unwrap()) as usize;
+            let strings = table
+                + u16::from_be_bytes(bytes[table + 4..table + 6].try_into().unwrap()) as usize;
+            for i in 0..records {
+                let at = table + 6 + i * 12;
+                if u16::from_be_bytes(bytes[at + 6..at + 8].try_into().unwrap())
+                    != ttf_parser::name_id::FULL_NAME
+                {
+                    continue;
+                }
+                let length =
+                    u16::from_be_bytes(bytes[at + 8..at + 10].try_into().unwrap()) as usize;
+                let offset = strings
+                    + u16::from_be_bytes(bytes[at + 10..at + 12].try_into().unwrap()) as usize;
+                if length >= 2 {
+                    bytes[offset..offset + 2].copy_from_slice(&character.to_be_bytes());
+                }
+            }
+            let face = checked_face(&bytes).unwrap();
+            assert_eq!(
+                display_name(&face),
+                "Imported font",
+                "control U+{character:04X} is not a usable font label"
+            );
+        }
+    }
+
+    #[test]
+    fn missing_blank_and_localized_names_keep_font_admission_unchanged() {
+        let original = std::fs::read(
+            PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+                .join("../tests/fixtures/corpus/fonts/DejaVuSerif.ttf"),
+        )
+        .unwrap();
+        for mode in ["missing", "blank", "localized", "odd", "odd-with-fallback"] {
+            let mut bytes = original.clone();
+            let count = u16::from_be_bytes(bytes[4..6].try_into().unwrap()) as usize;
+            let entry = (0..count)
+                .map(|i| 12 + i * 16)
+                .find(|i| &bytes[*i..*i + 4] == b"name")
+                .unwrap();
+            let table =
+                u32::from_be_bytes(bytes[entry + 8..entry + 12].try_into().unwrap()) as usize;
+            let records =
+                u16::from_be_bytes(bytes[table + 2..table + 4].try_into().unwrap()) as usize;
+            let strings = table
+                + u16::from_be_bytes(bytes[table + 4..table + 6].try_into().unwrap()) as usize;
+            for i in 0..records {
+                let at = table + 6 + i * 12;
+                if mode == "odd-with-fallback"
+                    && u16::from_be_bytes(bytes[at..at + 2].try_into().unwrap()) == 3
+                    && u16::from_be_bytes(bytes[at + 6..at + 8].try_into().unwrap())
+                        == ttf_parser::name_id::FAMILY
+                {
+                    bytes[at + 6..at + 8]
+                        .copy_from_slice(&ttf_parser::name_id::FULL_NAME.to_be_bytes());
+                    bytes[at + 4..at + 6].copy_from_slice(&0x0411_u16.to_be_bytes());
+                    continue;
+                }
+                if u16::from_be_bytes(bytes[at + 6..at + 8].try_into().unwrap())
+                    != ttf_parser::name_id::FULL_NAME
+                {
+                    continue;
+                }
+                match mode {
+                    "missing" => bytes[at + 6..at + 8].copy_from_slice(&255_u16.to_be_bytes()),
+                    "localized" => bytes[at + 4..at + 6].copy_from_slice(&0x0411_u16.to_be_bytes()),
+                    "odd" | "odd-with-fallback" => {
+                        let length = u16::from_be_bytes(bytes[at + 8..at + 10].try_into().unwrap());
+                        bytes[at + 8..at + 10].copy_from_slice(&(length - 1).to_be_bytes());
+                    }
+                    _ => {
+                        let length =
+                            u16::from_be_bytes(bytes[at + 8..at + 10].try_into().unwrap()) as usize;
+                        let offset = strings
+                            + u16::from_be_bytes(bytes[at + 10..at + 12].try_into().unwrap())
+                                as usize;
+                        for pair in bytes[offset..offset + length].chunks_exact_mut(2) {
+                            pair.copy_from_slice(&0x20_u16.to_be_bytes());
+                        }
+                    }
+                }
+            }
+            let face = checked_face(&bytes).unwrap();
+            assert_eq!(
+                font_display_name(&face).as_deref(),
+                if mode == "localized" || mode == "odd-with-fallback" {
+                    Some("DejaVu Serif")
+                } else {
+                    None
+                },
+                "{mode}"
+            );
+            assert!(face.glyph_index('A').is_some());
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -364,8 +500,26 @@ pub struct FontRegistry {
 #[derive(Debug, Default)]
 struct RegistryState {
     assets: BTreeMap<String, Arc<FontAsset>>,
+    registrations: BTreeMap<String, Arc<()>>,
     bytes: usize,
     catalog: Option<BTreeMap<String, CatalogEntry>>,
+}
+
+#[path="font_imports.rs"]
+mod imports;
+
+/// Recovery owns only imports whose current registration still carries its marker.
+pub(crate) struct FontImportScope {
+    registry: Arc<FontRegistry>,
+    marker: Arc<()>,
+    created: Mutex<BTreeSet<String>>,
+}
+
+/// A new import may be rolled back only while no later registration has claimed it.
+#[derive(Debug)]
+pub(crate) struct FontRegistration {
+    id: String,
+    marker: Arc<()>,
 }
 
 #[derive(Debug)]
@@ -390,8 +544,12 @@ impl FontRegistry {
             return Err(invalid("A font file cannot exceed 16 MiB."));
         }
         let id = digest(&bytes);
-        if let Some(asset) = self.lock()?.assets.get(&id) {
-            return Ok(asset.info.clone());
+        {
+            let mut state = self.lock()?;
+            if let Some(info) = state.assets.get(&id).map(|asset| asset.info.clone()) {
+                state.registrations.insert(id, Arc::new(()));
+                return Ok(info);
+            }
         }
         let asset = Arc::new(FontAsset::parse(bytes)?);
         self.register_assets(std::slice::from_ref(&asset))?;
@@ -412,6 +570,7 @@ impl FontRegistry {
 
     pub fn remove(&self, id: &str) -> EngineResult<()> {
         let mut state = self.lock()?;
+        state.registrations.remove(id);
         if let Some(asset) = state.assets.remove(id) {
             state.bytes -= asset.bytes.len();
         }
@@ -420,8 +579,22 @@ impl FontRegistry {
 
     // Caller stages only parsed, verified assets. Check the entire batch before
     // inserting anything so failed PDF imports cannot leave partial resources.
-    pub(crate) fn register_assets(&self, assets: &[Arc<FontAsset>]) -> EngineResult<()> {
+    pub(crate) fn register_assets(
+        &self,
+        assets: &[Arc<FontAsset>],
+    ) -> EngineResult<Vec<FontRegistration>> {
+        self.register_assets_scoped(assets, None)
+    }
+
+    fn register_assets_scoped(
+        &self,
+        assets: &[Arc<FontAsset>],
+        scope: Option<&FontImportScope>,
+    ) -> EngineResult<Vec<FontRegistration>> {
         let mut state = self.lock()?;
+        // Always lock registry before scope, including during cleanup.
+        let mut owned = scope.map(|scope| scope.created.lock()
+            .map_err(|_| invalid("Font import ownership is unavailable."))).transpose()?;
         let added: BTreeMap<_, _> = assets
             .iter()
             .filter(|asset| !state.assets.contains_key(&asset.info.id))
@@ -437,8 +610,53 @@ impl FontRegistry {
             total.checked_add(asset.bytes.len()).filter(|&total| total <= MAX_TOTAL_BYTES)
                 .ok_or_else(|| invalid("Loaded font resources cannot exceed 128 MiB. Close documents using other fonts first."))
         })?;
+        let new_ids: BTreeSet<_> = added.keys().cloned().collect();
+        let ids: BTreeSet<_> = assets.iter().map(|asset| asset.info.id.clone()).collect();
+        if owned.as_ref().is_some_and(|owned| owned.union(&new_ids).count() > MAX_FONTS) {
+            return Err(invalid("A recovery font import scope cannot exceed 64 fonts."));
+        }
         state.assets.extend(added);
         state.bytes = bytes;
+        let mut registrations = Vec::new();
+        for id in ids {
+            if let (Some(scope), Some(owned)) = (scope, owned.as_mut()) {
+                if new_ids.contains(&id) {
+                    owned.insert(id.clone());
+                    state.registrations.insert(id, scope.marker.clone());
+                } else if !state.registrations.get(&id)
+                    .is_some_and(|marker| Arc::ptr_eq(marker, &scope.marker)) {
+                    // Borrowing is an external claim, never acquisition. A later
+                    // same-scope use cannot undo a registration by another caller.
+                    state.registrations.insert(id, Arc::new(()));
+                }
+                continue;
+            }
+            let marker = Arc::new(());
+            if new_ids.contains(&id) {
+                registrations.push(FontRegistration {
+                    id: id.clone(),
+                    marker: marker.clone(),
+                });
+            }
+            state.registrations.insert(id, marker);
+        }
+        Ok(registrations)
+    }
+
+    pub(crate) fn rollback_imports(&self, registrations: &[FontRegistration]) -> EngineResult<()> {
+        let mut state = self.lock()?;
+        for registration in registrations {
+            if state
+                .registrations
+                .get(&registration.id)
+                .is_some_and(|marker| Arc::ptr_eq(marker, &registration.marker))
+            {
+                state.registrations.remove(&registration.id);
+                if let Some(asset) = state.assets.remove(&registration.id) {
+                    state.bytes -= asset.bytes.len();
+                }
+            }
+        }
         Ok(())
     }
 

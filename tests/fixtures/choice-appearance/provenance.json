@@ -1,0 +1,107 @@
+{
+  "purpose": "Synthetic transformed choice appearances for native unchanged-source proof; no user documents",
+  "generator": "artifacts/form-choice-publication-20261025/geometry-probe.py",
+  "rendererSha256": "ae6b07c4a7dc0f17be3937acf73761e59924e703777eb99657fb07a1149ead6a",
+  "fixtures": {
+    "combo-0-canonical-source.pdf": {
+      "source": "artifacts/form-choice-publication-20261025/geometry-spike/combo-0-canonical-source.pdf",
+      "sha256": "2571aa212352091e99b72d1860262c63e387832a129397caa5bc7fd980cb37cf",
+      "expectedUnchangedRegeneration": true
+    },
+    "combo-0-shift-source.pdf": {
+      "source": "artifacts/form-choice-publication-20261025/geometry-spike/combo-0-shift-source.pdf",
+      "sha256": "aa6d7185a9d1a6e3d581fe5cd6657612697e3fa3e281e294c610d3c32d33e4d8",
+      "expectedUnchangedRegeneration": true
+    },
+    "combo-0-scale-source.pdf": {
+      "source": "artifacts/form-choice-publication-20261025/geometry-spike/combo-0-scale-source.pdf",
+      "sha256": "bb8f7d305f009dadd75685e497f32d986a9f9548989cac035027e1cee1ea21cd",
+      "expectedUnchangedRegeneration": true
+    },
+    "combo-0-affine-matrix-source.pdf": {
+      "source": "artifacts/form-choice-publication-20261025/geometry-spike/combo-0-affine-matrix-source.pdf",
+      "sha256": "65532efec7397325429c6bc6c90f53ba23f7ecd3f03a965c4b3569b84fb3236e",
+      "expectedUnchangedRegeneration": true
+    },
+    "combo-0-stale-color-source.pdf": {
+      "source": "artifacts/form-choice-publication-20261025/geometry-spike/combo-0-stale-color-source.pdf",
+      "sha256": "278bfc79357dd4ec0f2f9f8f6538e4017525b7da0718dc067399445244f6d93e",
+      "expectedUnchangedRegeneration": false
+    },
+    "combo-90-canonical-source.pdf": {
+      "source": "artifacts/form-choice-publication-20261025/geometry-spike/combo-90-canonical-source.pdf",
+      "sha256": "bc7bb066a9f2c13defb6313d65a557147ab118a1c104122963eef9753cddce3e",
+      "expectedUnchangedRegeneration": true
+    },
+    "combo-90-shift-source.pdf": {
+      "source": "artifacts/form-choice-publication-20261025/geometry-spike/combo-90-shift-source.pdf",
+      "sha256": "c27a34e3572ab17801b98337223b56c0cf202f1a305134764a951fe2b5ebf09a",
+      "expectedUnchangedRegeneration": true
+    },
+    "combo-90-scale-source.pdf": {
+      "source": "artifacts/form-choice-publication-20261025/geometry-spike/combo-90-scale-source.pdf",
+      "sha256": "018794a4848a6a302cbb6f6ab3c658d70d0cd2e60d4d6252cf3ca2c9c68c69d1",
+      "expectedUnchangedRegeneration": true
+    },
+    "combo-90-affine-matrix-source.pdf": {
+      "source": "artifacts/form-choice-publication-20261025/geometry-spike/combo-90-affine-matrix-source.pdf",
+      "sha256": "5b83c85d7301bef7d2831ea2a2d6c6d04a22e67480af8388e8c0e75053da3053",
+      "expectedUnchangedRegeneration": true
+    },
+    "combo-90-stale-color-source.pdf": {
+      "source": "artifacts/form-choice-publication-20261025/geometry-spike/combo-90-stale-color-source.pdf",
+      "sha256": "b97ff52147b5d5835ce8691402266a58a156d792afcc771ead3c07abbbdeae55",
+      "expectedUnchangedRegeneration": false
+    },
+    "list-0-canonical-source.pdf": {
+      "source": "artifacts/form-choice-publication-20261025/geometry-spike/list-0-canonical-source.pdf",
+      "sha256": "a6c0459353f143b23aed328c5c72875bce3390a81abc13315a5270eac5f00821",
+      "expectedUnchangedRegeneration": true
+    },
+    "list-0-shift-source.pdf": {
+      "source": "artifacts/form-choice-publication-20261025/geometry-spike/list-0-shift-source.pdf",
+      "sha256": "35e85a089a57d4c4e47dc5a300373317ed392c6ce176d1e1732070b57137f3fb",
+      "expectedUnchangedRegeneration": true
+    },
+    "list-0-scale-source.pdf": {
+      "source": "artifacts/form-choice-publication-20261025/geometry-spike/list-0-scale-source.pdf",
+      "sha256": "8770df9169cecdae54a16a8b0813646c89db9e92072aa2e63b9a8443a3fd5624",
+      "expectedUnchangedRegeneration": true
+    },
+    "list-0-affine-matrix-source.pdf": {
+      "source": "artifacts/form-choice-publication-20261025/geometry-spike/list-0-affine-matrix-source.pdf",
+      "sha256": "9132d8d13e883b3c9b319852aa3546ea58bde4b31377260f222ae276ca0d44b5",
+      "expectedUnchangedRegeneration": true
+    },
+    "list-0-stale-color-source.pdf": {
+      "source": "artifacts/form-choice-publication-20261025/geometry-spike/list-0-stale-color-source.pdf",
+      "sha256": "f905a16a6dcb839434c6971b6a4dc441c595c04b60cb0e00183bafbd553b543f",
+      "expectedUnchangedRegeneration": false
+    },
+    "list-90-canonical-source.pdf": {
+      "source": "artifacts/form-choice-publication-20261025/geometry-spike/list-90-canonical-source.pdf",
+      "sha256": "c3e926df20176dbe9b6881648c78f0ae019d3981a86ff608d048ca1be11a2d41",
+      "expectedUnchangedRegeneration": true
+    },
+    "list-90-shift-source.pdf": {
+      "source": "artifacts/form-choice-publication-20261025/geometry-spike/list-90-shift-source.pdf",
+      "sha256": "21eed840bc9ed25d377c09c8f2400ad79e46b2f366a62c5c8129dce9f22d2f5a",
+      "expectedUnchangedRegeneration": true
+    },
+    "list-90-scale-source.pdf": {
+      "source": "artifacts/form-choice-publication-20261025/geometry-spike/list-90-scale-source.pdf",
+      "sha256": "8c8b6e18f82090b3560c41c70ff5f178ddb00c7a11075a704387346aff0141ff",
+      "expectedUnchangedRegeneration": true
+    },
+    "list-90-affine-matrix-source.pdf": {
+      "source": "artifacts/form-choice-publication-20261025/geometry-spike/list-90-affine-matrix-source.pdf",
+      "sha256": "26d2764429d86c48f6775f1ef25ed9821908ca45325bd36bc964506ec63f2bed",
+      "expectedUnchangedRegeneration": true
+    },
+    "list-90-stale-color-source.pdf": {
+      "source": "artifacts/form-choice-publication-20261025/geometry-spike/list-90-stale-color-source.pdf",
+      "sha256": "fd0621feac4fd81cb7e0711621a8b16fb4166e29b27f952a03ede61a21a915c6",
+      "expectedUnchangedRegeneration": false
+    }
+  }
+}

@@ -1,7 +1,7 @@
 import { releaseUnownedFont } from "./custom-fonts";
 import {useCallback,useEffect,useRef,useState,type Dispatch,type SetStateAction,type MutableRefObject} from "react";
 import {nativeAdapter} from "./adapter";
-import {recoveryApi,RecoveryQueue,restoreWorkspace,snapshotWorkspace,type RecoverySnapshot} from "./recovery";
+import {recoveryApi,RecoveryQueue,restoreWorkspace,snapshotWorkspace,sameRecoveryWorkspace,type RecoverySnapshot} from "./recovery";
 import type {Workspace,ScrollPosition} from "./workspace";
 const message=(error:unknown)=>error instanceof Error?error.message:String(error);
 async function releasePending(snapshot:RecoverySnapshot|null){
@@ -15,8 +15,10 @@ export function useWorkspaceRecovery(desktop:boolean,workspace:Workspace,setWork
  const [ready,setReady]=useState(!desktop),[pending,setPending]=useState<RecoverySnapshot|null>(null),[error,setError]=useState<string|null>(null);
  const [working,setWorking]=useState(false),[warning,setWarning]=useState<string|null>(null),[enabled,setEnabled]=useState(desktop);
  const latest=useRef(workspace);latest.current=workspace;
- const transaction=useRef<Workspace|null>(null);if(transaction.current===workspace)transaction.current=null;
+ const transaction=useRef<Workspace|null>(null);if(transaction.current&&sameRecoveryWorkspace(transaction.current,workspace))transaction.current=null;
  const queue=useRef<RecoveryQueue|null>(null);
+ const sourceQueues=useRef(new Set<RecoveryQueue>());
+ const [sourceRevision,setSourceRevision]=useState(0);
  const alive=useRef(false),ownedPending=useRef<RecoverySnapshot|null>(null);
  useEffect(()=>{alive.current=true;return()=>{alive.current=false;queueMicrotask(()=>{if(!alive.current){void releasePending(ownedPending.current);ownedPending.current=null;}});};},[]);
  const acceptPending=(value:RecoverySnapshot|null)=>{
@@ -35,9 +37,11 @@ export function useWorkspaceRecovery(desktop:boolean,workspace:Workspace,setWork
  },[desktop]);
  useEffect(()=>{
   if(!ready||!enabled)return;
-  const next=new RecoveryQueue(recoveryApi,value=>setWarning("Recovery could not save your latest changes: "+message(value)));
+  const changed=()=>{if(alive.current)setSourceRevision(value=>value+1);};
+  const next=new RecoveryQueue(recoveryApi,value=>setWarning("Recovery could not save your latest changes: "+message(value)),changed);
+  sourceQueues.current.add(next);
   queue.current=next;
-  return()=>{next.dispose();if(queue.current===next)queue.current=null;};
+  return()=>{next.dispose();if(queue.current===next)queue.current=null;void next.settled().then(()=>{sourceQueues.current.delete(next);changed();});};
  },[ready,enabled]);
  const schedule=useCallback(()=>queue.current?.schedule(snapshotWorkspace(transaction.current??latest.current,positions.current)),[positions]);
  useEffect(()=>{if(ready)schedule();},[workspace,ready,schedule]);
@@ -47,6 +51,7 @@ export function useWorkspaceRecovery(desktop:boolean,workspace:Workspace,setWork
   catch(error){transaction.current=null;queue.current?.schedule(snapshotWorkspace(latest.current,positions.current));throw error;}
  },[positions]);
  const finishClose=useCallback(async()=>{await queue.current?.close();},[]);
+ const sourceIds=useCallback(()=>new Set([...sourceQueues.current].flatMap(value=>[...value.sourceIds()])),[]);
  const restore=useCallback(async()=>{
   if(pending&&!error){
    const restored=restoreWorkspace(pending,nativeAdapter);
@@ -68,5 +73,5 @@ export function useWorkspaceRecovery(desktop:boolean,workspace:Workspace,setWork
   setWorking(true);await releasePending(pending);ownedPending.current=null;setEnabled(false);setWarning("Recovery is disabled for this session: "+error);
   setError(null);setPending(null);setReady(true);setWorking(false);
  },[error,pending]);
- return {ready,pending,error,working,warning,restore,discard,skip,schedule,checkpoint,finishClose};
+ return {ready,pending,error,working,warning,restore,discard,skip,schedule,checkpoint,finishClose,sourceOwnership:{revision:sourceRevision,sourceIds}};
 }

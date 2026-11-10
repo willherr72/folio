@@ -1,11 +1,31 @@
-import type { InkOverlay, Rotation } from "./types";
+import type { AnnotationRect, InkOverlay, PagePlan, Rotation } from "./types";
 
 export interface Point { x: number; y: number }
+
+/** Arrow keys follow the displayed page rather than its unrotated PDF axes. */
+export function screenArrowDelta(key:string,shift:boolean,rotation:Rotation):Point|null {
+  const delta=({ArrowLeft:{x:-1,y:0},ArrowRight:{x:1,y:0},ArrowUp:{x:0,y:-1},ArrowDown:{x:0,y:1}} as Record<string,Point>)[key];
+  if(!delta)return null;
+  const x=delta.x*(shift?10:1),y=delta.y*(shift?10:1);
+  switch(rotation){case 90:return {x:y,y:-x};case 180:return {x:-x,y:-y};case 270:return {x:-y,y:x};default:return {x,y};}
+}
 
 export function displayDimensions(width: number, height: number, rotation: Rotation) {
   return rotation === 90 || rotation === 270
     ? { width: height, height: width }
     : { width, height };
+}
+
+export function pageVisibleRect(page:Pick<PagePlan,"width"|"height"|"rotation"|"crop">):AnnotationRect {
+  const crop=page.crop??{x:0,y:0,width:page.width,height:page.height};
+  const a=toDisplayPoint(crop,page.width,page.height,page.rotation);
+  const b=toDisplayPoint({x:crop.x+crop.width,y:crop.y+crop.height},page.width,page.height,page.rotation);
+  return {x:Math.min(a.x,b.x),y:Math.min(a.y,b.y),width:Math.abs(a.x-b.x),height:Math.abs(a.y-b.y)};
+}
+
+export function rectVisibleOnPage(rect:AnnotationRect,page:Pick<PagePlan,"width"|"height"|"crop">):boolean {
+  const crop=page.crop??{x:0,y:0,width:page.width,height:page.height};
+  return rect.x<crop.x+crop.width&&rect.y<crop.y+crop.height&&rect.x+rect.width>crop.x&&rect.y+rect.height>crop.y;
 }
 
 export function toDisplayPoint(point: Point, width: number, height: number, rotation: Rotation): Point {
@@ -68,16 +88,17 @@ export function clientPointToPage(
   width: number,
   height: number,
   rotation: Rotation,
+  crop?: AnnotationRect,
 ): Point {
-  const display = displayDimensions(width, height, rotation);
+  const display = pageVisibleRect({width,height,rotation,crop});
   const displayed = {
-    x: (clientX - rect.left) * display.width / rect.width,
-    y: (clientY - rect.top) * display.height / rect.height,
+    x: display.x+(clientX - rect.left) * display.width / rect.width,
+    y: display.y+(clientY - rect.top) * display.height / rect.height,
   };
   const original = fromDisplayPoint(displayed, width, height, rotation);
   return {
-    x: Math.max(0, Math.min(width, original.x)),
-    y: Math.max(0, Math.min(height, original.y)),
+    x: Math.max(crop?.x??0, Math.min(crop?crop.x+crop.width:width, original.x)),
+    y: Math.max(crop?.y??0, Math.min(crop?crop.y+crop.height:height, original.y)),
   };
 }
 /** Proportional resize around the ink origin, constrained to the source page. */

@@ -337,6 +337,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 ExportRequest {
                     flatten: false,
                     pages: vec![PagePlan {
+                        crop: None,
                         id: "probe-page".into(),
                         source_id: source.id.clone(),
                         page_index: 0,

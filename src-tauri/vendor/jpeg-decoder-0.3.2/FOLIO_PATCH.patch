@@ -1,0 +1,102 @@
+--- a/.gitignore
++++ b/.gitignore
+@@ -1,2 +1,6 @@
+ Cargo.lock
+ target/
++
++# Preserve the published archive's lockfile for byte-for-byte provenance checks.
++!Cargo.lock
++.cargo-ok
+--- a/src/huffman.rs
++++ b/src/huffman.rs
+@@ -14,6 +14,9 @@
+ pub struct HuffmanDecoder {
+     bits: u64,
+     num_bits: u8,
++    // Lookahead may be padded after a marker, but those synthetic bits must
++    // never become image coefficients. Track actual entropy separately.
++    real_bits: u8,
+     marker: Option<Marker>,
+ }
+ 
+@@ -22,6 +25,7 @@
+         HuffmanDecoder {
+             bits: 0,
+             num_bits: 0,
++            real_bits: 0,
+             marker: None,
+         }
+     }
+@@ -36,7 +40,7 @@
+         let (value, size) = table.lut[self.peek_bits(LUT_BITS) as usize];
+ 
+         if size > 0 {
+-            self.consume_bits(size);
++            self.consume_bits(size)?;
+             Ok(value)
+         }
+         else {
+@@ -46,7 +50,7 @@
+                 let code = (bits >> (15 - i)) as i32;
+ 
+                 if code <= table.maxcode[i as usize] {
+-                    self.consume_bits(i + 1);
++                    self.consume_bits(i + 1)?;
+ 
+                     let index = (code + table.delta[i as usize]) as usize;
+                     return Ok(table.values[index]);
+@@ -69,7 +73,7 @@
+                 let run = run_size >> 4;
+                 let size = run_size & 0x0f;
+ 
+-                self.consume_bits(size);
++                self.consume_bits(size)?;
+                 return Ok(Some((value, run)));
+             }
+         }
+@@ -84,7 +88,7 @@
+         }
+ 
+         let bits = self.peek_bits(count);
+-        self.consume_bits(count);
++        self.consume_bits(count)?;
+ 
+         Ok(bits)
+     }
+@@ -98,6 +102,7 @@
+     pub fn reset(&mut self) {
+         self.bits = 0;
+         self.num_bits = 0;
++        self.real_bits = 0;
+     }
+ 
+     pub fn take_marker<R: Read>(&mut self, reader: &mut R) -> Result<Option<Marker>> {
+@@ -113,11 +118,17 @@
+     }
+ 
+     #[inline]
+-    fn consume_bits(&mut self, count: u8) {
++    fn consume_bits(&mut self, count: u8) -> Result<()> {
+         debug_assert!(self.num_bits >= count);
++
++        if count > self.real_bits {
++            return Err(Error::Format("incomplete entropy data before JPEG marker".to_owned()));
++        }
+ 
+         self.bits <<= count as usize;
+         self.num_bits -= count;
++        self.real_bits -= count;
++        Ok(())
+     }
+ 
+     fn read_bits<R: Read>(&mut self, reader: &mut R) -> Result<()> {
+@@ -154,6 +165,9 @@
+ 
+             self.bits |= (byte as u64) << (56 - self.num_bits);
+             self.num_bits += 8;
++            if self.marker.is_none() {
++                self.real_bits += 8;
++            }
+         }
+ 
+         Ok(())

@@ -1,16 +1,21 @@
 //! Portable editable text/ink annotations. Their PDF appearances are independent
 //! of Folio, while bounded, versioned metadata restores exact editor geometry.
-use super::{EngineError, EngineResult, PageGeometry, MAX_SOURCE_BYTES};
+use super::{EngineError, EngineResult, PageGeometry};
 use crate::fonts::{FontAsset, FontRegistry};
+use crate::image_persistence::{self, ImageImportCache, PreparedImageAsset};
 use crate::types::*;
 use lopdf::{dictionary, Dictionary, Document, Object, Stream, StringFormat};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
-use std::{collections::HashMap, io::Read, path::Path, sync::Arc};
+use std::{collections::HashMap, sync::Arc};
 
 #[path = "custom_font_pdf.rs"]
 mod custom_font_pdf;
 pub(super) use custom_font_pdf::ImportCache;
+pub(super) use custom_font_pdf::legacy_encoding_matches;
+#[path = "overlay_render_budget.rs"]
+mod render_budget;
+pub(super) use render_budget::Limits as GeneratedLimits;
 
 /// Reuse the audited full-font resource format for explicit source-text substitution.
 pub(super) fn install_font_resource(
@@ -24,6 +29,10 @@ pub(super) fn install_font_resource(
 }
 
 const MAX_METADATA_BYTES: usize = 32 * 1024 * 1024;
+
+pub(super) fn install_paragraph_font_resource(document:&mut Document,asset:&FontAsset)->EngineResult<Object> {
+    Ok(custom_font_pdf::install(document,Object::Dictionary(custom_font_pdf::paragraph_font(asset)?)))
+}
 const MAX_AP_BYTES: usize = 64 * 1024 * 1024;
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -77,17 +86,32 @@ pub(super) struct PortableRecord {
     appearance_hash: String,
     #[serde(skip)]
     pub(super) custom_font: Option<Arc<FontAsset>>,
+    #[serde(skip)]
+    pub(super) image: Option<Arc<PreparedImageAsset>>,
+    /// Bound from the containing page, never from serialized annotation metadata.
+    #[serde(skip)]
+    unit:f32,
 }
 
 impl PortableRecord {
     pub(super) fn displayed(&self, current: PageGeometry) -> Option<Overlay> {
         let old = self.frame.geometry()?;
+        let same_frame=old.left==current.left&&old.bottom==current.bottom&&old.right==current.right&&old.top==current.top&&old.rotation==current.rotation;
         let convert = |point: Point| {
+            // The containing page already has this frame; a round trip through
+            // PDF coordinates would add rounding to an unchanged annotation.
+            if same_frame {return point;}
             let (x, y) = old.displayed_to_pdf(point);
             current.pdf_to_displayed(x.value, y.value)
         };
         let mut overlay = self.overlay.clone();
         match &mut overlay {
+            Overlay::Image(image) => {
+                let point=convert(Point{x:image.x,y:image.y});
+                image.x=point.x; image.y=point.y;
+                image.rotation=(image.rotation + current.rotation + 360 - old.rotation)%360;
+                image.validate(current.displayed_size().width,current.displayed_size().height).ok()?;
+            }
             Overlay::Text(text) => {
                 let point = convert(Point {
                     x: text.x,
@@ -96,11 +120,12 @@ impl PortableRecord {
                 text.x = point.x;
                 text.y = point.y;
                 text.rotation = (text.rotation + current.rotation + 360 - old.rotation) % 360;
-                super::validate_text(
+                super::validate_text_in_units(
                     text,
                     current.displayed_size().width,
                     current.displayed_size().height,
                     self.custom_font.as_deref(),
+                    self.unit,
                 )
                 .ok()?;
             }
@@ -114,6 +139,7 @@ impl PortableRecord {
                     ink,
                     current.displayed_size().width,
                     current.displayed_size().height,
+                    self.unit,
                 )
                 .ok()?;
             }
@@ -312,7 +338,7 @@ const TIMES_BOLD_ITALIC_WIDTHS: [u16; 224] = [
     278, 500, 556, 500, 500, 500, 500, 500, 570, 500, 556, 556, 556, 556, 444, 500, 444,
 ];
 
-fn text_advance(line: &str, font: TextFont) -> EngineResult<f32> {
+pub(super) fn text_advance(line: &str, font: TextFont) -> EngineResult<f32> {
     let bytes = win_ansi(line)?;
     let widths = match font {
         TextFont::Helvetica | TextFont::HelveticaOblique => &HELVETICA_WIDTHS,
@@ -332,16 +358,42 @@ fn text_advance(line: &str, font: TextFont) -> EngineResult<f32> {
         .sum())
 }
 
+#[derive(Clone,Copy,Default)]
+struct RenderResources<'a> {font:Option<&'a Object>,image:Option<lopdf::ObjectId>}
+
+fn image_appearance(image: &ImageOverlay, geometry: PageGeometry, asset: &PreparedImageAsset,installed:Option<lopdf::ObjectId>) -> EngineResult<Appearance> {
+    use lopdf::content::{Content, Operation};
+    image.validate(geometry.displayed_size().width, geometry.displayed_size().height)?;
+    if image.asset_id != asset.asset.info().id {
+        return Err(EngineError::InvalidRequest("Image resource identity mismatch.".into()));
+    }
+    let points = image.corners().map(|p| { let (x,y)=geometry.displayed_to_pdf(p); (x.value,y.value) });
+    let origin=points[3];
+    let matrix=[points[2].0-origin.0,points[2].1-origin.1,points[0].0-origin.0,points[0].1-origin.1,origin.0,origin.1];
+    let bounds=[points.iter().map(|p|p.0).fold(f32::INFINITY,f32::min),points.iter().map(|p|p.1).fold(f32::INFINITY,f32::min),
+        points.iter().map(|p|p.0).fold(f32::NEG_INFINITY,f32::max),points.iter().map(|p|p.1).fold(f32::NEG_INFINITY,f32::max)];
+    let content=Content {operations:vec![Operation::new("q",vec![]),Operation::new("cm",matrix.into_iter().map(Object::Real).collect()),
+        Operation::new("Do",vec![Object::Name(b"FolioImage".to_vec())]),Operation::new("Q",vec![])]}.encode().map_err(pdf_error)?;
+    Ok(Appearance {content,bounds,resources:dictionary! {"XObject"=>dictionary! {"FolioImage"=>installed.map(Object::Reference).unwrap_or_else(||Object::Stream(asset.prepared.form().clone()))}},
+        fields:dictionary! {"Subtype"=>"Stamp","Name"=>"FolioImage","Contents"=>pdf_string("Image")}})
+}
+
 fn appearance(
     overlay: &Overlay,
     geometry: PageGeometry,
     legacy_text: bool,
     custom: Option<&FontAsset>,
+    image: Option<&PreparedImageAsset>,
+    unit:f32,
+    installed:RenderResources<'_>,
 ) -> EngineResult<Appearance> {
+    if let Overlay::Image(overlay) = overlay {
+        return image_appearance(overlay, geometry, image.ok_or_else(|| EngineError::InvalidRequest("Image resource is unavailable.".into()))?,installed.image);
+    }
     #[cfg(feature = "shaped-text")]
     if let Overlay::Text(text) = overlay {
         if text.shaping.is_some() {
-            return shaped_appearance(text, geometry, custom);
+            return shaped_appearance(text, geometry, custom,unit,installed.font);
         }
     }
     use lopdf::content::{Content, Operation};
@@ -363,18 +415,19 @@ fn appearance(
     match overlay {
         Overlay::Text(text) => {
             super::validate_id("text id", &text.id)?;
-            super::validate_text(
+            super::validate_text_in_units(
                 text,
                 geometry.displayed_size().width,
                 geometry.displayed_size().height,
                 custom,
+                unit,
             )?;
             let color = rgb(&text.color)?;
             resources.set(
                 "Font",
-                dictionary! {"FolioFont"=>match custom {
-                    Some(asset) => custom_font_pdf::font(asset)?,
-                    None => font(text.font_name),
+                dictionary! {"FolioFont"=>match installed.font {
+                    Some(value)=>value.clone(),
+                    None=>Object::Dictionary(match custom {Some(asset)=>custom_font_pdf::font(asset)?,None=>font(text.font_name)}),
                 }},
             );
             fields.set("Subtype", "FreeText");
@@ -504,6 +557,7 @@ fn appearance(
                 ink,
                 geometry.displayed_size().width,
                 geometry.displayed_size().height,
+                unit,
             )?;
             let color = rgb(&ink.color)?;
             fields.set("Subtype", "Ink");
@@ -567,25 +621,35 @@ fn appearance(
     })
 }
 
+pub(super) fn finalize_generated(
+    document:&mut Document,request:&ExportRequest,geometries:&[PageGeometry],
+    registry:&FontRegistry,image_registry:&crate::ImageRegistry,limits:GeneratedLimits,
+    mut check:impl FnMut(usize,Option<usize>)->EngineResult<()>,
+)->EngineResult<()> {
+    if request.flatten{return Err(EngineError::InvalidRequest("generated overlay staging must retain editable appearances".into()));}
+    let budget=render_budget::Budget::new(document,limits,&mut ||check(0,Some(0)))?;
+    finalize_inner(document,request,geometries,registry,image_registry,true,Some(budget),check)
+}
+
 pub(super) fn finalize(
-    path: &Path,
+    document: &mut Document,
     request: &ExportRequest,
     geometries: &[PageGeometry],
     registry: &FontRegistry,
+    image_registry: &crate::ImageRegistry,
+    persist_images:bool,
+    // None reports completed pages; Some checks cancellation within that page.
+    check: impl FnMut(usize, Option<usize>) -> EngineResult<()>,
 ) -> EngineResult<()> {
-    let file = std::fs::File::open(path).map_err(io_error)?;
-    if file.metadata().map_err(io_error)?.len() > MAX_SOURCE_BYTES {
-        return Err(EngineError::InvalidRequest(
-            "annotated export exceeds the 512 MiB limit".into(),
-        ));
-    }
-    let options = lopdf::LoadOptions {
-        strict: true,
-        max_decompressed_size: Some(MAX_AP_BYTES),
-        ..Default::default()
-    };
-    let mut document = Document::load_from_with_options(file.take(MAX_SOURCE_BYTES + 1), options)
-        .map_err(pdf_error)?;
+    finalize_inner(document,request,geometries,registry,image_registry,persist_images,None,check)
+}
+fn finalize_inner(
+    document:&mut Document,request:&ExportRequest,geometries:&[PageGeometry],
+    registry:&FontRegistry,image_registry:&crate::ImageRegistry,persist_images:bool,
+    mut budget:Option<render_budget::Budget>,
+    mut check:impl FnMut(usize,Option<usize>)->EngineResult<()>,
+)->EngineResult<()> {
+    check(0,None)?;
     let page_ids: Vec<_> = document.get_pages().into_values().collect();
     if page_ids.len() != request.pages.len() || page_ids.len() != geometries.len() {
         return Err(EngineError::InvalidRequest(
@@ -593,13 +657,18 @@ pub(super) fn finalize(
         ));
     }
     let mut embedded_fonts = HashMap::new();
+    let mut prepared_images: HashMap<String, Arc<PreparedImageAsset>> = HashMap::new();
+    let mut embedded_images = HashMap::new();
+    let mut prepared_image_bytes = 0usize;
     for (index, page_id) in page_ids.into_iter().enumerate() {
+        check(index,Some(0))?;
+        let unit=super::physical_units::page_unit(document,page_id)?;
         let mut wrapped_contents = false;
         let flatten_portable = request.flatten
             && request.pages[index]
                 .overlays
                 .iter()
-                .any(|overlay| matches!(overlay, Overlay::Text(text) if text.font_id.is_some()));
+                .any(|overlay| matches!(overlay, Overlay::Text(_) | Overlay::Image(_)));
         let original = document
             .get_dictionary(page_id)
             .map_err(pdf_error)?
@@ -616,6 +685,7 @@ pub(super) fn finalize(
                 .clone(),
             None => Vec::new(),
         };
+        let original_annotation_count = annotations.len();
         for annotation in &mut annotations {
             if let Object::Dictionary(dictionary) = annotation {
                 let mut dictionary = dictionary.clone();
@@ -624,8 +694,9 @@ pub(super) fn finalize(
             }
         }
         {
-            for overlay in &request.pages[index].overlays {
-                if !matches!(overlay, Overlay::Text(_) | Overlay::Ink(_)) {
+            for (overlay_index,overlay) in request.pages[index].overlays.iter().enumerate() {
+                check(index,Some(overlay_index))?;
+                if !matches!(overlay, Overlay::Text(_) | Overlay::Ink(_) | Overlay::Image(_)) {
                     continue;
                 }
                 let custom = match overlay {
@@ -639,16 +710,60 @@ pub(super) fn finalize(
                 if request.flatten && !flatten_portable {
                     continue;
                 }
-                let rendered = appearance(overlay, geometries[index], false, custom.as_deref())?;
+                let image = if let Overlay::Image(overlay) = overlay {
+                    if !prepared_images.contains_key(&overlay.asset_id) {
+                        let asset = image_registry.get(&overlay.asset_id)?;
+                        let prepared = image_registry.prepared_pdf(&overlay.asset_id)?;
+                        check(index,Some(overlay_index))?;
+                        prepared_image_bytes = prepared_image_bytes.checked_add(image_persistence::resource_bytes(prepared.form()))
+                            .filter(|value| *value <= 512 * 1024 * 1024)
+                            .ok_or_else(|| EngineError::InvalidRequest("Prepared image resources exceed 512 MiB.".into()))?;
+                        prepared_images.insert(overlay.asset_id.clone(), Arc::new(PreparedImageAsset {asset,prepared}));
+                    }
+                    prepared_images.get(&overlay.asset_id).cloned()
+                } else {None};
+                // Admit shared assets before copying their payloads into the
+                // output graph. Appearance construction receives references,
+                // so later overlays do not rebuild/copy an already shared font
+                // or an image form merely to replace it with that reference.
+                if let Some(asset)=&custom {
+                    if !embedded_fonts.contains_key(&asset.info.id){
+                        if let Some(b)=&budget{b.font_inputs(asset)?;}
+                        let value=Object::Dictionary(custom_font_pdf::font(asset)?);
+                        if let Some(b)=&mut budget{b.font(&value,&mut ||check(index,Some(overlay_index)))?;}
+                        let value=custom_font_pdf::install(document,value);
+                        embedded_fonts.insert(asset.info.id.clone(),value);
+                    }
+                }
+                if let Some(image)=&image {
+                    if !embedded_images.contains_key(&image.asset.info().id){
+                        let persist=!request.flatten&&persist_images;
+                        if let Some(b)=&mut budget {
+                            b.image(image.prepared.form(),&mut ||check(index,Some(overlay_index)))?;
+                            if persist {b.attachment(&image_persistence::attachment_dictionary(&image.asset),image.asset.bytes(),&mut ||check(index,Some(overlay_index)))?;}
+                        }
+                        let form=image.prepared.install_copy(document);
+                        let file=persist.then(||document.add_object(image_persistence::attachment(&image.asset)));
+                        embedded_images.insert(image.asset.info().id.clone(),(form,file));
+                    }
+                }
+                let image_resource=image.as_ref().and_then(|image|embedded_images.get(&image.asset.info().id)).copied();
+                let installed=RenderResources{font:custom.as_ref().and_then(|asset|embedded_fonts.get(&asset.info.id)),image:image_resource.map(|v|v.0)};
+                let rendered = appearance(overlay, geometries[index], false, custom.as_deref(), image.as_deref(),unit,installed)?;
+                check(index,Some(overlay_index))?;
                 let record = PortableRecord {
-                    version: if matches!(overlay,Overlay::Text(t) if t.shaping.is_some()) {
+                    version: if image.is_some() { 5 } else if matches!(overlay,Overlay::Text(t) if t.area.is_some()) {
+                        4
+                    } else if matches!(overlay,Overlay::Text(t) if t.shaping.is_some()) {
                         3
                     } else if custom.is_some() {
                         2
                     } else {
                         1
                     },
+                    unit,
                     custom_font: None,
+                    image: None,
                     frame: geometries[index].into(),
                     overlay: overlay.clone(),
                     appearance_hash: hash(&rendered.content),
@@ -662,35 +777,25 @@ pub(super) fn finalize(
                 }
                 let mut resources = rendered.resources;
                 if let Ok(fonts) = resources.get_mut(b"Font").and_then(Object::as_dict_mut) {
-                    let resource = if let Some(asset) = &custom {
-                        embedded_fonts
-                            .entry(asset.info.id.clone())
-                            .or_insert_with(|| {
-                                custom_font_pdf::install(
-                                    &mut document,
-                                    fonts.get(b"FolioFont").expect("generated font").clone(),
-                                )
-                            })
-                            .clone()
-                    } else {
-                        Object::Reference(
-                            document
-                                .add_object(fonts.get(b"FolioFont").map_err(pdf_error)?.clone()),
-                        )
+                    let original=fonts.remove(b"FolioFont").ok_or_else(||EngineError::InvalidRequest("missing generated font".into()))?;
+                    let resource=if matches!(original,Object::Reference(_)){original}else{
+                        if let Some(b)=&mut budget{b.font(&original,&mut ||check(index,Some(overlay_index)))?;}
+                        Object::Reference(document.add_object(original))
                     };
                     fonts.set("FolioFont", resource);
-                    let semantic: Vec<_> = fonts
-                        .iter()
-                        .filter(|(key, _)| key.as_slice() != b"FolioFont")
-                        .map(|(k, v)| (k.clone(), v.clone()))
-                        .collect();
-                    for (key, value) in semantic {
-                        fonts.set(key, custom_font_pdf::install(&mut document, value));
+                    let semantic:Vec<_>=fonts.iter().filter(|(key,_)|key.as_slice()!=b"FolioFont").map(|(key,_)|key.clone()).collect();
+                    for key in semantic {
+                        let value=fonts.remove(&key).expect("collected generated font");
+                        if let Some(b)=&mut budget{b.font(&value,&mut ||check(index,Some(overlay_index)))?;}
+                        fonts.set(key, custom_font_pdf::install(document, value));
                     }
                 }
-                let ap_id=document.add_object(Stream::new(dictionary!{"Type"=>"XObject","Subtype"=>"Form","BBox"=>numbers(&rendered.bounds),"Resources"=>resources},rendered.content));
+                let image_attachment=image_resource.and_then(|v|v.1);
+                let ap=Object::Stream(Stream::new(dictionary!{"Type"=>"XObject","Subtype"=>"Form","BBox"=>numbers(&rendered.bounds),"Resources"=>resources},rendered.content));
+                if let Some(b)=&mut budget{b.object(&ap,&mut ||check(index,Some(overlay_index)))?;}
+                let ap_id=document.add_object(ap);
                 if request.flatten {
-                    append_appearance(&mut document, page_id, ap_id, &mut wrapped_contents)?;
+                    append_appearance(document, page_id, ap_id, &mut wrapped_contents)?;
                     continue;
                 }
                 let mut annotation = rendered.fields;
@@ -700,14 +805,27 @@ pub(super) fn finalize(
                 annotation.set("F", 4);
                 annotation.set("AP", dictionary! {"N"=>Object::Reference(ap_id)});
                 annotation.set("Folio", Object::String(metadata, StringFormat::Hexadecimal));
+                if let Some(file)=image_attachment { annotation.set("FolioImageAsset",file); }
                 let id = match overlay {
+                    Overlay::Image(image) => &image.id,
                     Overlay::Text(text) => &text.id,
                     Overlay::Ink(ink) => &ink.id,
                     _ => unreachable!(),
                 };
                 annotation.set("NM", pdf_string(id));
+                let annotation=Object::Dictionary(annotation);
+                if let Some(b)=&mut budget{b.annotation(&annotation,&mut ||check(index,Some(overlay_index)))?;}
                 annotations.push(Object::Reference(document.add_object(annotation)));
             }
+        }
+        // Placed images become page content when flattened, underneath PDF
+        // annotations. Use the same layering in editable/preview/print output:
+        // keep text/ink/images in their relative order beneath native annotations,
+        // highlights and comments. Preserve the existing path on image-free pages.
+        if !request.flatten && request.pages[index].overlays.iter().any(|o| matches!(o, Overlay::Image(_))) {
+            let mut drawings = annotations.split_off(original_annotation_count);
+            drawings.append(&mut annotations);
+            annotations = drawings;
         }
         if !annotations.is_empty() {
             document
@@ -715,14 +833,40 @@ pub(super) fn finalize(
                 .map_err(pdf_error)?
                 .set("Annots", annotations);
         }
-    }
-    document.save(path).map_err(io_error)?;
-    if std::fs::metadata(path).map_err(io_error)?.len() > MAX_SOURCE_BYTES {
-        return Err(EngineError::InvalidRequest(
-            "annotated export exceeds the 512 MiB limit".into(),
-        ));
+        check(index+1,None)?;
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod save_cancellation_tests {
+    use super::*;
+    #[test]
+    fn cancellation_between_overlays_skips_the_second_appearance() {
+        let mut document=Document::with_version("1.7");let tree=document.new_object_id();
+        let page=document.add_object(dictionary!{"Type"=>"Page","Parent"=>tree,"MediaBox"=>vec![0.into(),0.into(),300.into(),400.into()],"Resources"=>dictionary!{}});
+        document.objects.insert(tree,dictionary!{"Type"=>"Pages","Count"=>1,"Kids"=>vec![page.into()]}.into());
+        let root=document.add_object(dictionary!{"Type"=>"Catalog","Pages"=>tree});document.trailer.set("Root",root);
+        let overlays:Vec<_>=["first","second"].iter().map(|id|serde_json::json!({"type":"text","id":id,"x":20,"y":40,"text":id,"fontSize":12,"fontName":"Helvetica","color":"#123456","rotation":0})).collect();
+        let request:ExportRequest=serde_json::from_value(serde_json::json!({"pages":[{"id":"p","sourceId":"s","pageIndex":0,"width":300,"height":400,"rotation":0,"overlays":overlays}]})).unwrap();
+        let geometry=PageGeometry{left:0.,bottom:0.,right:300.,top:400.,rotation:0};
+        let control=crate::PdfSaveControl::new();let mut stopped=false;
+        let result=finalize(&mut document,&request,&[geometry],&FontRegistry::default(),&crate::ImageRegistry::default(),true,|_,overlay|{
+            if overlay==Some(1){stopped=true;control.cancel();}
+            if control.cancelled(){Err(EngineError::InvalidRequest("cancelled".into()))}else{Ok(())}
+        });
+        assert!(stopped&&result.is_err());
+        let appearances=document.objects.values().filter(|object|object.as_stream().is_ok_and(|s|s.dict.get(b"Type").and_then(Object::as_name).is_ok_and(|name|name==b"XObject"))).count();
+        assert_eq!(appearances,1,"The first appearance was rendered; cancellation skipped the second");
+    }
+}
+
+#[cfg(test)]
+pub(super) fn legacy_flatten_reference(document:&mut Document,page_id:lopdf::ObjectId,forms:&[lopdf::ObjectId])->EngineResult<()> {
+    // Test baseline through the established flatten primitive. Terminate a
+    // pending source path explicitly; the new adapter proves when this is safe.
+    document.add_page_contents(page_id,b"\nn\n".to_vec()).map_err(pdf_error)?;
+    let mut wrapped=false;for form in forms{append_appearance(document,page_id,*form,&mut wrapped)?;}Ok(())
 }
 
 fn append_appearance(
@@ -807,7 +951,7 @@ fn stream_content(stream: &Stream, limit: usize) -> Option<Vec<u8>> {
 /// Compare only the expected resource shape. Reject extra keys/array elements
 /// before descending, and never expand an attacker-controlled object graph into
 /// a canonical tree. Stream decompression is bounded by the expected byte count.
-fn same_object(document: &Document, actual: &Object, expected: &Object) -> bool {
+pub(crate) fn same_object(document: &Document, actual: &Object, expected: &Object) -> bool {
     fn compare(
         document: &Document,
         actual: &Object,
@@ -878,10 +1022,17 @@ fn same_object(document: &Document, actual: &Object, expected: &Object) -> bool 
 
 /// Import only metadata that still describes both the appearance and the public
 /// annotation fields. An edited/missing AP or third-party change stays native.
-pub(super) fn decode(
+#[allow(dead_code)]
+pub(super) fn decode(document:&Document,annotation:&Dictionary,fonts:&mut ImportCache,images:&mut ImageImportCache<'_>,unit:f32)->Option<PortableRecord>{
+    decode_bound(document,annotation,fonts,images,unit,None)
+}
+pub(super) fn decode_bound(
     document: &Document,
     annotation: &Dictionary,
     fonts: &mut ImportCache,
+    images: &mut ImageImportCache<'_>,
+    unit:f32,
+    semantic:Option<&super::annotation_import_semantics::Proof<'_>>,
 ) -> Option<PortableRecord> {
     let bytes = annotation.get(b"Folio").ok()?.as_str().ok()?;
     if bytes.len() > MAX_METADATA_BYTES {
@@ -890,13 +1041,19 @@ pub(super) fn decode(
     let metadata: serde_json::Value = serde_json::from_slice(bytes).ok()?;
     let legacy_text = metadata.get("overlay")?.get("fontName").is_none();
     let mut record: PortableRecord = serde_json::from_value(metadata).ok()?;
+    record.unit=unit;
     let font_id = match &record.overlay {
         Overlay::Text(text) => text.font_id.as_deref(),
         _ => None,
     };
-    if let Some(id) = font_id {
+    if let Overlay::Image(image) = &record.overlay {
+        if record.version != 5 { return None; }
+        record.image = Some(images.read_asset(annotation.get(b"FolioImageAsset").ok()?, &image.asset_id)?);
+    } else if let Some(id) = font_id {
         if record.version
-            != if matches!(&record.overlay,Overlay::Text(t) if t.shaping.is_some()) {
+            != if matches!(&record.overlay,Overlay::Text(t) if t.area.is_some()) {
+                4
+            } else if matches!(&record.overlay,Overlay::Text(t) if t.shaping.is_some()) {
                 3
             } else {
                 2
@@ -912,13 +1069,24 @@ pub(super) fn decode(
     }
     // Preserve third-party rich text, optional visibility, alternate appearances,
     // and other semantics that this editor cannot reproduce.
-    let rendered = appearance(
+    let geometry=record.frame.geometry()?;
+    let render = |scale| appearance(
         &record.overlay,
-        record.frame.geometry()?,
+        geometry,
         legacy_text,
         record.custom_font.as_deref(),
-    )
-    .ok()?;
+        record.image.as_deref(),
+        scale,
+        RenderResources::default(),
+    );
+    let rendered=render(unit).ok().filter(|value|hash(&value.content)==record.appearance_hash)
+        .or_else(||{
+            // Older writers shaped in raw coordinates. Their exact appearance
+            // remains admissible only under all the same stream, resources,
+            // public-field and bounds proofs below. No metadata scale is trusted.
+            if unit==1.||!matches!(&record.overlay,Overlay::Text(text) if text.shaping.is_some()){return None;}
+            render(1.).ok().filter(|value|hash(&value.content)==record.appearance_hash)
+        })?;
     let allowed = [
         "Type",
         "Rect",
@@ -935,7 +1103,7 @@ pub(super) fn decode(
         "Parent",
     ];
     if annotation.iter().any(|(key, _)| {
-        !rendered.fields.has(key) && !allowed.iter().any(|name| key.as_slice() == name.as_bytes())
+        !rendered.fields.has(key) && !(record.image.is_some() && key == b"FolioImageAsset") && !allowed.iter().any(|name| key.as_slice() == name.as_bytes()) && !semantic.is_some_and(|proof|proof.permits(document,annotation,key))
     }) {
         return None;
     }
@@ -1036,19 +1204,27 @@ pub(super) fn decode(
     {
         return None;
     }
-    if !same_object(
-        document,
-        stream.dict.get(b"Resources").ok()?,
-        &Object::Dictionary(rendered.resources),
-    ) {
-        return None;
-    }
+    let resources = stream.dict.get(b"Resources").ok()?;
+    let matches = if record.image.is_some() {
+        image_persistence::matches_resources(document, resources, &rendered.resources)
+    } else {
+        let mut expected = Object::Dictionary(rendered.resources);
+        if same_object(document, resources, &expected) { true }
+        else if record.custom_font.is_some() {
+            // Only the locally regenerated FolioFont slot may use historical
+            // bytes. All other resources, fields and appearance content retain
+            // the exact comparison above and below this compatibility choice.
+            let font = expected.as_dict_mut().ok()?.get_mut(b"Font").ok()?.as_dict_mut().ok()?
+                .get_mut(b"FolioFont").ok()?.as_dict_mut().ok()?;
+            custom_font_pdf::use_legacy_unicode(font);
+            same_object(document, resources, &expected)
+        } else { false }
+    };
+    if !matches { return None; }
     Some(record)
 }
 
-fn io_error(error: std::io::Error) -> EngineError {
-    EngineError::Io(format!("portable PDF persistence: {error}"))
-}
+
 fn pdf_error(error: lopdf::Error) -> EngineError {
     EngineError::Io(format!("portable PDF persistence: {error}"))
 }
@@ -1058,6 +1234,8 @@ fn shaped_appearance(
     text: &TextOverlay,
     geometry: PageGeometry,
     custom: Option<&FontAsset>,
+    unit:f32,
+    installed_font:Option<&Object>,
 ) -> EngineResult<Appearance> {
     super::validate_id("text id", &text.id)?;
     super::validate_point(
@@ -1068,7 +1246,10 @@ fn shaped_appearance(
     )?;
     let font = custom
         .ok_or_else(|| EngineError::InvalidRequest("Shaped text requires a custom font.".into()))?;
-    let prepared = crate::prepare_text_overlay(font, text)?;
+    if unit!=1. {super::validate_raw_text_geometry(text,geometry.displayed_size().width,geometry.displayed_size().height)?;}
+    let physical=super::physical_units::text_in_points(text,unit)?;
+    let prepared = crate::prepare_text_overlay(font, &physical)?;
+    let scale=unit.recip();
     let color = prepared.preview.color;
     let mut resources = prepared.resources;
     if !resources.has(b"Font") {
@@ -1079,7 +1260,7 @@ fn shaped_appearance(
         .unwrap()
         .as_dict_mut()
         .unwrap()
-        .set("FolioFont", custom_font_pdf::font(font)?);
+        .set("FolioFont",match installed_font{Some(value)=>value.clone(),None=>Object::Dictionary(custom_font_pdf::font(font)?)});
     let point = |x, y| {
         let p = rotated_point(Point { x, y }, text.rotation);
         let (x, y) = geometry.displayed_to_pdf(Point {
@@ -1088,7 +1269,7 @@ fn shaped_appearance(
         });
         (x.value, y.value)
     };
-    let (e, f) = point(-prepared.origin[0], text.font_size + prepared.origin[1]);
+    let (e, f) = point(-prepared.origin[0]*scale, text.font_size + prepared.origin[1]*scale);
     let angle = (geometry.rotation + 360 - text.rotation) % 360;
     let (a, b, c, d) = match angle {
         0 => (1., 0., 0., 1.),
@@ -1096,6 +1277,7 @@ fn shaped_appearance(
         180 => (-1., 0., 0., -1.),
         _ => (0., -1., 1., 0.),
     };
+    let (a,b,c,d)=(a*scale,b*scale,c*scale,d*scale);
     let mut content = format!("q {a} {b} {c} {d} {e:.7} {f:.7} cm\n").into_bytes();
     content.extend_from_slice(&prepared.content);
     content.extend_from_slice(b"\nQ\n");
@@ -1112,7 +1294,7 @@ fn shaped_appearance(
         (rect.x, rect.y + rect.height),
         (rect.x + rect.width, rect.y + rect.height),
     ] {
-        let (x, y) = point(x, y);
+        let (x, y) = point(x*scale, y*scale);
         bounds[0] = bounds[0].min(x);
         bounds[1] = bounds[1].min(y);
         bounds[2] = bounds[2].max(x);

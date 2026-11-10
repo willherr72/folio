@@ -1,5 +1,9 @@
 # External selection and tagged-PDF investigation (#14 / #16)
 
+Historical September evidence. The [October copying contract](text-area-copy-policy.md)
+supersedes the strict external-copy requirement; the measured selection defects
+and raw strings below remain unchanged.
+
 Follow-up: the [version-2 copy gate](text-copy-gate-v2.md) now measures actual
 MuPDF selection in the native-area inspector. Historical page-extraction results
 below are retained; they are no longer substituted for selection evidence.

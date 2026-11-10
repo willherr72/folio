@@ -34,6 +34,7 @@ fn plan(source: &folio_engine::DocumentInfo) -> ExportRequest {
     ExportRequest {
         flatten: false,
         pages: vec![PagePlan {
+            crop: None,
             id: "page".into(),
             source_id: source.id.clone(),
             page_index: 0,
@@ -43,6 +44,143 @@ fn plan(source: &folio_engine::DocumentInfo) -> ExportRequest {
             overlays: vec![],
         }],
     }
+}
+
+#[test]
+fn split_line_edits_reject_overlap_but_allow_generated_reader_spaces() {
+    let temp = tempfile::tempdir().unwrap();
+    let engine = engine();
+    let path = temp.path().join("split-line.pdf");
+    fixture(
+        &path,
+        "Helvetica",
+        "BT /F1 12 Tf 0.001 Tc 60 300 Td (Old wor) Tj 42.679 0 Td (ds Neighbor) Tj ET",
+        0,
+    );
+    let source = engine.open_document(&path).unwrap();
+    let original = engine.source_bytes(&source.id).unwrap();
+    let run = engine
+        .list_text_runs(&source.id, 0)
+        .unwrap()
+        .runs
+        .into_iter()
+        .find(|r| r.text.starts_with("Old wor"))
+        .unwrap();
+    let error = engine
+        .replace_text(
+            &source.id,
+            0,
+            run.object_index,
+            &run.text,
+            &run.text.replace("Old", "Old this"),
+        )
+        .unwrap_err()
+        .to_string();
+    assert!(error.contains("overlap neighboring text"), "{error}");
+    assert!(error.contains("does not reflow"), "{error}");
+    assert_eq!(engine.source_bytes(&source.id).unwrap(), original);
+    // Shortening adds a generated reading separator, not an authored space.
+    // It must succeed without changing the adjacent positioned show.
+    let before = engine.list_text_runs(&source.id, 0).unwrap().runs;
+    let changed = engine
+        .replace_text(&source.id, 0, run.object_index, &run.text, "Old")
+        .unwrap();
+    let after = engine.list_text_runs(&changed.id, 0).unwrap().runs;
+    assert_eq!(after[0].source_text.as_deref().unwrap_or(&after[0].text), "Old");
+    assert_eq!(after[1].text, before[1].text);
+    assert_eq!(after[1].bounds, before[1].bounds);
+    assert_eq!(after[1].font_name, before[1].font_name);
+    assert_eq!(after[1].font_size, before[1].font_size);
+    assert_eq!(engine.source_bytes(&source.id).unwrap(), original);
+    engine.close_document(&changed.id).unwrap();
+    engine.close_document(&source.id).unwrap();
+}
+
+#[test]
+fn printer_graphics_defaults_are_preserved_by_stream_edits() {
+    use lopdf::{dictionary, Object};
+    let temp = tempfile::tempdir().unwrap();
+    let engine = engine();
+    let substitute = engine
+        .fonts()
+        .register(
+            std::fs::read(
+                PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+                    .join("../tests/fixtures/corpus/fonts/DejaVuSerif.ttf"),
+            )
+            .unwrap(),
+        )
+        .unwrap();
+    for (key, value, supported) in [
+        ("OP", Object::Boolean(false), true),
+        ("op", Object::Boolean(false), true),
+        ("OPM", Object::Integer(1), true),
+        ("SA", Object::Boolean(false), true),
+        ("SM", Object::Real(0.02), true),
+        ("OP", Object::Boolean(true), false),
+        ("op", Object::Boolean(true), false),
+        ("OPM", Object::Integer(2), false),
+        ("SA", Object::Boolean(true), false),
+        ("SM", Object::Real(-0.1), false),
+    ] {
+        let path = temp.path().join("printer.pdf");
+        fixture(
+            &path,
+            "Helvetica",
+            "/Printer gs BT /F1 16 Tf 60 300 Td (Old) Tj 0 -40 Td (Neighbor) Tj ET",
+            0,
+        );
+        let mut pdf = lopdf::Document::load(&path).unwrap();
+        let mut state = dictionary! {"Type"=>"ExtGState"};
+        state.set(key, value.clone());
+        let state_id = pdf.add_object(state);
+        let page_id = *pdf.get_pages().values().next().unwrap();
+        pdf.get_dictionary_mut(page_id)
+            .unwrap()
+            .get_mut(b"Resources")
+            .unwrap()
+            .as_dict_mut()
+            .unwrap()
+            .set("ExtGState", dictionary! {"Printer"=>state_id});
+        pdf.save(&path).unwrap();
+        let original = std::fs::read(&path).unwrap();
+        let source = engine.open_document(&path).unwrap();
+        let runs = engine.list_text_runs(&source.id, 0).unwrap();
+        assert_eq!(
+            runs.runs[0].supported, supported,
+            "{key}: {:?}",
+            runs.runs[0].reason
+        );
+        assert!(!runs.runs[0].can_substitute);
+        assert!(engine
+            .replace_text_with_font(
+                &source.id,
+                0,
+                runs.runs[0].object_index,
+                "Old",
+                "New",
+                Some(&substitute.id)
+            )
+            .is_err());
+        let edited = engine.replace_text(&source.id, 0, runs.runs[0].object_index, "Old", "New");
+        if supported {
+            let edited = edited.unwrap();
+            let bytes = engine.source_bytes(&edited.id).unwrap();
+            let saved = lopdf::Document::load_mem(&bytes).unwrap();
+            assert!(saved
+                .objects
+                .values()
+                .filter_map(|o| o.as_dict().ok())
+                .any(|d| d.get(key.as_bytes()).ok() == Some(&value)));
+            assert!(engine.extract_text(&edited.id, 0).unwrap().contains("New"));
+            engine.close_document(&edited.id).unwrap();
+        } else {
+            assert!(edited.is_err());
+        }
+        assert_eq!(std::fs::read(&path).unwrap(), original);
+        engine.close_document(&source.id).unwrap();
+    }
+    engine.fonts().remove(&substitute.id).unwrap();
 }
 
 #[test]
@@ -514,7 +652,7 @@ fn custom_font_encodings_are_explained_and_rejected() {
     for object in pdf.objects.values_mut() {
         if let Ok(dict) = object.as_dict_mut() {
             if dict.has(b"BaseFont") {
-                dict.set("Encoding",lopdf::dictionary! {"Type"=>"Encoding", "BaseEncoding"=>"WinAnsiEncoding", "Differences"=>vec![65.into(),lopdf::Object::Name(b"A".to_vec())]});
+                dict.set("Encoding",lopdf::dictionary! {"Type"=>"Encoding", "BaseEncoding"=>"WinAnsiEncoding", "Differences"=>vec![65.into(),lopdf::Object::Name(b"Z".to_vec())]});
             }
         }
     }
@@ -527,6 +665,35 @@ fn custom_font_encodings_are_explained_and_rejected() {
     assert!(engine
         .replace_text(&source.id, 0, 0, "Original", "Edit")
         .is_err());
+    engine.close_document(&source.id).unwrap();
+}
+
+#[test]
+fn equivalent_encoding_dictionary_allows_existing_text_edits() {
+    let temp = tempfile::tempdir().unwrap();
+    let path = temp.path().join("equivalent.pdf");
+    fixture(&path, "Helvetica", "BT /F1 16 Tf 60 300 Td (Original) Tj 0 -40 Td (Neighbor) Tj ET", 0);
+    let mut pdf = lopdf::Document::load(&path).unwrap();
+    for object in pdf.objects.values_mut() {
+        if let Ok(dict) = object.as_dict_mut() {
+            if dict.has(b"BaseFont") {
+                dict.set("Encoding", lopdf::dictionary! {"Type"=>"Encoding", "BaseEncoding"=>"WinAnsiEncoding", "Differences"=>vec![65.into(),lopdf::Object::Name(b"A".to_vec())]});
+            }
+        }
+    }
+    pdf.save(&path).unwrap();
+    let original = std::fs::read(&path).unwrap();
+    let engine = engine();
+    let source = engine.open_document(&path).unwrap();
+    let runs = engine.list_text_runs(&source.id, 0).unwrap();
+    assert!(runs.runs[0].supported, "{:?}", runs.runs[0].reason);
+    let changed = engine.replace_text(&source.id, 0, runs.runs[0].object_index, &runs.runs[0].text, "Edited").unwrap();
+    let after = engine.list_text_runs(&changed.id, 0).unwrap();
+    assert_eq!(after.runs[0].text, "Edited");
+    assert_eq!(after.runs[1].text, runs.runs[1].text);
+    assert_eq!(after.runs[1].bounds, runs.runs[1].bounds);
+    assert_eq!(std::fs::read(&path).unwrap(), original);
+    engine.close_document(&changed.id).unwrap();
     engine.close_document(&source.id).unwrap();
 }
 
@@ -637,7 +804,8 @@ fn editing_one_page_keeps_other_pages_and_imported_annotations_independent() {
     let annotated = temp.path().join("annotated.pdf");
     engine.export_pdf(request, &annotated).unwrap();
     let imported = engine.open_document(&annotated).unwrap();
-    assert_eq!(imported.pages[0].overlays.len(), 1);
+    assert!(imported.pages[0].overlays.is_empty());
+    assert_eq!(engine.list_native_comments(&imported.id).unwrap()[0].text,"Keep comment");
     let edited = engine
         .replace_text(&imported.id, 0, 0, "Original words", "Edited")
         .unwrap();
@@ -647,7 +815,8 @@ fn editing_one_page_keeps_other_pages_and_imported_annotations_independent() {
     let final_path = temp.path().join("final.pdf");
     engine.export_pdf(request, &final_path).unwrap();
     let reopened = engine.open_document(&final_path).unwrap();
-    assert_eq!(reopened.pages[0].overlays.len(), 1);
+    assert!(reopened.pages[0].overlays.is_empty());
+    assert_eq!(engine.list_native_comments(&reopened.id).unwrap()[0].text,"Keep comment");
     assert!(engine
         .extract_text(&reopened.id, 0)
         .unwrap()
@@ -760,8 +929,15 @@ fn recovery_restores_derived_text_bytes_and_overlays_after_original_is_removed()
         .map(|entry| entry.unwrap().path())
         .collect();
     assert_eq!(snapshots.len(), 1);
+    let stored = std::fs::read(&snapshots[0]).unwrap();
+    assert!(stored.starts_with(b"FOLIO-SEALED-"));
     assert_eq!(
-        std::fs::read(&snapshots[0]).unwrap(),
+        folio_engine::private_storage::unseal(
+            folio_engine::private_storage::Purpose::Source,
+            &stored,
+            512 * 1024 * 1024,
+        )
+        .unwrap(),
         derived_bytes.as_ref()
     );
     engine.close_document(&derived.id).unwrap();
@@ -794,7 +970,8 @@ fn recovery_restores_derived_text_bytes_and_overlays_after_original_is_removed()
         .extract_text(&reopened.id, 0)
         .unwrap()
         .contains("Edited"));
-    assert_eq!(reopened.pages[0].overlays.len(), 2);
+    assert_eq!(reopened.pages[0].overlays.len(), 1);
+    assert_eq!(engine.list_native_comments(&reopened.id).unwrap().len(),1);
     engine.close_document(&reopened.id).unwrap();
     engine.close_document(restored_id).unwrap();
 }

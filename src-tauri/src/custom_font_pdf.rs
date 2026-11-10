@@ -7,6 +7,26 @@ use std::{collections::HashMap, sync::Arc};
 
 const MAX_FONT_BYTES: usize = 16 * 1024 * 1024;
 
+// Historical writer bytes, for exact resource recognition only. Never publish
+// this cross-byte range in new output or use it as a general CMap fallback.
+const LEGACY_UNICODE: &[u8] = b"/CIDInit /ProcSet findresource begin\n12 dict begin\nbegincmap\n/CIDSystemInfo << /Registry (Adobe) /Ordering (UCS) /Supplement 0 >> def\n/CMapName /FolioUnicode def\n/CMapType 2 def\n1 begincodespacerange\n<0000> <FFFF>\nendcodespacerange\n1 beginbfrange\n<0000> <FFFF> <0000>\nendbfrange\nendcmap\nCMapName currentdict /CMap defineresource pop\nend\nend\n";
+
+pub(super) fn use_legacy_unicode(font: &mut Dictionary) {
+    font.set("ToUnicode", Object::Stream(Stream::new(dictionary!{}, LEGACY_UNICODE.to_vec())));
+}
+
+pub(in crate::engine) fn legacy_encoding_matches(pdf: &Document, actual: &Dictionary, bytes: &[u8], unicode: &[u8]) -> bool {
+    if unicode != LEGACY_UNICODE || bytes.len() > MAX_FONT_BYTES { return false; }
+    let Some(name) = actual.get(b"BaseFont").ok().and_then(|v| v.as_name().ok()) else { return false; };
+    if !name.starts_with(b"Folio") { return false; }
+    let Ok(asset) = FontAsset::parse(bytes.to_vec()) else { return false; };
+    let Ok(mut expected) = font_with_width_policy(&asset, name.ends_with(b"Paragraph")) else { return false; };
+    use_legacy_unicode(&mut expected);
+    // Name alone is never authority. Compare the entire known writer resource,
+    // including exact program/glyph-map streams, widths and content-addressed ID.
+    super::same_object(pdf, &Object::Dictionary(actual.clone()), &Object::Dictionary(expected))
+}
+
 #[derive(Default)]
 pub(in crate::engine) struct ImportCache {
     streams: HashMap<lopdf::ObjectId, Arc<FontAsset>>,
@@ -15,9 +35,20 @@ pub(in crate::engine) struct ImportCache {
 }
 
 pub(super) fn font(asset: &FontAsset) -> EngineResult<Dictionary> {
+    font_with_width_policy(asset,false)
+}
+
+/// Mixed paragraphs require identical advances in PDFium and independent PDF
+/// readers. PDFium truncates fractional CID widths; explicit integer widths
+/// avoid cumulative drift. Keep a distinct PDF identity from legacy resources.
+pub(super) fn paragraph_font(asset:&FontAsset)->EngineResult<Dictionary> {
+    font_with_width_policy(asset,true)
+}
+
+fn font_with_width_policy(asset:&FontAsset,integral:bool)->EngineResult<Dictionary> {
     let face = asset.face()?;
     let scale = 1000.0 / face.units_per_em() as f32;
-    let name = format!("Folio{}", asset.info.id);
+    let name = format!("Folio{}{}", asset.info.id,if integral {"Paragraph"}else{""});
     let bbox = face.global_bounding_box();
     let mut mapping = vec![0u8; 65536 * 2];
     let mut widths = Vec::new();
@@ -35,7 +66,9 @@ pub(super) fn font(asset: &FontAsset) -> EngineResult<Dictionary> {
             mapping[code as usize * 2..code as usize * 2 + 2]
                 .copy_from_slice(&glyph.0.to_be_bytes());
             widths.push(Object::Integer(code as i64));
-            widths.push(Object::Array(vec![Object::Real(advance as f32 * scale)]));
+            let width=if integral {Object::Integer((advance as f32/face.units_per_em() as f32*1000.).round() as i64)}
+                else {Object::Real(advance as f32 * scale)};
+            widths.push(Object::Array(vec![width]));
         }
     }
     let program = Stream::new(
@@ -58,12 +91,28 @@ pub(super) fn font(asset: &FontAsset) -> EngineResult<Dictionary> {
         "FontDescriptor"=>descriptor, "DW"=>0, "W"=>widths,
         "CIDToGIDMap"=>Object::Stream(Stream::new(dictionary! {}, mapping)),
     };
-    let unicode = b"/CIDInit /ProcSet findresource begin\n12 dict begin\nbegincmap\n/CIDSystemInfo << /Registry (Adobe) /Ordering (UCS) /Supplement 0 >> def\n/CMapName /FolioUnicode def\n/CMapType 2 def\n1 begincodespacerange\n<0000> <FFFF>\nendcodespacerange\n1 beginbfrange\n<0000> <FFFF> <0000>\nendbfrange\nendcmap\nCMapName currentdict /CMap defineresource pop\nend\nend\n";
+    let unicode = unicode_map();
     Ok(dictionary! {
         "Type"=>"Font", "Subtype"=>"Type0", "BaseFont"=>Object::Name(name.as_bytes().to_vec()),
         "Encoding"=>"Identity-H", "DescendantFonts"=>vec![Object::Dictionary(descendant)],
-        "ToUnicode"=>Object::Stream(Stream::new(dictionary! {}, unicode.to_vec())),
+        "ToUnicode"=>Object::Stream(Stream::new(dictionary! {}, unicode)),
     })
+}
+
+fn unicode_map() -> Vec<u8> {
+    let mut value = String::from("/CIDInit /ProcSet findresource begin\n12 dict begin\nbegincmap\n/CIDSystemInfo << /Registry (Adobe) /Ordering (UCS) /Supplement 0 >> def\n/CMapName /FolioUnicode def\n/CMapType 2 def\n1 begincodespacerange\n<0000> <FFFF>\nendcodespacerange\n");
+    // A bfrange increments only the final destination byte. Split the BMP at
+    // byte boundaries, omit surrogate code units, and keep sections <=100 rows.
+    let high_bytes: Vec<u16> = (0..=255).filter(|high| !(0xd8..=0xdf).contains(high)).collect();
+    for block in high_bytes.chunks(100) {
+        value.push_str(&format!("{} beginbfrange\n", block.len()));
+        for high in block {
+            value.push_str(&format!("<{:04X}> <{:04X}> <{:04X}>\n", high << 8, (high << 8) | 255, high << 8));
+        }
+        value.push_str("endbfrange\n");
+    }
+    value.push_str("endcmap\nCMapName currentdict /CMap defineresource pop\nend\nend\n");
+    value.into_bytes()
 }
 
 /// Streams and descendant dictionaries must become indirect PDF objects. The
@@ -72,9 +121,9 @@ pub(super) fn install(document: &mut Document, object: Object) -> Object {
     match object {
         Object::Dictionary(values) => {
             let mut output = Dictionary::new();
-            for (key, value) in values.iter() {
-                let value = install(document, value.clone());
-                output.set(key.clone(), value);
+            for (key, value) in values {
+                let value = install(document, value);
+                output.set(key, value);
             }
             Object::Reference(document.add_object(output))
         }

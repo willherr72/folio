@@ -9,7 +9,7 @@ const exec = promisify(execFile);
 const pid = process.env.FOLIO_APP_PID;
 if (!pid || !/^\d+$/.test(pid)) throw Error('Set FOLIO_APP_PID to the isolated test app.');
 const directory = resolve('tests/fixtures/corpus');
-const output = resolve('artifacts/corpus-ui'); mkdirSync(output, { recursive: true });
+const output = resolve(process.env.FOLIO_CORPUS_UI_OUTPUT || 'artifacts/corpus-ui'); mkdirSync(output, { recursive: true });
 const manifest = JSON.parse(readFileSync(resolve(directory, 'manifest.json'), 'utf8'));
 const browser = await chromium.connectOverCDP(process.env.FOLIO_CDP_URL || 'http://127.0.0.1:9239');
 const page = browser.contexts()[0].pages().find(p => !p.url().startsWith('devtools:'));
