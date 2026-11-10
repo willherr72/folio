@@ -1,0 +1,23 @@
+# Graph-native structured source assembly
+
+This is the next stage of the structured-composition design. Previous object relocation and controlled bounded input/output are implemented and verified. The authored Word-plus-Pictures baseline is still refused; its Word source has page MCIDs and a tagged hyperlink OBJR, while Pictures has a native comment, rotated cropped physical geometry and a shared image resource. These are preserved inputs, not interchangeable fixtures.
+
+## First deliverable: explicit structure ownership
+
+Implement a read-only ownership inspector over the catalog-reachable original graph. It verifies the structural hierarchy's parent links, immediate root children, MCR/MCID owners and OBJR owners, and compares them against the entire ParentTree. The owner dictionaries' StructParent/StructParents keys must be nonnegative, mutually exclusive and unique for different objects. Reverse MCID arrays retain null gaps. Null slots cannot own a forward content item; nonnull slots must refer to the same parent as the forward item. OBJRs must agree with the singleton reverse owner. Page references must name pages in this source. Indirect aliases are resolved by identity, never geometry.
+
+Inspect content-stream MCRs (including optional StmOwn), annotations and whole-object references. Preserve source attributes/alternate text/classes/IDs; this inspector must not reuse the selected-text checker's exclusion of unrelated attributes. It is an ownership model for copying unchanged graphs, not authorization to modify text and not certification of complete tagging, Unicode coverage, rendered invocation coverage or PDF/UA conformance. Whole-object references repeated on different pages may share one parent; conflicting parents or duplicate references for the same owner/page are refused. Catalog-reachable owners are considered; unreachable historical objects do not create false key collisions.
+
+Bound direct/indirect/semantic recursion at 64 and total traversal work at 1,000,000 steps, with at most 100,000 owners/elements/tree entries and MCIDs through 65,535. Every traversal checks cancellation; all results are local until success. Read-only rejection never mutates source objects. Generic indirect cycles are legal; repeated/cyclic semantic hierarchy and number-tree nodes are not.
+
+## Following assembly and integration
+
+Compose whole source page-tree blocks below a new Pages root, retaining each original source root's inherited geometry/resources. Use the graph's exact source-object map for content, annotations, resources and internal destinations. Create a new document catalog rather than copying source trailer/xref offsets. Preserve leading-document ordinary information/view preferences under an explicit combined-document policy; do not copy source conformance claims to the new catalog.
+
+Merge structure root children in source order, reparent only those children, preserve per-source language inheritance, allocate unique parent keys and rebuild ParentTree. RoleMap/ClassMap/IDTree collisions require source-qualified names and all standardized references updated before enablement; namespace objects remain identity-bound. Unrelated source attributes are retained. Validate the merged ownership model again. Tagged-plus-untagged output retains its logical tree without asserting complete Tagged PDF conformance.
+
+Form, named-destination, action, overlay/deletion and edit-lineage integration remain part of the full work. The initial complete-source block route must not silently drop unsupported catalog features: keep their refusal until the corresponding graph-native adapter is implemented. No PDFium import/repair round-trip is permitted on the authoritative output graph. Crop/rotation and explicit bookmark changes reuse existing geometry/model semantics after source page identities are established.
+
+The user-visible endpoint remains combined paragraph/image/page edits, Save, reopen and re-edit—not merely a passing internal inspector or append-only file. Build the ownership inspector first because its result is required by both structure merge and final verification. Enable Save only after saved-output tests, source hashes, text/raw glyph/image/navigation/annotation/tag checks and independent raster checks pass for the admitted route. Existing byte-exact complete-source Save remains intact.
+
+Primary reference: the locally hash-bound official Adobe PDF 1.7 reference, section 10.6, Tables 10.9–10.13 (printed pages 857, 863–864, 868–870), distinguishes marked-content containers and whole-object owners and defines the forward/reverse relationships. Scope and staging above are coordinator engineering decisions under standing autonomy.

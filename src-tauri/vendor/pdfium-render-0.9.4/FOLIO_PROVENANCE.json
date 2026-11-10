@@ -1,0 +1,25 @@
+{
+  "package": "pdfium-render",
+  "version": "0.9.4",
+  "archiveSha256": "8948a803616a9e936b15a6637af2cd48c5fb8ae0fcdeb3c32eac3a540e255a19",
+  "source": "https://crates.io/api/v1/crates/pdfium-render/0.9.4/download",
+  "modifiedFiles": [
+    {
+      "path": ".gitignore",
+      "upstreamSha256": "dbab7d64118da2fc7c94efa702b2a1a814454433f3b204931e033e3fac85ae77",
+      "patchedSha256": "13e044a897460c124d9f926ecd66c854486405c0ffd816c5ffb9fa37f0eabc00"
+    },
+    {
+      "path": "src/bindings/thread_safe.rs",
+      "upstreamSha256": "a4d8129956778d1d2672a985e400738485409db885e531ebbe903f5a12484650",
+      "patchedSha256": "ddcd51820dd975d22bdac7e8d71b1bb7a46ba240671ea8b4a0c99ad614da89ad"
+    }
+  ],
+  "addedFiles": [
+    {
+      "path": "LICENSE-APACHE",
+      "source": "https://www.apache.org/licenses/LICENSE-2.0.txt",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    }
+  ]
+}

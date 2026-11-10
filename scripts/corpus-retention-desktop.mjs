@@ -35,6 +35,6 @@ try {
   await snapshot('closed-idle-10s');
   const result = { passed: true, closedTabs: names, snapshots, forcedGarbageCollection: false,
     note: 'Natural idle snapshots. Process working sets include shared pages and allocator/GPU caches; these readings alone do not establish a leak.' };
-  writeFileSync(resolve('artifacts/corpus-ui/retention.json'), JSON.stringify(result, null, 2));
+  writeFileSync(resolve(process.env.FOLIO_CORPUS_UI_OUTPUT || 'artifacts/corpus-ui', 'retention.json'), JSON.stringify(result, null, 2));
   console.log(JSON.stringify(result, null, 2));
 } finally { await cdp.detach(); await browser.close(); }

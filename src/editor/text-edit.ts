@@ -1,3 +1,4 @@
+import type {FolioAdapter} from "./adapter";
 import {commit} from "./model";
 import type {DocumentInfo,PagePlan} from "./types";
 import type {DocumentSession} from "./workspace";
@@ -12,6 +13,20 @@ export function commitTextReplacement(session:DocumentSession, expected:PagePlan
  if (!result.id || session.sourceIds.includes(result.id)) throw new Error("The replacement must have a new source version.");
  return {...session,sourceIds:[...session.sourceIds,result.id],history:commit(session.history,current=>({
   ...current,selectedPageId:page.id,selectedOverlayId:null,
-  pages:current.pages.map(item=>item.id===page.id?{...item,sourceId:result.id,pageIndex:0}:item),
+  pages:current.pages.map(item=>item.id===page.id?{...item,sourceId:result.id,pageIndex:0,contentSourceId:undefined,protection:result.protection}:item),
  }))};
+}
+
+/** Listing, inspection and mutation must use one complete capability set. */
+export function supportsOccurrenceForm(adapter:FolioAdapter):boolean {
+ return !!adapter.listOccurrenceFormTextRuns&&!!adapter.replaceFormTextOccurrence;
+}
+export function supportsFormText(adapter:FolioAdapter):boolean {
+ return supportsOccurrenceForm(adapter)||!!adapter.listFormTextRuns&&!!adapter.replaceFormText;
+}
+export function supportsOccurrenceGroup(adapter:FolioAdapter):boolean {
+ return !!adapter.listOccurrenceTextRuns&&!!adapter.inspectOccurrenceTextGroup&&!!adapter.replaceTextGroupOccurrence;
+}
+export function supportsTextGroup(adapter:FolioAdapter):boolean {
+ return supportsOccurrenceGroup(adapter)||!!adapter.listTextRuns&&!!adapter.inspectTextGroup&&!!adapter.replaceTextGroup;
 }

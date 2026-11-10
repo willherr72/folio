@@ -1,0 +1,10 @@
+{
+  "origin": "Synthetic mixed Courier12/16 source,18pt leading; published before ink_vertical changes by source fingerprint e14ec907751a1296c80b7a9440560872c553e2634d2acd01a0eb8fed3c2c8f28",
+  "captureTest": "fresh_mixed_rows_retain_source_line_spacing_without_unneeded_widening",
+  "expectedBaselines": [
+    700,
+    681.888,
+    663.776
+  ],
+  "sha256": "5e151bc97362e0ce7c248438572400539e1c33ec51521ff76220f8e99d951f4a"
+}

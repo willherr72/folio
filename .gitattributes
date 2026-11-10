@@ -1,5 +1,6 @@
 * text=auto
 *.rs text eol=lf
+*.toml text eol=lf
 *.ts text eol=lf
 *.css text eol=lf
 *.md text eol=lf
@@ -9,6 +10,7 @@
 *.cmd text eol=crlf
 *.pdf binary
 *.png binary
+*.jpg binary
 *.ico binary
 
 # Preserve the bundled upstream font license, including its original whitespace.

@@ -1,0 +1,7 @@
+.image-handle-target { fill: transparent; pointer-events: all; }
+.image-handle-mark { fill: #fff; stroke: var(--accent); stroke-width: 1.5; vector-effect: non-scaling-stroke; pointer-events: none; }
+.image-handles > g:focus { outline: none; }
+.image-handles > g:focus-visible .image-handle-mark { fill: var(--accent); stroke: #fff; stroke-width: 2; }
+.image-dimensions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.image-dimensions input { min-width: 0; width: 100%; }
+.image-properties-error { color: var(--danger, #a63225); font-size: 12px; }

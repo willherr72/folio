@@ -1,0 +1,98 @@
+{
+  "generator": "generate.py",
+  "pypdf": "6.14.2",
+  "pymupdf": "1.27.1",
+  "fixtures": [
+    {
+      "file": "rc4_40.pdf",
+      "algorithm": "RC4-40",
+      "user": "reader",
+      "owner": "owner",
+      "sha256": "7af1ccb5106eefde20adc9930fedbefb43938a2dfb8ed854c5e7c3ff1b9a76ba"
+    },
+    {
+      "file": "rc4_128.pdf",
+      "algorithm": "RC4-128",
+      "user": "reader",
+      "owner": "owner",
+      "sha256": "801dde51823e5cd41f17fd719dc6268bc6e4fcb3f8a2137e17af43f09299ec90"
+    },
+    {
+      "file": "aes_128.pdf",
+      "algorithm": "AES-128",
+      "user": "reader",
+      "owner": "owner",
+      "sha256": "bd0b1d0a85d2310879564733625b64c78d14a6219b2c6305a7e5243cb64d232b"
+    },
+    {
+      "file": "aes_256_r5.pdf",
+      "algorithm": "AES-256-R5",
+      "user": "reader",
+      "owner": "owner",
+      "sha256": "3f30bad5dfd1a76b015cafc46856e124d5e07eef0e69dff0dcbccd037830637d"
+    },
+    {
+      "file": "aes_256.pdf",
+      "algorithm": "AES-256",
+      "user": "reader",
+      "owner": "owner",
+      "sha256": "82a3532f541fb8ae2ba2dd9524b0905998b5725724a845b351d594859f48782b"
+    },
+    {
+      "file": "empty_user.pdf",
+      "algorithm": "AES-256",
+      "user": "",
+      "owner": "owner",
+      "sha256": "400fd109ddbc6d401821a2655ca9c10d84e4e8c0d5325ad30b0a10ae73343391"
+    },
+    {
+      "file": "unicode.pdf",
+      "algorithm": "AES-256",
+      "user": "café-读者",
+      "owner": "拥有者-é",
+      "sha256": "df86dfe7bf3dad07a2d71a5f4073ed7caaccc08119c08985ba32b344dbd26b71"
+    },
+    {
+      "file": "edit_only_rc4_40.pdf",
+      "algorithm": "RC4-40",
+      "user": "reader",
+      "owner": "owner",
+      "sha256": "b6f69583de501d0b05647a35c8329c589b9e44915f1a8077f0fa8e8e1ed08a94"
+    },
+    {
+      "file": "edit_only_rc4_128.pdf",
+      "algorithm": "RC4-128",
+      "user": "reader",
+      "owner": "owner",
+      "sha256": "7ad0fafdbaf6bde8cb1012c8dd75f13411e77cf519241fc35582d188d1d28552"
+    },
+    {
+      "file": "edit_only_aes_128.pdf",
+      "algorithm": "AES-128",
+      "user": "reader",
+      "owner": "owner",
+      "sha256": "703467d3531f93e63bdf9678bf475f6d8fb19d2ef503d6a28b4196c0c35f331c"
+    },
+    {
+      "file": "edit_only_aes_256_r5.pdf",
+      "algorithm": "AES-256-R5",
+      "user": "reader",
+      "owner": "owner",
+      "sha256": "eb518dd6a7b00f9e547a8899c40c20dfee4d104fede57f80f41842d6fc23e465"
+    },
+    {
+      "file": "edit_only_aes_256.pdf",
+      "algorithm": "AES-256",
+      "user": "reader",
+      "owner": "owner",
+      "sha256": "3b6795fcbd2dded280aa5809c08dec243eb3b1186679cf225a36f6e6ae1132dc"
+    },
+    {
+      "file": "object_streams.pdf",
+      "algorithm": "MuPDF AES-256 object streams",
+      "user": "reader",
+      "owner": "owner",
+      "sha256": "d5b429b599dac3f3c8a20bb53a8ddd5e026b96831205a43f1308e0da761fe27d"
+    }
+  ]
+}

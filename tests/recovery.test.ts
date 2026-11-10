@@ -10,6 +10,29 @@ function sample():RecoverySnapshot {
 }
 afterEach(()=>vi.useRealTimers());
 describe("recovery",()=>{
+ it("retains pending and every queued recovery source until each writer settles",async()=>{
+  const finishes:Array<()=>void>=[];const changed=vi.fn();
+  const queue=new RecoveryQueue({save:()=>new Promise<void>(resolve=>finishes.push(resolve)),clear:async()=>{}},()=>{},changed);
+  const a=sample(),b=sample();b.tabs[0].document.pages[0].sourceId="second";
+  queue.schedule(a);expect(queue.sourceIds()).toEqual(new Set(["source"]));
+  const first=queue.flush();await Promise.resolve();await Promise.resolve();
+  const second=queue.flush(a);queue.schedule(b);
+  expect(queue.sourceIds()).toEqual(new Set(["source","second"]));
+  finishes[0]();await first;await Promise.resolve();await Promise.resolve();
+  expect(queue.sourceIds()).toEqual(new Set(["source","second"]));
+  queue.dispose();expect(queue.sourceIds()).toEqual(new Set(["source"]));
+  finishes[1]();await second;await queue.settled();expect(queue.sourceIds()).toEqual(new Set());expect(changed).toHaveBeenCalled();
+ });
+ it("releases recovery source leases after failed writes without hiding errors",async()=>{
+  const queue=new RecoveryQueue({save:async()=>{throw new Error("disk full");},clear:async()=>{}},()=>{});
+  const work=queue.flush(sample());expect(queue.sourceIds()).toEqual(new Set(["source"]));
+  await expect(work).rejects.toThrow("disk full");expect(queue.sourceIds()).toEqual(new Set());
+ });
+ it("retains valid crops and rejects invalid restored crop geometry",()=>{
+  const snapshot=sample(),page=snapshot.tabs[0].document.pages[0];page.crop={x:20,y:30,width:100,height:150};
+  expect(restoreWorkspace(snapshot,nativeAdapter).workspace.tabs[0].history.present.pages[0].crop).toEqual(page.crop);
+  page.crop.width=500;expect(()=>restoreWorkspace(snapshot,nativeAdapter)).toThrow(/crop/i);
+ });
  it("preserves editable state, dirty flag and view without storing demo sessions",()=>{
   const tab=createSession(info,nativeAdapter,110);
   tab.history.present.pages[0].rotation=90;
@@ -26,6 +49,7 @@ describe("recovery",()=>{
   const dirty=restoreWorkspace(snapshot,nativeAdapter);
   expect(dirty.workspace.tabs[0].sourceIds).toEqual(["new-runtime-id"]);
   expect(dirty.workspace.tabs[0].history.past).toEqual([]);
+  expect(dirty.workspace.tabs[0].navigationHistory).toEqual({back:[],forward:[]});
   expect(dirty.positions.get(snapshot.tabs[0].id)).toEqual({top:240,left:12});
   const cleanSnapshot=structuredClone(snapshot); cleanSnapshot.tabs[0].dirty=false;
   const clean=restoreWorkspace(cleanSnapshot,nativeAdapter).workspace.tabs[0];

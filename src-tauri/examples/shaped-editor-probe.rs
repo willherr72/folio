@@ -89,6 +89,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             engine.export_pdf(
                 ExportRequest {
                     pages: vec![PagePlan {
+                        crop: None,
                         id: "page".into(),
                         source_id: source.id.clone(),
                         page_index: 0,

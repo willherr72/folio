@@ -1,0 +1,14 @@
+.modal-dialog.crop-page-dialog{width:min(940px,100%);max-height:calc(100dvh - 48px);overflow:auto}
+.crop-page-dialog>.dialog-actions{padding:8px 24px 24px;justify-content:flex-end}
+.crop-page-layout{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(240px,1fr);gap:24px;padding:8px 24px 18px}
+.crop-source-panel>p,.crop-settings>p,.crop-result figcaption{font-size:12px;color:var(--muted,#716b61)}
+.crop-source-frame{width:100%;position:relative;margin:auto;background:white;box-shadow:0 1px 7px #0002}
+.crop-source-frame>img,.crop-source-frame>svg{position:absolute;inset:0;width:100%;height:100%}
+.crop-source-frame>svg{touch-action:none;overflow:visible}
+.crop-source-frame>span{position:absolute;inset:30% 8%;font-size:13px;text-align:center}
+.crop-shade{fill:#2228;pointer-events:none}.crop-outline{fill:none;stroke:#2874b8;stroke-width:2;vector-effect:non-scaling-stroke;pointer-events:none}
+.crop-handle{fill:#fff;stroke:#2874b8;stroke-width:1.5;vector-effect:non-scaling-stroke}
+.crop-settings fieldset{border:0;padding:0;margin:0}.crop-settings legend{font-weight:600;font-size:13px;margin-bottom:10px}
+.crop-margin-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}.crop-margin-fields label{display:flex;flex-direction:column;gap:5px;font-size:12px}.crop-margin-fields input{width:100%;min-width:0;padding:7px;border:1px solid #b9b5ad;border-radius:5px}
+.crop-result{margin:14px 0 0;text-align:center}.crop-result img{max-width:100%;max-height:220px;border:1px solid #bbb}.crop-result figcaption{margin-top:5px}
+@media(max-width:680px){.crop-page-layout{grid-template-columns:1fr}.crop-source-frame{max-height:none}.crop-source-panel{max-width:360px;margin:auto;width:100%}}

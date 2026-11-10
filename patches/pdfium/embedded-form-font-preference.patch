@@ -1,0 +1,38 @@
+--- a/core/fpdfdoc/cpdf_bafontmap.cpp
++++ b/core/fpdfdoc/cpdf_bafontmap.cpp
+@@ -26,6 +26,7 @@
+ #include "core/fpdfdoc/ipvt_fontmap.h"
+ #include "core/fxcrt/fx_codepage.h"
+ #include "core/fxcrt/stl_util.h"
++#include "core/fxge/cfx_face.h"
+ #include "core/fxge/cfx_fontmapper.h"
+ #include "core/fxge/cfx_fontmgr.h"
+ #include "core/fxge/cfx_gemodule.h"
+@@ -116,6 +117,27 @@
+ int32_t CPDF_BAFontMap::GetWordFontIndex(uint16_t word,
+                                          FX_Charset nCharset,
+                                          int32_t nFontIndex) {
++  // A valid embedded glyph is stronger evidence than a system charset hint.
++  // Keep the original horizontal face when its actual code and glyph agree;
++  // retain the existing fallback path for absent or malformed mappings.
++  if (!data_.empty() && (word < 0xD800 || word > 0xDFFF)) {
++    const auto& font = data_.front()->font;
++    if (font && font->IsEmbedded() && !font->IsVertWriting()) {
++      const auto face = font->GetFont()->GetFace();
++      const uint32_t code = font->CharCodeFromUnicode(word);
++      if (face && code != 0 && code != CPDF_Font::kInvalidCharCode) {
++        const WideString unicode = font->UnicodeFromCharCode(code);
++        if (unicode.GetLength() == 1 && unicode[0] == word) {
++          bool vertical = false;
++          const int glyph = font->GlyphFromCharCode(code, &vertical);
++          if (!vertical && glyph > 0 && glyph < face->GetGlyphCount()) {
++            return 0;
++          }
++        }
++      }
++    }
++  }
++
+   if (nFontIndex > 0) {
+     if (KnowWord(nFontIndex, word)) {
+       return nFontIndex;

@@ -1,0 +1,11 @@
+# Folio0.28 portable checkpoint
+
+Package the verified Windows cache policy without changing the PDF engine or existing SVG renderer. Preserve0.27, all original PDFs and every failed or qualified result. This is a development checkpoint toward the full quality goal, not release or commercial-parity certification.
+
+Baseline qualification: current native runtime, renderer, dependencies, compilation inputs and141native test inputs are unchanged from accepted0.27. The only pre-version runtime delta is the already measured window-cache configuration and two unused standalone frontend raster modules. Preserve the original native full-run failure plus corrected-target evidence (2,290passes/27skips), explicitly reused rather than a new all-green run. Run a fresh complete frontend suite because frontend/test membership changed since that baseline. Prove the next version transition is exactly six literals in five files; no dependency or behavior drift.
+
+Build combined optimized desktop and CLI/MCP through the existing exclusive staging/archive script, locked/offline with one Cargo job. Freeze distribution inputs during build; validate source/renderer and copied docs/assets/licenses. Verify archive entry safety/completeness and extract outside the checkout. Never let checkout resources stand in for packaged assets.
+
+Fresh extracted acceptance: established37-step CLI/MCP automation; desktop existing text, paragraph, offlineOCR; structured annotation/form/navigation save/reopen/recovery and flattened-highlight ordering; packaged cache-policy observation plus repeated-preview and larger-page/multi-document behavior using established oracles. Prior producer/font matrices may be reused only with the exact unchanged native-code/dependency/renderer basis stated above; new CLI execution still required. Keep existing unused-font-resource differences, metadata restrictions, unsupported input cases and prior7/8same-phase preview qualification explicit.
+
+One final scoped review of version/provenance, packaged behavior and evidence. Correct consequential findings with regressions. No public publish, source cleanup, commits, user-app restart or private input bundled. User standing autonomous authorization covers these reversible local steps. If a new product defect appears, diagnose and adjust verification without weakening existing limits.

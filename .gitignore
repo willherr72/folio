@@ -4,6 +4,7 @@ target/
 src-tauri/target/
 src-tauri/resources/pdfium/
 artifacts/
+public/ocr/
 .superpowers/
 *.log
 

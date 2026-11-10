@@ -19,11 +19,11 @@ it("exports flattened text/ink explicitly without marking editable work saved, a
  fireEvent.change(await screen.findByRole("textbox",{name:"Content"}),{target:{value:"Keep editable"}});
  fireEvent.click(screen.getByRole("button",{name:"Save options"}));
  expect(screen.getByRole("menu")).toHaveTextContent("Highlights and comments remain annotations");
- fireEvent.click(screen.getByRole("menuitem",{name:"Flatten text and ink"}));
+ fireEvent.click(screen.getByRole("menuitem",{name:"Flatten text, images, and ink"}));
  await waitFor(()=>expect(save).toHaveBeenCalledTimes(1));
  expect(save.mock.calls[0][1]).toEqual({flatten:true});
  expect(screen.getByLabelText("Unsaved changes")).toBeInTheDocument();
- await screen.findByText(/Exported flattened text and ink/);
+ await screen.findByText(/Exported flattened text, images, and ink/);
  fireEvent.keyDown(window,{key:"s",ctrlKey:true});
  await waitFor(()=>expect(save).toHaveBeenCalledTimes(2));
  expect(save.mock.calls[1]).toHaveLength(1);
@@ -38,8 +38,8 @@ it("lets keyboard users close save options without changing tools or exporting",
  await screen.findByRole("tab",{name:"Options.pdf"});
  const options=screen.getByRole("button",{name:"Save options"});fireEvent.click(options);
  const first=screen.getByRole("menuitem",{name:"Save editable PDF"});expect(first).toHaveFocus();
- fireEvent.keyDown(first,{key:"ArrowDown"});expect(screen.getByRole("menuitem",{name:"Flatten text and ink"})).toHaveFocus();
- fireEvent.keyDown(screen.getByRole("menuitem",{name:"Flatten text and ink"}),{key:"Escape"});
+ fireEvent.keyDown(first,{key:"ArrowDown"});expect(screen.getByRole("menuitem",{name:"Flatten text, images, and ink"})).toHaveFocus();
+ fireEvent.keyDown(screen.getByRole("menuitem",{name:"Flatten text, images, and ink"}),{key:"Escape"});
  expect(screen.queryByRole("menu")).not.toBeInTheDocument();expect(options).toHaveFocus();expect(save).not.toHaveBeenCalled();
 });
 it("keeps an opened save menu anchored through queued toolbar scroll events", async () => {

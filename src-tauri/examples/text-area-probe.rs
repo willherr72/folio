@@ -73,6 +73,7 @@ fn plan(source: &str, overlays: Vec<Overlay>) -> ExportRequest {
     ExportRequest {
         flatten: true,
         pages: vec![PagePlan {
+            crop: None,
             id: "area-page".into(),
             source_id: source.into(),
             page_index: 0,

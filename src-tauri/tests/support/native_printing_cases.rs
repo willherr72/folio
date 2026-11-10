@@ -38,6 +38,23 @@ fn fixture(path: &Path) {
 }
 
 #[test]
+fn print_preparation_uses_the_cropped_visible_area_and_retains_source() {
+    let temp=tempfile::tempdir().unwrap();let path=temp.path().join("source.pdf");fixture(&path);
+    let before=std::fs::read(&path).unwrap();let engine=engine();let source=engine.open_document(&path).unwrap();
+    let request:ExportRequest=serde_json::from_value(serde_json::json!({"pages":[{
+        "id":"crop","sourceId":source.id,"pageIndex":0,"width":200,"height":300,"rotation":90,
+        "crop":{"x":20,"y":30,"width":100,"height":150},"overlays":[]
+    }]})).unwrap();
+    let preview=engine.render_page_plan(request.pages[0].clone(),300).unwrap();
+    let prepared=PreparedPrint::new(engine.clone(),request).unwrap();
+    assert_eq!((prepared.document.pages[0].width,prepared.document.pages[0].height),(150.,100.));
+    let raster=engine.render_page(&prepared.document.id,0,300).unwrap();
+    assert_eq!(image::load_from_memory(&preview).unwrap().to_rgba8(),image::load_from_memory(&raster).unwrap().to_rgba8());
+    assert_eq!(std::fs::read(&path).unwrap(),before);
+    drop(prepared);engine.close_document(&source.id).unwrap();
+}
+
+#[test]
 fn prepared_job_exports_selected_order_rotation_and_edits_and_cleans_up() {
     let temp = tempfile::tempdir().unwrap();
     let source_path = temp.path().join("source.pdf");
@@ -50,6 +67,10 @@ fn prepared_job_exports_selected_order_rotation_and_edits_and_cleans_up() {
         {"id": "selected-first", "sourceId": source.id, "pageIndex": 0, "width": 200, "height": 300, "rotation": 0, "overlays": []}
     ]})).unwrap();
     let prepared = PreparedPrint::new(engine.clone(), request).unwrap();
+    assert!(
+        !engine.source_original_path(&prepared.document.id).unwrap().exists(),
+        "print preparation must not create a plaintext PDF on disk"
+    );
     assert_eq!(prepared.document.pages.len(), 2);
     assert_eq!(
         (
@@ -65,7 +86,7 @@ fn prepared_job_exports_selected_order_rotation_and_edits_and_cleans_up() {
         ),
         (200.0, 300.0)
     );
-    let saved = lopdf::Document::load(prepared._directory.path().join("Folio print.pdf")).unwrap();
+    let saved = lopdf::Document::load_mem(&engine.source_bytes(&prepared.document.id).unwrap()).unwrap();
     let page = saved.get_dictionary(saved.get_pages()[&1]).unwrap();
     let annotations = page.get(b"Annots").unwrap().as_array().unwrap();
     assert!(annotations.iter().any(|annotation| saved
@@ -88,10 +109,8 @@ fn prepared_job_exports_selected_order_rotation_and_edits_and_cleans_up() {
             .any(|p| p[2] > 180 && p[0] < 100 && p[1] < 100),
         "edited text must reach print raster"
     );
-    let directory = prepared._directory.path().to_owned();
     let document_id = prepared.document.id.clone();
     drop(prepared);
-    assert!(!directory.exists(), "temporary print files must be removed");
     assert!(
         engine.render_page(&document_id, 0, 100).is_err(),
         "temporary PDF must be closed"

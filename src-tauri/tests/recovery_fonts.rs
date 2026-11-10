@@ -6,6 +6,14 @@ use std::{
     sync::Mutex,
 };
 static TEST_LOCK: Mutex<()> = Mutex::new(());
+fn manifest_bytes(path: &Path) -> Vec<u8> {
+    folio_engine::private_storage::unseal(
+        folio_engine::private_storage::Purpose::Workspace,
+        &fs::read(path).unwrap(),
+        32 * 1024 * 1024,
+    )
+    .unwrap()
+}
 fn engine() -> PdfEngine {
     PdfEngine::start(PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("resources/pdfium/pdfium.dll"))
         .unwrap()
@@ -63,13 +71,16 @@ fn recovery_keeps_exact_font_bytes_after_font_and_pdf_sources_disappear() {
     store
         .save(&engine, workspace(&source, Some(&font.id)))
         .unwrap();
-    let manifest: Value = serde_json::from_slice(&fs::read(&manifests(&root)[0]).unwrap()).unwrap();
+    let manifest: Value = serde_json::from_slice(&manifest_bytes(&manifests(&root)[0])).unwrap();
+    let stored_font = fs::read(root.join("fonts").join(format!("{}.font", font.id))).unwrap();
+    assert!(stored_font.starts_with(b"FOLIO-SEALED-"));
+    assert!(!stored_font.windows(64).any(|w| w == &bytes[..64]));
     assert_eq!(
         manifest["fonts"].as_object().unwrap().len(),
         1,
         "font bytes need their own checkpoint resource"
     );
-    assert!(!fs::read_to_string(&manifests(&root)[0])
+    assert!(!String::from_utf8(manifest_bytes(&manifests(&root)[0]))
         .unwrap()
         .contains("base64"));
     engine.close_document(&source.id).unwrap();
@@ -151,7 +162,7 @@ fn invalid_font_snapshot_fails_without_registering_partial_assets() {
     assert!(store.load(&engine).is_err());
     assert!(engine.fonts().get(&font.id).is_err());
     let path = manifests(&root).pop().unwrap();
-    let mut manifest: Value = serde_json::from_slice(&fs::read(&path).unwrap()).unwrap();
+    let mut manifest: Value = serde_json::from_slice(&manifest_bytes(&path)).unwrap();
     manifest["fonts"][&font.id]["file"] = json!("../outside.ttf");
     fs::write(&path, serde_json::to_vec(&manifest).unwrap()).unwrap();
     assert!(store.load(&engine).is_err());
@@ -246,7 +257,7 @@ fn substituted_source_recovers_without_original_font_file_or_registry_asset() {
     let root = temp.path().join("recovery");
     let store = RecoveryStore::new(root.clone()).unwrap();
     store.save(&engine, plan).unwrap();
-    let manifest: Value = serde_json::from_slice(&fs::read(&manifests(&root)[0]).unwrap()).unwrap();
+    let manifest: Value = serde_json::from_slice(&manifest_bytes(&manifests(&root)[0])).unwrap();
     assert!(
         manifest["fonts"].as_object().unwrap().is_empty(),
         "source fonts travel in source bytes, not overlay sidecars"

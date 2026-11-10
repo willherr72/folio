@@ -1,0 +1,20 @@
+import {act,cleanup,fireEvent,render,screen,waitFor} from "@testing-library/react";
+import {afterEach,expect,it,vi} from "vitest";
+import {ParagraphWorkspace} from "../src/components/ParagraphWorkspace";
+import {clearRenderCache} from "../src/components/PageView";
+import {createDemoAdapter} from "../src/editor/adapter";
+import type {CanvasParagraphView} from "../src/editor/paragraph-canvas";
+afterEach(()=>{cleanup();clearRenderCache(["source"]);vi.restoreAllMocks();});
+it("renders source axes at zoom width, compares, and reports only completed candidates",async()=>{
+ let resolve!:(url:string)=>void;const done=vi.fn().mockResolvedValue(undefined),candidate={document:{id:"candidate",name:"preview",pages:[]},pageIndex:2,release:vi.fn(),retain:vi.fn(()=>done)};
+ const adapter={...createDemoAdapter(),renderPage:vi.fn().mockImplementation(id=>id==="source"?Promise.resolve("original"):new Promise(r=>resolve=r))};
+ const ready=vi.fn(),modal=vi.fn();let view!:CanvasParagraphView;
+ const props={adapter,sourceId:"source",pageIndex:1,pageWidth:800,pageHeight:900,overlays:[],candidate,onReady:ready,choosing:false,enabled:true,runs:[],selected:[],onToggle:vi.fn(),onChange:vi.fn(),onGestureActive:vi.fn(),canvas:{pageId:"p",sessionKey:"s",zoom:100,onLocate:vi.fn(),onModalChange:modal,renderCanvas:(v:CanvasParagraphView)=>{view=v;return <div data-testid="canvas">{v.raster.url}</div>;}}};
+ const v=render(<ParagraphWorkspace {...props}><input aria-label="draft" defaultValue="retained"/></ParagraphWorkspace>);
+ await waitFor(()=>expect(adapter.renderPage).toHaveBeenCalledWith("candidate",2,800));expect(view.raster.loading).toBe(true);expect(ready).not.toHaveBeenCalledWith(candidate,800);
+ await act(async()=>resolve("edited"));await waitFor(()=>expect(ready).toHaveBeenCalledWith(candidate,800));expect(screen.getByTestId("canvas")).toHaveTextContent("edited");
+ fireEvent.click(screen.getByRole("button",{name:"Original"}));expect(screen.getByTestId("canvas")).toHaveTextContent("original");
+ v.rerender(<ParagraphWorkspace {...props} canvas={{...props.canvas,zoom:200}}><input aria-label="draft" defaultValue="retained"/></ParagraphWorkspace>);
+ await waitFor(()=>expect(adapter.renderPage).toHaveBeenCalledWith("candidate",2,1600));expect(screen.getByLabelText("draft")).toHaveValue("retained");
+ v.unmount();await act(async()=>resolve("late"));expect(done).toHaveBeenCalledTimes(2);
+});

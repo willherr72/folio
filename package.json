@@ -1,20 +1,25 @@
 {
   "name": "folio",
   "private": true,
-  "version": "0.13.0",
+  "version": "0.39.0-dev.1",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1 --port 1420 --strictPort",
     "build": "tsc --noEmit && vite build",
     "test": "vitest run",
     "test:watch": "vitest",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "setup:ocr": "node scripts/setup-ocr.mjs",
+    "predev": "node scripts/setup-ocr.mjs --offline",
+    "prebuild": "node scripts/setup-ocr.mjs --offline"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.8.0",
     "lucide-react": "^0.468.0",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "tesseract.js": "6.0.1",
+    "tesseract.js-core": "6.0.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.55.0",

@@ -1,8 +1,9 @@
 [package]
 name = "folio"
-version = "0.13.0"
+version = "0.39.0-dev.1"
 description = "Native backend for the Folio desktop PDF editor"
 edition = "2021"
+default-run = "folio"
 
 [lib]
 name = "folio_engine"
@@ -12,12 +13,20 @@ path = "src/lib.rs"
 name = "folio"
 path = "src/main.rs"
 
+[[bin]]
+name = "folio-cli"
+path = "src/bin/folio-cli.rs"
+
 [features]
 default = ["shaped-text"]
+native-profiling = []
 shaped-text = ["dep:harfrust", "dep:unicode-bidi", "dep:unicode-script", "dep:unicode-segmentation"]
 
 [patch.crates-io]
 harfrust = { path = "vendor/harfrust-0.13.3" }
+lopdf = { path = "vendor/lopdf-0.45.0" }
+jpeg-decoder = { path = "vendor/jpeg-decoder-0.3.2" }
+pdfium-render = { path = "vendor/pdfium-render-0.9.4" }
 
 [[test]]
 name = "shaping"
@@ -55,11 +64,19 @@ required-features = ["shaped-text"]
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
+roxmltree = "=0.21.2"
+quick-xml = "=0.42.0"
+crc32fast = "=1.5.1"
+flate2 = "=1.1.10"
+getrandom = "=0.3.4"
+stringprep = "=0.1.5"
+jpeg-decoder = { version = "=0.3.2", default-features = false }
+moxcms = "=0.8.1"
 harfrust = {version = "=0.13.3", optional = true}
 unicode-bidi = {version = "=0.3.18", optional = true}
 unicode-script = {version = "=0.5.8", optional = true}
 unicode-segmentation = {version = "=1.13.3", optional = true}
-image = { version = "0.25", default-features = false, features = ["png"] }
+image = { version = "0.25", default-features = false, features = ["png", "jpeg"] }
 lopdf = { version = "=0.45.0", default-features = false }
 pdfium-render = { version = "=0.9.4", default-features = false, features = ["pdfium_7881", "image_025", "thread_safe"] }
 rfd = "0.15"
@@ -74,4 +91,4 @@ ttf-parser = "=0.25.1"
 uuid = { version = "1", features = ["v4"] }
 
 [target.'cfg(windows)'.dependencies]
-windows-sys = { version = "0.61.2", features = ["Win32_Foundation", "Win32_Graphics_Gdi", "Win32_Storage_Xps", "Win32_System_Memory", "Win32_System_Registry", "Win32_UI_Controls_Dialogs", "Win32_System_Threading", "Win32_UI_WindowsAndMessaging"] }
+windows-sys = { version = "0.61.2", features = ["Wdk_Foundation", "Wdk_Storage_FileSystem", "Win32_System_IO", "Win32_Foundation", "Win32_Graphics_Gdi", "Win32_Storage_FileSystem", "Win32_Storage_Xps", "Win32_System_Memory", "Win32_System_Registry", "Win32_UI_Controls_Dialogs", "Win32_System_Threading", "Win32_UI_WindowsAndMessaging", "Win32_Security_Cryptography"] }

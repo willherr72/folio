@@ -1,0 +1,1564 @@
+--- a/.gitignore
++++ b/.gitignore
+@@ -27,3 +27,9 @@
+ 
+ *.code-workspace
+ .history/
++
++# Folio retains the complete published archive for reproducible provenance.
++!*
++!*/
++/target/
++/.cargo-ok
+--- a/src/bindings/thread_safe.rs
++++ b/src/bindings/thread_safe.rs
+@@ -1,9 +1,11 @@
+ // Wraps an architecture-specific single-threaded implementation of the PdfiumLibraryBindings trait
+ // behind a mutex marshaller to create a thread-safe trait implementation.
++// Folio modification (2026-10-26): guard previously unlocked native delegates.
++// See FOLIO_VENDOR.md and FOLIO_PATCH.patch in this crate's root for provenance.
+ 
+ // Pdfium itself is not thread-safe, so acquiring an exclusive lock on access to Pdfium is the
+-// only way to guarantee thread safety. We acquire the lock on the first call to FPDF_InitLibrary(),
+-// and release the lock on the last call to FPDF_DestroyLibrary().
++// only way to guarantee thread safety. Every delegated native call holds the same
++// process-global lock for its full duration, including form and matrix-render calls.
+ 
+ use crate::bindgen::{
+     size_t, FPDF_CharsetFontMap, FPDFANNOT_COLORTYPE, FPDF_ACTION, FPDF_ANNOTATION,
+@@ -214,6 +216,7 @@
+         flags: FPDF_DWORD,
+         fileVersion: c_int,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDF_SaveWithVersion(document, pFileWrite, flags, fileVersion)
+     }
+@@ -273,6 +276,7 @@
+         page_index: c_int,
+         hints: *mut FX_DOWNLOADHINTS,
+     ) -> c_int {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFAvail_IsPageAvail(avail, page_index, hints)
+     }
+@@ -357,6 +361,7 @@
+         &self,
+         document: FPDF_DOCUMENT,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDF_DocumentHasValidCrossReferenceTable(document)
+     }
+@@ -509,6 +514,7 @@
+         length: c_ulong,
+         index: c_int,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDF_ImportPagesByIndex(dest_doc, src_doc, page_indices, length, index)
+     }
+@@ -522,6 +528,7 @@
+         pagerange: &str,
+         index: c_int,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDF_ImportPages(dest_doc, src_doc, pagerange, index)
+     }
+@@ -552,6 +559,7 @@
+         src_doc: FPDF_DOCUMENT,
+         src_page_index: c_int,
+     ) -> FPDF_XOBJECT {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDF_NewXObjectFromPage(dest_doc, src_doc, src_page_index)
+     }
+@@ -616,6 +624,7 @@
+         text_page: FPDF_TEXTPAGE,
+         nTextIndex: c_int,
+     ) -> c_int {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFText_GetCharIndexFromTextIndex(text_page, nTextIndex)
+     }
+@@ -627,6 +636,7 @@
+         text_page: FPDF_TEXTPAGE,
+         nCharIndex: c_int,
+     ) -> c_int {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFText_GetTextIndexFromCharIndex(text_page, nCharIndex)
+     }
+@@ -657,6 +667,7 @@
+         buffer: *mut c_void,
+         length: c_ulong,
+     ) -> c_ulong {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFSignatureObj_GetContents(signature, buffer, length)
+     }
+@@ -669,6 +680,7 @@
+         buffer: *mut c_int,
+         length: c_ulong,
+     ) -> c_ulong {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFSignatureObj_GetByteRange(signature, buffer, length)
+     }
+@@ -681,6 +693,7 @@
+         buffer: *mut c_char,
+         length: c_ulong,
+     ) -> c_ulong {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFSignatureObj_GetSubFilter(signature, buffer, length)
+     }
+@@ -693,6 +706,7 @@
+         buffer: *mut c_void,
+         length: c_ulong,
+     ) -> c_ulong {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFSignatureObj_GetReason(signature, buffer, length)
+     }
+@@ -705,6 +719,7 @@
+         buffer: *mut c_char,
+         length: c_ulong,
+     ) -> c_ulong {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFSignatureObj_GetTime(signature, buffer, length)
+     }
+@@ -712,6 +727,7 @@
+     #[inline]
+     #[allow(non_snake_case)]
+     unsafe fn FPDFSignatureObj_GetDocMDPPermission(&self, signature: FPDF_SIGNATURE) -> c_uint {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFSignatureObj_GetDocMDPPermission(signature)
+     }
+@@ -744,6 +760,7 @@
+         struct_tree: FPDF_STRUCTTREE,
+         index: c_int,
+     ) -> FPDF_STRUCTELEMENT {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDF_StructTree_GetChildAtIndex(struct_tree, index)
+     }
+@@ -756,6 +773,7 @@
+         buffer: *mut c_void,
+         buflen: c_ulong,
+     ) -> c_ulong {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDF_StructElement_GetAltText(struct_element, buffer, buflen)
+     }
+@@ -768,6 +786,7 @@
+         buffer: *mut c_void,
+         buflen: c_ulong,
+     ) -> c_ulong {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDF_StructElement_GetActualText(struct_element, buffer, buflen)
+     }
+@@ -784,6 +803,7 @@
+         buffer: *mut c_void,
+         buflen: c_ulong,
+     ) -> c_ulong {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDF_StructElement_GetExpansion(struct_element, buffer, buflen)
+     }
+@@ -796,6 +816,7 @@
+         buffer: *mut c_void,
+         buflen: c_ulong,
+     ) -> c_ulong {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDF_StructElement_GetID(struct_element, buffer, buflen)
+     }
+@@ -808,6 +829,7 @@
+         buffer: *mut c_void,
+         buflen: c_ulong,
+     ) -> c_ulong {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDF_StructElement_GetLang(struct_element, buffer, buflen)
+     }
+@@ -836,6 +858,7 @@
+         &self,
+         struct_element: FPDF_STRUCTELEMENT,
+     ) -> c_int {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDF_StructElement_GetMarkedContentID(struct_element)
+     }
+@@ -848,6 +871,7 @@
+         buffer: *mut c_void,
+         buflen: c_ulong,
+     ) -> c_ulong {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDF_StructElement_GetType(struct_element, buffer, buflen)
+     }
+@@ -860,6 +884,7 @@
+         buffer: *mut c_void,
+         buflen: c_ulong,
+     ) -> c_ulong {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDF_StructElement_GetObjType(struct_element, buffer, buflen)
+     }
+@@ -872,6 +897,7 @@
+         buffer: *mut c_void,
+         buflen: c_ulong,
+     ) -> c_ulong {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDF_StructElement_GetTitle(struct_element, buffer, buflen)
+     }
+@@ -879,6 +905,7 @@
+     #[inline]
+     #[allow(non_snake_case)]
+     unsafe fn FPDF_StructElement_CountChildren(&self, struct_element: FPDF_STRUCTELEMENT) -> c_int {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDF_StructElement_CountChildren(struct_element)
+     }
+@@ -890,6 +917,7 @@
+         struct_element: FPDF_STRUCTELEMENT,
+         index: c_int,
+     ) -> FPDF_STRUCTELEMENT {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDF_StructElement_GetChildAtIndex(struct_element, index)
+     }
+@@ -925,6 +953,7 @@
+         struct_element: FPDF_STRUCTELEMENT,
+         index: c_int,
+     ) -> c_int {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDF_StructElement_GetChildMarkedContentID(struct_element, index)
+     }
+@@ -945,6 +974,7 @@
+         &self,
+         struct_element: FPDF_STRUCTELEMENT,
+     ) -> c_int {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDF_StructElement_GetAttributeCount(struct_element)
+     }
+@@ -956,6 +986,7 @@
+         struct_element: FPDF_STRUCTELEMENT,
+         index: c_int,
+     ) -> FPDF_STRUCTELEMENT_ATTR {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDF_StructElement_GetAttributeAtIndex(struct_element, index)
+     }
+@@ -966,6 +997,7 @@
+         &self,
+         struct_attribute: FPDF_STRUCTELEMENT_ATTR,
+     ) -> c_int {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDF_StructElement_Attr_GetCount(struct_attribute)
+     }
+@@ -1013,6 +1045,7 @@
+         struct_attribute: FPDF_STRUCTELEMENT_ATTR,
+         name: &str,
+     ) -> FPDF_STRUCTELEMENT_ATTR_VALUE {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDF_StructElement_Attr_GetValue(struct_attribute, name)
+     }
+@@ -1035,6 +1068,7 @@
+         struct_attribute: FPDF_STRUCTELEMENT_ATTR,
+         name: &str,
+     ) -> FPDF_OBJECT_TYPE {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDF_StructElement_Attr_GetType(struct_attribute, name)
+     }
+@@ -1084,6 +1118,7 @@
+         name: &str,
+         out_value: *mut FPDF_BOOL,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDF_StructElement_Attr_GetBooleanValue(struct_attribute, name, out_value)
+     }
+@@ -1111,6 +1146,7 @@
+         value: FPDF_STRUCTELEMENT_ATTR_VALUE,
+         out_value: *mut FPDF_BOOL,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDF_StructElement_Attr_GetBooleanValue(value, out_value)
+     }
+@@ -1134,6 +1170,7 @@
+         name: &str,
+         out_value: *mut f32,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDF_StructElement_Attr_GetNumberValue(struct_attribute, name, out_value)
+     }
+@@ -1161,6 +1198,7 @@
+         value: FPDF_STRUCTELEMENT_ATTR_VALUE,
+         out_value: *mut f32,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDF_StructElement_Attr_GetNumberValue(value, out_value)
+     }
+@@ -1221,6 +1259,7 @@
+         buflen: c_ulong,
+         out_buflen: *mut c_ulong,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDF_StructElement_Attr_GetStringValue(value, buffer, buflen, out_buflen)
+     }
+@@ -1283,6 +1322,7 @@
+         buflen: c_ulong,
+         out_buflen: *mut c_ulong,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDF_StructElement_Attr_GetBlobValue(value, buffer, buflen, out_buflen)
+     }
+@@ -1336,6 +1376,7 @@
+         value: FPDF_STRUCTELEMENT_ATTR_VALUE,
+         index: c_int,
+     ) -> FPDF_STRUCTELEMENT_ATTR_VALUE {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDF_StructElement_Attr_GetChildAtIndex(value, index)
+     }
+@@ -1346,6 +1387,7 @@
+         &self,
+         struct_element: FPDF_STRUCTELEMENT,
+     ) -> c_int {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDF_StructElement_GetMarkedContentIdCount(struct_element)
+     }
+@@ -1357,6 +1399,7 @@
+         struct_element: FPDF_STRUCTELEMENT,
+         index: c_int,
+     ) -> c_int {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDF_StructElement_GetMarkedContentIdAtIndex(struct_element, index)
+     }
+@@ -1370,6 +1413,7 @@
+         width: c_double,
+         height: c_double,
+     ) -> FPDF_PAGE {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFPage_New(document, page_index, width, height)
+     }
+@@ -1415,6 +1459,7 @@
+         page_indices_len: c_ulong,
+         dest_page_index: c_int,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDF_MovePages(document, page_indices, page_indices_len, dest_page_index)
+     }
+@@ -1448,6 +1493,7 @@
+         page_index: c_int,
+         size: *mut FS_SIZEF,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDF_GetPageSizeByIndexF(document, page_index, size)
+     }
+@@ -1461,6 +1507,7 @@
+         width: *mut f64,
+         height: *mut f64,
+     ) -> c_int {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDF_GetPageSizeByIndex(document, page_index, width, height)
+     }
+@@ -1475,6 +1522,7 @@
+         right: *mut c_float,
+         top: *mut c_float,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFPage_GetMediaBox(page, left, bottom, right, top)
+     }
+@@ -1489,6 +1537,7 @@
+         right: *mut c_float,
+         top: *mut c_float,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFPage_GetCropBox(page, left, bottom, right, top)
+     }
+@@ -1503,6 +1552,7 @@
+         right: *mut c_float,
+         top: *mut c_float,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFPage_GetBleedBox(page, left, bottom, right, top)
+     }
+@@ -1517,6 +1567,7 @@
+         right: *mut c_float,
+         top: *mut c_float,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFPage_GetTrimBox(page, left, bottom, right, top)
+     }
+@@ -1531,6 +1582,7 @@
+         right: *mut c_float,
+         top: *mut c_float,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFPage_GetArtBox(page, left, bottom, right, top)
+     }
+@@ -1545,6 +1597,7 @@
+         right: c_float,
+         top: c_float,
+     ) {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFPage_SetMediaBox(page, left, bottom, right, top)
+     }
+@@ -1559,6 +1612,7 @@
+         right: c_float,
+         top: c_float,
+     ) {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFPage_SetCropBox(page, left, bottom, right, top)
+     }
+@@ -1573,6 +1627,7 @@
+         right: c_float,
+         top: c_float,
+     ) {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFPage_SetBleedBox(page, left, bottom, right, top)
+     }
+@@ -1587,6 +1642,7 @@
+         right: c_float,
+         top: c_float,
+     ) {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFPage_SetTrimBox(page, left, bottom, right, top)
+     }
+@@ -1601,6 +1657,7 @@
+         right: c_float,
+         top: c_float,
+     ) {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFPage_SetArtBox(page, left, bottom, right, top)
+     }
+@@ -1613,6 +1670,7 @@
+         matrix: *const FS_MATRIX,
+         clipRect: *const FS_RECTF,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFPage_TransFormWithClip(page, matrix, clipRect)
+     }
+@@ -1629,6 +1687,7 @@
+         e: f64,
+         f: f64,
+     ) {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFPageObj_TransformClipPath(page_object, a, b, c, d, e, f)
+     }
+@@ -1654,6 +1713,7 @@
+         clip_path: FPDF_CLIPPATH,
+         path_index: c_int,
+     ) -> c_int {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFClipPath_CountPathSegments(clip_path, path_index)
+     }
+@@ -1666,6 +1726,7 @@
+         path_index: c_int,
+         segment_index: c_int,
+     ) -> FPDF_PATHSEGMENT {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFClipPath_GetPathSegment(clip_path, path_index, segment_index)
+     }
+@@ -1722,6 +1783,7 @@
+         e: f64,
+         f: f64,
+     ) {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFPage_TransformAnnots(page, a, b, c, d, e, f)
+     }
+@@ -1743,6 +1805,7 @@
+         first_scan: *mut c_void,
+         stride: c_int,
+     ) -> FPDF_BITMAP {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFBitmap_CreateEx(width, height, format, first_scan, stride)
+     }
+@@ -1768,6 +1831,7 @@
+         rotate: c_int,
+         flags: c_int,
+     ) {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDF_RenderPage(dc, page, start_x, start_y, size_x, size_y, rotate, flags);
+     }
+@@ -1807,6 +1871,7 @@
+         height: c_int,
+         color: FPDF_DWORD,
+     ) {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFBitmap_FillRect(bitmap, left, top, width, height, color);
+     }
+@@ -1834,6 +1899,7 @@
+         height: c_int,
+         color: FPDF_DWORD,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFBitmap_FillRect(bitmap, left, top, width, height, color)
+     }
+@@ -1911,6 +1977,7 @@
+         clipping: *const FS_RECTF,
+         flags: c_int,
+     ) {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDF_RenderPageBitmapWithMatrix(bitmap, page, matrix, clipping, flags)
+     }
+@@ -1925,6 +1992,7 @@
+         size_x: c_int,
+         size_y: c_int,
+     ) {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDF_RenderPageSkia(canvas, page, size_x, size_y);
+     }
+@@ -2018,6 +2086,7 @@
+         points: *const FS_POINTF,
+         point_count: size_t,
+     ) -> c_int {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFAnnot_AddInkStroke(annot, points, point_count)
+     }
+@@ -2072,6 +2141,7 @@
+         B: c_uint,
+         A: c_uint,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFAnnot_SetColor(annot, color_type, R, G, B, A)
+     }
+@@ -2087,6 +2157,7 @@
+         B: *mut c_uint,
+         A: *mut c_uint,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFAnnot_GetColor(annot, color_type, R, G, B, A)
+     }
+@@ -2106,6 +2177,7 @@
+         quad_index: size_t,
+         quad_points: *const FS_QUADPOINTSF,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFAnnot_SetAttachmentPoints(annot, quad_index, quad_points)
+     }
+@@ -2117,6 +2189,7 @@
+         annot: FPDF_ANNOTATION,
+         quad_points: *const FS_QUADPOINTSF,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFAnnot_AppendAttachmentPoints(annot, quad_points)
+     }
+@@ -2136,6 +2209,7 @@
+         quad_index: size_t,
+         quad_points: *mut FS_QUADPOINTSF,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFAnnot_GetAttachmentPoints(annot, quad_index, quad_points)
+     }
+@@ -2182,6 +2256,7 @@
+         buffer: *mut FS_POINTF,
+         length: c_ulong,
+     ) -> c_ulong {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFAnnot_GetInkListPath(annot, path_index, buffer, length)
+     }
+@@ -2207,6 +2282,7 @@
+         vertical_radius: c_float,
+         border_width: c_float,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFAnnot_SetBorder(annot, horizontal_radius, vertical_radius, border_width)
+     }
+@@ -2220,6 +2296,7 @@
+         vertical_radius: *mut c_float,
+         border_width: *mut c_float,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFAnnot_GetBorder(annot, horizontal_radius, vertical_radius, border_width)
+     }
+@@ -2234,6 +2311,7 @@
+         buffer: *mut FPDF_WCHAR,
+         buflen: c_ulong,
+     ) -> c_ulong {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFAnnot_GetFormAdditionalActionJavaScript(form, annot, event, buffer, buflen)
+     }
+@@ -2247,6 +2325,7 @@
+         buffer: *mut FPDF_WCHAR,
+         buflen: c_ulong,
+     ) -> c_ulong {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFAnnot_GetFormFieldAlternateName(form, annot, buffer, buflen)
+     }
+@@ -2286,6 +2365,7 @@
+         buffer: *mut FPDF_WCHAR,
+         buflen: c_ulong,
+     ) -> c_ulong {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFAnnot_GetStringValue(annot, key, buffer, buflen)
+     }
+@@ -2323,6 +2403,7 @@
+         buffer: *mut FPDF_WCHAR,
+         buflen: c_ulong,
+     ) -> c_ulong {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFAnnot_GetAP(annot, appearanceMode, buffer, buflen)
+     }
+@@ -2378,6 +2459,7 @@
+         annot: FPDF_ANNOTATION,
+         flags: c_int,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFAnnot_SetFormFieldFlags(form, annot, flags)
+     }
+@@ -2390,6 +2472,7 @@
+         page: FPDF_PAGE,
+         point: *const FS_POINTF,
+     ) -> FPDF_ANNOTATION {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFAnnot_GetFormFieldAtPoint(form, page, point)
+     }
+@@ -2403,6 +2486,7 @@
+         buffer: *mut FPDF_WCHAR,
+         buflen: c_ulong,
+     ) -> c_ulong {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFAnnot_GetFormFieldName(form, annot, buffer, buflen)
+     }
+@@ -2427,6 +2511,7 @@
+         buffer: *mut FPDF_WCHAR,
+         buflen: c_ulong,
+     ) -> c_ulong {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFAnnot_GetFormFieldValue(form, annot, buffer, buflen)
+     }
+@@ -2452,6 +2537,7 @@
+         buffer: *mut FPDF_WCHAR,
+         buflen: c_ulong,
+     ) -> c_ulong {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFAnnot_GetOptionLabel(form, annot, index, buffer, buflen)
+     }
+@@ -2556,6 +2642,7 @@
+         subtypes: *const FPDF_ANNOTATION_SUBTYPE,
+         count: size_t,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFAnnot_SetFocusableSubtypes(form, subtypes, count)
+     }
+@@ -2575,6 +2662,7 @@
+         subtypes: *mut FPDF_ANNOTATION_SUBTYPE,
+         count: size_t,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFAnnot_GetFocusableSubtypes(form, subtypes, count)
+     }
+@@ -2617,6 +2705,7 @@
+         buffer: *mut FPDF_WCHAR,
+         buflen: c_ulong,
+     ) -> c_ulong {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFAnnot_GetFormFieldExportValue(form, annot, buffer, buflen)
+     }
+@@ -2689,6 +2778,7 @@
+         document: FPDF_DOCUMENT,
+         form_info: *mut FPDF_FORMFILLINFO,
+     ) -> FPDF_FORMHANDLE {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFDOC_InitFormFillEnvironment(document, form_info)
+     }
+@@ -2764,6 +2854,7 @@
+         page_x: f64,
+         page_y: f64,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FORM_OnMouseMove(form, page, modifier, page_x, page_y)
+     }
+@@ -2779,6 +2870,7 @@
+         delta_x: c_int,
+         delta_y: c_int,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FORM_OnMouseWheel(form, page, modifier, page_coord, delta_x, delta_y)
+     }
+@@ -2793,6 +2885,7 @@
+         page_x: f64,
+         page_y: f64,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FORM_OnFocus(form, page, modifier, page_x, page_y)
+     }
+@@ -2807,6 +2900,7 @@
+         page_x: f64,
+         page_y: f64,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FORM_OnLButtonDown(form, page, modifier, page_x, page_y)
+     }
+@@ -2821,6 +2915,7 @@
+         page_x: f64,
+         page_y: f64,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FORM_OnRButtonDown(form, page, modifier, page_x, page_y)
+     }
+@@ -2835,6 +2930,7 @@
+         page_x: f64,
+         page_y: f64,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FORM_OnLButtonUp(form, page, modifier, page_x, page_y)
+     }
+@@ -2849,6 +2945,7 @@
+         page_x: f64,
+         page_y: f64,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FORM_OnRButtonUp(form, page, modifier, page_x, page_y)
+     }
+@@ -2863,6 +2960,7 @@
+         page_x: f64,
+         page_y: f64,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FORM_OnLButtonDoubleClick(form, page, modifier, page_x, page_y)
+     }
+@@ -2915,6 +3013,7 @@
+         buffer: *mut c_void,
+         buflen: c_ulong,
+     ) -> c_ulong {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FORM_GetFocusedText(form, page, buffer, buflen)
+     }
+@@ -2928,6 +3027,7 @@
+         buffer: *mut c_void,
+         buflen: c_ulong,
+     ) -> c_ulong {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FORM_GetSelectedText(form, page, buffer, buflen)
+     }
+@@ -2940,6 +3040,7 @@
+         page: FPDF_PAGE,
+         wsText: FPDF_WIDESTRING,
+     ) {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FORM_ReplaceAndKeepSelection(form, page, wsText)
+     }
+@@ -3030,6 +3131,7 @@
+         page_x: f64,
+         page_y: f64,
+     ) -> c_int {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFPage_HasFormFieldAtPoint(form, page, page_x, page_y)
+     }
+@@ -3043,6 +3145,7 @@
+         page_x: f64,
+         page_y: f64,
+     ) -> c_int {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFPage_FormFieldZOrderAtPoint(form, page, page_x, page_y)
+     }
+@@ -3055,6 +3158,7 @@
+         field_type: c_int,
+         color: FPDF_DWORD,
+     ) {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDF_SetFormFieldHighlightColor(form, field_type, color)
+     }
+@@ -3130,6 +3234,7 @@
+         index: c_int,
+         selected: FPDF_BOOL,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FORM_SetIndexSelected(form, page, index, selected)
+     }
+@@ -3186,6 +3291,7 @@
+         buffer: *mut FPDF_WCHAR,
+         buflen: c_ulong,
+     ) -> c_ulong {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFJavaScriptAction_GetName(javascript, buffer, buflen)
+     }
+@@ -3198,6 +3304,7 @@
+         buffer: *mut FPDF_WCHAR,
+         buflen: c_ulong,
+     ) -> c_ulong {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFJavaScriptAction_GetScript(javascript, buffer, buflen)
+     }
+@@ -3297,6 +3404,7 @@
+         document: FPDF_DOCUMENT,
+         bookmark: FPDF_BOOKMARK,
+     ) -> FPDF_BOOKMARK {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFBookmark_GetNextSibling(document, bookmark)
+     }
+@@ -3309,6 +3417,7 @@
+         buffer: *mut c_void,
+         buflen: c_ulong,
+     ) -> c_ulong {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFBookmark_GetTitle(bookmark, buffer, buflen)
+     }
+@@ -3384,6 +3493,7 @@
+         buffer: *mut c_void,
+         buflen: c_ulong,
+     ) -> c_ulong {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFAction_GetURIPath(document, action, buffer, buflen)
+     }
+@@ -3419,6 +3529,7 @@
+         y: *mut FS_FLOAT,
+         zoom: *mut FS_FLOAT,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFDest_GetLocationInPage(dest, hasXVal, hasYVal, hasZoomVal, x, y, zoom)
+     }
+@@ -3469,6 +3580,7 @@
+         start_pos: *mut c_int,
+         link_annot: *mut FPDF_LINK,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFLink_Enumerate(page, start_pos, link_annot)
+     }
+@@ -3506,6 +3618,7 @@
+         quad_index: c_int,
+         quad_points: *mut FS_QUADPOINTSF,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFLink_GetQuadPoints(link_annot, quad_index, quad_points)
+     }
+@@ -3526,6 +3639,7 @@
+         buffer: *mut c_void,
+         buflen: c_ulong,
+     ) -> c_ulong {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDF_GetFileIdentifier(document, id_type, buffer, buflen)
+     }
+@@ -3539,6 +3653,7 @@
+         buffer: *mut c_void,
+         buflen: c_ulong,
+     ) -> c_ulong {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDF_GetMetaText(document, tag, buffer, buflen)
+     }
+@@ -3552,6 +3667,7 @@
+         buffer: *mut c_void,
+         buflen: c_ulong,
+     ) -> c_ulong {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDF_GetPageLabel(document, page_index, buffer, buflen)
+     }
+@@ -3574,6 +3690,7 @@
+         buffer: *mut c_void,
+         buflen: c_ulong,
+     ) -> c_ulong {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDF_GetXFAPacketName(document, index, buffer, buflen)
+     }
+@@ -3589,6 +3706,7 @@
+         buflen: c_ulong,
+         out_buflen: *mut c_ulong,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDF_GetXFAPacketContent(document, index, buffer, buflen, out_buflen)
+     }
+@@ -3754,6 +3872,7 @@
+         buflen: c_ulong,
+         flags: *mut c_int,
+     ) -> c_ulong {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFText_GetFontInfo(text_page, index, buffer, buflen, flags)
+     }
+@@ -3803,6 +3922,7 @@
+         B: *mut c_uint,
+         A: *mut c_uint,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFText_GetFillColor(text_page, index, R, G, B, A)
+     }
+@@ -3818,6 +3938,7 @@
+         B: *mut c_uint,
+         A: *mut c_uint,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFText_GetStrokeColor(text_page, index, R, G, B, A)
+     }
+@@ -3840,6 +3961,7 @@
+         bottom: *mut c_double,
+         top: *mut c_double,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFText_GetCharBox(text_page, index, left, right, bottom, top)
+     }
+@@ -3852,6 +3974,7 @@
+         index: c_int,
+         rect: *mut FS_RECTF,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFText_GetLooseCharBox(text_page, index, rect)
+     }
+@@ -3891,6 +4014,7 @@
+         xTolerance: c_double,
+         yTolerance: c_double,
+     ) -> c_int {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFText_GetCharIndexAtPos(text_page, x, y, xTolerance, yTolerance)
+     }
+@@ -3904,6 +4028,7 @@
+         count: c_int,
+         result: *mut c_ushort,
+     ) -> c_int {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFText_GetText(text_page, start_index, count, result)
+     }
+@@ -3916,6 +4041,7 @@
+         start_index: c_int,
+         count: c_int,
+     ) -> c_int {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFText_CountRects(text_page, start_index, count)
+     }
+@@ -3931,6 +4057,7 @@
+         right: *mut c_double,
+         bottom: *mut c_double,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFText_GetRect(text_page, rect_index, left, top, right, bottom)
+     }
+@@ -3947,6 +4074,7 @@
+         buffer: *mut c_ushort,
+         buflen: c_int,
+     ) -> c_int {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFText_GetBoundedText(text_page, left, top, right, bottom, buffer, buflen)
+     }
+@@ -3960,6 +4088,7 @@
+         flags: c_ulong,
+         start_index: c_int,
+     ) -> FPDF_SCHHANDLE {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFText_FindStart(text_page, findwhat, flags, start_index)
+     }
+@@ -4022,6 +4151,7 @@
+         buffer: *mut c_ushort,
+         buflen: c_int,
+     ) -> c_int {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFLink_GetURL(link_page, link_index, buffer, buflen)
+     }
+@@ -4045,6 +4175,7 @@
+         right: *mut c_double,
+         bottom: *mut c_double,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFLink_GetRect(link_page, link_index, rect_index, left, top, right, bottom)
+     }
+@@ -4058,6 +4189,7 @@
+         start_char_index: *mut c_int,
+         char_count: *mut c_int,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFLink_GetTextRange(link_page, link_index, start_char_index, char_count)
+     }
+@@ -4077,6 +4209,7 @@
+         buffer: *mut c_void,
+         buflen: c_ulong,
+     ) -> c_ulong {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFPage_GetDecodedThumbnailData(page, buffer, buflen)
+     }
+@@ -4089,6 +4222,7 @@
+         buffer: *mut c_void,
+         buflen: c_ulong,
+     ) -> c_ulong {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFPage_GetRawThumbnailData(page, buffer, buflen)
+     }
+@@ -4133,6 +4267,7 @@
+         form_object: FPDF_PAGEOBJECT,
+         page_object: FPDF_PAGEOBJECT,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFFormObj_RemoveObject(form_object, page_object)
+     }
+@@ -4145,6 +4280,7 @@
+         font: FPDF_FONT,
+         font_size: c_float,
+     ) -> FPDF_PAGEOBJECT {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFPageObj_CreateTextObj(document, font, font_size)
+     }
+@@ -4163,6 +4299,7 @@
+         text: FPDF_PAGEOBJECT,
+         render_mode: FPDF_TEXT_RENDERMODE,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFTextObj_SetTextRenderMode(text, render_mode)
+     }
+@@ -4176,6 +4313,7 @@
+         buffer: *mut FPDF_WCHAR,
+         length: c_ulong,
+     ) -> c_ulong {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFTextObj_GetText(text_object, text_page, buffer, length)
+     }
+@@ -4189,6 +4327,7 @@
+         text_object: FPDF_PAGEOBJECT,
+         scale: f32,
+     ) -> FPDF_BITMAP {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFTextObj_GetRenderedBitmap(document, page, text_object, scale)
+     }
+@@ -4244,6 +4383,7 @@
+         x3: c_float,
+         y3: c_float,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFPath_BezierTo(path, x1, y1, x2, y2, x3, y3)
+     }
+@@ -4287,6 +4427,7 @@
+         font: &str,
+         font_size: c_float,
+     ) -> FPDF_PAGEOBJECT {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFPageObj_NewTextObj(document, font, font_size)
+     }
+@@ -4310,6 +4451,7 @@
+         charcodes: *const c_uint,
+         count: size_t,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFText_SetCharcodes(text_object, charcodes, count)
+     }
+@@ -4322,6 +4464,7 @@
+         positions: *const c_float,
+         count: usize,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFText_SetPositions(text_object, positions, count)
+     }
+@@ -4336,6 +4479,7 @@
+         font_type: c_int,
+         cid: FPDF_BOOL,
+     ) -> FPDF_FONT {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFText_LoadFont(document, data, size, font_type, cid)
+     }
+@@ -4445,6 +4589,7 @@
+         page_object: FPDF_PAGEOBJECT,
+         index: usize,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFPage_InsertObjectAtIndex(page, page_object, index)
+     }
+@@ -4549,6 +4694,7 @@
+         e: c_double,
+         f: c_double,
+     ) {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFPageObj_Transform(page_object, a, b, c, d, e, f)
+     }
+@@ -4696,6 +4842,7 @@
+         buflen: c_ulong,
+         out_buflen: *mut c_ulong,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFPageObjMark_GetName(mark, buffer, buflen, out_buflen)
+     }
+@@ -4728,6 +4875,7 @@
+         buflen: c_ulong,
+         out_buflen: *mut c_ulong,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFPageObjMark_GetName(mark, buffer, buflen, out_buflen)
+     }
+@@ -4759,6 +4907,7 @@
+         buflen: c_ulong,
+         out_buflen: *mut c_ulong,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFPageObjMark_GetParamKey(mark, index, buffer, buflen, out_buflen)
+     }
+@@ -4792,6 +4941,7 @@
+         buflen: c_ulong,
+         out_buflen: *mut c_ulong,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFPageObjMark_GetParamKey(mark, index, buffer, buflen, out_buflen)
+     }
+@@ -4815,6 +4965,7 @@
+         key: &str,
+         out_value: *mut c_int,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFPageObjMark_GetParamIntValue(mark, key, out_value)
+     }
+@@ -4834,6 +4985,7 @@
+         key: &str,
+         out_value: *mut c_float,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFPageObjMark_GetParamFloatValue(mark, key, out_value)
+     }
+@@ -4858,6 +5010,7 @@
+         buflen: c_ulong,
+         out_buflen: *mut c_ulong,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFPageObjMark_GetParamStringValue(mark, key, buffer, buflen, out_buflen)
+     }
+@@ -4891,6 +5044,7 @@
+         buflen: c_ulong,
+         out_buflen: *mut c_ulong,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFPageObjMark_GetParamStringValue(mark, key, buffer, buflen, out_buflen)
+     }
+@@ -4915,6 +5069,7 @@
+         buflen: c_ulong,
+         out_buflen: *mut c_ulong,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFPageObjMark_GetParamBlobValue(mark, key, buffer, buflen, out_buflen)
+     }
+@@ -4948,6 +5103,7 @@
+         buflen: c_ulong,
+         out_buflen: *mut c_ulong,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFPageObjMark_GetParamBlobValue(mark, key, buffer, buflen, out_buflen)
+     }
+@@ -4962,6 +5118,7 @@
+         key: &str,
+         value: c_int,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFPageObjMark_SetIntParam(document, page_object, mark, key, value)
+     }
+@@ -4983,6 +5140,7 @@
+         key: &str,
+         value: f32,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFPageObjMark_SetFloatParam(document, page_object, mark, key, value)
+     }
+@@ -4997,6 +5155,7 @@
+         key: &str,
+         value: &str,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFPageObjMark_SetStringParam(document, page_object, mark, key, value)
+     }
+@@ -5082,6 +5241,7 @@
+         mark: FPDF_PAGEOBJECTMARK,
+         key: &str,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFPageObjMark_RemoveParam(page_object, mark, key)
+     }
+@@ -5095,6 +5255,7 @@
+         image_object: FPDF_PAGEOBJECT,
+         file_access: *mut FPDF_FILEACCESS,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFImageObj_LoadJpegFile(pages, count, image_object, file_access)
+     }
+@@ -5108,6 +5269,7 @@
+         image_object: FPDF_PAGEOBJECT,
+         file_access: *mut FPDF_FILEACCESS,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFImageObj_LoadJpegFileInline(pages, count, image_object, file_access)
+     }
+@@ -5124,6 +5286,7 @@
+         e: c_double,
+         f: c_double,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         #[allow(deprecated)]
+         self.bindings
+             .FPDFImageObj_SetMatrix(image_object, a, b, c, d, e, f)
+@@ -5138,6 +5301,7 @@
+         image_object: FPDF_PAGEOBJECT,
+         bitmap: FPDF_BITMAP,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFImageObj_SetBitmap(pages, count, image_object, bitmap)
+     }
+@@ -5157,6 +5321,7 @@
+         page: FPDF_PAGE,
+         image_object: FPDF_PAGEOBJECT,
+     ) -> FPDF_BITMAP {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFImageObj_GetRenderedBitmap(document, page, image_object)
+     }
+@@ -5169,6 +5334,7 @@
+         buffer: *mut c_void,
+         buflen: c_ulong,
+     ) -> c_ulong {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFImageObj_GetImageDataDecoded(image_object, buffer, buflen)
+     }
+@@ -5181,6 +5347,7 @@
+         buffer: *mut c_void,
+         buflen: c_ulong,
+     ) -> c_ulong {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFImageObj_GetImageDataRaw(image_object, buffer, buflen)
+     }
+@@ -5201,6 +5368,7 @@
+         buffer: *mut c_void,
+         buflen: c_ulong,
+     ) -> c_ulong {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFImageObj_GetImageFilter(image_object, index, buffer, buflen)
+     }
+@@ -5213,6 +5381,7 @@
+         page: FPDF_PAGE,
+         metadata: *mut FPDF_IMAGEOBJ_METADATA,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFImageObj_GetImageMetadata(image_object, page, metadata)
+     }
+@@ -5225,6 +5394,7 @@
+         width: *mut c_uint,
+         height: *mut c_uint,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFImageObj_GetImagePixelSize(image_object, width, height)
+     }
+@@ -5289,6 +5459,7 @@
+         right: *mut c_float,
+         top: *mut c_float,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFPageObj_GetBounds(page_object, left, bottom, right, top)
+     }
+@@ -5300,6 +5471,7 @@
+         page_object: FPDF_PAGEOBJECT,
+         quad_points: *mut FS_QUADPOINTSF,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFPageObj_GetRotatedBounds(page_object, quad_points)
+     }
+@@ -5307,6 +5479,7 @@
+     #[inline]
+     #[allow(non_snake_case)]
+     unsafe fn FPDFPageObj_SetBlendMode(&self, page_object: FPDF_PAGEOBJECT, blend_mode: &str) {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFPageObj_SetBlendMode(page_object, blend_mode)
+     }
+@@ -5321,6 +5494,7 @@
+         B: c_uint,
+         A: c_uint,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFPageObj_SetStrokeColor(page_object, R, G, B, A)
+     }
+@@ -5335,6 +5509,7 @@
+         B: *mut c_uint,
+         A: *mut c_uint,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFPageObj_GetStrokeColor(page_object, R, G, B, A)
+     }
+@@ -5375,6 +5550,7 @@
+         page_object: FPDF_PAGEOBJECT,
+         line_join: c_int,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFPageObj_SetLineJoin(page_object, line_join)
+     }
+@@ -5407,6 +5583,7 @@
+         B: c_uint,
+         A: c_uint,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFPageObj_SetFillColor(page_object, R, G, B, A)
+     }
+@@ -5421,6 +5598,7 @@
+         B: *mut c_uint,
+         A: *mut c_uint,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFPageObj_GetFillColor(page_object, R, G, B, A)
+     }
+@@ -5462,6 +5640,7 @@
+         dash_array: *mut c_float,
+         dash_count: size_t,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFPageObj_GetDashArray(page_object, dash_array, dash_count)
+     }
+@@ -5475,6 +5654,7 @@
+         dash_count: size_t,
+         phase: c_float,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFPageObj_SetDashArray(page_object, dash_array, dash_count, phase)
+     }
+@@ -5621,6 +5801,7 @@
+         buflen: usize,
+         out_buflen: *mut usize,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFFont_GetFontData(font, buffer, buflen, out_buflen)
+     }
+@@ -5686,6 +5867,7 @@
+         font_size: c_float,
+         width: *mut c_float,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFFont_GetGlyphWidth(font, glyph, font_size, width)
+     }
+@@ -5716,6 +5898,7 @@
+         glyphpath: FPDF_GLYPHPATH,
+         index: c_int,
+     ) -> FPDF_PATHSEGMENT {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFGlyphPath_GetGlyphPathSegment(glyphpath, index)
+     }
+@@ -5744,6 +5927,7 @@
+     #[inline]
+     #[allow(non_snake_case)]
+     unsafe fn FPDF_VIEWERREF_GetPrintPageRangeCount(&self, pagerange: FPDF_PAGERANGE) -> size_t {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDF_VIEWERREF_GetPrintPageRangeCount(pagerange)
+     }
+@@ -5755,6 +5939,7 @@
+         pagerange: FPDF_PAGERANGE,
+         index: size_t,
+     ) -> c_int {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDF_VIEWERREF_GetPrintPageRangeElement(pagerange, index)
+     }
+@@ -5775,6 +5960,7 @@
+         buffer: *mut c_char,
+         length: c_ulong,
+     ) -> c_ulong {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDF_VIEWERREF_GetName(document, key, buffer, length)
+     }
+@@ -5802,6 +5988,7 @@
+         buffer: *mut c_void,
+         buflen: *mut c_long,
+     ) -> FPDF_DEST {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDF_GetNamedDest(document, index, buffer, buflen)
+     }
+@@ -5850,6 +6037,7 @@
+         buffer: *mut FPDF_WCHAR,
+         buflen: c_ulong,
+     ) -> c_ulong {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFAttachment_GetName(attachment, buffer, buflen)
+     }
+@@ -5880,6 +6068,7 @@
+         key: &str,
+         value: FPDF_WIDESTRING,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFAttachment_SetStringValue(attachment, key, value)
+     }
+@@ -5893,6 +6082,7 @@
+         buffer: *mut FPDF_WCHAR,
+         buflen: c_ulong,
+     ) -> c_ulong {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFAttachment_GetStringValue(attachment, key, buffer, buflen)
+     }
+@@ -5906,6 +6096,7 @@
+         contents: *const c_void,
+         len: c_ulong,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFAttachment_SetFile(attachment, document, contents, len)
+     }
+@@ -5919,6 +6110,7 @@
+         buflen: c_ulong,
+         out_buflen: *mut c_ulong,
+     ) -> FPDF_BOOL {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFAttachment_GetFile(attachment, buffer, buflen, out_buflen)
+     }
+@@ -5938,6 +6130,7 @@
+         buffer: *mut FPDF_WCHAR,
+         buflen: c_ulong,
+     ) -> c_ulong {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFAttachment_GetSubtype(attachment, buffer, buflen)
+     }
+@@ -5961,6 +6154,7 @@
+         buffer: *mut FPDF_WCHAR,
+         buflen: c_ulong,
+     ) -> c_ulong {
++        let _lock = PdfiumThreadMarshall::lock();
+         self.bindings
+             .FPDFCatalog_GetLanguage(document, buffer, buflen)
+     }

@@ -1,0 +1,11 @@
+# Direct paragraph entry
+
+Folio currently requires a single-text modal before paragraph editing. Add a visible **Edit paragraphs** toolbar action: choosing outlined text opens the existing on-page paragraph workspace directly. Keep **Edit text** for individual replacements. This reduces user steps without changing paragraph selection, preview, publication or fidelity semantics. User has authorized autonomous implementation and opted out of design questions; these UI choices are the coordinator's decisions.
+
+Use the existing `edit` tool and a text/paragraph entry preference, not a new document/edit-history type. Both entry routes call the same paragraph preparation function. Preserve source/page/adapter ownership, edit permissions, annotated-page capability checks, nested-form preparation and source-generation checks. Fail visibly if preparation is unsupported; do not silently substitute single-text editing. After closing the paragraph workspace, restore focus to the initiating text or paragraph toolbar button. Pending operations keep other edits blocked.
+
+Alternatives: making all existing text clicks open paragraphs would change the small-replacement workflow; a keyboard-only shortcut would be hard to discover. Choose a separate explicit toolbar action, supported by the existing wrapping toolbar. No backend, format, dependency or package changes. No memory improvement is promised: measure the direct route separately against unchanged budgets, keeping the original-route failures.
+
+Acceptance: app tests cover direct full-source/nested entry, Cancel, Apply/history, fallback text tool, capability refusal and protection; existing paragraph routes remain passing. Full frontend/build gate, fresh Windows candidate and original Word wide/narrow saved-output acceptance follow. A single final scoped review checks the finished delta. No commits or release publication in this inherited working tree.
+
+Related evidence: preview-heap-counters checkpoint isolates controller retention; GPU process growth remains open. Microsoft's WebView2 performance guidance describes GPU buffers and content rendering costs (https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/performance); it does not establish the cause in Folio. The earlier graphics-phase evidence points to modal opening but did not prove allocation ownership.

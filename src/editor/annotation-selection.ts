@@ -37,6 +37,7 @@ export function selectedHighlightRects(layer: HTMLElement, characters: PdfTextCh
   for (let index = 0; index < selection.rangeCount; index++) {
     const range = selection.getRangeAt(index);
     layer.querySelectorAll<HTMLElement>("[data-pdf-character]").forEach((span) => {
+      if(span.hidden)return;
       const node = span.firstChild;
       if (!node || !range.intersectsNode(node)) return;
       const start = range.startContainer === node ? range.startOffset : 0;

@@ -1,0 +1,6 @@
+Cargo.lock
+target/
+
+# Preserve the published archive's lockfile for byte-for-byte provenance checks.
+!Cargo.lock
+.cargo-ok

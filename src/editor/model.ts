@@ -1,6 +1,9 @@
 import type { EditorDocument, History, Overlay, PagePlan, Rotation } from "./types";
+import {filterBookmarks} from "./bookmarks";
 
 export type { EditorDocument, History, Overlay, PagePlan, Rotation } from "./types";
+
+export const MAX_DOCUMENT_HISTORY_ACTIONS = 100;
 
 export function createHistory<T>(initial: T): History<T> {
   return { past: [], present: initial, future: [] };
@@ -9,7 +12,7 @@ export function createHistory<T>(initial: T): History<T> {
 export function commit<T>(history: History<T>, update: (current: T) => T): History<T> {
   const next = update(history.present);
   if (next === history.present) return history;
-  return { past: [...history.past, history.present], present: next, future: [] };
+  return { past: [...history.past, history.present].slice(-MAX_DOCUMENT_HISTORY_ACTIONS), present: next, future: [] };
 }
 
 export function undo<T>(history: History<T>): History<T> {
@@ -35,7 +38,7 @@ export function redo<T>(history: History<T>): History<T> {
 export function cloneOverlay(overlay: Overlay): Overlay {
   if (overlay.type === "ink") return {...overlay, paths: overlay.paths.map(path => path.map(point => ({...point})))};
   if (overlay.type === "highlight") return {...overlay, rects: overlay.rects.map(rect => ({...rect}))};
-  if (overlay.type === "text" && overlay.shaping) return {...overlay,shaping:{...overlay.shaping}};
+  if (overlay.type === "text") return {...overlay, ...(overlay.shaping && {shaping:{...overlay.shaping}}), ...(overlay.area && {area:{...overlay.area}})};
   return {...overlay};
 }
 
@@ -58,6 +61,13 @@ export function movePage(document: EditorDocument, pageId: string, destination: 
   return { ...document, pages };
 }
 
+export function insertPages(document:EditorDocument, pages:PagePlan[], index:number):EditorDocument {
+  if(!pages.length)return document;
+  const next=[...document.pages];
+  next.splice(Math.max(0,Math.min(index,next.length)),0,...pages);
+  return {...document,pages:next,selectedPageId:pages[0].id,selectedOverlayId:null};
+}
+
 export function deletePage(document: EditorDocument, pageId: string): EditorDocument {
   const index = document.pages.findIndex((page) => page.id === pageId);
   if (index < 0) return document;
@@ -66,6 +76,7 @@ export function deletePage(document: EditorDocument, pageId: string): EditorDocu
   return {
     ...document,
     pages,
+    ...(document.bookmarks?{bookmarks:filterBookmarks(document.bookmarks,pages)}:{}),
     selectedPageId: document.selectedPageId === pageId ? fallback : document.selectedPageId,
     selectedOverlayId: document.selectedPageId === pageId ? null : document.selectedOverlayId,
   };
@@ -100,7 +111,9 @@ export function removeOverlay(document: EditorDocument, pageId: string, overlayI
 }
 
 export function planDigest(document: EditorDocument): string {
-  return JSON.stringify(document.pages);
+  const pages=document.pages.map(({protection:_,contentSourceId,...page})=>({...page,sourceId:contentSourceId??page.sourceId}));
+  if(document.bookmarks!==undefined||document.bookmarkError||document.metadata!==undefined)return JSON.stringify({pages,bookmarks:document.bookmarks,bookmarkError:document.bookmarkError,...(document.metadata!==undefined?{metadata:document.metadata}:{})});
+  return JSON.stringify(pages);
 }
 
 let nextId = 0;

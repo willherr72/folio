@@ -68,6 +68,12 @@ mod memory {
     unsafe extern "system" {
         fn GetProcessMemoryInfo(process: isize, counters: *mut Counters, size: u32) -> i32;
     }
+    pub fn snapshot(phase: &str) -> serde_json::Value {
+        let mut c = Counters { cb: std::mem::size_of::<Counters>() as u32, ..Counters::default() };
+        assert_ne!(unsafe { GetProcessMemoryInfo(-1, &mut c, std::mem::size_of::<Counters>() as u32) }, 0);
+        serde_json::json!({"phase":phase,"privateBytes":c.private,"workingSetBytes":c.working,
+            "processPeakWorkingSetBytes":c.peak_working,"processPeakPagefileBytes":c.peak_pagefile})
+    }
     pub struct Sampler {
         active: Arc<AtomicBool>,
         private: Arc<AtomicUsize>,
@@ -120,6 +126,9 @@ mod memory {
 }
 #[cfg(not(windows))]
 mod memory {
+    pub fn snapshot(phase: &str) -> serde_json::Value {
+        serde_json::json!({"phase":phase,"unavailable":true})
+    }
     pub struct Sampler;
     impl Sampler {
         pub fn start() -> Self {
@@ -137,6 +146,7 @@ fn check_fixture(directory: &Path, fixture: &Value, sequential_count: usize) -> 
     let fingerprint = source_fingerprint(&source);
     let temporary = tempfile::tempdir().unwrap();
     let sampler = memory::Sampler::start();
+    let mut memory_phases = vec![memory::snapshot("before-engine")];
     let engine = PdfEngine::start(
         std::env::var_os("FOLIO_PDFIUM_PATH")
             .map(PathBuf::from)
@@ -146,6 +156,7 @@ fn check_fixture(directory: &Path, fixture: &Value, sequential_count: usize) -> 
     let begin = Instant::now();
     let document = engine.open_document(&source).unwrap();
     let open_ms = elapsed(begin);
+    memory_phases.push(memory::snapshot("after-open"));
     assert_eq!(
         document.pages.len(),
         fixture["pages"].as_u64().unwrap() as usize,
@@ -207,12 +218,14 @@ fn check_fixture(directory: &Path, fixture: &Value, sequential_count: usize) -> 
         drop(engine.render_page(&document.id, page, 900).unwrap());
         sequential_ms.push(elapsed(begin));
     }
+    memory_phases.push(memory::snapshot("after-rendering"));
     let begin = Instant::now();
     let mut total_characters = 0;
     for page in 0..document.pages.len() {
         total_characters += text(&engine, &document.id, page).chars().count();
     }
     let extract_all_ms = elapsed(begin);
+    memory_phases.push(memory::snapshot("after-extraction"));
     let pages: Vec<Value> = document.pages.iter().enumerate().rev().map(|(index, page)| {
         let mut overlays = serde_json::to_value(&page.overlays).unwrap().as_array().unwrap().clone();
         if index == document.pages.len() - 1 {
@@ -230,9 +243,11 @@ fn check_fixture(directory: &Path, fixture: &Value, sequential_count: usize) -> 
     let begin = Instant::now();
     engine.export_pdf(request, &output).unwrap();
     let export_ms = elapsed(begin);
+    memory_phases.push(memory::snapshot("after-export"));
     let begin = Instant::now();
     let reopened = engine.open_document(&output).unwrap();
     let reopen_ms = elapsed(begin);
+    memory_phases.push(memory::snapshot("after-reopen"));
     assert_eq!(reopened.pages.len(), document.pages.len());
     for sample in fixture["samples"].as_array().unwrap() {
         let original = sample["page"].as_u64().unwrap() as usize;
@@ -251,14 +266,17 @@ fn check_fixture(directory: &Path, fixture: &Value, sequential_count: usize) -> 
         );
     }
     let overlays = serde_json::to_value(&reopened.pages[0].overlays).unwrap();
-    let comment = overlays
-        .as_array()
-        .unwrap()
-        .iter()
-        .find(|o| o["text"] == "CORPUS EDIT COMMENT")
-        .expect("editable comment survives reopen");
-    assert!((comment["x"].as_f64().unwrap() - 40.0).abs() < 1.0);
-    assert!((comment["y"].as_f64().unwrap() - 40.0).abs() < 1.0);
+    let native=engine.list_native_comments(&reopened.id).unwrap();
+    let comment=native.iter().find(|n|n.page_index==0&&n.text=="CORPUS EDIT COMMENT").expect("editable native comment survives reopen");
+    assert!(comment.reason.is_none());
+    assert!((comment.bounds.x-40.0).abs()<1.0);
+    assert!((comment.bounds.y-40.0).abs()<1.0);
+    for original in engine.list_native_comments(&document.id).unwrap(){
+        let note=native.iter().find(|n|n.page_index==document.pages.len()-1-original.page_index&&n.text==original.text).expect("native source comment survives reorder/export");
+        assert_eq!(note.color,original.color);
+        assert_eq!(note.author,original.author);
+        assert_eq!((note.bounds.x,note.bounds.y,note.bounds.width,note.bounds.height),(original.bounds.x,original.bounds.y,original.bounds.width,original.bounds.height));
+    }
     let highlight = overlays
         .as_array()
         .unwrap()
@@ -316,12 +334,13 @@ fn check_fixture(directory: &Path, fixture: &Value, sequential_count: usize) -> 
     drop(engine.render_page(&reopened.id, 0, 900).unwrap());
     engine.close_document(&reopened.id).unwrap();
     engine.close_document(&document.id).unwrap();
+    memory_phases.push(memory::snapshot("after-close"));
     assert_eq!(
         fingerprint,
         source_fingerprint(&source),
         "source mutated: {filename}"
     );
-    json!({"fixture":filename,"sourceBytes":fs::metadata(source).unwrap().len(),"pages":document.pages.len(),"processId":std::process::id(),"openMs":open_ms,"samples":samples,"repeatFirstPageRenderMs":repeat_render_ms,"sequentialRenderMs":sequential_ms,"extractAllMs":extract_all_ms,"totalCharacters":total_characters,"exportReverseWithEditsMs":export_ms,"exportBytes":fs::metadata(output).unwrap().len(),"reopenMs":reopen_ms,"memory":sampler.finish(),"passed":true})
+    json!({"fixture":filename,"sourceBytes":fs::metadata(source).unwrap().len(),"pages":document.pages.len(),"processId":std::process::id(),"openMs":open_ms,"samples":samples,"repeatFirstPageRenderMs":repeat_render_ms,"sequentialRenderMs":sequential_ms,"extractAllMs":extract_all_ms,"totalCharacters":total_characters,"exportReverseWithEditsMs":export_ms,"exportBytes":fs::metadata(output).unwrap().len(),"reopenMs":reopen_ms,"memory":sampler.finish(),"memoryPhases":memory_phases,"passed":true})
 }
 
 #[test]

@@ -1,0 +1,32 @@
+import {cleanup,fireEvent,render,screen,waitFor} from '@testing-library/react';
+import {afterEach,beforeEach,expect,it,vi} from 'vitest';
+import {App} from '../src/App';
+import {nativeAdapter} from '../src/editor/adapter';
+import {clearSearchTextCache} from '../src/editor/search';
+vi.mock('../src/editor/useWorkspaceRecovery',()=>({useWorkspaceRecovery:()=>({ready:true,checkpoint:vi.fn().mockResolvedValue(undefined)})}));
+vi.mock('../src/components/DocumentViewport',()=>({DocumentViewport:(props:any)=><output data-testid="plans">{JSON.stringify(props.pages)}</output>}));
+const size={width:300,height:400};
+beforeEach(()=>{
+ localStorage.clear();Object.defineProperty(window,'__TAURI_INTERNALS__',{value:{invoke:vi.fn().mockResolvedValue(0),transformCallback:()=>0},configurable:true});
+ vi.spyOn(nativeAdapter,'openPdf').mockResolvedValue({id:'source',name:'Original.pdf',pages:[size,size]});
+ vi.spyOn(nativeAdapter,'renderPage').mockResolvedValue('data:image/png;base64,AA');
+ vi.spyOn(nativeAdapter as Required<typeof nativeAdapter>,'renderPagePlan').mockResolvedValue('data:image/png;base64,AA');
+ vi.spyOn(nativeAdapter,'closeDocument').mockResolvedValue();
+ vi.spyOn(nativeAdapter as Required<typeof nativeAdapter>,'inspectFormTextAppearance').mockResolvedValue({styleKey:'s',fontLabel:'Original serif',fontSize:12,color:'#ff0000',colorSpace:'cmyk',alignment:'left'});
+ vi.spyOn(nativeAdapter as Required<typeof nativeAdapter>,'listFormFields').mockResolvedValue([{annotationIndex:0,name:'answer',label:'Answer',kind:'text',value:{kind:'text',text:'Keep'},options:[],selectedIndices:[],readOnly:false,required:false,multiline:false,password:false,multiSelect:false,editableChoice:false,reason:null,bounds:{x:20,y:30,width:100,height:30},visible:true}]);
+ vi.spyOn(nativeAdapter as Required<typeof nativeAdapter>,'setFormTextAppearance').mockResolvedValue({document:{id:'candidate',name:'Positioned.pdf',pages:[size,size,size]},pageIndices:[0,2,1]});
+});
+afterEach(()=>{cleanup();clearSearchTextCache(['source','candidate']);vi.restoreAllMocks();delete (window as any).__TAURI_INTERNALS__;});
+it('styles the selected duplicate through preview and one Undo step',async()=>{
+ render(<App initialDemo={false}/>);fireEvent.click(screen.getByRole('button',{name:'Open a PDF'}));await screen.findByRole('tab',{name:'Original.pdf'});
+ fireEvent.click(screen.getByRole('button',{name:'Duplicate'}));const before=JSON.parse(screen.getByTestId('plans').textContent!);
+ fireEvent.click(screen.getByRole('button',{name:'Fill forms'}));fireEvent.click(await screen.findByRole('button',{name:'Text appearance…'}));
+ expect(screen.getByRole('button',{name:'Undo'})).toBeDisabled();await screen.findByText('Original serif');fireEvent.change(screen.getByLabelText('Alignment'),{target:{value:'right'}});
+ fireEvent.click(screen.getByRole('button',{name:'Preview appearance'}));await waitFor(()=>expect(screen.getByRole('button',{name:'Apply appearance'})).toBeEnabled());
+ expect(nativeAdapter.setFormTextAppearance).toHaveBeenCalledWith('source',[0,0,1],1,expect.objectContaining({changes:{alignment:'right'}}));
+ fireEvent.click(screen.getByRole('button',{name:'Apply appearance'}));await waitFor(()=>expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+ const after=JSON.parse(screen.getByTestId('plans').textContent!);expect(after.map((p:any)=>[p.sourceId,p.pageIndex])).toEqual([['candidate',0],['candidate',2],['candidate',1]]);
+ fireEvent.click(screen.getByRole('button',{name:'Undo'}));expect(JSON.parse(screen.getByTestId('plans').textContent!)).toEqual(before);
+ fireEvent.click(screen.getByRole('button',{name:'Redo'}));expect(JSON.parse(screen.getByTestId('plans').textContent!)).toEqual(after);expect(nativeAdapter.closeDocument).not.toHaveBeenCalledWith('candidate');
+});
+

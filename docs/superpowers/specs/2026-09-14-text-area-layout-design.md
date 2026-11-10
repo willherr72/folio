@@ -1,5 +1,10 @@
 # Text-area layout checkpoint (#16)
 
+**October 22 amendment:** the user approved the [current copying contract](../../text-area-copy-policy.md).
+Exact logical text remains required inside Folio. The strict external-copy gate
+in this September checkpoint is retained as a diagnostic, replaced for acceptance
+by bounded whitespace tolerance with content and word boundaries preserved.
+
 ## Scope
 Build a native development API and reproducible preview/PDF reader fixture before enabling a desktop text-area tool. This is an architectural checkpoint under the authorized issue roadmap. It does not close #16, alter existing overlays, or widen #14 bidi support. No application IPC/schema/version change in this checkpoint.
 

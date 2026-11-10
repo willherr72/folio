@@ -1,0 +1,35 @@
+# Do not check Rust test files and build artifacts into source control
+
+docs/
+target/
+Cargo.lock
+*.so
+*.dll
+*.dylib
+test*.jpg
+test*.png
+examples/pkg
+examples/target
+examples/serve
+examples/Cargo.lock
+examples/test*.jpg
+examples/test*.png
+form-test-page-*.jpg
+
+# Do not check IntelliJ-specific files into source control
+
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# Do not check Visual Studio Code-specific files into source control
+
+*.code-workspace
+.history/
+
+# Folio retains the complete published archive for reproducible provenance.
+!*
+!*/
+/target/
+/.cargo-ok

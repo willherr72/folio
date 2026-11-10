@@ -235,12 +235,15 @@ fn malformed_or_stale_metadata_preserves_native_appearance_instead_of_importing(
                 .as_reference()
                 .unwrap();
             if mode == "appearance" {
-                pdf.get_object_mut(ap)
+                let stream=pdf.get_object_mut(ap)
                     .unwrap()
                     .as_stream_mut()
-                    .unwrap()
-                    .content
-                    .extend_from_slice(b"\n0 0 50 50 re f");
+                    .unwrap();
+                let mut content=stream.get_plain_content().unwrap();
+                content.extend_from_slice(b"\n0 0 50 50 re f");
+                // This case changes valid appearance content, not PDF syntax.
+                // Keep Length/Filter consistent so strict readers can inspect it.
+                stream.set_plain_content(content);
             } else {
                 let font = pdf
                     .get_object(ap)
@@ -349,7 +352,9 @@ fn legacy_recovery_imports_new_owned_annotations_once_and_honors_later_deletion(
         .map(|e| e.unwrap().path())
         .find(|p| p.extension().is_some_and(|e| e == "json"))
         .unwrap();
-    let mut manifest: Value = serde_json::from_slice(&fs::read(&path).unwrap()).unwrap();
+    let mut manifest: Value = serde_json::from_slice(&folio_engine::private_storage::unseal(
+        folio_engine::private_storage::Purpose::Workspace, &fs::read(&path).unwrap(), 32 * 1024 * 1024
+    ).unwrap()).unwrap();
     manifest["annotationImportVersion"] = json!(1);
     fs::write(path, serde_json::to_vec(&manifest).unwrap()).unwrap();
     fs::remove_file(editable).unwrap();

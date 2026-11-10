@@ -1,0 +1,14 @@
+import {createRoot} from 'react-dom/client';
+import {App} from '../../src/App';
+import {nativeAdapter} from '../../src/editor/adapter';
+import type {DocumentInfo,NativeComment} from '../../src/editor/types';
+import '../../src/styles.css';
+const source:DocumentInfo={id:'native-notes',name:'Native comments.pdf',pages:[{width:600,height:800},{width:600,height:800}]};
+const notes:NativeComment[]=[{pageIndex:1,annotationIndex:0,text:'Review this paragraph',author:'Reviewer',subject:'Check wording',bounds:{x:80,y:300,width:18,height:18}}, {pageIndex:0,annotationIndex:0,text:'Locked reference note',author:'Reviewer',bounds:{x:80,y:300,width:18,height:18},reason:'This comment is locked or read-only.'}];
+nativeAdapter.openPdf=async()=>source;
+nativeAdapter.listNativeComments=async id=>notes.map(n=>({...n,text:id==='edited'&&n.pageIndex===1?'Updated café 日本語\nSecond line':n.text}));
+nativeAdapter.editNativeComment=async()=>({...source,id:'edited'});
+nativeAdapter.renderPage=async(_id,page)=>'data:image/svg+xml,'+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="600" height="800"><rect width="600" height="800" fill="white"/><text x="50" y="60" font-size="24">Comment page ${page+1}</text><rect x="80" y="300" width="18" height="18" fill="orange"/></svg>`);
+nativeAdapter.engineStatus=async()=>'Synthetic comments acceptance';nativeAdapter.closeDocument=async()=>{};nativeAdapter.exportPdf=async()=>null;
+nativeAdapter.getPageText=async()=>({characters:[]});nativeAdapter.listTextRuns=async()=>({runs:[]});nativeAdapter.listOccurrenceFormTextRuns=undefined;nativeAdapter.listFormTextRuns=async()=>({runs:[]});
+createRoot(document.getElementById('root')!).render(<App initialDemo={false}/>);

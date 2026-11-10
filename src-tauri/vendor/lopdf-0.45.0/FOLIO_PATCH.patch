@@ -1,0 +1,359 @@
+--- a/.gitattributes
++++ b/.gitattributes
+@@ -7,3 +7,6 @@
+ *.jpg binary
+ *.jpeg binary
+ *.png binary
++
++# Folio records exact archive/patched bytes; preserve them across Windows checkouts.
++* -text -whitespace
+--- a/.gitignore
++++ b/.gitignore
+@@ -2,9 +2,10 @@
+ Cargo.lock
+ test*.pdf
+ *.pdf
++!/assets/example.pdf
+ .idea
+ *log.txt
+ specs
+ .DS_Store
+ /notes
+-ops.txt+ops.txt
+--- a/src/document.rs
++++ b/src/document.rs
+@@ -258,10 +258,10 @@
+ 
+     /// Return dictionary with encryption information
+     pub fn get_encrypted(&self) -> Result<&Dictionary> {
+-        self.trailer
+-            .get(b"Encrypt")
+-            .and_then(Object::as_reference)
+-            .and_then(|id| self.get_dictionary(id))
++        match self.trailer.get(b"Encrypt")? {
++            Object::Reference(id) => self.get_dictionary(*id),
++            value => value.as_dict(),
++        }
+     }
+ 
+     /// Return true if PDF document is currently encrypted
+--- a/src/encryption/algorithms.rs
++++ b/src/encryption/algorithms.rs
+@@ -432,6 +432,7 @@
+                 decryptor.decrypt_block(aes_block_mut(block));
+             }
+ 
++            self.validate_permissions(&owner_encrypted)?;
+             return Ok(owner_encrypted);
+         }
+ 
+@@ -823,6 +824,15 @@
+     where
+         O: AsRef<[u8]>,
+     {
++        self.recover_owner_user_password_r4(doc, owner_password).map(|_| ())
++    }
++
++    // Algorithm 7 already recovers the padded user password while authenticating
++    // an owner. Retain it for Algorithm 2 instead of deriving a key from the owner.
++    fn recover_owner_user_password_r4<O>(&self, doc: &Document, owner_password: O) -> Result<Vec<u8>, DecryptionError>
++    where
++        O: AsRef<[u8]>,
++    {
+         // Pad or truncate the owner string. If there is no owner password, use the user password
+         // instead.
+         let password = owner_password.as_ref();
+@@ -900,7 +910,8 @@
+         // The result of the previous step purports to be the user password. Authenticate this user
+         // password using Algorithm 5. If it is correct, the password supplied is the correct owner
+         // password.
+-        self.authenticate_user_password_r4(doc, &result)
++        self.authenticate_user_password_r4(doc, &result)?;
++        Ok(result)
+     }
+ 
+     /// Compute the encryption dictionary's U-entry value (revision 6).
+@@ -1128,7 +1139,7 @@
+     /// Validate the permissions (revision 6 and later).
+     ///
+     /// This implements Algorithm 13 as described in ISO 32000-2:2020 (PDF 2.0).
+-    fn validate_permissions<K>(&self, file_encryption_key: K) -> Result<(), DecryptionError>
++    pub(crate) fn validate_permissions<K>(&self, file_encryption_key: K) -> Result<(), DecryptionError>
+     where
+         K: AsRef<[u8]>,
+     {
+@@ -1155,7 +1166,7 @@
+ 
+         // Bytes 0-3 of the decrypted Perms entry, treated as a little-endian integer, are the
+         // user permissions. They should match the value in the P key.
+-        if bytes[..3] != u64::to_le_bytes(self.permissions.bits())[..3] {
++        if bytes[..4] != u64::to_le_bytes(self.permissions.bits())[..4] {
+             return Err(DecryptionError::IncorrectPassword);
+         }
+ 
+@@ -1183,7 +1194,14 @@
+         P: AsRef<[u8]>,
+     {
+         match self.revision {
+-            2..=4 => self.compute_file_encryption_key_r4(doc, password),
++            2..=4 => {
++                if self.authenticate_user_password_r4(doc, &password).is_ok() {
++                    self.compute_file_encryption_key_r4(doc, password)
++                } else {
++                    let user = self.recover_owner_user_password_r4(doc, password)?;
++                    self.compute_file_encryption_key_r4(doc, user)
++                }
++            }
+             5..=6 => self.compute_file_encryption_key_r6(password),
+             _ => Err(DecryptionError::UnsupportedRevision),
+         }
+--- a/src/encryption.rs
++++ b/src/encryption.rs
+@@ -566,6 +566,32 @@
+         let algorithm = PasswordAlgorithm::try_from(document)?;
+         let file_encryption_key = algorithm.compute_file_encryption_key(document, password)?;
+ 
++        Self::from_authenticated_file_key(document, &file_encryption_key)
++    }
++
++    /// Reconstruct state from a previously authenticated, securely retained file key.
++    ///
++    /// This does NOT authenticate a supplied password or establish owner privileges.
++    /// Call only with trusted authenticated state, never raw user-supplied key bytes.
++    /// Revisions 2-4 require that trust; revisions 5-6 also validate the Perms block.
++    pub fn from_authenticated_file_key(document: &Document, key: &[u8]) -> Result<Self, Error> {
++        if !document.is_encrypted() {
++            return Err(Error::NotEncrypted);
++        }
++        let filter = document.get_encrypted()?.get(b"Filter")?.as_name()?;
++        if filter != b"Standard" {
++            return Err(Error::UnsupportedSecurityHandler(filter.to_vec()));
++        }
++        let algorithm = PasswordAlgorithm::try_from(document)?;
++        let expected = algorithm.length.unwrap_or(40) / 8;
++        if key.len() != expected {
++            return Err(DecryptionError::InvalidKeyLength.into());
++        }
++        if algorithm.revision >= 5 {
++            algorithm.validate_permissions(key)?;
++        }
++        let file_encryption_key = key.to_vec();
++
+         let mut crypt_filters = document.get_crypt_filters();
+ 
+         // CF is meaningful only when the value of V is 4 (PDF 1.5) or 5 (PDF 2.0).
+@@ -687,9 +713,14 @@
+         return Ok(());
+     }
+ 
+-    // The Metadata stream shall only be encrypted if EncryptMetadata is set to true.
+-    if obj.type_name().ok() == Some(b"Metadata") && !state.encrypt_metadata {
+-        return Ok(());
++    if let Object::Stream(stream) = obj {
++        for (_, value) in stream.dict.iter_mut() {
++            encrypt_object(state, obj_id, value)?;
++        }
++        // The metadata exemption applies only to stream data, not dictionary strings.
++        if stream.dict.has_type(b"Metadata") && !state.encrypt_metadata {
++            return Ok(());
++        }
+     }
+ 
+     // A stream filter type, the Crypt filter can be specified for any stream in the document to
+@@ -781,9 +812,14 @@
+         return Ok(());
+     }
+ 
+-    // The Metadata stream shall only be encrypted if EncryptMetadata is set to true.
+-    if obj.type_name().ok() == Some(b"Metadata") && !state.encrypt_metadata {
+-        return Ok(());
++    if let Object::Stream(stream) = obj {
++        for (_, value) in stream.dict.iter_mut() {
++            decrypt_object(state, obj_id, value)?;
++        }
++        // The metadata exemption applies only to stream data, not dictionary strings.
++        if stream.dict.has_type(b"Metadata") && !state.encrypt_metadata {
++            return Ok(());
++        }
+     }
+ 
+     // A stream filter type, the Crypt filter can be specified for any stream in the document to
+--- a/src/load_options.rs
++++ b/src/load_options.rs
+@@ -30,6 +30,9 @@
+ /// ```
+ #[derive(Clone, Default)]
+ pub struct LoadOptions {
++    /// Folio patch: inspect encryption metadata without implicit empty-password
++    /// decryption. Encrypted content remains unloaded and must not be rendered.
++    pub skip_decryption: bool,
+     /// Password for encrypted PDFs.
+     pub password: Option<String>,
+     /// Object filter applied during loading.
+--- a/src/reader.rs
++++ b/src/reader.rs
+@@ -83,6 +83,7 @@
+             document: Document::new(),
+             encryption_state: None,
+             raw_objects: BTreeMap::new(),
++            skip_decryption: options.skip_decryption,
+             password: options.password,
+             strict: options.strict,
+             max_decompressed_size: options.max_decompressed_size,
+@@ -103,6 +104,7 @@
+             document: Document::new(),
+             encryption_state: None,
+             raw_objects: BTreeMap::new(),
++            skip_decryption: options.skip_decryption,
+             password: options.password,
+             strict: options.strict,
+             max_decompressed_size: options.max_decompressed_size,
+@@ -154,6 +156,7 @@
+             document: Document::new(),
+             encryption_state: None,
+             raw_objects: BTreeMap::new(),
++            skip_decryption: false,
+             password: None,
+             strict: false,
+             max_decompressed_size: None,
+@@ -170,6 +173,7 @@
+             document: Document::new(),
+             encryption_state: None,
+             raw_objects: BTreeMap::new(),
++            skip_decryption: false,
+             password: Some(password.to_string()),
+             strict: false,
+             max_decompressed_size: None,
+@@ -189,6 +193,7 @@
+             document: Document::new(),
+             encryption_state: None,
+             raw_objects: BTreeMap::new(),
++            skip_decryption: false,
+             password,
+             strict: false,
+             max_decompressed_size: None,
+@@ -233,6 +238,7 @@
+             document: Document::new(),
+             encryption_state: None,
+             raw_objects: BTreeMap::new(),
++            skip_decryption: options.skip_decryption,
+             password: options.password,
+             strict: options.strict,
+             max_decompressed_size: options.max_decompressed_size,
+@@ -253,6 +259,7 @@
+             document: Document::new(),
+             encryption_state: None,
+             raw_objects: BTreeMap::new(),
++            skip_decryption: options.skip_decryption,
+             password: options.password,
+             strict: options.strict,
+             max_decompressed_size: options.max_decompressed_size,
+@@ -300,6 +307,7 @@
+             document: Document::new(),
+             encryption_state: None,
+             raw_objects: BTreeMap::new(),
++            skip_decryption: false,
+             password: None,
+             strict: false,
+             max_decompressed_size: None,
+@@ -316,6 +324,7 @@
+             document: Document::new(),
+             encryption_state: None,
+             raw_objects: BTreeMap::new(),
++            skip_decryption: false,
+             password: Some(password.to_string()),
+             strict: false,
+             max_decompressed_size: None,
+@@ -337,6 +346,7 @@
+             document: Document::new(),
+             encryption_state: None,
+             raw_objects: BTreeMap::new(),
++            skip_decryption: false,
+             password,
+             strict: false,
+             max_decompressed_size: None,
+@@ -355,6 +365,7 @@
+             document: Document::new(),
+             encryption_state: None,
+             raw_objects: BTreeMap::new(),
++            skip_decryption: false,
+             password: None,
+             strict: false,
+             max_decompressed_size: None,
+@@ -389,6 +400,7 @@
+             document: Document::new(),
+             encryption_state: None,
+             raw_objects: BTreeMap::new(),
++            skip_decryption: false,
+             password: None,
+             strict: false,
+             max_decompressed_size: None,
+@@ -433,6 +445,7 @@
+             document: Document::new(),
+             encryption_state: None,
+             raw_objects: BTreeMap::new(),
++            skip_decryption: false,
+             password: None,
+             strict: false,
+             max_decompressed_size: None,
+@@ -458,6 +471,7 @@
+             document: Document::new(),
+             encryption_state: None,
+             raw_objects: BTreeMap::new(),
++            skip_decryption: false,
+             password: None,
+             strict: false,
+             max_decompressed_size: None,
+@@ -470,6 +484,7 @@
+ }
+ 
+ pub struct Reader<'a> {
++    skip_decryption: bool,
+     pub buffer: &'a [u8],
+     pub document: Document,
+     pub encryption_state: Option<EncryptionState>,
+@@ -865,6 +880,10 @@
+ 
+         self.parse_encryption_dictionary()?;
+ 
++        if self.skip_decryption {
++            return Ok(());
++        }
++
+         if self.authenticate_and_setup_encryption(false)?.is_none() {
+             return Ok(());
+         }
+@@ -884,10 +903,9 @@
+                     continue;
+                 }
+ 
+-                if let Ok((id, mut obj)) = self.parse_raw_object(raw_bytes) {
+-                    let _ = encryption::decrypt_object(state, *obj_id, &mut obj);
+-                    self.document.objects.insert(id, obj);
+-                }
++                let (id, mut obj) = self.parse_raw_object(raw_bytes)?;
++                encryption::decrypt_object(state, *obj_id, &mut obj)?;
++                self.document.objects.insert(id, obj);
+             }
+ 
+             let mut streams_to_process: std::collections::HashMap<u32, Vec<(u32, u16)>> =
+@@ -912,7 +930,7 @@
+                                 }
+                             }
+                         }
+-                        Err(_e) => {}
++                        Err(error) => return Err(error),
+                     }
+                 }
+             }
+@@ -1235,7 +1253,9 @@
+         };
+ 
+         if let Some(ref password) = password_to_use {
+-            let state = EncryptionState::decode(&self.document, password)?;
++            let algorithm = encryption::PasswordAlgorithm::try_from(&self.document)?;
++            let sanitized = algorithm.sanitize_password(&password)?;
++            let state = EncryptionState::decode(&self.document, sanitized)?;
+             self.encryption_state = Some(state);
+         }
+ 

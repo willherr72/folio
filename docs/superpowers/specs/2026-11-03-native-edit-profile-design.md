@@ -1,0 +1,9 @@
+# Native edit stage attribution
+
+Continue the accepted large-edit diagnostic by measuring worker stages on the same dense 2-page and 300-page sources. Existing desktop timings identify request boundaries, not the internal cause. No optimization is justified yet.
+
+Use temporary, feature-gated RAII timers and an optimized diagnostic binary. Timers record only static stage names, nesting, and monotonic nanoseconds, with a strict event cap. Preserve original source bytes and instrumented snapshots; restore only exact matching instrumented files afterward. The production GUI and PDFium remain unchanged. Run sequentially, without desktop workloads or concurrent Cargo jobs. The first ignored-library build was cancelled after review found the wrong form-discovery route; its evidence is preserved. A dedicated temporary binary avoids compiling all unit tests and uses the production native binding initialization once.
+
+Exercise discovery through the actual occurrence-form handler and seven alternating complete-source header edits, retaining prior sources like undo history. Save each final source and independently compare every page's text, geometry, and pixels against the accepted desktop output, binding each reference to the prior checkpoint. Verify source hashes, renderer identity, event nesting, and full elapsed accounting before drawing conclusions. Report the timer boundary separately and reject gaps above 1 ms or max(10 microseconds, 1% elapsed), whichever is smaller. Include an observer-disabled run of the same compiled workload as a collection-overhead control; it still contains disabled instrumentation calls.
+
+Report inclusive and exclusive timings separately. These are optimized worker wall-clock observations on synthetic fixtures, not GUI latency, CPU time, random benchmarks, or parity certification. Choose the next bounded optimization from measured stages; preserve all fidelity, security, and input limits.

@@ -1,0 +1,11 @@
+# Native annotation semantics during workspace rotation
+
+The previous cycle made verified progress (648 frontend/428 native tests and desktop page controls) and measured a remaining NoRotate preview mismatch: [455,500,16,16] before save versus [471,500,16,16] after save. Existing PageView and thumbnails rotate a raster made at workspace rotation0. That rotates already-painted native annotations, contrary to NoRotate's final-page semantics.
+
+Use the existing native renderPagePlan service with the actual workspace rotation for rotated desktop pages, including ordinary pages, image compositions, draft overlays and thumbnails. Keep SVG/text/interaction coordinates in the original page space. Counter-transform only the final native raster so it occupies the displayed page exactly once. Unrotated ordinary pages retain the direct render cache. Demo/adapters without native composition retain their existing fallback.
+
+Expose the already-parsed NoRotate flag in native comment metadata. Derive the visible upright icon box in final display coordinates from its transformed anchor; map its four corners back to canonical interaction coordinates. Movement still commits native annotation Rect coordinates. Normal notes rotate with the page. Clamp both editable and rendered bounds as before.
+
+Rejected alternatives: rotating the old bitmap cannot honor native flags; repainting custom icons as new SVG/AP objects would discard appearance fidelity. No new command, PDF metadata rewrite, dependency, version bump or package overwrite is needed. Preserve coalescing, stale URL disposal, rendering errors and 2400px bounds. Native rendering can be more expensive for rotated non-image pages; retain lazy mounting and one in-flight render per preview.
+
+Verify all quarter-turn transforms, raster dimensions/counter-transform, ordinary and image pages, thumbnails, cancellation/stale frames, NoRotate targets and movement. Exercise actual Windows rotation before/after save at a fixed zoom; compare icon target position, native raster pixels and independent saved annotation geometry. User's standing autonomous authorization applies. One focused fresh review at completion. Keep the overall parity goal active.

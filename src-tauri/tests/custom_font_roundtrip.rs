@@ -66,6 +66,66 @@ fn font_bytes() -> Vec<u8> {
     .unwrap()
 }
 
+#[test]
+fn legacy_imported_font_maps_restore_only_exact_owned_appearances() {
+    let _guard = TEST_LOCK.lock().unwrap_or_else(|error| error.into_inner());
+    let temp = tempfile::tempdir().unwrap(); let engine = engine();
+    let source = engine.create_blank_document(300., 400.).unwrap();
+    let legacy = b"/CIDInit /ProcSet findresource begin\n12 dict begin\nbegincmap\n/CIDSystemInfo << /Registry (Adobe) /Ordering (UCS) /Supplement 0 >> def\n/CMapName /FolioUnicode def\n/CMapType 2 def\n1 begincodespacerange\n<0000> <FFFF>\nendcodespacerange\n1 beginbfrange\n<0000> <FFFF> <0000>\nendbfrange\nendcmap\nCMapName currentdict /CMap defineresource pop\nend\nend\n";
+    for shaped in [false, true] { for tampered in [false, true] {
+        let font = engine.fonts().register(font_bytes()).unwrap();
+        let mut page = plan(&source.id, &font.id);
+        page["overlays"][0]["text"] = json!("café — €");
+        if shaped { page["overlays"][0]["shaping"] = json!({"version":1,"direction":"ltr","ligatures":true}); }
+        let path = temp.path().join(format!("legacy-{shaped}-{tampered}.pdf"));
+        engine.export_pdf(serde_json::from_value(json!({"pages":[page]})).unwrap(), &path).unwrap();
+        let mut pdf = Document::load(&path).unwrap();
+        let font = pdf.objects.values().filter_map(|v| v.as_dict().ok())
+            .find(|d| d.get(b"BaseFont").ok().and_then(|v| v.as_name().ok()).is_some_and(|n| n.starts_with(b"Folio")) && d.has(b"ToUnicode")).unwrap();
+        let map = font.get(b"ToUnicode").unwrap().as_reference().unwrap();
+        let mut bytes = legacy.to_vec();
+        if tampered { let at = bytes.windows(6).position(|s| s == b"<0000>").unwrap(); bytes[at+4] = b'1'; }
+        pdf.objects.insert(map, Stream::new(dictionary!{}, bytes).into());
+        pdf.save(&path).unwrap();
+        // Unregister before reopening so restoration must prove the saved resource.
+        let id = engine.fonts().register(font_bytes()).unwrap().id;
+        engine.fonts().remove(&id).unwrap();
+        let opened = engine.open_document(&path).unwrap();
+        assert_eq!(opened.pages[0].overlays.len(), if tampered {0} else {1}, "shaped={shaped} tampered={tampered}");
+        assert_eq!(engine.fonts().get(&id).is_ok(), !tampered);
+        engine.close_document(&opened.id).unwrap();
+        if !tampered { engine.fonts().remove(&id).unwrap(); }
+    }}
+    engine.close_document(&source.id).unwrap();
+}
+
+#[test]
+fn composed_preview_preserves_custom_font_area_appearance_after_reopen() {
+    let _guard = TEST_LOCK.lock().unwrap_or_else(|error| error.into_inner());
+    let engine = engine();
+    let source = engine.create_blank_document(300.0,400.0).unwrap();
+    let font = engine.fonts().register(font_bytes()).unwrap();
+    let mut value=plan(&source.id,&font.id);
+    value["overlays"][0]["text"]=json!("café naïve wraps within this area");
+    value["overlays"][0]["shaping"]=json!({"version":1,"direction":"ltr","ligatures":true});
+    value["overlays"][0]["area"]=json!({"version":1,"width":200,"height":120,"inset":4,"lineSpacing":1.2,"alignment":"left"});
+    let page:folio_engine::PagePlan=serde_json::from_value(value).unwrap();
+    let before=engine.render_page_plan(page.clone(),600).unwrap();
+    let temp=tempfile::tempdir().unwrap();let path=temp.path().join("annotated.pdf");
+    engine.export_pdf(ExportRequest{pages:vec![page],flatten:false},&path).unwrap();
+    let reopened=engine.open_document(&path).unwrap();
+    let after=engine.render_page_plan(folio_engine::PagePlan{
+        crop: None,
+        id:"restored".into(),source_id:reopened.id.clone(),page_index:0,width:300.0,height:400.0,rotation:0,overlays:reopened.pages[0].overlays.clone(),
+    },600).unwrap();
+    assert_eq!(before,after);
+    assert_eq!(reopened.pages[0].overlays.len(),1);
+    let invalid=serde_json::from_value(plan(&source.id,"missing-font")).unwrap();
+    assert!(engine.render_page_plan(invalid,600).is_err());
+    engine.close_document(&source.id).unwrap();engine.close_document(&reopened.id).unwrap();
+    engine.fonts().remove(&font.id).unwrap();
+}
+
 fn annotations(pdf: &Document) -> Vec<lopdf::ObjectId> {
     pdf.get_pages()
         .values()

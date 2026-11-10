@@ -4,6 +4,14 @@ Development work after v0.13.0, verified on Windows on 2026-09-14. This adds a
 native layout API and reproducible evidence. It does **not** enable a text-area
 tool in the desktop app or close #16. The downloadable release remains v0.13.0.
 
+**October 22 policy update:** the user approved exact text within Folio with
+specified whitespace differences allowed in external readers. All seven saved
+exports pass that reader check. The [current copying contract](text-area-copy-policy.md)
+supersedes the strict external requirement below; the historical measurements
+remain available below. The [persistence milestone](text-area-persistence.md)
+now adds editable save/reopen, recovery and restored-area previews; creation and
+resizing controls remain unfinished.
+
 ![Native text-area development preview](text-area-layout-preview.png)
 
 ## What works
@@ -79,7 +87,7 @@ font labels; the raw-dictionary mismatch remains recorded. No character box,
 origin or numeric tolerance is normalized. Twelve inspector tests reject missing
 text/shapes/rows, incorrect ranges, unexpected separators and changed geometry.
 
-## Reader gate: still failing
+## Historical exact-copy gate
 
 None of the seven exports retain the complete original logical text in all
 three readers, even allowing one terminal reader newline in a separate diagnostic.
@@ -92,11 +100,12 @@ These are retained failures, not a green exact-copy result. The report's
 `evidenceValid` means the fixture and roundtrip checks passed; it does not mean
 production text-area acceptance passed.
 
-Before enabling the tool, the next step is a shared persisted area model and
-semantic/copy strategy that retains logical separators and character geometry.
-The remaining work includes area resize/rotation, font changes, accessible
-Content editing/IME, selection/search across soft lines, undo/recovery, resource
-ownership/cancellation, and supported international text. Existing #14 mixed-bidi
+The [persistence milestone](text-area-persistence.md) now retains exact logical
+separators and character geometry within Folio, with external copying assessed
+under the [approved policy](text-area-copy-policy.md). Before enabling the tool,
+the remaining work includes creating/resizing areas and end-to-end verification
+of selection/search across soft lines, undo and accessible Content editing/IME.
+Broader international text remains future work. Existing #14 mixed-bidi
 and physical IME/interactive reader gates remain separate. General reflow of
 existing PDF paragraphs stays excluded.
 
@@ -119,15 +128,18 @@ argument for another run. Inspector `--input` and browser `FOLIO_TEXT_AREA_INPUT
 select that directory. Generated artifacts stay under `artifacts/`; the browser
 script writes a standalone `text-area-browser/index.html` for visual exploration.
 
-## Strict external-copy requirement
+## Historical strict external-copy requirement
 
-The user confirmed that identical copying in external viewers is required before
-release. `inspect-text-area.py` now fails by default unless every exported case
+In September the user required identical copying in external viewers before
+release. `inspect-text-area.py --copy-policy exact` still fails unless every exported case
 copies the exact original logical string in PDFium, MuPDF and pypdf, in addition
 to valid source-range and roundtrip evidence. `--diagnostic` permits investigation
 of failed cases; it never establishes release acceptance. Even a passing copy
 gate would be necessary, not sufficient, for the other #16 acceptance criteria.
 
 The [80-case separator investigation](text-separator-proof.md) found no qualifying
-encoding. The text-area tool remains unreleased; a Folio-only clipboard workaround
-does not satisfy the requirement.
+encoding under that strict rule. On October 22 the user approved a bounded
+external-reader whitespace tolerance; it is now the verifier's default policy.
+The text-area tool remains unreleased pending creation and resizing controls.
+Persistence and restored-area integration are covered by the newer
+[persistence milestone](text-area-persistence.md).

@@ -1,0 +1,33 @@
+import {cleanup,fireEvent,render,screen,waitFor} from "@testing-library/react";
+import {afterEach,beforeEach,expect,it,vi} from "vitest";
+import {App} from "../src/App";
+import {nativeAdapter} from "../src/editor/adapter";
+import {clearSearchTextCache} from "../src/editor/search";
+vi.mock("../src/editor/useWorkspaceRecovery",()=>({useWorkspaceRecovery:()=>({ready:true,checkpoint:vi.fn().mockResolvedValue(undefined)})}));
+vi.mock("../src/components/DocumentViewport",()=>({DocumentViewport:(props:any)=><output data-testid="plans">{JSON.stringify(props.pages)}</output>}));
+const size={width:300,height:400};
+beforeEach(()=>{
+ localStorage.clear();Object.defineProperty(window,"__TAURI_INTERNALS__",{value:{invoke:vi.fn().mockResolvedValue(0),transformCallback:()=>0},configurable:true});
+ vi.spyOn(nativeAdapter,"openPdf").mockResolvedValueOnce({id:"source",name:"Original.pdf",pages:[size,size]}).mockResolvedValue({id:"incoming",name:"Incoming.pdf",pages:[size]});
+ vi.spyOn(nativeAdapter,"renderPage").mockResolvedValue("data:image/png;base64,AA");
+ vi.spyOn(nativeAdapter as Required<typeof nativeAdapter>,"renderPagePlan").mockResolvedValue("data:image/png;base64,AA");
+ vi.spyOn(nativeAdapter,"closeDocument").mockResolvedValue();
+ vi.spyOn(nativeAdapter as Required<typeof nativeAdapter>,"createFormField").mockResolvedValue({document:{id:"candidate",name:"Replaced.pdf",pages:[size,size,size]},pageIndices:[0,2,1]});
+});
+afterEach(()=>{cleanup();clearSearchTextCache(["source","candidate"]);vi.restoreAllMocks();delete (window as any).__TAURI_INTERNALS__;});
+it("creates a field on just the selected duplicate through preview and one undo step",async()=>{
+ render(<App initialDemo={false}/>);fireEvent.click(screen.getByRole("button",{name:"Open a PDF"}));await screen.findByRole("tab",{name:"Original.pdf"});
+ fireEvent.click(screen.getByRole("button",{name:"Duplicate"}));
+ const before=JSON.parse(screen.getByTestId("plans").textContent!);
+ fireEvent.click(screen.getByRole("button",{name:"Create form field…"}));
+ expect(screen.getByRole("button",{name:"Undo"})).toBeDisabled();
+ fireEvent.click(screen.getByRole("button",{name:"Preview field"}));await waitFor(()=>expect(screen.getByRole("button",{name:"Apply field"})).toBeEnabled());
+ expect(nativeAdapter.createFormField).toHaveBeenCalledWith("source",[0,0,1],1,expect.objectContaining({name:"New field"}));
+ fireEvent.click(screen.getByRole("button",{name:"Apply field"}));await waitFor(()=>expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+ const after=JSON.parse(screen.getByTestId("plans").textContent!);
+ expect(after.map((p:any)=>[p.sourceId,p.pageIndex])).toEqual([["candidate",0],["candidate",2],["candidate",1]]);
+ expect(after.map((p:any)=>p.id)).toEqual(before.map((p:any)=>p.id));
+ fireEvent.click(screen.getByRole("button",{name:"Undo"}));expect(JSON.parse(screen.getByTestId("plans").textContent!)).toEqual(before);
+ fireEvent.click(screen.getByRole("button",{name:"Redo"}));expect(JSON.parse(screen.getByTestId("plans").textContent!)).toEqual(after);
+ expect(nativeAdapter.closeDocument).not.toHaveBeenCalledWith("candidate");
+});

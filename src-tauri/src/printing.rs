@@ -198,36 +198,20 @@ mod tests {
 struct PreparedPrint {
     engine: crate::PdfEngine,
     document: crate::DocumentInfo,
-    // This directory outlives the opened PDF; Drop closes it before removing files.
-    _directory: tempfile::TempDir,
 }
 impl PreparedPrint {
     fn new(engine: crate::PdfEngine, request: crate::ExportRequest) -> Result<Self, String> {
         if request.pages.is_empty() {
             return Err("Choose at least one page to print.".into());
         }
-        let directory = tempfile::Builder::new()
-            .prefix("folio-print-")
-            .tempdir()
-            .map_err(|e| e.to_string())?;
-        let path = directory.path().join("Folio print.pdf");
-        engine
-            .export_pdf(request, &path)
-            .map_err(|e| e.to_string())?;
-        let document = engine
-            .open_document_for_printing(&path)
-            .map_err(|e| e.to_string())?;
-        Ok(Self {
-            engine,
-            document,
-            _directory: directory,
-        })
+        let document = engine.prepare_print(request).map_err(|e| e.to_string())?;
+        Ok(Self { engine, document })
     }
 }
 impl Drop for PreparedPrint {
     fn drop(&mut self) {
         let _ = self.engine.close_document(&self.document.id);
-        // TempDir removes the files after this method returns.
+        // Closing releases the in-memory print source; there is no staging file.
     }
 }
 

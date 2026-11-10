@@ -2,15 +2,72 @@
 //! published only after saving and reopening validates text, placement and style.
 use super::*;
 
+#[path = "text_graphics.rs"]
+mod text_graphics;
+use text_graphics::occupied_regions;
+
 #[path = "embedded_font.rs"]
 mod embedded_font;
 use embedded_font::{FontProofs, VerifiedFont};
+pub(crate) use embedded_font::{choice_font_codes,redaction_font_codes};
+
+#[path = "equivalent_encoding.rs"]
+mod equivalent_encoding;
+
+#[path = "standard_font.rs"]
+mod standard_font;
+
+/// Fixed nominal metrics for already admitted simple-font redaction programs.
+/// Decode each source code in its actual encoding before consulting the shared
+/// width tables (notably apostrophe/backtick in StandardEncoding).
+pub(crate) fn nominal_standard_ascii_metrics(base: &[u8], win_ansi: bool) -> EngineResult<([u16; 95], [u32; 95])> {
+    let mut resource = lopdf::Dictionary::new();
+    resource.set("Type", "Font"); resource.set("Subtype", "Type1");
+    resource.set("BaseFont", lopdf::Object::Name(base.to_vec()));
+    if win_ansi { resource.set("Encoding", "WinAnsiEncoding"); }
+    let pdf = lopdf::Document::new();
+    let font = standard_font::StandardFont::read(&pdf, &resource)?;
+    let mut widths = [0; 95];
+    let mut scalars = [0; 95];
+    for (index, code) in (32u8..=126).enumerate() {
+        let text = font.decode(&[code])?;
+        let mut chars = text.chars();
+        scalars[index] = chars.next().ok_or_else(crate::redaction_content::invalid)? as u32;
+        if chars.next().is_some() { return Err(crate::redaction_content::invalid()); }
+        let width = font.advance(&text)? * 1000.0;
+        if !width.is_finite() || width <= 0.0 || width > 2000.0 || (width - width.round()).abs() > 0.001 {
+            return Err(crate::redaction_content::invalid());
+        }
+        widths[index] = width.round() as u16;
+    }
+    Ok((widths, scalars))
+}
 
 #[path = "positioned_text.rs"]
 mod positioned_text;
+#[path = "text_substitution.rs"]
+mod text_substitution;
+#[path = "text_show.rs"]
+mod text_show;
+#[path = "source_text.rs"]
+mod source_text;
+#[path = "text_context.rs"]
+mod text_context;
+#[path = "text_context_tags.rs"]
+mod text_context_tags;
+#[path = "text_context_edit.rs"]
+mod text_context_edit;
+pub(super) use text_context_edit::{PublicationProof,SourcePage as ParagraphSourcePage};
+#[cfg(test)]
+#[path = "text_context_projection_tests.rs"]
+mod text_context_projection_tests;
 
 #[path = "text_group.rs"]
 mod text_group;
+#[path = "text_paragraph.rs"]
+mod text_paragraph;
+#[path = "paragraph_selection.rs"]
+mod paragraph_selection;
 
 const EPSILON: f32 = 0.02;
 
@@ -41,7 +98,7 @@ fn base_font(name: &str) -> bool {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-struct Glyph {
+pub(super) struct Glyph {
     text: String,
     position: [f32; 6],
 }
@@ -60,6 +117,57 @@ struct RunSnapshot {
     embedded: bool,
     program: Option<String>,
     proof: Option<Arc<VerifiedFont>>,
+    standard: Option<Arc<standard_font::StandardFont>>,
+}
+
+impl RunSnapshot {
+    fn display_font_size(&self) -> Option<f32> {
+        // The Tf operand can be 1 while Tm/CTM scales the em to 12 points.
+        // Use the full vertical vector so quarter turns and reflection retain
+        // their size. UserUnit is applied once by the public DTO adapter.
+        let size = (self.font_size as f64).abs()
+            * (self.matrix[2] as f64).hypot(self.matrix[3] as f64);
+        let size = size as f32;
+        (size.is_finite() && size > 0.).then_some(size)
+    }
+}
+
+// Property validation is identical for native snapshots and a local editing
+// view of verified source operands. Font-proof lookup failures stay with the
+// snapshot; a source view cannot be constructed without that proof.
+fn run_content_reason(run: &RunSnapshot) -> Option<String> {
+    if !run.embedded && !base_font(&run.font) {
+        Some("This non-embedded custom font cannot be edited safely.".into())
+    } else if !(if run.embedded || run.standard.is_some() { embedded_font::latin(&run.text) } else { printable(&run.text) }) {
+        Some(if run.embedded || run.standard.is_some() {
+            "Only bounded single-line Latin text runs can be edited."
+        } else {
+            "Only single-line printable ASCII text runs can be edited."
+        }.into())
+    } else if run.mode != PdfPageTextRenderMode::FilledUnstroked || run.color[3] != 255 {
+        Some("Invisible, clipped, stroked, or transparent text is not supported.".into())
+    } else if run.matrix.iter().any(|v| !v.is_finite() || v.abs() > 1_000_000.0)
+        || (run.matrix[0] * run.matrix[3] - run.matrix[1] * run.matrix[2]).abs() < 0.0001
+        || run.matrix[..4].iter().any(|v| v.abs() > 100.0) {
+        Some("This text transform is singular or exceeds safe editing bounds.".into())
+    } else {
+        run.proof.as_ref().and_then(|proof| proof.supports(&run.text).err())
+            .or_else(|| run.standard.as_ref().and_then(|proof| proof.encode(&run.text).err()))
+            .map(|error| error.to_string())
+    }
+}
+
+/// `value` must come from the independently verified source operand mapper.
+/// Raw snapshots still own selection, paragraph, neighbor and raster evidence.
+fn source_edit_run(run: &RunSnapshot, value: Option<&str>) -> RunSnapshot {
+    let mut source = run.clone();
+    if let Some(value) = value.filter(|_| !run.embedded || run.proof.is_some()) {
+        source.text = value.to_owned();
+        source.reason = run_content_reason(&source);
+    } else if run.proof.as_ref().is_some_and(|proof| proof.requires_source_operands) {
+        source.reason = Some("This source text contains unavailable character mappings or cannot be matched to exact font codes.".into());
+    }
+    source
 }
 
 fn snapshot(page: &PdfPage<'_>, proofs: Option<&FontProofs>) -> EngineResult<Vec<RunSnapshot>> {
@@ -125,41 +233,7 @@ fn snapshot(page: &PdfPage<'_>, proofs: Option<&FontProofs>) -> EngineResult<Vec
         } else {
             None
         };
-        if !embedded && !base_font(&font_name) {
-            reason = Some("This non-embedded custom font cannot be edited safely.".into());
-        } else if !(if embedded {
-            embedded_font::latin(&value)
-        } else {
-            printable(&value)
-        }) {
-            reason = Some(
-                if embedded {
-                    "Only bounded single-line Latin text runs can be edited."
-                } else {
-                    "Only single-line printable ASCII text runs can be edited."
-                }
-                .into(),
-            );
-        } else if mode != PdfPageTextRenderMode::FilledUnstroked || color.alpha() != 255 {
-            reason =
-                Some("Invisible, clipped, stroked, or transparent text is not supported.".into());
-        } else if matrix
-            .iter()
-            .any(|v| !v.is_finite() || v.abs() > 1_000_000.0)
-            || (matrix[0] * matrix[3] - matrix[1] * matrix[2]).abs() < 0.0001
-            || matrix[..4].iter().any(|v| v.abs() > 100.0)
-        {
-            reason = Some("This text transform is singular or exceeds safe editing bounds.".into());
-        }
-
-        if reason.is_none() {
-            if let Some(proof) = &proof {
-                if let Err(error) = proof.supports(&value) {
-                    reason = Some(error.to_string());
-                }
-            }
-        }
-        result.push(RunSnapshot {
+        let mut run = RunSnapshot {
             index,
             text: value,
             font: font_name,
@@ -172,12 +246,23 @@ fn snapshot(page: &PdfPage<'_>, proofs: Option<&FontProofs>) -> EngineResult<Vec
             embedded,
             program,
             proof,
-        });
+            standard: None,
+        };
+        run.reason = run_content_reason(&run).or(run.reason);
+        result.push(run);
     }
     Ok(result)
 }
 
-fn glyph_snapshot(page: &PdfPage<'_>) -> EngineResult<Vec<Glyph>> {
+fn bound_snapshot(page: &PdfPage<'_>, proofs: Option<&FontProofs>, bytes: &[u8]) -> EngineResult<Vec<RunSnapshot>> {
+    let mut runs = snapshot(page, proofs)?;
+    // Failure adds no new authority; existing ASCII/embedded admission remains
+    // available under its original checks. Binding is atomic on full traversal.
+    let _ = source_text::bind_standard(bytes, &mut runs);
+    Ok(runs)
+}
+
+pub(super) fn glyph_snapshot(page: &PdfPage<'_>) -> EngineResult<Vec<Glyph>> {
     let text = page.text()?;
     text.chars()
         .iter()
@@ -199,7 +284,7 @@ fn glyph_snapshot(page: &PdfPage<'_>) -> EngineResult<Vec<Glyph>> {
         .collect()
 }
 
-fn raster(page: &PdfPage<'_>) -> EngineResult<image::RgbaImage> {
+pub(super) fn raster(page: &PdfPage<'_>) -> EngineResult<image::RgbaImage> {
     Ok(page
         .render_with_config(
             &PdfRenderConfig::new()
@@ -257,21 +342,31 @@ fn adds_overlap(before: &[f32; 4], after: &[f32; 4], other: &[f32; 4]) -> bool {
 }
 
 fn solid_page_background(object: &PdfPageObject<'_>, geometry: PageGeometry) -> EngineResult<bool> {
+    let Some([left,bottom,right,top])=solid_rectangle_bounds(object)? else{return Ok(false);};
+    Ok(left <= geometry.left + EPSILON
+        && bottom <= geometry.bottom + EPSILON
+        && right >= geometry.right - EPSILON
+        && top >= geometry.top - EPSILON)
+}
+
+// Return actual transformed path geometry, never an object's broad bounding box.
+// Callers still decide whether this rectangle is a page fill or a text mark.
+fn solid_rectangle_bounds(object: &PdfPageObject<'_>) -> EngineResult<Option<[f32;4]>> {
     let Some(path) = object.as_path_object() else {
         // Image and form bounds cannot prove that their content is uniform.
-        return Ok(false);
+        return Ok(None);
     };
     if path.is_stroked()?
         || path.fill_mode()? == PdfPathFillMode::None
         || path.fill_color()?.alpha() != 255
     {
-        return Ok(false);
+        return Ok(None);
     }
     let segments = path.segments().transform(path.matrix()?);
     // A rectangle has a move and three sides, optionally an explicit final
     // line back to its start. Reject compound paths, curves, and open paths.
     if !matches!(segments.len(), 4 | 5) {
-        return Ok(false);
+        return Ok(None);
     }
     let mut points = Vec::new();
     for index in 0..segments.len() {
@@ -284,16 +379,16 @@ fn solid_page_background(object: &PdfPageObject<'_>, geometry: PageGeometry) -> 
         if segment.segment_type() != expected_type
             || segment.is_close() != (index == segments.len() - 1)
         {
-            return Ok(false);
+            return Ok(None);
         }
         let (x, y) = segment.point();
         if !x.value.is_finite() || !y.value.is_finite() {
-            return Ok(false);
+            return Ok(None);
         }
         points.push([x.value, y.value]);
     }
     if points.len() == 5 && !close_values(&points[0], &points[4]) {
-        return Ok(false);
+        return Ok(None);
     }
     // Every side must be nonzero, axis aligned, and alternate direction.
     let mut horizontal = [false; 4];
@@ -303,12 +398,12 @@ fn solid_page_background(object: &PdfPageObject<'_>, geometry: PageGeometry) -> 
         let same_x = (a[0] - b[0]).abs() <= EPSILON;
         let same_y = (a[1] - b[1]).abs() <= EPSILON;
         if same_x == same_y {
-            return Ok(false);
+            return Ok(None);
         }
         horizontal[index] = same_y;
     }
     if (0..4).any(|index| horizontal[index] == horizontal[(index + 1) % 4]) {
-        return Ok(false);
+        return Ok(None);
     }
     let left = points.iter().map(|p| p[0]).fold(f32::INFINITY, f32::min);
     let bottom = points.iter().map(|p| p[1]).fold(f32::INFINITY, f32::min);
@@ -320,10 +415,7 @@ fn solid_page_background(object: &PdfPageObject<'_>, geometry: PageGeometry) -> 
         .iter()
         .map(|p| p[1])
         .fold(f32::NEG_INFINITY, f32::max);
-    Ok(left <= geometry.left + EPSILON
-        && bottom <= geometry.bottom + EPSILON
-        && right >= geometry.right - EPSILON
-        && top >= geometry.top - EPSILON)
+    Ok(Some([left,bottom,right,top]))
 }
 
 fn replace_in_page(
@@ -427,6 +519,7 @@ fn substitute_in_bytes(
                 active_font = Some(operation.operands.clone());
             }
             "Tj" | "TJ" | "'" | "\"" => {
+                if positioned_text::cursor_only(operation) {continue;}
                 if seen == ordinal {
                     let encoded =
                         match (operation.operator.as_str(), operation.operands.as_slice()) {
@@ -462,14 +555,7 @@ fn substitute_in_bytes(
                         )
                         .and_then(|(_, value)| value.as_dict())
                         .map_err(|_| invalid("The selected font resource is malformed."))?;
-                    let resource_name = original
-                        .get(b"BaseFont")
-                        .and_then(Object::as_name)
-                        .ok()
-                        .and_then(|name| std::str::from_utf8(name).ok())
-                        .unwrap_or_default();
-                    if embedded_font::base_name(resource_name)
-                        != embedded_font::base_name(&selected.font)
+                    if !embedded_font::matches_name(&pdf, original, &selected.font, selected.embedded)
                         || (active[1].as_float().unwrap() - selected.font_size).abs() > EPSILON
                     {
                         return Err(invalid(
@@ -534,6 +620,13 @@ fn substitute_in_bytes(
 // Conservative page-level exclusions: these features can hide glyphs, change
 // their meaning, or affect other graphics when PDFium regenerates the stream.
 fn preflight(bytes: &[u8], proofs: &FontProofs, substitution: bool) -> EngineResult<bool> {
+    preflight_with_context(bytes,proofs,substitution,None)
+}
+
+fn preflight_with_context(bytes: &[u8], proofs: &FontProofs, substitution: bool, context: Option<&PublicationProof>) -> EngineResult<bool> {
+    if substitution && context.is_some() {
+        return Err(invalid("Font substitution within preserved clipping or tagged text is not supported yet."));
+    }
     let pdf = lopdf::Document::load_mem(bytes)
         .map_err(|_| invalid("The page content could not be inspected safely."))?;
     let page = *pdf
@@ -546,14 +639,14 @@ fn preflight(bytes: &[u8], proofs: &FontProofs, substitution: bool) -> EngineRes
         .map_err(|_| invalid("The page content is too complex for safe text editing."))?;
     let content = lopdf::content::Content::decode(&content)
         .map_err(|_| invalid("The page content could not be inspected safely."))?;
-    let mut preserve_state = false;
+    let mut preserve_state = context.is_some();
     for operation in content.operations {
         let explicit_state = match operation.operator.as_str() {
             "Tc" | "Tw" => {
                 !matches!(operation.operands.as_slice(), [value] if value.as_float().is_ok_and(|n| n == 0.0))
             }
             "\"" => true,
-            "TJ" => operation
+            "TJ" if !positioned_text::cursor_only(&operation) => operation
                 .operands
                 .iter()
                 .filter_map(|v| v.as_array().ok())
@@ -578,7 +671,7 @@ fn preflight(bytes: &[u8], proofs: &FontProofs, substitution: bool) -> EngineRes
         {
             return Err(invalid("Pages with pattern fills cannot be edited safely."));
         }
-        if matches!(operation.operator.as_str(), "W" | "W*") {
+        if context.is_none() && matches!(operation.operator.as_str(), "W" | "W*") {
             return Err(invalid(
                 "Pages with clipping paths cannot be edited safely.",
             ));
@@ -594,12 +687,7 @@ fn preflight(bytes: &[u8], proofs: &FontProofs, substitution: bool) -> EngineRes
                     .dereference(encoding)
                     .map_err(|_| invalid("This page has an unsupported font encoding."))?;
                 if !proofs.allows_resource(*id)
-                    && !encoding.as_name().is_ok_and(|name| {
-                        matches!(
-                            name,
-                            b"StandardEncoding" | b"WinAnsiEncoding" | b"MacRomanEncoding"
-                        )
-                    })
+                    && equivalent_encoding::name(&pdf, encoding).is_none()
                 {
                     return Err(invalid(
                         "This page uses a custom font encoding that cannot be preserved safely.",
@@ -618,10 +706,25 @@ fn preflight(bytes: &[u8], proofs: &FontProofs, substitution: bool) -> EngineRes
                     b"ca" | b"CA" => value.as_float().is_ok_and(|a| (a - 1.0).abs() < EPSILON),
                     b"BM" => value.as_name().is_ok_and(|n| n == b"Normal"),
                     b"SMask" => value.as_name().is_ok_and(|n| n == b"None"),
+                    // Printer-generated defaults can be retained verbatim by
+                    // the stream route. Never regenerate or substitute them.
+                    b"OP" | b"op" | b"SA" => value.as_bool().is_ok_and(|v| !v),
+                    b"OPM" => value.as_i64().is_ok_and(|n| n == 0 || n == 1),
+                    b"SM" => value
+                        .as_float()
+                        .is_ok_and(|n| n.is_finite() && (0.0..=1.0).contains(&n)),
                     _ => false,
                 };
                 if !supported {
                     return Err(invalid("This page uses transparency or advanced graphics state that cannot be edited safely."));
+                }
+                if matches!(key.as_slice(), b"OP" | b"op" | b"SA" | b"OPM" | b"SM") {
+                    if substitution {
+                        return Err(invalid(
+                            "Font substitution with printer graphics state is not supported.",
+                        ));
+                    }
+                    preserve_state = true;
                 }
             }
         }
@@ -631,11 +734,13 @@ fn preflight(bytes: &[u8], proofs: &FontProofs, substitution: bool) -> EngineRes
 
 impl WorkerRuntime {
     fn source_text_edit_restriction(&self, source_id: &str) -> EngineResult<Option<String>> {
-        let source = self.document(source_id)?;
+        let _phase=crate::native_phase!("source.restriction");
+        let source = self.editing_document(source_id)?;
+        let bytes = if source.text_edit_restriction.get().is_none() { Some(source.bytes()?) } else { None };
         Ok(source
             .text_edit_restriction
             .get_or_init(|| {
-                let Ok(pdf) = lopdf::Document::load_mem(&source.source_bytes) else {
+                let Ok(pdf) = lopdf::Document::load_mem(bytes.as_ref().expect("uncached restriction lease")) else {
                     return Some("The source document could not be inspected safely.".into());
                 };
                 let optional = pdf
@@ -656,18 +761,129 @@ impl WorkerRuntime {
             .clone())
     }
 
+    /// Called only after the raw form-graph guard. Every nested form has an
+    /// immediate page-level form ancestor; annotation appearances are not page
+    /// content. Empty discovery need not copy, rasterize or validate text runs.
+    pub(super) fn text_page_has_form_objects(&self, source_id: &str, page_index: usize) -> EngineResult<bool> {
+        if let Some(reason) = self.source_text_edit_restriction(source_id)? {
+            return Err(invalid(&reason));
+        }
+        let page = self.editing_document(source_id)?.pdf()?.pages().get(page_index_i32(page_index)?)?;
+        Ok(page.objects().iter().any(|object| object.as_x_object_form_object().is_some()))
+    }
+
+    // Rendering a text-edit copy can mutate PDFium's native note Rect/AP.
+    // Restore from the original immutable source before validating/publishing bytes.
+    fn preserve_text_edit_comments(
+        &self,
+        source_id: &str,
+        page_index: usize,
+        bytes: Arc<[u8]>,
+    ) -> EngineResult<Arc<[u8]>> {
+        let source = self.editing_document(source_id)?;
+        let mut output = crate::pdf_output::load(&bytes)?;
+        let source_bytes = source.bytes()?;
+        let comment_source = crate::acroforms::SourceForm::new(&source_bytes, vec![(page_index, 0)]);
+        let mut changed = native_comments::preserve_geometry(&mut output, &[
+            native_comments::SourceComments {
+                source: &comment_source,
+                excluded: &source.imported_annotations,
+            },
+        ])?;
+        changed |= native_comments::repair_popup_parents(&mut output)?;
+        if changed {
+            Ok(crate::pdf_output::save(&mut output)?.into())
+        } else {
+            Ok(bytes)
+        }
+    }
+
+    pub(super) fn verify_text_publication(
+        &self, result_id: &str, page_index: usize, candidate_id: &str,
+    ) -> EngineResult<()> {
+        let _phase=crate::native_phase!("publication.exact_verify");
+        let result=self.editing_document(result_id)?.pdf()?.pages().get(page_index_i32(page_index)?)?;
+        let expected=self.editing_document(candidate_id)?.pdf()?.pages().get(0)?;
+        let before=snapshot(&expected,None)?;
+        let after=snapshot(&result,None)?;
+        if before.len()!=after.len() || !before.iter().zip(&after).all(|(a,b)|same_run(a,b))
+            || glyph_snapshot(&expected)?!=glyph_snapshot(&result)? || raster(&expected)?!=raster(&result)? {
+            return Err(invalid("Publishing the edit changed its text, placement, or appearance. The original document has been kept."));
+        }
+        Ok(())
+    }
+
     fn editable_page_copy(
         &self,
         source_id: &str,
         page_index: usize,
     ) -> EngineResult<PdfDocument<'static>> {
-        let source = self.document(source_id)?;
+        self.text_transaction_page_copy(source_id, page_index, false)
+    }
+
+    /// Private, source-authorized text-edit baseline. No projected source ID is
+    /// returned to a client; the enclosing worker request owns its full lifetime.
+    pub(super) fn with_text_projection<T>(
+        &mut self,source_id:&str,page_index:usize,
+        use_page:impl FnOnce(&mut Self,&str)->EngineResult<T>,
+    )->EngineResult<T> {
+        if let Some(reason)=self.source_text_edit_restriction(source_id)? {return Err(invalid(&reason));}
+        let source=self.editing_document(source_id)?;
+        let policy=source.policy.as_ref().map(|p|p.page(page_index)).transpose()?;
+        let original_path=source.original_path.clone();
+        let legacy=source.legacy_comment_import;
+        let copy=self.text_transaction_page_copy(source_id,page_index,true)?;
+        let bytes=self.preserve_text_edit_comments(source_id,page_index,copy.save_to_bytes()?.into())?;
+        drop(copy);
+        let projection=self.register_generated_document(bytes.to_vec(),"Private text page.pdf")?;
+        let projected=self.documents.get_mut(&projection.id).unwrap();
+        projected.policy=policy;projected.original_path=original_path;projected.legacy_comment_import=legacy;
+        let result=(|| {
+            self.verify_text_publication(source_id,page_index,&projection.id)?;
+            use_page(self,&projection.id)
+        })();
+        self.discard_unpublished_source(&projection.id);
+        result
+    }
+
+    fn text_transaction_page_copy(
+        &self, source_id: &str, page_index: usize, complete_source: bool,
+    ) -> EngineResult<PdfDocument<'static>> {
+        let _phase=crate::native_phase!("isolation.total");
+        let source = self.editing_document(source_id)?;
+        let group = {let _phase=crate::native_phase!("isolation.group");text_context_group::read(source.bytes()?.as_ref(), page_index)?};
         let mut copy = self.pdfium.create_new_pdf()?;
         copy.pages_mut().copy_page_from_document(
-            &source.document,
+            source.pdf()?,
             page_index_i32(page_index)?,
             0,
         )?;
+        let form_bytes = {
+            let _phase=crate::native_phase!("isolation.resources");
+            let source_bytes = source.bytes()?;
+            let mut request = crate::acroforms::SourceForm::new(&source_bytes, vec![(page_index, 0)]);
+            request.enable_parse_reuse();
+            let resource_sources = std::slice::from_ref(&request);
+            if crate::page_resources::needed(resource_sources)? {
+                if let Some(bytes) = crate::page_resources::preserve_bytes(&copy.save_to_bytes()?, resource_sources)? {
+                    copy = self.pdfium.load_pdf_from_reader(Cursor::new(bytes), None)?;
+                }
+            }
+            let form_copy = if complete_source {
+                crate::acroforms::project_page_for_text_transaction
+            } else {
+                crate::acroforms::preserve_page_copy
+            };
+            form_copy(&request, &copy.save_to_bytes()?)?
+        };
+        // The request-local parsed graph is dropped before loading the final
+        // working copy and checking its transparency group.
+        if let Some(bytes)=form_bytes {
+            copy = self.pdfium.load_pdf_from_reader(Cursor::new(bytes),None)?;
+        }
+        if text_context_group::read(&copy.save_to_bytes()?, 0)? != group {
+            return Err(invalid("The text page copy changed its transparency group."));
+        }
         Ok(copy)
     }
 
@@ -684,16 +900,18 @@ impl WorkerRuntime {
             .iter()
             .find(|r| r.index == index)
             .ok_or_else(|| invalid("The selected text run no longer exists."))?;
-        if let Some(reason) = &run.reason {
+        let source_value = source_text::selected(baseline, before, index);
+        let source_run = source_edit_run(run, source_value.as_deref());
+        if let Some(reason) = &source_run.reason {
             return Err(invalid(reason));
         }
         let copy = self.pdfium.load_pdf_from_byte_slice(baseline, None)?;
         let original_glyphs = glyph_snapshot(&copy.pages().get(0)?)?;
         let original_raster = raster(&copy.pages().get(0)?)?;
         let bytes = if preserve_stream {
-            positioned_text::replace(baseline, run, before, &run.text)?
+            positioned_text::replace(baseline, &source_run, before, &source_run.text)?
         } else {
-            replace_in_page(&copy, index, &run.text)?;
+            replace_in_page(&copy, index, &source_run.text)?;
             copy.save_to_bytes()?
         };
         let reopened = self.pdfium.load_pdf_from_byte_slice(&bytes, None)?;
@@ -722,10 +940,18 @@ impl WorkerRuntime {
         source_id: &str,
         page_index: usize,
     ) -> EngineResult<TextRuns> {
+        self.list_transaction_text_runs(source_id, page_index, false)
+    }
+
+    pub(super) fn list_transaction_text_runs(
+        &self, source_id: &str, page_index: usize, complete_source: bool,
+    ) -> EngineResult<TextRuns> {
+        let _phase=crate::native_phase!("discovery.total");
+        let _reuse=complete_source.then(crate::request_parse::Scope::enter);
         if let Some(reason) = self.source_text_edit_restriction(source_id)? {
             // Still validate the requested page even when the document is unsupported.
-            self.document(source_id)?
-                .document
+            self.editing_document(source_id)?
+                .pdf()?
                 .pages()
                 .get(page_index_i32(page_index)?)?;
             return Ok(TextRuns {
@@ -733,27 +959,44 @@ impl WorkerRuntime {
                 reason: Some(reason),
             });
         }
-        let copy = self.editable_page_copy(source_id, page_index)?;
+        let copy = self.text_transaction_page_copy(source_id, page_index, complete_source)?;
         let page = copy.pages().get(0)?;
         let geometry = page_geometry(&page)?;
-        let baseline = copy.save_to_bytes()?;
-        let proofs = FontProofs::read(&baseline)?;
-        let before = snapshot(&page, Some(&proofs))?;
-        let can_substitute_page = preflight(&baseline, &proofs, true).is_ok();
-        let page_reason = preflight(&baseline, &proofs, false).err().map(|e| match e {
+        let baseline = {let _phase=crate::native_phase!("discovery.serialize");copy.save_to_bytes()?};
+        let proofs = {let _phase=crate::native_phase!("discovery.font_proofs");FontProofs::read(&baseline)?};
+        let before = {let _phase=crate::native_phase!("discovery.snapshot");bound_snapshot(&page, Some(&proofs), &baseline)?};
+        let source_values = {let _phase=crate::native_phase!("discovery.source_mapping");source_text::values(&baseline, &before).unwrap_or_default()};
+        let substitution_admission={let _phase=crate::native_phase!("discovery.substitution_admission");if complete_source {text_substitution::admit_all(&baseline,&before,&source_values).unwrap_or_default()}else{vec![]}};
+        let contexts = if complete_source {
+            let source=self.editing_document(source_id)?;
+            text_context_edit::SourcePage::read(source.bytes()?.as_ref(),page_index,&source.pdf()?.pages().get(page_index_i32(page_index)?)?)
+        } else {Ok(None)};
+        let page_proof=contexts.as_ref().ok().and_then(|p|p.as_ref()).and_then(|p|before.iter().find_map(|r|p.proof(r.index).ok()));
+        let copy_context_reason=page_proof.as_ref().and_then(|p|p.baseline(&baseline,&before).err()).map(|e|e.to_string());
+        let can_substitute_page = page_proof.is_none() && preflight(&baseline, &proofs, true).is_ok();
+        let page_reason = preflight_with_context(&baseline, &proofs, false, page_proof.as_ref()).err().map(|e| match e {
             EngineError::InvalidRequest(s) => s,
             _ => "This page could not be validated for editing.".into(),
-        });
+        }).or(copy_context_reason);
         let mut runs = Vec::new();
-        for run in &before {
-            let reason = run.reason.clone().or_else(|| page_reason.clone());
+        for (ordinal, run) in before.iter().enumerate() {
+            let value = source_values.get(ordinal).and_then(|v|v.as_deref());
+            let context_reason = match &contexts {
+                Ok(Some(contexts))=>contexts.proof(run.index).err().map(|e|e.to_string()),
+                Err(error)=>Some(error.to_string()),
+                Ok(None)=>None,
+            };
+            let reason = source_edit_run(run, value).reason.or(context_reason).or_else(|| page_reason.clone());
             let p1 = geometry.pdf_to_displayed(run.bounds[0], run.bounds[1]);
             let p2 = geometry.pdf_to_displayed(run.bounds[2], run.bounds[3]);
             runs.push(EditableTextRun {
                 object_index: run.index,
                 text: run.text.clone(),
+                source_text: source_values.get(ordinal).and_then(|v|v.clone()).filter(|value|value != &run.text),
                 font_name: run.font.clone(),
+                font_display_name: run.proof.as_ref().and_then(|p|p.display_name.clone()),
                 font_size: run.font_size,
+                display_font_size: run.display_font_size(),
                 bounds: AnnotationRect {
                     x: p1.x.min(p2.x),
                     y: p1.y.min(p2.y),
@@ -762,7 +1005,9 @@ impl WorkerRuntime {
                 },
                 supported: reason.is_none(),
                 is_embedded: run.embedded,
-                can_substitute: reason.is_none() && can_substitute_page,
+                can_substitute: reason.is_none() && if complete_source {
+                    substitution_admission.get(ordinal).copied().unwrap_or(false)
+                } else {can_substitute_page},
                 reason,
             });
         }
@@ -783,13 +1028,23 @@ impl WorkerRuntime {
         replacement: &str,
         font_id: Option<&str>,
     ) -> EngineResult<DocumentInfo> {
+        self.replace_transaction_text(source_id, page_index, object_index, expected_text, replacement, font_id, false)
+    }
+
+    /// Only occurrence_text_edit may use complete_source=true. Its isolated
+    /// result must be discarded after exact publication into the original graph.
+    pub(super) fn replace_transaction_text(
+        &mut self, source_id: &str, page_index: usize, object_index: usize,
+        expected_text: &str, replacement: &str, font_id: Option<&str>, complete_source: bool,
+    ) -> EngineResult<DocumentInfo> {
+        let _phase=crate::native_phase!("isolated_edit.total");
         if let Some(reason) = self.source_text_edit_restriction(source_id)? {
             return Err(invalid(&reason));
         }
-        let copy = self.editable_page_copy(source_id, page_index)?;
+        let copy = self.text_transaction_page_copy(source_id, page_index, complete_source)?;
         let baseline = copy.save_to_bytes()?;
         let proofs = FontProofs::read(&baseline)?;
-        let before = snapshot(&copy.pages().get(0)?, Some(&proofs))?;
+        let before = bound_snapshot(&copy.pages().get(0)?, Some(&proofs), &baseline)?;
         let selected = before
             .iter()
             .find(|r| r.index == object_index)
@@ -799,7 +1054,7 @@ impl WorkerRuntime {
                 "The text changed since it was selected. Select the run again.",
             ));
         }
-        if !(if selected.embedded || font_id.is_some() {
+        if !(if selected.embedded || selected.standard.is_some() || font_id.is_some() {
             embedded_font::latin(replacement)
         } else {
             printable(replacement)
@@ -811,24 +1066,57 @@ impl WorkerRuntime {
             font.validate_text(replacement)?;
         } else if let Some(proof) = &selected.proof {
             proof.supports(replacement)?;
+        } else if let Some(proof) = &selected.standard {
+            proof.encode(replacement)?;
         }
-        let preserve_state = preflight(&baseline, &proofs, substitute.is_some())?;
+        let mut context=if complete_source {self.single_text_context(source_id,page_index,object_index)?}else{None};
+        if let Some(context)=&context {context.baseline(&baseline,&before)?;}
+        let mut planned=if complete_source {substitute.as_ref().map(|font| {
+            let source_value=source_text::selected(&baseline,&before,object_index);
+            let source_run=source_edit_run(selected,source_value.as_deref());
+            text_substitution::Plan::prepare(&baseline,&source_run,&before,replacement,font)
+        }).transpose()?}else{None};
+        let planned_substitution=planned.is_some();
+        if let (Some(context),Some(plan))=(&mut context,&planned){context.bind_substitution(plan)?;}
+        let preserve_state = preflight_with_context(&baseline, &proofs, substitute.is_some()&&planned.is_none(), context.as_ref())?;
+        let preserve_encoding = (selected.standard.is_some()
+            && (!selected.text.is_ascii() || !replacement.is_ascii()))
+            || selected.proof.as_ref().is_some_and(|proof| proof.preserve_source_encoding);
+        // Native regeneration changes every Tj to TJ and renames font resources,
+        // invalidating independently verified paragraph bindings elsewhere. In a
+        // complete-source transaction keep those operators and resource names.
+        let preserve_memory = if complete_source {
+            let pdf=crate::pdf_output::load(&baseline)?;
+            let page=*pdf.get_pages().values().next().ok_or_else(||invalid("Missing text page."))?;
+            let page=pdf.get_dictionary(page).map_err(|_|invalid("Missing text page."))?;
+            [(b"FolioParagraphs".as_slice(),512*1024),(b"FolioStyledParagraphs".as_slice(),4*1024*1024)].iter()
+                .any(|(key,limit)|page.get(key).ok().and_then(|v|v.as_str().ok()).is_some_and(|bytes|!bytes.is_empty()&&bytes.len()<=*limit))
+        } else {false};
+        if complete_source && substitute.is_none() && (preserve_state || preserve_memory || preserve_encoding) {
+            let source_value = source_text::selected(&baseline, &before, object_index);
+            let source_run = source_edit_run(selected, source_value.as_deref());
+            let plan = text_substitution::Plan::prepare_original(&baseline, &source_run, &before, replacement)?;
+            if let Some(context) = &mut context { context.bind_substitution(&plan)?; }
+            planned = Some(plan);
+        }
         // A no-op cannot expose dormant Tc/Tw or a trailing TJ gap. Retain
         // those operators even when their current string shows no displacement.
         // On ordinary pages keep native editing, which preserves the absolute
         // positions of following relative text objects and proven backgrounds.
-        let positioned = if preserve_state && substitute.is_none() {
-            let bytes = positioned_text::replace(&baseline, selected, &before, replacement)?;
+        let positioned = if (preserve_state || preserve_memory || preserve_encoding) && substitute.is_none() && planned.is_none() {
+            let source_value = source_text::selected(&baseline, &before, object_index);
+            let source_run = source_edit_run(selected, source_value.as_deref());
+            let bytes = positioned_text::replace(&baseline, &source_run, &before, replacement)?;
             self.prove_editable(&baseline, &before, object_index, true)?;
             Some(bytes)
         } else {
-            self.prove_editable(&baseline, &before, object_index, false)?;
+            self.prove_editable(&baseline, &before, object_index, preserve_memory||planned.is_some())?;
             None
         };
         let original_raster = raster(
             &self
-                .document(source_id)?
-                .document
+                .editing_document(source_id)?
+                .pdf()?
                 .pages()
                 .get(page_index_i32(page_index)?)?,
         )?;
@@ -837,18 +1125,23 @@ impl WorkerRuntime {
                 "Copying this page would change its appearance. Its text cannot be edited safely.",
             ));
         }
-        let bytes: Arc<[u8]> = if let Some(font) = &substitute {
+        let bytes: Arc<[u8]> = if let Some(plan)=planned {plan.into_bytes().into()} else if let Some(font) = &substitute {
             // Normalize the selected stream through the already-proven no-op.
             // New PDFium text objects save into a new trailing stream and can
             // reorder content; retain the original operator slot instead.
-            replace_in_page(&copy, object_index, &selected.text)?;
+            let source_value = source_text::selected(&baseline, &before, object_index);
+            let source_run = source_edit_run(selected, source_value.as_deref());
+            let substitution_source=if preserve_memory {baseline.clone()}else{
+                replace_in_page(&copy, object_index, &source_run.text)?;
+                copy.save_to_bytes()?
+            };
             let ordinal = before
                 .iter()
                 .position(|run| run.index == object_index)
                 .unwrap();
             substitute_in_bytes(
-                &copy.save_to_bytes()?,
-                selected,
+                &substitution_source,
+                &source_run,
                 ordinal,
                 before.len(),
                 replacement,
@@ -861,12 +1154,14 @@ impl WorkerRuntime {
             replace_in_page(&copy, object_index, replacement)?;
             copy.save_to_bytes()?.into()
         };
+        let bytes = self.preserve_text_edit_comments(source_id, page_index, bytes)?;
         let document = self
             .pdfium
             .load_pdf_from_reader(Cursor::new(bytes.clone()), None)?;
         let page = document.pages().get(0)?;
         let after_proofs = FontProofs::read(&bytes)?;
-        let after = snapshot(&page, Some(&after_proofs))?;
+        let after = bound_snapshot(&page, Some(&after_proofs), &bytes)?;
+        if let Some(context)=&context {context.candidate(&bytes,&page,&after)?;}
         let changed = after
             .iter()
             .find(|r| r.index == object_index)
@@ -877,12 +1172,13 @@ impl WorkerRuntime {
         } else {
             same_style(selected, changed)
         };
-        if let Some(reason) = &changed.reason {
+        let changed_source = source_text::selected(&bytes, &after, object_index);
+        let changed_reason = source_edit_run(changed, changed_source.as_deref()).reason;
+        if let Some(reason) = &changed_reason {
             return Err(invalid(reason));
         }
-        if changed.text != replacement
-            || !style_preserved
-            || changed.reason.is_some()
+        if !style_preserved
+            || changed_reason.is_some()
             || before.len() != after.len()
             || !before
                 .iter()
@@ -894,7 +1190,7 @@ impl WorkerRuntime {
             ));
         }
         if substitute.is_some() {
-            self.prove_editable(&bytes, &after, object_index, false)?;
+            self.prove_editable(&bytes, &after, object_index, planned_substitution)?;
         }
         // The style check retains the font size and baseline. Width can grow
         // wherever the visible page has room without covering nearby content.
@@ -913,28 +1209,28 @@ impl WorkerRuntime {
                 continue;
             }
             if adds_overlap(&selected.bounds, &changed.bounds, &other.bounds) {
-                return Err(invalid("The replacement would overlap neighboring text."));
+                return Err(invalid("The replacement would overlap neighboring text. Shorten it to fit the available space. Editing existing text does not reflow the paragraph."));
             }
         }
         for (index, object) in page.objects().iter().enumerate() {
             if object.as_text_object().is_some() {
                 continue;
             }
-            let rect = object.bounds()?;
-            let bounds = [
-                rect.left().value,
-                rect.bottom().value,
-                rect.right().value,
-                rect.top().value,
-            ];
             // Only a proven solid rectangle behind the selected run is exempt.
             // Page-covering bounds alone can hide interior artwork or holes.
             let background = index < object_index && solid_page_background(&object, geometry)?;
-            if !background && adds_overlap(&selected.bounds, &changed.bounds, &bounds) {
+            if !background && occupied_regions(&object, geometry)?.iter()
+                .any(|bounds| adds_overlap(&selected.bounds, &changed.bounds, bounds)) {
                 return Err(invalid(
                     "The replacement would overlap neighboring graphics.",
                 ));
             }
+        }
+        // Overlapping glyphs can change PDFium's extracted object text even
+        // though the encoded replacement is intact. Report the concrete fit
+        // failure first, but still require exact text before publishing an edit.
+        if changed_source.as_deref().unwrap_or(&changed.text) != replacement {
+            return Err(invalid("The edited PDF did not retain the exact replacement text. The original page has been kept."));
         }
         let changed_raster = raster(&page)?;
         if original_raster.dimensions() != changed_raster.dimensions() {
@@ -968,27 +1264,40 @@ impl WorkerRuntime {
         }
         let pages = vec![geometry.displayed_size()];
         drop(page);
-        let source = self.document(source_id)?;
+        let source = self.editing_document(source_id)?;
         let path = source.path.clone();
         let original_path = source.original_path.clone();
+        let policy=source.policy.as_ref().map(|p|p.page(page_index)).transpose()?;
+        let protection=policy.as_ref().map(SourcePolicy::info);
         let id = Uuid::new_v4().to_string();
         let name = path
             .file_name()
             .and_then(|n| n.to_str())
             .unwrap_or("document.pdf")
             .to_string();
+        let retained = self.source_store.capture(bytes.clone())?;
         self.documents.insert(
             id.clone(),
             OpenDocument {
+                physical_units:OnceLock::from(physical_units::read(&bytes,document.pages().len() as usize).map_err(|e|e.to_string())),
+                legacy_comment_import:false,
+                imported_annotations: Default::default(),
+                imported_overlay_sources:imported_overlay_sources::Index::unbound(retained.identity().clone()),
+                unpublished_fonts: vec![],
+                image_leases: None,
                 path,
                 original_path,
-                document,
-                source_bytes: bytes,
+                document: native_residency::ResidentDocument::new(document, self.pdfium, retained.clone()),
+                source_bytes: retained,
                 for_printing: false,
+                print_max_dpi: None,
+                policy,
                 text_edit_restriction: OnceLock::new(),
+                form_admission:form_admission::Admission::default(),
+                bookmarks:OnceLock::new(),
             },
         );
-        Ok(DocumentInfo { id, name, pages })
+        Ok(DocumentInfo { id, name, pages,bookmarks:vec![],bookmark_error:None,protection })
     }
 }
 

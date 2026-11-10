@@ -1,0 +1,143 @@
+{
+  "variant": "folio-text-state-advances-colors-form-fonts-borders-separators-v7",
+  "patch": "patches/pdfium/form-text-state-inheritance.patch",
+  "patchSha256": "e2836d7e02da85c7bdee486ea8e416e51dff38039b37b19f2834fe9a8d36acf1",
+  "repositories": {
+    "pdfium": {
+      "url": "https://pdfium.googlesource.com/pdfium.git",
+      "commit": "f91ca5a72358bb0b00b4da9481b21fe668157614"
+    },
+    "build": {
+      "url": "https://chromium.googlesource.com/chromium/src/build.git",
+      "commit": "2cd94c0abeada712aeea6906d99021913c9fc28d"
+    },
+    "distributor": {
+      "url": "https://github.com/bblanchon/pdfium-binaries.git",
+      "commit": "5453f3afc4785cbad82c05f6ceb4dabea0cb81a0"
+    },
+    "depot_tools": {
+      "url": "https://chromium.googlesource.com/chromium/tools/depot_tools.git",
+      "commit": "b52fe87d04af61df3dd07748ff2c2c0b649dca09"
+    }
+  },
+  "downloads": {
+    "sdk-cpp-10.0.28000.2270.nupkg": {
+      "url": "https://api.nuget.org/v3-flatcontainer/microsoft.windows.sdk.cpp/10.0.28000.2270/microsoft.windows.sdk.cpp.10.0.28000.2270.nupkg",
+      "sha256": "0a4887a64d1b17128f9ffd80032f20debabf943f34eea927aac00cc46cb32879"
+    },
+    "sdk-cpp-x64-10.0.28000.2270.nupkg": {
+      "url": "https://api.nuget.org/v3-flatcontainer/microsoft.windows.sdk.cpp.x64/10.0.28000.2270/microsoft.windows.sdk.cpp.x64.10.0.28000.2270.nupkg",
+      "sha256": "72076d00b16c3882bf9eab0c80e350f33d8bc65e5f29e2f0e9b66a3f2569ccb1"
+    },
+    "sdk-cpp-x86-10.0.28000.2270.nupkg": {
+      "url": "https://api.nuget.org/v3-flatcontainer/microsoft.windows.sdk.cpp.x86/10.0.28000.2270/microsoft.windows.sdk.cpp.x86.10.0.28000.2270.nupkg",
+      "sha256": "5bf7b8811cd8e7640b5475ddbbf0a873f90077622c73bc6f6c2f1d368d5d55e3"
+    },
+    "sdk-debuggers-20260319.1511.0.nupkg": {
+      "url": "https://api.nuget.org/v3-flatcontainer/microsoft.debugging.platform.dbgeng/20260319.1511.0/microsoft.debugging.platform.dbgeng.20260319.1511.0.nupkg",
+      "sha256": "875678516f9ceed4a1c8b9b106d165106fcaa38723ad7c584c47b95b231600de"
+    },
+    "nuget.exe": {
+      "url": "https://dist.nuget.org/win-x86-commandline/v6.14.0/nuget.exe",
+      "sha256": "92dbed160ddee0f64b901e907439e021211b428e57c089ecc12fc38dcc4bd9a5"
+    },
+    "pdfium-win-x64-8044.tgz": {
+      "url": "https://github.com/bblanchon/pdfium-binaries/releases/download/chromium/8044/pdfium-win-x64.tgz",
+      "sha256": "78a17d9a5f14467631c26a3ac8741b27a0471ecc05bd6a119b523598160a0537"
+    }
+  },
+  "changedFiles": {
+    "BUILD.gn": "5a74bf66a237689f51e80788cc22bbcd41f39eac686e10b8a7c09246c7c4bfc9",
+    "core/fpdfapi/page/cpdf_allstates.h": "327a439ff9e054ddda4d8a9678ce3c768ae51f545a0422d32b2c1a6a89d04ccf",
+    "core/fpdfapi/page/cpdf_streamcontentparser.cpp": "5a337eb086caa7722df0069afd56f892e86a25d53799050f0dbf283dc3efa4f3",
+    "public/cpp/fpdf_deleters.h": "8020789862e81775e777c3bb6e44eb429eaba6cbf8904bdf2e915fa50d38c47d",
+    "public/cpp/fpdf_scopers.h": "8d2bd2da93bd5564660268203e66576dc82c23bd17157969758ab7c51355c055",
+    "public/fpdfview.h": "78e1acc61afeb6060cacee973a654c8f875854ef99d22a9c997773eb327b8ca2",
+    "build/config/clang/BUILD.gn": "da097cae3c71fc2e12a53e6ad7fbf504c37ced18d285573852701caddc171714",
+    "build/toolchain/win/toolchain.gni": "95b7b4630195aad2b99383a4f9c3a35b9a130e05fd03b964aae88361426c268f",
+    "resources.rc": "96caf329e08152e0fc4b6f655511d3f2703e8fae89686e038c4b959f8a3db6db",
+    "core/fpdfapi/font/cpdf_font.h": "5c3ba97aa441af6a5a74ea5f450cd9486ff1a40d566de315b7250d08eb4fea99",
+    "core/fpdfapi/font/cpdf_facebasedsimplefont.h": "fa3af345dde0ba157915326e1952ca3c0726a14a68cabc518401942839e03d06",
+    "core/fpdfapi/font/cpdf_facebasedsimplefont.cpp": "6639371b8a27d5e7ea79c233f70115fedaa45b3083bb5baad2551e5811cc5cb2",
+    "core/fpdfapi/font/cpdf_cidfont.h": "60e80e77f2bd22d164fa703154bd518b2b76236cdb4019e02bceba915c993590",
+    "core/fpdfapi/font/cpdf_cidfont.cpp": "122d0412666253b66873cb52f5190ddae7b5361191647430e56195109dd6b7f1",
+    "core/fpdfapi/page/cpdf_textobject.cpp": "6b45b1392204b303e7e8c9e2f38634ce1b3edd94f0379a13711525b2849efaa0",
+    "fpdfsdk/fpdf_edittext.cpp": "51565da25fc7eb3277844bee7837079d6bd023226cb87f82dc2bec3642aad498",
+    "core/fpdfdoc/cpdf_defaultappearance.cpp": "1031fbea1e93884af54997fe940033d98aefa90ff052a998ec8a6a65766cd74c",
+    "core/fpdfdoc/cpdf_bafontmap.cpp": "ec4d739072d627da3d59667655169b9799ba57abfe8889dd9ec2f7c184820a1f",
+    "fpdfsdk/cpdfsdk_baannot.h": "118550b6eb262a8773e4ced853954a5e8d6834bb443404be5ae8db26a1f3d746",
+    "fpdfsdk/cpdfsdk_baannot.cpp": "a67d5850e7ae97d33ced86a3186670a121e01efb26512aef2d3f2c8057a223d0",
+    "fpdfsdk/pwl/cpwl_wnd.h": "3b63fcf5fcb6829ca44a20426822f53e39115b41838a4ce3870bb9be34c3806b",
+    "fpdfsdk/pwl/cpwl_wnd.cpp": "7b329ad188bc3e0bf91ed154984e8103a3a94634df447ded6807c5f6c57b9f33",
+    "fpdfsdk/cpdfsdk_appstream.cpp": "a3c2f0878e7d2c06b1f85c91e85a9758af8f390470db248d51b1bf28c216c8ee",
+    "core/fpdftext/cpdf_textpage.cpp": "a64a3ad6fbff5a51f9104822d4eb1ca59c33bf647ef4da589da561a57a3ac568"
+  },
+  "gnArgs": {
+    "is_component_build": false,
+    "is_debug": false,
+    "pdf_enable_v8": false,
+    "pdf_enable_xfa": false,
+    "pdf_is_standalone": true,
+    "pdf_use_partition_alloc": false,
+    "target_cpu": "x64",
+    "target_os": "win",
+    "treat_warnings_as_errors": false,
+    "use_remoteexec": false
+  },
+  "dependencies": {
+    "base/allocator/partition_allocator": "89615a645f0220fb03875111c2d9ae4dea9887d8",
+    "build": "2cd94c0abeada712aeea6906d99021913c9fc28d",
+    "buildtools": "6f6a5dbf04b734214f3b1f386567d101ec9d607e",
+    "third_party/abseil-cpp": "435e7d977fb36fb47854a4c552c0706dad0bd7cf",
+    "third_party/brotli": "803ac71664ad62af1de39ff55e63ebbe07006fc8",
+    "third_party/clang-format/script": "70510081984cfcdb14a15b3e08dfe9776dc7ed37",
+    "third_party/depot_tools": "732902ab86f8bd629bee00af102d5aa2d9336166",
+    "third_party/dragonbox/src": "beeeef91cf6fef89a4d4ba5e95d47ca64ccb3a44",
+    "third_party/fast_float/src": "34164f547b7df3f5d794ff67e9f885c36819ebfc",
+    "third_party/freetype/src": "4800589f76dc62fbe523a74a59e0d4850a5dd7df",
+    "third_party/googletest/src": "4fe3307fb2d9f86d19777c7eb0e4809e9694dde7",
+    "third_party/harfbuzz/src": "886fc1e645388080b72f6d9b06347533a0018045",
+    "third_party/icu": "8cc91d9b6ab9991802fd208ee03a69714fd0251c",
+    "third_party/instrumented_libs": "d15c278eed5d38d9acf2d8054cf37baba93cef8e",
+    "third_party/libc++/src": "97b436da4c33663581d394f4ee0a5977fc38c2f4",
+    "third_party/libc++abi/src": "fc1897a2c12aa27e703c3ed48b62eba8abf4ce19",
+    "third_party/libjpeg_turbo": "640f254ad0fa03f6b1f29f89b7dd9366f2f6e533",
+    "third_party/libpng": "6d5341764ef4e38cbc07d35514a8aa73de50de8a",
+    "third_party/llvm-libc/src": "320824188c37e5c28738b9652a0ca8087c934bc9",
+    "third_party/nasm": "525a09a813be0f75b646ee93fc2a31c27b87d722",
+    "third_party/test_fonts": "7f51783942943e965cd56facf786544ccfc07713",
+    "third_party/zlib": "285e94b8fa95ad3b7d16b80798ec8dce6febb8c8",
+    "tools/code_coverage": "e1878fbb1ff79de75d54b6b57caa19a92b90079b",
+    "tools/win": "13cb6e5d223dc49eadd082d3aef4c2a5b0e4c0a0"
+  },
+  "tools": {
+    "third_party/llvm-build/Release+Asserts/bin/clang-cl.exe": "5e7db04c155213777a6810614dd384c8880d679be282607a1134dc5a4af1c7f3",
+    "buildtools/win/gn.exe": "e398eefd1241ad44e98aececa6a260abac0fdcb80f41c23176944ad3f0e76486"
+  },
+  "distributorChangedFiles": {
+    "BUILD.gn": "5a74bf66a237689f51e80788cc22bbcd41f39eac686e10b8a7c09246c7c4bfc9",
+    "public/cpp/fpdf_deleters.h": "8020789862e81775e777c3bb6e44eb429eaba6cbf8904bdf2e915fa50d38c47d",
+    "public/cpp/fpdf_scopers.h": "8d2bd2da93bd5564660268203e66576dc82c23bd17157969758ab7c51355c055",
+    "public/fpdfview.h": "78e1acc61afeb6060cacee973a654c8f875854ef99d22a9c997773eb327b8ca2",
+    "build/config/clang/BUILD.gn": "da097cae3c71fc2e12a53e6ad7fbf504c37ced18d285573852701caddc171714",
+    "build/toolchain/win/toolchain.gni": "95b7b4630195aad2b99383a4f9c3a35b9a130e05fd03b964aae88361426c268f"
+  },
+  "advancePatch": "patches/pdfium/fractional-horizontal-advances.patch",
+  "advancePatchSha256": "3c6dcda625e95134901c5b2b1ecc6e398db9fda4818ccd300d074de55418cdfb",
+  "advanceFixtures": {
+    "tests/fixtures/pdfium-font-advances/simple-leading-source.pdf": "6a996290a533a544c406e9b23d74114b42e7a32650a895225aacbcc33cb079c2",
+    "tests/fixtures/pdfium-font-advances/cid-leading-source.pdf": "c3852953f29c7655d43b55e9867473da183e3394a4ccdc759e015c889586bf31"
+  },
+  "colorPatch": "patches/pdfium/ordered-default-colors.patch",
+  "colorPatchSha256": "c2b492f8d27f275cb9b038f942e681d4e69851d46c14134cdb1df4562719033e",
+  "formFontPatch": "patches/pdfium/embedded-form-font-preference.patch",
+  "formFontPatchSha256": "94473895cf92d82d899887b2844df9e98b7e0b19ef6704dfdb5a6ac898635b03",
+  "formFontFixtures": {
+    "tests/fixtures/pdfium-form-fonts/greek-source.pdf": "fb1cc3437d520627eb2247c288524a017aed5179dc7d859e3b1054503bbfc4a8"
+  },
+  "borderPatch": "patches/pdfium/fractional-form-borders.patch",
+  "borderPatchSha256": "a793d9382144716899a9966f85c723ed644a00445874f5a117e2d18f6e157f79",
+  "separatorPatch": "patches/pdfium/form-separator-coordinates.patch",
+  "separatorPatchSha256": "d9fa37ecf2dc0810f57f49d9c4a5798b23fd2d683247507c80eca30e94de6c54",
+  "separatorProbeSha256": "9349a13a9a3e5d71b7d6c0b41b51fb92d9f207eab157e9be4c2ceb2cbcb7501c"
+}

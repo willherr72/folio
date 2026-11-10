@@ -1,0 +1,6 @@
+# Longer saved-edit scaling
+Measure100sequential save/reopen paragraph edits of the private original quiz on the current debug CLI. Each edit alternates adding/removing one word after a single growth setup; every saved output uses the prior source-style/text/pixel audit and becomes the next input. Record encoded bytes, live objects, font objects, xref slots, CLI elapsed time and sampled process memory. Preserve raw calls, manifests, PDFs, hashes and failures. Inputs and accepted portable remain unchanged.
+
+Approaches: persistent MCP/desktop measures retained process memory but mixes workspace/history ownership; fresh CLI isolates saved-file scaling; synthetic sparse IDs isolate extreme numeric ranges but do not demonstrate a real editing chain. Choose the real100-edit CLI chain first under standing autonomous authorization. Persistent-process memory remains a separate next gate.
+
+Acceptance is evidence integrity and per-output fidelity, not preselected performance success. Report actual distribution and any growth. No leak-free, commercial parity or general document claims. No product changes unless a demonstrated issue justifies a separate regression/fix cycle. Reuse existing audited harness and source-bound oracle; add focused negative controls for chain-summary validation. One scoped integrated review, one correction pass. Private corpus stays local.

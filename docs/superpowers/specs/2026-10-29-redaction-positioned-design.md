@@ -1,0 +1,15 @@
+# Partial removal in positioned PDF text
+
+The previous turn made progress: private range removal passed its recorded tests and 96 saved cases. Current checkpoint hashes are revalidated. The next contract is faithful removal inside actual TJ arrays, including string fragments and preexisting numeric adjustments. Existing half-open source-bound ASCII ranges, fresh graph publication and refusal limits remain unchanged. This addresses a final-review coverage gap before public/area redaction; the user authorized autonomous execution.
+
+Use the existing Rust kernel and synthetic export test, then independently compare PDFium/MuPDF/pypdf text, retained origins/style, raw operands, parsed graph and exact outside pixels. Extend to middle, prefix, suffix, active spacing and affine TJ cases across all twelve faces and both admitted encodings. No font/per-fixture exceptions or weakened raster tolerances. If evidence fails, diagnose actual renderer cursor behavior and add a native regression before changing product code. Preserve all initial failures.
+
+Refactor only the new audit copy to expose each reader's comparison independently. Each negative must prove rejection by its intended reader, rather than short-circuiting on PDFium. Require both readers to reject cover-only, missing compensation, neighboring paint and paint in the empty advance-box area. Keep the prior hidden-stream graph controls. Source-only masks and fixed two-pixel antialias margin remain; selected secret remains alphanumeric/hyphen, so no new punctuation-mask assertion.
+
+Global limits remain 1000 pages,100000 objects/operations,500000 tokens,8 MiB/page,64 MiB total/output,1 MiB text,4096 arrays/ranges,depth64,finite magnitudes<=1000000; retained origins/endpoints<=0.002pt. Preserve old artifacts and source PDFs. No public command, GUI rebuild, release, commit or package change. Existing worktree, one offline locked Cargo with one job. One final review; corrections locally without re-review. Broader goal stays active.
+
+## Completed evidence
+
+All 144 new selected-TJ outputs pass both readers and pypdf, and the previous 96 outputs pass the extracted reader helper unchanged. Both readers independently reject four damaged outputs (eight checks); both encoded hidden-payload graph controls still reject. Focused tests: 29 passed. Library: 614 passed, four existing ignored, no failures. Complete source/renderer fingerprint delta from the previous milestone contains only redaction_ranges_tests.rs; no production implementation changed. Final review found no actionable defects and verified all frozen hashes and saved-PDF bindings.
+
+The next implementation step is source-bound physical glyph selection for marking text on the page. Existing baseline/advance points are not ink rectangles, and ordinary PageText includes generated whitespace/fallback boxes. A dedicated native/source mapping must be proved before selection authorizes removal. Keep selected-space/encoding, arbitrary-layout, endpoint and public-integration limits explicit. No public redaction or parity claim follows from this evidence.

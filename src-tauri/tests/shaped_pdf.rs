@@ -125,6 +125,7 @@ fn native_glyph_ink_and_logical_text_survive_all_rotations_and_engine_export() {
                     ExportRequest {
                         flatten: false,
                         pages: vec![PagePlan {
+                            crop: None,
                             id: "page".into(),
                             source_id: source.id.clone(),
                             page_index: 0,

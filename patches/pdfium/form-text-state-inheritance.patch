@@ -1,0 +1,27 @@
+diff --git a/core/fpdfapi/page/cpdf_allstates.h b/core/fpdfapi/page/cpdf_allstates.h
+--- a/core/fpdfapi/page/cpdf_allstates.h
++++ b/core/fpdfapi/page/cpdf_allstates.h
+@@ -48,8 +48,10 @@ class CPDF_AllStates {
+   const CFX_Matrix& parent_matrix() const { return parent_matrix_; }
+   void set_parent_matrix(const CFX_Matrix& matrix) { parent_matrix_ = matrix; }
+ 
++  float text_leading() const { return text_leading_; }
+   void set_text_leading(float value) { text_leading_ = value; }
+ 
++  float text_rise() const { return text_rise_; }
+   void set_text_rise(float value) { text_rise_ = value; }
+ 
+   float text_horz_scale() const { return text_horz_scale_; }
+diff --git a/core/fpdfapi/page/cpdf_streamcontentparser.cpp b/core/fpdfapi/page/cpdf_streamcontentparser.cpp
+--- a/core/fpdfapi/page/cpdf_streamcontentparser.cpp
++++ b/core/fpdfapi/page/cpdf_streamcontentparser.cpp
+@@ -823,6 +823,9 @@ void CPDF_StreamContentParser::AddForm(RetainPtr<CPDF_Stream> pStream,
+   status.mutable_graph_state() = cur_states_->graph_state();
+   status.mutable_color_state() = cur_states_->color_state();
+   status.mutable_text_state() = cur_states_->text_state();
++  status.set_text_leading(cur_states_->text_leading());
++  status.set_text_rise(cur_states_->text_rise());
++  status.set_text_horz_scale(cur_states_->text_horz_scale());
+   auto form = std::make_unique<CPDF_Form>(document_, page_resources_,
+                                           std::move(pStream), resources_.Get());
+   form->ParseContent(&status, nullptr, recursion_state_);

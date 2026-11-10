@@ -119,6 +119,7 @@ fn export_roundtrip_preserves_pages_and_places_overlays_on_rotated_crop() {
                 flatten: true,
                 pages: vec![
                     PagePlan {
+                        crop: None,
                         id: "beta-page".into(),
                         source_id: beta.id.clone(),
                         page_index: 0,
@@ -128,6 +129,7 @@ fn export_roundtrip_preserves_pages_and_places_overlays_on_rotated_crop() {
                         overlays: vec![],
                     },
                     PagePlan {
+                        crop: None,
                         id: "rotated-page".into(),
                         source_id: alpha.id.clone(),
                         page_index: 1,
@@ -138,6 +140,7 @@ fn export_roundtrip_preserves_pages_and_places_overlays_on_rotated_crop() {
                             Overlay::Text(TextOverlay {
                                 font_id: None,
                                 shaping: None,
+                                area: None,
                                 font_name: Default::default(),
                                 rotation: 0,
                                 id: "text-1".into(),
@@ -160,6 +163,7 @@ fn export_roundtrip_preserves_pages_and_places_overlays_on_rotated_crop() {
                         ],
                     },
                     PagePlan {
+                        crop: None,
                         id: "first-page".into(),
                         source_id: alpha.id.clone(),
                         page_index: 0,
@@ -235,6 +239,99 @@ fn export_roundtrip_preserves_pages_and_places_overlays_on_rotated_crop() {
 }
 
 #[test]
+fn extract_subset_preserves_current_order_rotation_and_editable_overlays() {
+    let temp = tempfile::tempdir().unwrap();
+    let first = temp.path().join("first.pdf");
+    let second = temp.path().join("second.pdf");
+    let output = temp.path().join("extracted.pdf");
+    write_pdf(&first, &[
+        ("OMITTED", [0.0, 0.0, 300.0, 400.0], None, 0),
+        ("SELECTED", [0.0, 0.0, 300.0, 400.0], None, 0),
+    ]);
+    write_pdf(&second, &[("APPENDED", [0.0, 0.0, 500.0, 600.0], None, 0)]);
+    let original = fs::read(&first).unwrap();
+    let engine = PdfEngine::start(pdfium_path()).unwrap();
+    let a = engine.open_document(&first).unwrap();
+    let b = engine.open_document(&second).unwrap();
+    let request: ExportRequest = serde_json::from_value(serde_json::json!({"pages":[
+        {"id":"b","sourceId":b.id,"pageIndex":0,"width":500,"height":600,"rotation":0,"overlays":[]},
+        {"id":"a","sourceId":a.id,"pageIndex":1,"width":300,"height":400,"rotation":90,"overlays":[
+            {"type":"text","id":"draft","x":40,"y":70,"text":"Unsaved edit","fontSize":12,"fontName":"Helvetica","color":"#000000"},
+            {"type":"comment","id":"note","x":20,"y":25,"text":"Keep note","color":"#FFFF00"}
+        ]}
+    ]})).unwrap();
+    engine.export_pdf(request, &output).unwrap();
+    let extracted = engine.open_document(&output).unwrap();
+    assert_eq!(extracted.pages.len(), 2);
+    assert_eq!((extracted.pages[1].width, extracted.pages[1].height), (400.0, 300.0));
+    assert!(engine.extract_text(&extracted.id, 0).unwrap().contains("APPENDED"));
+    assert!(engine.extract_text(&extracted.id, 1).unwrap().contains("SELECTED"));
+    let restored = serde_json::to_value(&extracted.pages[1].overlays).unwrap();
+    assert!(restored.as_array().unwrap().iter().any(|o| o["text"] == "Unsaved edit"));
+    assert!(engine.list_native_comments(&extracted.id).unwrap().iter().any(|n|n.page_index==1&&n.text=="Keep note"&&n.reason.is_none()));
+    assert!(!engine.extract_text(&extracted.id, 0).unwrap().contains("OMITTED"));
+    assert!(!engine.extract_text(&extracted.id, 1).unwrap().contains("OMITTED"));
+    assert_eq!(fs::read(&first).unwrap(), original);
+    assert!(engine.extract_text(&a.id, 0).unwrap().contains("OMITTED"));
+}
+
+#[test]
+fn generated_blank_document_renders_exports_and_reopens() {
+    let engine = PdfEngine::start(pdfium_path()).unwrap();
+    for (width, height) in [(612.0, 792.0), (841.89, 595.28)] {
+        let blank = engine.create_blank_document(width, height).unwrap();
+        assert_eq!(blank.name, "Untitled.pdf");
+        assert_eq!(blank.pages.len(), 1);
+        assert!((blank.pages[0].width - width).abs() < 0.01);
+        assert!((blank.pages[0].height - height).abs() < 0.01);
+        assert!(engine.extract_text(&blank.id, 0).unwrap().trim().is_empty());
+        let png = engine.render_page(&blank.id, 0, 300).unwrap();
+        let raster = image::load_from_memory(&png).unwrap().to_rgb8();
+        assert!(raster.pixels().all(|p| p.0 == [255, 255, 255]));
+        let temp = tempfile::tempdir().unwrap();
+        let output = temp.path().join("new.pdf");
+        engine.export_pdf(ExportRequest {flatten:false,pages:vec![PagePlan {
+            crop: None,
+            id:"new".into(),source_id:blank.id.clone(),page_index:0,width,height,rotation:0,overlays:vec![]
+        }]}, &output).unwrap();
+        let reopened = engine.open_document(&output).unwrap();
+        assert_eq!(reopened.pages.len(), 1);
+        assert!((reopened.pages[0].width-width).abs()<0.01);
+        engine.close_document(&blank.id).unwrap();
+        assert!(engine.render_page(&blank.id, 0, 300).is_err());
+    }
+    for (width,height) in [(f32::NAN,792.0),(612.0,f32::INFINITY),(0.0,300.0),(-1.0,300.0),(143.0,300.0),(300.0,1441.0)] {
+        assert!(engine.create_blank_document(width,height).is_err());
+    }
+}
+
+#[test]
+fn composed_preview_renders_overlays_rotation_and_preserves_source() {
+    let engine = PdfEngine::start(pdfium_path()).unwrap();
+    let blank = engine.create_blank_document(300.0,400.0).unwrap();
+    let original = engine.render_page(&blank.id,0,400).unwrap();
+    let plan:PagePlan = serde_json::from_value(serde_json::json!({
+        "id":"preview","sourceId":blank.id,"pageIndex":0,"width":300,"height":400,"rotation":90,"overlays":[
+            {"type":"text","id":"text","x":40,"y":60,"text":"Composed text","fontSize":20,"color":"#0000FF"},
+            {"type":"ink","id":"ink","paths":[[{"x":40,"y":120},{"x":200,"y":120}]],"strokeWidth":4,"color":"#FF0000"},
+            {"type":"highlight","id":"highlight","rects":[{"x":40,"y":160,"width":150,"height":20}],"color":"#FFFF00","opacity":0.5},
+            {"type":"comment","id":"note","x":40,"y":200,"text":"Preserve comment","color":"#00FF00"}
+        ]
+    })).unwrap();
+    let rendered=engine.render_page_plan(plan.clone(),400).unwrap();
+    let raster=image::load_from_memory(&rendered).unwrap().to_rgb8();
+    assert_eq!(raster.dimensions(),(400,300));
+    assert!(raster.pixels().filter(|p|p[2]>180&&p[0]<100&&p[1]<100).count()>40);
+    assert!(raster.pixels().filter(|p|p[0]>180&&p[1]<100&&p[2]<100).count()>100);
+    assert!(raster.pixels().filter(|p|p[0]>200&&p[1]>200&&p[2]<200).count()>100);
+    assert_eq!(engine.render_page(&blank.id,0,400).unwrap(),original);
+    assert!(engine.extract_text(&blank.id,0).unwrap().trim().is_empty());
+    let mut invalid=plan;invalid.width=f32::NAN;
+    assert!(engine.render_page_plan(invalid,400).is_err());
+    assert_eq!(engine.render_page(&blank.id,0,400).unwrap(),original);
+}
+
+#[test]
 fn render_width_is_clamped_and_export_validation_rejects_unsafe_payloads() {
     let temp = tempfile::tempdir().unwrap();
     let source = temp.path().join("source.pdf");
@@ -247,6 +344,7 @@ fn render_width_is_clamped_and_export_validation_rejects_unsafe_payloads() {
     assert_eq!(image.width(), 64);
 
     let valid_page = PagePlan {
+        crop: None,
         id: "page".into(),
         source_id: document.id.clone(),
         page_index: 0,
@@ -290,6 +388,7 @@ fn render_width_is_clamped_and_export_validation_rejects_unsafe_payloads() {
     bad_color.overlays.push(Overlay::Text(TextOverlay {
         font_id: None,
         shaping: None,
+        area: None,
         font_name: Default::default(),
         rotation: 0,
         id: "bad-color".into(),
@@ -343,6 +442,7 @@ fn render_width_is_clamped_and_export_validation_rejects_unsafe_payloads() {
         unsupported_page.overlays.push(Overlay::Text(TextOverlay {
             font_id: None,
             shaping: None,
+            area: None,
             font_name: Default::default(),
             rotation: 0,
             id: format!("unsupported-{name}"),
@@ -375,6 +475,7 @@ fn render_width_is_clamped_and_export_validation_rejects_unsafe_payloads() {
         Overlay::Text(TextOverlay {
             font_id: None,
             shaping: None,
+            area: None,
             font_name: Default::default(),
             rotation: 0,
             id: "cleared-text".into(),
@@ -422,6 +523,7 @@ fn duplicated_annotated_pages_may_reuse_overlay_ids() {
     let overlay = Overlay::Text(TextOverlay {
         font_id: None,
         shaping: None,
+        area: None,
         font_name: Default::default(),
         rotation: 0,
         id: "same-overlay-after-clone".into(),
@@ -432,6 +534,7 @@ fn duplicated_annotated_pages_may_reuse_overlay_ids() {
         color: "#222222".into(),
     });
     let first = PagePlan {
+        crop: None,
         id: "first-copy".into(),
         source_id: document.id.clone(),
         page_index: 0,
@@ -475,6 +578,7 @@ fn export_rejects_a_hardlink_alias_of_an_open_source_without_modifying_it() {
     let engine = PdfEngine::start(pdfium_path()).unwrap();
     let document = engine.open_document(&source).unwrap();
     let plan = PagePlan {
+        crop: None,
         id: "identity-page".into(),
         source_id: document.id.clone(),
         page_index: 0,

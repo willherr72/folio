@@ -1,0 +1,4861 @@
+{
+  "description": "Compare Word exports using Folio's existing unnormalized reader operations.\n\nDiagnostic completion is not a passing exact-copy gate or desktop acceptance.\n",
+  "releaseAcceptance": false,
+  "roundtripMethod": "MuPDF save, garbage=4, deflate=True; not Folio native export",
+  "manifest": {
+    "description": "Microsoft Word PDF-export control; engine evidence, not interactive clipboard acceptance.",
+    "wordVersion": "16.0",
+    "wordBuild": "16.0.20430",
+    "font": "Courier New",
+    "fontSize": 20,
+    "hardBreakMapping": "Logical LF is authored as a Word manual line break (U+000B). Final Word paragraph mark is not logical source text.",
+    "cases": [
+      {
+        "name": "single",
+        "expected": "A B",
+        "wordText": "A B\r",
+        "bodyWidthPt": 144,
+        "wordLines": 1,
+        "wordPages": 1,
+        "tagged": true,
+        "pdf": "single-tagged.pdf",
+        "pdfSha256": "ac6243d3ba4ca215e0c03c85bcfb0b05588274545eaaaa11f0bce4a62d99ba65",
+        "docx": "single.docx",
+        "docxSha256": "d34fa2e6495b9f52ce0b3e49cf1ae77dec2828010aae7bdff4efa57ebbcec900"
+      },
+      {
+        "name": "single",
+        "expected": "A B",
+        "wordText": "A B\r",
+        "bodyWidthPt": 144,
+        "wordLines": 1,
+        "wordPages": 1,
+        "tagged": false,
+        "pdf": "single-untagged.pdf",
+        "pdfSha256": "67cf3ceef6f2ad2bd43d41571dfc1976284dd022e8081549c6fcf55e44b87483",
+        "docx": "single.docx",
+        "docxSha256": "d34fa2e6495b9f52ce0b3e49cf1ae77dec2828010aae7bdff4efa57ebbcec900"
+      },
+      {
+        "name": "spaces",
+        "expected": "A  B",
+        "wordText": "A  B\r",
+        "bodyWidthPt": 144,
+        "wordLines": 1,
+        "wordPages": 1,
+        "tagged": true,
+        "pdf": "spaces-tagged.pdf",
+        "pdfSha256": "4a0aa36ec2ee404eb556884570d54cba06cc139085029b83e8f443f1bcc9a5b5",
+        "docx": "spaces.docx",
+        "docxSha256": "e0244457e41285a419f0c3d2680a9db5b2b2ad022cf59dab35c7d5d48b44fcf3"
+      },
+      {
+        "name": "spaces",
+        "expected": "A  B",
+        "wordText": "A  B\r",
+        "bodyWidthPt": 144,
+        "wordLines": 1,
+        "wordPages": 1,
+        "tagged": false,
+        "pdf": "spaces-untagged.pdf",
+        "pdfSha256": "146794fec8c36534e7296bd31c091f437c2cc53eb6aa7ca2b994e8ea98711a8a",
+        "docx": "spaces.docx",
+        "docxSha256": "e0244457e41285a419f0c3d2680a9db5b2b2ad022cf59dab35c7d5d48b44fcf3"
+      },
+      {
+        "name": "soft",
+        "expected": "A B C D",
+        "wordText": "A B C D\r",
+        "bodyWidthPt": 54,
+        "wordLines": 2,
+        "wordPages": 1,
+        "tagged": true,
+        "pdf": "soft-tagged.pdf",
+        "pdfSha256": "246404b26fbe22fe45938379f920eef1c9cabd3278edaff9fb5fcbf32a9707f8",
+        "docx": "soft.docx",
+        "docxSha256": "ab72db9991a30fbc64ca40e6d16f9c1ba6225559b5997444cadc7675e79d69ca"
+      },
+      {
+        "name": "soft",
+        "expected": "A B C D",
+        "wordText": "A B C D\r",
+        "bodyWidthPt": 54,
+        "wordLines": 2,
+        "wordPages": 1,
+        "tagged": false,
+        "pdf": "soft-untagged.pdf",
+        "pdfSha256": "846f4a8b0c57adff6b012b1d2593f74fe44e5932106a036d82f435920855f8a1",
+        "docx": "soft.docx",
+        "docxSha256": "ab72db9991a30fbc64ca40e6d16f9c1ba6225559b5997444cadc7675e79d69ca"
+      },
+      {
+        "name": "soft-spaces",
+        "expected": "A  B C D",
+        "wordText": "A  B C D\r",
+        "bodyWidthPt": 54,
+        "wordLines": 2,
+        "wordPages": 1,
+        "tagged": true,
+        "pdf": "soft-spaces-tagged.pdf",
+        "pdfSha256": "dbb3ca98724aa3602e90c152e3c5536bc15ace4567529e0c6c01dd013a750ace",
+        "docx": "soft-spaces.docx",
+        "docxSha256": "f1b44f341f1f0656a3bce026567d475d9fae80b7dac4cbb96b90041e84e1537b"
+      },
+      {
+        "name": "soft-spaces",
+        "expected": "A  B C D",
+        "wordText": "A  B C D\r",
+        "bodyWidthPt": 54,
+        "wordLines": 2,
+        "wordPages": 1,
+        "tagged": false,
+        "pdf": "soft-spaces-untagged.pdf",
+        "pdfSha256": "fdff087c0ce8811e6fd8538634508b88409ed79851d6b3fcdf6d684209572655",
+        "docx": "soft-spaces.docx",
+        "docxSha256": "f1b44f341f1f0656a3bce026567d475d9fae80b7dac4cbb96b90041e84e1537b"
+      },
+      {
+        "name": "hard",
+        "expected": "A\nB",
+        "wordText": "A\u000bB\r",
+        "bodyWidthPt": 144,
+        "wordLines": 2,
+        "wordPages": 1,
+        "tagged": true,
+        "pdf": "hard-tagged.pdf",
+        "pdfSha256": "9240eca32f21802ecd73010544654763fac39c74edfe30bb850c548692fdb466",
+        "docx": "hard.docx",
+        "docxSha256": "53a3832812a379f46b6d8ab49a24b41c1ff99fec8704825447d7db21c81b461b"
+      },
+      {
+        "name": "hard",
+        "expected": "A\nB",
+        "wordText": "A\u000bB\r",
+        "bodyWidthPt": 144,
+        "wordLines": 2,
+        "wordPages": 1,
+        "tagged": false,
+        "pdf": "hard-untagged.pdf",
+        "pdfSha256": "1abad2f765fd9c9774a4800e8049509d3d0f1b19bb124f4948e1facf40e33cdd",
+        "docx": "hard.docx",
+        "docxSha256": "53a3832812a379f46b6d8ab49a24b41c1ff99fec8704825447d7db21c81b461b"
+      },
+      {
+        "name": "hard-equivalent",
+        "expected": "A B\nC D",
+        "wordText": "A B\u000bC D\r",
+        "bodyWidthPt": 54,
+        "wordLines": 2,
+        "wordPages": 1,
+        "tagged": true,
+        "pdf": "hard-equivalent-tagged.pdf",
+        "pdfSha256": "b6019215ab1a9cea861c49865b9e02a3215157c02c81d35352a916ca80649320",
+        "docx": "hard-equivalent.docx",
+        "docxSha256": "e76201cf0984eec9b77932f2de95915b0df574a515b7e2b28fe5ba7f57039bf3"
+      },
+      {
+        "name": "hard-equivalent",
+        "expected": "A B\nC D",
+        "wordText": "A B\u000bC D\r",
+        "bodyWidthPt": 54,
+        "wordLines": 2,
+        "wordPages": 1,
+        "tagged": false,
+        "pdf": "hard-equivalent-untagged.pdf",
+        "pdfSha256": "f2cf6c2c0047351a86f639887f3eebea160b582529bafba05398047ffd227aab",
+        "docx": "hard-equivalent.docx",
+        "docxSha256": "e76201cf0984eec9b77932f2de95915b0df574a515b7e2b28fe5ba7f57039bf3"
+      }
+    ]
+  },
+  "manifestSha256": "fc3f90490268656928c369e34a8bbd075973f324564f60596fab1aa93812c7bf",
+  "mupdf": "1.27.1",
+  "pypdf": "6.14.2",
+  "pdfiumSha256": "04100c03e41cac1f979e36e5e26fb860bcb5a7461f53830d3c098716624a27a9",
+  "cases": [
+    {
+      "case": "single",
+      "tagged": true,
+      "expected": "A B",
+      "original": {
+        "pdf": "single-tagged.pdf",
+        "sha256": "ac6243d3ba4ca215e0c03c85bcfb0b05588274545eaaaa11f0bce4a62d99ba65",
+        "texts": {
+          "pdfium": "A B",
+          "mupdfSelectionLf": "A B ",
+          "mupdfSelectionCrlf": "A B ",
+          "mupdfPageText": "A B \n",
+          "pypdf": "A B "
+        },
+        "exact": {
+          "pdfium": true,
+          "mupdfSelectionLf": false,
+          "mupdfSelectionCrlf": false,
+          "mupdfPageText": false,
+          "pypdf": false
+        },
+        "mupdfLines": [
+          "A B "
+        ],
+        "mupdfCharacters": [
+          {
+            "origin": [
+              48.02399826049805,
+              58.48999786376953
+            ],
+            "bbox": [
+              48.02399826049805,
+              41.77668762207031,
+              60.06239700317383,
+              62.26203155517578
+            ],
+            "c": "A",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              60.02399826049805,
+              58.48999786376953
+            ],
+            "bbox": [
+              60.02399826049805,
+              41.77668762207031,
+              72.0624008178711,
+              62.26203155517578
+            ],
+            "c": " ",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              72.02400207519531,
+              58.48999786376953
+            ],
+            "bbox": [
+              72.02400207519531,
+              41.77668762207031,
+              84.0624008178711,
+              62.26203155517578
+            ],
+            "c": "B",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              84.0479965209961,
+              58.48999786376953
+            ],
+            "bbox": [
+              84.0479965209961,
+              41.77668762207031,
+              96.08639526367188,
+              62.26203155517578
+            ],
+            "c": " ",
+            "synthetic": false
+          }
+        ],
+        "pdfiumCharacters": [
+          {
+            "text": "A",
+            "box": [
+              48.18450927734375,
+              59.92195129394531,
+              121.51000213623047,
+              133.12705993652344
+            ],
+            "textObject": 0
+          },
+          {
+            "text": " ",
+            "box": [
+              60.02399826049805,
+              72.06239318847656,
+              121.51000213623047,
+              121.53006744384766
+            ],
+            "textObject": 0
+          },
+          {
+            "text": "B",
+            "box": [
+              72.86668395996094,
+              82.91874694824219,
+              121.51000213623047,
+              133.12705993652344
+            ],
+            "textObject": 0
+          }
+        ],
+        "raster": [
+          480,
+          360,
+          "4e2f0ff20653ef101bd7c401953e16b53c876453be1da3503b72af6568769750"
+        ],
+        "selectionPoints": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            240.0,
+            180.0
+          ]
+        ],
+        "hasStructureTree": true,
+        "contentSha256": "a17ad99eb801d5237e916c9ebfd31443871cc80a16a0d4bd27aa445432355291",
+        "producer": "Microsoft® Word for Microsoft 365"
+      },
+      "resaved": {
+        "pdf": "single-tagged-resaved.pdf",
+        "sha256": "a103479fc612c0cca4868066e2928009efb228f361c6e5589ccfd03e7cc8b896",
+        "texts": {
+          "pdfium": "A B",
+          "mupdfSelectionLf": "A B ",
+          "mupdfSelectionCrlf": "A B ",
+          "mupdfPageText": "A B \n",
+          "pypdf": "A B "
+        },
+        "exact": {
+          "pdfium": true,
+          "mupdfSelectionLf": false,
+          "mupdfSelectionCrlf": false,
+          "mupdfPageText": false,
+          "pypdf": false
+        },
+        "mupdfLines": [
+          "A B "
+        ],
+        "mupdfCharacters": [
+          {
+            "origin": [
+              48.02399826049805,
+              58.48999786376953
+            ],
+            "bbox": [
+              48.02399826049805,
+              41.77668762207031,
+              60.06239700317383,
+              62.26203155517578
+            ],
+            "c": "A",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              60.02399826049805,
+              58.48999786376953
+            ],
+            "bbox": [
+              60.02399826049805,
+              41.77668762207031,
+              72.0624008178711,
+              62.26203155517578
+            ],
+            "c": " ",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              72.02400207519531,
+              58.48999786376953
+            ],
+            "bbox": [
+              72.02400207519531,
+              41.77668762207031,
+              84.0624008178711,
+              62.26203155517578
+            ],
+            "c": "B",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              84.0479965209961,
+              58.48999786376953
+            ],
+            "bbox": [
+              84.0479965209961,
+              41.77668762207031,
+              96.08639526367188,
+              62.26203155517578
+            ],
+            "c": " ",
+            "synthetic": false
+          }
+        ],
+        "pdfiumCharacters": [
+          {
+            "text": "A",
+            "box": [
+              48.18450927734375,
+              59.92195129394531,
+              121.51000213623047,
+              133.12705993652344
+            ],
+            "textObject": 0
+          },
+          {
+            "text": " ",
+            "box": [
+              60.02399826049805,
+              72.06239318847656,
+              121.51000213623047,
+              121.53006744384766
+            ],
+            "textObject": 0
+          },
+          {
+            "text": "B",
+            "box": [
+              72.86668395996094,
+              82.91874694824219,
+              121.51000213623047,
+              133.12705993652344
+            ],
+            "textObject": 0
+          }
+        ],
+        "raster": [
+          480,
+          360,
+          "4e2f0ff20653ef101bd7c401953e16b53c876453be1da3503b72af6568769750"
+        ],
+        "selectionPoints": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            240.0,
+            180.0
+          ]
+        ],
+        "hasStructureTree": true,
+        "contentSha256": "a17ad99eb801d5237e916c9ebfd31443871cc80a16a0d4bd27aa445432355291",
+        "producer": "Microsoft® Word for Microsoft 365"
+      },
+      "roundtripStable": true,
+      "exactCopyGate": false
+    },
+    {
+      "case": "single",
+      "tagged": false,
+      "expected": "A B",
+      "original": {
+        "pdf": "single-untagged.pdf",
+        "sha256": "67cf3ceef6f2ad2bd43d41571dfc1976284dd022e8081549c6fcf55e44b87483",
+        "texts": {
+          "pdfium": "A B",
+          "mupdfSelectionLf": "A B ",
+          "mupdfSelectionCrlf": "A B ",
+          "mupdfPageText": "A B \n",
+          "pypdf": "A B "
+        },
+        "exact": {
+          "pdfium": true,
+          "mupdfSelectionLf": false,
+          "mupdfSelectionCrlf": false,
+          "mupdfPageText": false,
+          "pypdf": false
+        },
+        "mupdfLines": [
+          "A B "
+        ],
+        "mupdfCharacters": [
+          {
+            "origin": [
+              48.02399826049805,
+              58.48999786376953
+            ],
+            "bbox": [
+              48.02399826049805,
+              41.77668762207031,
+              60.06239700317383,
+              62.26203155517578
+            ],
+            "c": "A",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              60.02399826049805,
+              58.48999786376953
+            ],
+            "bbox": [
+              60.02399826049805,
+              41.77668762207031,
+              72.0624008178711,
+              62.26203155517578
+            ],
+            "c": " ",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              72.02400207519531,
+              58.48999786376953
+            ],
+            "bbox": [
+              72.02400207519531,
+              41.77668762207031,
+              84.0624008178711,
+              62.26203155517578
+            ],
+            "c": "B",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              84.0479965209961,
+              58.48999786376953
+            ],
+            "bbox": [
+              84.0479965209961,
+              41.77668762207031,
+              96.08639526367188,
+              62.26203155517578
+            ],
+            "c": " ",
+            "synthetic": false
+          }
+        ],
+        "pdfiumCharacters": [
+          {
+            "text": "A",
+            "box": [
+              48.18450927734375,
+              59.92195129394531,
+              121.51000213623047,
+              133.12705993652344
+            ],
+            "textObject": 0
+          },
+          {
+            "text": " ",
+            "box": [
+              60.02399826049805,
+              72.06239318847656,
+              121.51000213623047,
+              121.53006744384766
+            ],
+            "textObject": 0
+          },
+          {
+            "text": "B",
+            "box": [
+              72.86668395996094,
+              82.91874694824219,
+              121.51000213623047,
+              133.12705993652344
+            ],
+            "textObject": 0
+          }
+        ],
+        "raster": [
+          480,
+          360,
+          "4e2f0ff20653ef101bd7c401953e16b53c876453be1da3503b72af6568769750"
+        ],
+        "selectionPoints": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            240.0,
+            180.0
+          ]
+        ],
+        "hasStructureTree": false,
+        "contentSha256": "800a633ba508898c3b5bca0871d39da03dc3d085232209857a059614425249ac",
+        "producer": "Microsoft® Word for Microsoft 365"
+      },
+      "resaved": {
+        "pdf": "single-untagged-resaved.pdf",
+        "sha256": "dcb739bd55bf9d7871aa53c0fe1f357851a38388f14b59da4e626193cc5f4031",
+        "texts": {
+          "pdfium": "A B",
+          "mupdfSelectionLf": "A B ",
+          "mupdfSelectionCrlf": "A B ",
+          "mupdfPageText": "A B \n",
+          "pypdf": "A B "
+        },
+        "exact": {
+          "pdfium": true,
+          "mupdfSelectionLf": false,
+          "mupdfSelectionCrlf": false,
+          "mupdfPageText": false,
+          "pypdf": false
+        },
+        "mupdfLines": [
+          "A B "
+        ],
+        "mupdfCharacters": [
+          {
+            "origin": [
+              48.02399826049805,
+              58.48999786376953
+            ],
+            "bbox": [
+              48.02399826049805,
+              41.77668762207031,
+              60.06239700317383,
+              62.26203155517578
+            ],
+            "c": "A",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              60.02399826049805,
+              58.48999786376953
+            ],
+            "bbox": [
+              60.02399826049805,
+              41.77668762207031,
+              72.0624008178711,
+              62.26203155517578
+            ],
+            "c": " ",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              72.02400207519531,
+              58.48999786376953
+            ],
+            "bbox": [
+              72.02400207519531,
+              41.77668762207031,
+              84.0624008178711,
+              62.26203155517578
+            ],
+            "c": "B",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              84.0479965209961,
+              58.48999786376953
+            ],
+            "bbox": [
+              84.0479965209961,
+              41.77668762207031,
+              96.08639526367188,
+              62.26203155517578
+            ],
+            "c": " ",
+            "synthetic": false
+          }
+        ],
+        "pdfiumCharacters": [
+          {
+            "text": "A",
+            "box": [
+              48.18450927734375,
+              59.92195129394531,
+              121.51000213623047,
+              133.12705993652344
+            ],
+            "textObject": 0
+          },
+          {
+            "text": " ",
+            "box": [
+              60.02399826049805,
+              72.06239318847656,
+              121.51000213623047,
+              121.53006744384766
+            ],
+            "textObject": 0
+          },
+          {
+            "text": "B",
+            "box": [
+              72.86668395996094,
+              82.91874694824219,
+              121.51000213623047,
+              133.12705993652344
+            ],
+            "textObject": 0
+          }
+        ],
+        "raster": [
+          480,
+          360,
+          "4e2f0ff20653ef101bd7c401953e16b53c876453be1da3503b72af6568769750"
+        ],
+        "selectionPoints": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            240.0,
+            180.0
+          ]
+        ],
+        "hasStructureTree": false,
+        "contentSha256": "800a633ba508898c3b5bca0871d39da03dc3d085232209857a059614425249ac",
+        "producer": "Microsoft® Word for Microsoft 365"
+      },
+      "roundtripStable": true,
+      "exactCopyGate": false
+    },
+    {
+      "case": "spaces",
+      "tagged": true,
+      "expected": "A  B",
+      "original": {
+        "pdf": "spaces-tagged.pdf",
+        "sha256": "4a0aa36ec2ee404eb556884570d54cba06cc139085029b83e8f443f1bcc9a5b5",
+        "texts": {
+          "pdfium": "A B",
+          "mupdfSelectionLf": "A  B ",
+          "mupdfSelectionCrlf": "A  B ",
+          "mupdfPageText": "A  B \n",
+          "pypdf": "A  B "
+        },
+        "exact": {
+          "pdfium": false,
+          "mupdfSelectionLf": false,
+          "mupdfSelectionCrlf": false,
+          "mupdfPageText": false,
+          "pypdf": false
+        },
+        "mupdfLines": [
+          "A  B "
+        ],
+        "mupdfCharacters": [
+          {
+            "origin": [
+              48.02399826049805,
+              58.48999786376953
+            ],
+            "bbox": [
+              48.02399826049805,
+              41.77668762207031,
+              60.06239700317383,
+              62.26203155517578
+            ],
+            "c": "A",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              60.02399826049805,
+              58.48999786376953
+            ],
+            "bbox": [
+              60.02399826049805,
+              41.77668762207031,
+              72.0624008178711,
+              62.26203155517578
+            ],
+            "c": " ",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              72.02400207519531,
+              58.48999786376953
+            ],
+            "bbox": [
+              72.02400207519531,
+              41.77668762207031,
+              84.0624008178711,
+              62.26203155517578
+            ],
+            "c": " ",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              84.02400207519531,
+              58.48999786376953
+            ],
+            "bbox": [
+              84.02400207519531,
+              41.77668762207031,
+              96.0624008178711,
+              62.26203155517578
+            ],
+            "c": "B",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              96.0479965209961,
+              58.48999786376953
+            ],
+            "bbox": [
+              96.0479965209961,
+              41.77668762207031,
+              108.08639526367188,
+              62.26203155517578
+            ],
+            "c": " ",
+            "synthetic": false
+          }
+        ],
+        "pdfiumCharacters": [
+          {
+            "text": "A",
+            "box": [
+              48.18450927734375,
+              59.92195129394531,
+              121.51000213623047,
+              133.12705993652344
+            ],
+            "textObject": 0
+          },
+          {
+            "text": " ",
+            "box": [
+              60.02399826049805,
+              72.06239318847656,
+              121.51000213623047,
+              121.53006744384766
+            ],
+            "textObject": 0
+          },
+          {
+            "text": "B",
+            "box": [
+              84.86668395996094,
+              94.91874694824219,
+              121.51000213623047,
+              133.12705993652344
+            ],
+            "textObject": 0
+          }
+        ],
+        "raster": [
+          480,
+          360,
+          "31efa7031dc1bab019f341b80df128bc4d91c8d93891b33eb158c2c5776ce657"
+        ],
+        "selectionPoints": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            240.0,
+            180.0
+          ]
+        ],
+        "hasStructureTree": true,
+        "contentSha256": "7919792580faf7096494017fbd0250a902f09959ec0ddfe191f8f1e1e20a5c6b",
+        "producer": "Microsoft® Word for Microsoft 365"
+      },
+      "resaved": {
+        "pdf": "spaces-tagged-resaved.pdf",
+        "sha256": "cbda606cb5f57b053d69cd75ddc251d990150aad6cdee9b274a8cf1b58d0f413",
+        "texts": {
+          "pdfium": "A B",
+          "mupdfSelectionLf": "A  B ",
+          "mupdfSelectionCrlf": "A  B ",
+          "mupdfPageText": "A  B \n",
+          "pypdf": "A  B "
+        },
+        "exact": {
+          "pdfium": false,
+          "mupdfSelectionLf": false,
+          "mupdfSelectionCrlf": false,
+          "mupdfPageText": false,
+          "pypdf": false
+        },
+        "mupdfLines": [
+          "A  B "
+        ],
+        "mupdfCharacters": [
+          {
+            "origin": [
+              48.02399826049805,
+              58.48999786376953
+            ],
+            "bbox": [
+              48.02399826049805,
+              41.77668762207031,
+              60.06239700317383,
+              62.26203155517578
+            ],
+            "c": "A",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              60.02399826049805,
+              58.48999786376953
+            ],
+            "bbox": [
+              60.02399826049805,
+              41.77668762207031,
+              72.0624008178711,
+              62.26203155517578
+            ],
+            "c": " ",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              72.02400207519531,
+              58.48999786376953
+            ],
+            "bbox": [
+              72.02400207519531,
+              41.77668762207031,
+              84.0624008178711,
+              62.26203155517578
+            ],
+            "c": " ",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              84.02400207519531,
+              58.48999786376953
+            ],
+            "bbox": [
+              84.02400207519531,
+              41.77668762207031,
+              96.0624008178711,
+              62.26203155517578
+            ],
+            "c": "B",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              96.0479965209961,
+              58.48999786376953
+            ],
+            "bbox": [
+              96.0479965209961,
+              41.77668762207031,
+              108.08639526367188,
+              62.26203155517578
+            ],
+            "c": " ",
+            "synthetic": false
+          }
+        ],
+        "pdfiumCharacters": [
+          {
+            "text": "A",
+            "box": [
+              48.18450927734375,
+              59.92195129394531,
+              121.51000213623047,
+              133.12705993652344
+            ],
+            "textObject": 0
+          },
+          {
+            "text": " ",
+            "box": [
+              60.02399826049805,
+              72.06239318847656,
+              121.51000213623047,
+              121.53006744384766
+            ],
+            "textObject": 0
+          },
+          {
+            "text": "B",
+            "box": [
+              84.86668395996094,
+              94.91874694824219,
+              121.51000213623047,
+              133.12705993652344
+            ],
+            "textObject": 0
+          }
+        ],
+        "raster": [
+          480,
+          360,
+          "31efa7031dc1bab019f341b80df128bc4d91c8d93891b33eb158c2c5776ce657"
+        ],
+        "selectionPoints": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            240.0,
+            180.0
+          ]
+        ],
+        "hasStructureTree": true,
+        "contentSha256": "7919792580faf7096494017fbd0250a902f09959ec0ddfe191f8f1e1e20a5c6b",
+        "producer": "Microsoft® Word for Microsoft 365"
+      },
+      "roundtripStable": true,
+      "exactCopyGate": false
+    },
+    {
+      "case": "spaces",
+      "tagged": false,
+      "expected": "A  B",
+      "original": {
+        "pdf": "spaces-untagged.pdf",
+        "sha256": "146794fec8c36534e7296bd31c091f437c2cc53eb6aa7ca2b994e8ea98711a8a",
+        "texts": {
+          "pdfium": "A B",
+          "mupdfSelectionLf": "A  B ",
+          "mupdfSelectionCrlf": "A  B ",
+          "mupdfPageText": "A  B \n",
+          "pypdf": "A  B "
+        },
+        "exact": {
+          "pdfium": false,
+          "mupdfSelectionLf": false,
+          "mupdfSelectionCrlf": false,
+          "mupdfPageText": false,
+          "pypdf": false
+        },
+        "mupdfLines": [
+          "A  B "
+        ],
+        "mupdfCharacters": [
+          {
+            "origin": [
+              48.02399826049805,
+              58.48999786376953
+            ],
+            "bbox": [
+              48.02399826049805,
+              41.77668762207031,
+              60.06239700317383,
+              62.26203155517578
+            ],
+            "c": "A",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              60.02399826049805,
+              58.48999786376953
+            ],
+            "bbox": [
+              60.02399826049805,
+              41.77668762207031,
+              72.0624008178711,
+              62.26203155517578
+            ],
+            "c": " ",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              72.02400207519531,
+              58.48999786376953
+            ],
+            "bbox": [
+              72.02400207519531,
+              41.77668762207031,
+              84.0624008178711,
+              62.26203155517578
+            ],
+            "c": " ",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              84.02400207519531,
+              58.48999786376953
+            ],
+            "bbox": [
+              84.02400207519531,
+              41.77668762207031,
+              96.0624008178711,
+              62.26203155517578
+            ],
+            "c": "B",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              96.0479965209961,
+              58.48999786376953
+            ],
+            "bbox": [
+              96.0479965209961,
+              41.77668762207031,
+              108.08639526367188,
+              62.26203155517578
+            ],
+            "c": " ",
+            "synthetic": false
+          }
+        ],
+        "pdfiumCharacters": [
+          {
+            "text": "A",
+            "box": [
+              48.18450927734375,
+              59.92195129394531,
+              121.51000213623047,
+              133.12705993652344
+            ],
+            "textObject": 0
+          },
+          {
+            "text": " ",
+            "box": [
+              60.02399826049805,
+              72.06239318847656,
+              121.51000213623047,
+              121.53006744384766
+            ],
+            "textObject": 0
+          },
+          {
+            "text": "B",
+            "box": [
+              84.86668395996094,
+              94.91874694824219,
+              121.51000213623047,
+              133.12705993652344
+            ],
+            "textObject": 0
+          }
+        ],
+        "raster": [
+          480,
+          360,
+          "31efa7031dc1bab019f341b80df128bc4d91c8d93891b33eb158c2c5776ce657"
+        ],
+        "selectionPoints": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            240.0,
+            180.0
+          ]
+        ],
+        "hasStructureTree": false,
+        "contentSha256": "576cc4e15750fb254afa62d9c462d42dc2a2b7dff06c12af8e4ef9b50d59ffab",
+        "producer": "Microsoft® Word for Microsoft 365"
+      },
+      "resaved": {
+        "pdf": "spaces-untagged-resaved.pdf",
+        "sha256": "9b7d553dac807c4aa5306e7a09735f10ecdd1e28f7ef27a050303152515924e2",
+        "texts": {
+          "pdfium": "A B",
+          "mupdfSelectionLf": "A  B ",
+          "mupdfSelectionCrlf": "A  B ",
+          "mupdfPageText": "A  B \n",
+          "pypdf": "A  B "
+        },
+        "exact": {
+          "pdfium": false,
+          "mupdfSelectionLf": false,
+          "mupdfSelectionCrlf": false,
+          "mupdfPageText": false,
+          "pypdf": false
+        },
+        "mupdfLines": [
+          "A  B "
+        ],
+        "mupdfCharacters": [
+          {
+            "origin": [
+              48.02399826049805,
+              58.48999786376953
+            ],
+            "bbox": [
+              48.02399826049805,
+              41.77668762207031,
+              60.06239700317383,
+              62.26203155517578
+            ],
+            "c": "A",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              60.02399826049805,
+              58.48999786376953
+            ],
+            "bbox": [
+              60.02399826049805,
+              41.77668762207031,
+              72.0624008178711,
+              62.26203155517578
+            ],
+            "c": " ",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              72.02400207519531,
+              58.48999786376953
+            ],
+            "bbox": [
+              72.02400207519531,
+              41.77668762207031,
+              84.0624008178711,
+              62.26203155517578
+            ],
+            "c": " ",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              84.02400207519531,
+              58.48999786376953
+            ],
+            "bbox": [
+              84.02400207519531,
+              41.77668762207031,
+              96.0624008178711,
+              62.26203155517578
+            ],
+            "c": "B",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              96.0479965209961,
+              58.48999786376953
+            ],
+            "bbox": [
+              96.0479965209961,
+              41.77668762207031,
+              108.08639526367188,
+              62.26203155517578
+            ],
+            "c": " ",
+            "synthetic": false
+          }
+        ],
+        "pdfiumCharacters": [
+          {
+            "text": "A",
+            "box": [
+              48.18450927734375,
+              59.92195129394531,
+              121.51000213623047,
+              133.12705993652344
+            ],
+            "textObject": 0
+          },
+          {
+            "text": " ",
+            "box": [
+              60.02399826049805,
+              72.06239318847656,
+              121.51000213623047,
+              121.53006744384766
+            ],
+            "textObject": 0
+          },
+          {
+            "text": "B",
+            "box": [
+              84.86668395996094,
+              94.91874694824219,
+              121.51000213623047,
+              133.12705993652344
+            ],
+            "textObject": 0
+          }
+        ],
+        "raster": [
+          480,
+          360,
+          "31efa7031dc1bab019f341b80df128bc4d91c8d93891b33eb158c2c5776ce657"
+        ],
+        "selectionPoints": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            240.0,
+            180.0
+          ]
+        ],
+        "hasStructureTree": false,
+        "contentSha256": "576cc4e15750fb254afa62d9c462d42dc2a2b7dff06c12af8e4ef9b50d59ffab",
+        "producer": "Microsoft® Word for Microsoft 365"
+      },
+      "roundtripStable": true,
+      "exactCopyGate": false
+    },
+    {
+      "case": "soft",
+      "tagged": true,
+      "expected": "A B C D",
+      "original": {
+        "pdf": "soft-tagged.pdf",
+        "sha256": "246404b26fbe22fe45938379f920eef1c9cabd3278edaff9fb5fcbf32a9707f8",
+        "texts": {
+          "pdfium": "A B \r\nC D",
+          "mupdfSelectionLf": "A B \nC D ",
+          "mupdfSelectionCrlf": "A B \r\nC D ",
+          "mupdfPageText": "A B \nC D \n",
+          "pypdf": "A B \nC D "
+        },
+        "exact": {
+          "pdfium": false,
+          "mupdfSelectionLf": false,
+          "mupdfSelectionCrlf": false,
+          "mupdfPageText": false,
+          "pypdf": false
+        },
+        "mupdfLines": [
+          "A B ",
+          "C D "
+        ],
+        "mupdfCharacters": [
+          {
+            "origin": [
+              48.02399826049805,
+              58.48999786376953
+            ],
+            "bbox": [
+              48.02399826049805,
+              41.77668762207031,
+              60.06239700317383,
+              62.26203155517578
+            ],
+            "c": "A",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              60.02399826049805,
+              58.48999786376953
+            ],
+            "bbox": [
+              60.02399826049805,
+              41.77668762207031,
+              72.0624008178711,
+              62.26203155517578
+            ],
+            "c": " ",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              72.02400207519531,
+              58.48999786376953
+            ],
+            "bbox": [
+              72.02400207519531,
+              41.77668762207031,
+              84.0624008178711,
+              62.26203155517578
+            ],
+            "c": "B",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              84.02400207519531,
+              58.48999786376953
+            ],
+            "bbox": [
+              84.02400207519531,
+              41.77668762207031,
+              96.0624008178711,
+              62.26203155517578
+            ],
+            "c": " ",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              48.02399826049805,
+              86.447998046875
+            ],
+            "bbox": [
+              48.02399826049805,
+              69.73468780517578,
+              60.06239700317383,
+              90.22003173828125
+            ],
+            "c": "C",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              60.02399826049805,
+              86.447998046875
+            ],
+            "bbox": [
+              60.02399826049805,
+              69.73468780517578,
+              72.0624008178711,
+              90.22003173828125
+            ],
+            "c": " ",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              72.02400207519531,
+              86.447998046875
+            ],
+            "bbox": [
+              72.02400207519531,
+              69.73468780517578,
+              84.0624008178711,
+              90.22003173828125
+            ],
+            "c": "D",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              84.0479965209961,
+              86.447998046875
+            ],
+            "bbox": [
+              84.0479965209961,
+              69.73468780517578,
+              96.08639526367188,
+              90.22003173828125
+            ],
+            "c": " ",
+            "synthetic": false
+          }
+        ],
+        "pdfiumCharacters": [
+          {
+            "text": "A",
+            "box": [
+              48.18450927734375,
+              59.92195129394531,
+              121.51000213623047,
+              133.12705993652344
+            ],
+            "textObject": 0
+          },
+          {
+            "text": " ",
+            "box": [
+              60.02399826049805,
+              72.06239318847656,
+              121.51000213623047,
+              121.53006744384766
+            ],
+            "textObject": 0
+          },
+          {
+            "text": "B",
+            "box": [
+              72.86668395996094,
+              82.91874694824219,
+              121.51000213623047,
+              133.12705993652344
+            ],
+            "textObject": 0
+          },
+          {
+            "text": " ",
+            "box": [
+              84.02400207519531,
+              96.06239318847656,
+              121.51000213623047,
+              121.53006744384766
+            ],
+            "textObject": 0
+          },
+          {
+            "text": "\r",
+            "box": [
+              96.0624008178711,
+              96.0624008178711,
+              121.51000213623047,
+              121.51000213623047
+            ],
+            "textObject": 1
+          },
+          {
+            "text": "\n",
+            "box": [
+              96.0624008178711,
+              96.0624008178711,
+              121.51000213623047,
+              121.51000213623047
+            ],
+            "textObject": 1
+          },
+          {
+            "text": "C",
+            "box": [
+              49.267967224121094,
+              58.79836654663086,
+              93.25104522705078,
+              105.449951171875
+            ],
+            "textObject": 2
+          },
+          {
+            "text": " ",
+            "box": [
+              60.02399826049805,
+              72.06239318847656,
+              93.552001953125,
+              93.57206726074219
+            ],
+            "textObject": 2
+          },
+          {
+            "text": "D",
+            "box": [
+              73.56892395019531,
+              83.21971130371094,
+              93.552001953125,
+              105.16905975341797
+            ],
+            "textObject": 2
+          }
+        ],
+        "raster": [
+          480,
+          360,
+          "9bcd3314b07fd7f296b17c6bb10167ab62550d244d70b1d239d9c2b60f6f18c7"
+        ],
+        "selectionPoints": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            240.0,
+            180.0
+          ]
+        ],
+        "hasStructureTree": true,
+        "contentSha256": "37c25a39183df04312f4076cea6484190afc1567105cdbf0f1d74ba3bebad452",
+        "producer": "Microsoft® Word for Microsoft 365"
+      },
+      "resaved": {
+        "pdf": "soft-tagged-resaved.pdf",
+        "sha256": "9d019f5e3d64b57227cbb66cffbafa182797d98d12cd6dbb5311645934eed5b5",
+        "texts": {
+          "pdfium": "A B \r\nC D",
+          "mupdfSelectionLf": "A B \nC D ",
+          "mupdfSelectionCrlf": "A B \r\nC D ",
+          "mupdfPageText": "A B \nC D \n",
+          "pypdf": "A B \nC D "
+        },
+        "exact": {
+          "pdfium": false,
+          "mupdfSelectionLf": false,
+          "mupdfSelectionCrlf": false,
+          "mupdfPageText": false,
+          "pypdf": false
+        },
+        "mupdfLines": [
+          "A B ",
+          "C D "
+        ],
+        "mupdfCharacters": [
+          {
+            "origin": [
+              48.02399826049805,
+              58.48999786376953
+            ],
+            "bbox": [
+              48.02399826049805,
+              41.77668762207031,
+              60.06239700317383,
+              62.26203155517578
+            ],
+            "c": "A",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              60.02399826049805,
+              58.48999786376953
+            ],
+            "bbox": [
+              60.02399826049805,
+              41.77668762207031,
+              72.0624008178711,
+              62.26203155517578
+            ],
+            "c": " ",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              72.02400207519531,
+              58.48999786376953
+            ],
+            "bbox": [
+              72.02400207519531,
+              41.77668762207031,
+              84.0624008178711,
+              62.26203155517578
+            ],
+            "c": "B",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              84.02400207519531,
+              58.48999786376953
+            ],
+            "bbox": [
+              84.02400207519531,
+              41.77668762207031,
+              96.0624008178711,
+              62.26203155517578
+            ],
+            "c": " ",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              48.02399826049805,
+              86.447998046875
+            ],
+            "bbox": [
+              48.02399826049805,
+              69.73468780517578,
+              60.06239700317383,
+              90.22003173828125
+            ],
+            "c": "C",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              60.02399826049805,
+              86.447998046875
+            ],
+            "bbox": [
+              60.02399826049805,
+              69.73468780517578,
+              72.0624008178711,
+              90.22003173828125
+            ],
+            "c": " ",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              72.02400207519531,
+              86.447998046875
+            ],
+            "bbox": [
+              72.02400207519531,
+              69.73468780517578,
+              84.0624008178711,
+              90.22003173828125
+            ],
+            "c": "D",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              84.0479965209961,
+              86.447998046875
+            ],
+            "bbox": [
+              84.0479965209961,
+              69.73468780517578,
+              96.08639526367188,
+              90.22003173828125
+            ],
+            "c": " ",
+            "synthetic": false
+          }
+        ],
+        "pdfiumCharacters": [
+          {
+            "text": "A",
+            "box": [
+              48.18450927734375,
+              59.92195129394531,
+              121.51000213623047,
+              133.12705993652344
+            ],
+            "textObject": 0
+          },
+          {
+            "text": " ",
+            "box": [
+              60.02399826049805,
+              72.06239318847656,
+              121.51000213623047,
+              121.53006744384766
+            ],
+            "textObject": 0
+          },
+          {
+            "text": "B",
+            "box": [
+              72.86668395996094,
+              82.91874694824219,
+              121.51000213623047,
+              133.12705993652344
+            ],
+            "textObject": 0
+          },
+          {
+            "text": " ",
+            "box": [
+              84.02400207519531,
+              96.06239318847656,
+              121.51000213623047,
+              121.53006744384766
+            ],
+            "textObject": 0
+          },
+          {
+            "text": "\r",
+            "box": [
+              96.0624008178711,
+              96.0624008178711,
+              121.51000213623047,
+              121.51000213623047
+            ],
+            "textObject": 1
+          },
+          {
+            "text": "\n",
+            "box": [
+              96.0624008178711,
+              96.0624008178711,
+              121.51000213623047,
+              121.51000213623047
+            ],
+            "textObject": 1
+          },
+          {
+            "text": "C",
+            "box": [
+              49.267967224121094,
+              58.79836654663086,
+              93.25104522705078,
+              105.449951171875
+            ],
+            "textObject": 2
+          },
+          {
+            "text": " ",
+            "box": [
+              60.02399826049805,
+              72.06239318847656,
+              93.552001953125,
+              93.57206726074219
+            ],
+            "textObject": 2
+          },
+          {
+            "text": "D",
+            "box": [
+              73.56892395019531,
+              83.21971130371094,
+              93.552001953125,
+              105.16905975341797
+            ],
+            "textObject": 2
+          }
+        ],
+        "raster": [
+          480,
+          360,
+          "9bcd3314b07fd7f296b17c6bb10167ab62550d244d70b1d239d9c2b60f6f18c7"
+        ],
+        "selectionPoints": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            240.0,
+            180.0
+          ]
+        ],
+        "hasStructureTree": true,
+        "contentSha256": "37c25a39183df04312f4076cea6484190afc1567105cdbf0f1d74ba3bebad452",
+        "producer": "Microsoft® Word for Microsoft 365"
+      },
+      "roundtripStable": true,
+      "exactCopyGate": false
+    },
+    {
+      "case": "soft",
+      "tagged": false,
+      "expected": "A B C D",
+      "original": {
+        "pdf": "soft-untagged.pdf",
+        "sha256": "846f4a8b0c57adff6b012b1d2593f74fe44e5932106a036d82f435920855f8a1",
+        "texts": {
+          "pdfium": "A B \r\nC D",
+          "mupdfSelectionLf": "A B \nC D ",
+          "mupdfSelectionCrlf": "A B \r\nC D ",
+          "mupdfPageText": "A B \nC D \n",
+          "pypdf": "A B \nC D "
+        },
+        "exact": {
+          "pdfium": false,
+          "mupdfSelectionLf": false,
+          "mupdfSelectionCrlf": false,
+          "mupdfPageText": false,
+          "pypdf": false
+        },
+        "mupdfLines": [
+          "A B ",
+          "C D "
+        ],
+        "mupdfCharacters": [
+          {
+            "origin": [
+              48.02399826049805,
+              58.48999786376953
+            ],
+            "bbox": [
+              48.02399826049805,
+              41.77668762207031,
+              60.06239700317383,
+              62.26203155517578
+            ],
+            "c": "A",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              60.02399826049805,
+              58.48999786376953
+            ],
+            "bbox": [
+              60.02399826049805,
+              41.77668762207031,
+              72.0624008178711,
+              62.26203155517578
+            ],
+            "c": " ",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              72.02400207519531,
+              58.48999786376953
+            ],
+            "bbox": [
+              72.02400207519531,
+              41.77668762207031,
+              84.0624008178711,
+              62.26203155517578
+            ],
+            "c": "B",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              84.02400207519531,
+              58.48999786376953
+            ],
+            "bbox": [
+              84.02400207519531,
+              41.77668762207031,
+              96.0624008178711,
+              62.26203155517578
+            ],
+            "c": " ",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              48.02399826049805,
+              86.447998046875
+            ],
+            "bbox": [
+              48.02399826049805,
+              69.73468780517578,
+              60.06239700317383,
+              90.22003173828125
+            ],
+            "c": "C",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              60.02399826049805,
+              86.447998046875
+            ],
+            "bbox": [
+              60.02399826049805,
+              69.73468780517578,
+              72.0624008178711,
+              90.22003173828125
+            ],
+            "c": " ",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              72.02400207519531,
+              86.447998046875
+            ],
+            "bbox": [
+              72.02400207519531,
+              69.73468780517578,
+              84.0624008178711,
+              90.22003173828125
+            ],
+            "c": "D",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              84.0479965209961,
+              86.447998046875
+            ],
+            "bbox": [
+              84.0479965209961,
+              69.73468780517578,
+              96.08639526367188,
+              90.22003173828125
+            ],
+            "c": " ",
+            "synthetic": false
+          }
+        ],
+        "pdfiumCharacters": [
+          {
+            "text": "A",
+            "box": [
+              48.18450927734375,
+              59.92195129394531,
+              121.51000213623047,
+              133.12705993652344
+            ],
+            "textObject": 0
+          },
+          {
+            "text": " ",
+            "box": [
+              60.02399826049805,
+              72.06239318847656,
+              121.51000213623047,
+              121.53006744384766
+            ],
+            "textObject": 0
+          },
+          {
+            "text": "B",
+            "box": [
+              72.86668395996094,
+              82.91874694824219,
+              121.51000213623047,
+              133.12705993652344
+            ],
+            "textObject": 0
+          },
+          {
+            "text": " ",
+            "box": [
+              84.02400207519531,
+              96.06239318847656,
+              121.51000213623047,
+              121.53006744384766
+            ],
+            "textObject": 0
+          },
+          {
+            "text": "\r",
+            "box": [
+              96.0624008178711,
+              96.0624008178711,
+              121.51000213623047,
+              121.51000213623047
+            ],
+            "textObject": 1
+          },
+          {
+            "text": "\n",
+            "box": [
+              96.0624008178711,
+              96.0624008178711,
+              121.51000213623047,
+              121.51000213623047
+            ],
+            "textObject": 1
+          },
+          {
+            "text": "C",
+            "box": [
+              49.267967224121094,
+              58.79836654663086,
+              93.25104522705078,
+              105.449951171875
+            ],
+            "textObject": 2
+          },
+          {
+            "text": " ",
+            "box": [
+              60.02399826049805,
+              72.06239318847656,
+              93.552001953125,
+              93.57206726074219
+            ],
+            "textObject": 2
+          },
+          {
+            "text": "D",
+            "box": [
+              73.56892395019531,
+              83.21971130371094,
+              93.552001953125,
+              105.16905975341797
+            ],
+            "textObject": 2
+          }
+        ],
+        "raster": [
+          480,
+          360,
+          "9bcd3314b07fd7f296b17c6bb10167ab62550d244d70b1d239d9c2b60f6f18c7"
+        ],
+        "selectionPoints": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            240.0,
+            180.0
+          ]
+        ],
+        "hasStructureTree": false,
+        "contentSha256": "c6a14b13fed3ef8587a33af6eed1b913d6661f39b2ff6d6bce7ffe1444a2c0a6",
+        "producer": "Microsoft® Word for Microsoft 365"
+      },
+      "resaved": {
+        "pdf": "soft-untagged-resaved.pdf",
+        "sha256": "29ea996819ecac074327f1c6a621f545e00f37a1978deaee5850108a84b71f4f",
+        "texts": {
+          "pdfium": "A B \r\nC D",
+          "mupdfSelectionLf": "A B \nC D ",
+          "mupdfSelectionCrlf": "A B \r\nC D ",
+          "mupdfPageText": "A B \nC D \n",
+          "pypdf": "A B \nC D "
+        },
+        "exact": {
+          "pdfium": false,
+          "mupdfSelectionLf": false,
+          "mupdfSelectionCrlf": false,
+          "mupdfPageText": false,
+          "pypdf": false
+        },
+        "mupdfLines": [
+          "A B ",
+          "C D "
+        ],
+        "mupdfCharacters": [
+          {
+            "origin": [
+              48.02399826049805,
+              58.48999786376953
+            ],
+            "bbox": [
+              48.02399826049805,
+              41.77668762207031,
+              60.06239700317383,
+              62.26203155517578
+            ],
+            "c": "A",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              60.02399826049805,
+              58.48999786376953
+            ],
+            "bbox": [
+              60.02399826049805,
+              41.77668762207031,
+              72.0624008178711,
+              62.26203155517578
+            ],
+            "c": " ",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              72.02400207519531,
+              58.48999786376953
+            ],
+            "bbox": [
+              72.02400207519531,
+              41.77668762207031,
+              84.0624008178711,
+              62.26203155517578
+            ],
+            "c": "B",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              84.02400207519531,
+              58.48999786376953
+            ],
+            "bbox": [
+              84.02400207519531,
+              41.77668762207031,
+              96.0624008178711,
+              62.26203155517578
+            ],
+            "c": " ",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              48.02399826049805,
+              86.447998046875
+            ],
+            "bbox": [
+              48.02399826049805,
+              69.73468780517578,
+              60.06239700317383,
+              90.22003173828125
+            ],
+            "c": "C",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              60.02399826049805,
+              86.447998046875
+            ],
+            "bbox": [
+              60.02399826049805,
+              69.73468780517578,
+              72.0624008178711,
+              90.22003173828125
+            ],
+            "c": " ",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              72.02400207519531,
+              86.447998046875
+            ],
+            "bbox": [
+              72.02400207519531,
+              69.73468780517578,
+              84.0624008178711,
+              90.22003173828125
+            ],
+            "c": "D",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              84.0479965209961,
+              86.447998046875
+            ],
+            "bbox": [
+              84.0479965209961,
+              69.73468780517578,
+              96.08639526367188,
+              90.22003173828125
+            ],
+            "c": " ",
+            "synthetic": false
+          }
+        ],
+        "pdfiumCharacters": [
+          {
+            "text": "A",
+            "box": [
+              48.18450927734375,
+              59.92195129394531,
+              121.51000213623047,
+              133.12705993652344
+            ],
+            "textObject": 0
+          },
+          {
+            "text": " ",
+            "box": [
+              60.02399826049805,
+              72.06239318847656,
+              121.51000213623047,
+              121.53006744384766
+            ],
+            "textObject": 0
+          },
+          {
+            "text": "B",
+            "box": [
+              72.86668395996094,
+              82.91874694824219,
+              121.51000213623047,
+              133.12705993652344
+            ],
+            "textObject": 0
+          },
+          {
+            "text": " ",
+            "box": [
+              84.02400207519531,
+              96.06239318847656,
+              121.51000213623047,
+              121.53006744384766
+            ],
+            "textObject": 0
+          },
+          {
+            "text": "\r",
+            "box": [
+              96.0624008178711,
+              96.0624008178711,
+              121.51000213623047,
+              121.51000213623047
+            ],
+            "textObject": 1
+          },
+          {
+            "text": "\n",
+            "box": [
+              96.0624008178711,
+              96.0624008178711,
+              121.51000213623047,
+              121.51000213623047
+            ],
+            "textObject": 1
+          },
+          {
+            "text": "C",
+            "box": [
+              49.267967224121094,
+              58.79836654663086,
+              93.25104522705078,
+              105.449951171875
+            ],
+            "textObject": 2
+          },
+          {
+            "text": " ",
+            "box": [
+              60.02399826049805,
+              72.06239318847656,
+              93.552001953125,
+              93.57206726074219
+            ],
+            "textObject": 2
+          },
+          {
+            "text": "D",
+            "box": [
+              73.56892395019531,
+              83.21971130371094,
+              93.552001953125,
+              105.16905975341797
+            ],
+            "textObject": 2
+          }
+        ],
+        "raster": [
+          480,
+          360,
+          "9bcd3314b07fd7f296b17c6bb10167ab62550d244d70b1d239d9c2b60f6f18c7"
+        ],
+        "selectionPoints": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            240.0,
+            180.0
+          ]
+        ],
+        "hasStructureTree": false,
+        "contentSha256": "c6a14b13fed3ef8587a33af6eed1b913d6661f39b2ff6d6bce7ffe1444a2c0a6",
+        "producer": "Microsoft® Word for Microsoft 365"
+      },
+      "roundtripStable": true,
+      "exactCopyGate": false
+    },
+    {
+      "case": "soft-spaces",
+      "tagged": true,
+      "expected": "A  B C D",
+      "original": {
+        "pdf": "soft-spaces-tagged.pdf",
+        "sha256": "dbb3ca98724aa3602e90c152e3c5536bc15ace4567529e0c6c01dd013a750ace",
+        "texts": {
+          "pdfium": "A B \r\nC D",
+          "mupdfSelectionLf": "A  B \nC D ",
+          "mupdfSelectionCrlf": "A  B \r\nC D ",
+          "mupdfPageText": "A  B \nC D \n",
+          "pypdf": "A  B \nC D "
+        },
+        "exact": {
+          "pdfium": false,
+          "mupdfSelectionLf": false,
+          "mupdfSelectionCrlf": false,
+          "mupdfPageText": false,
+          "pypdf": false
+        },
+        "mupdfLines": [
+          "A  B ",
+          "C D "
+        ],
+        "mupdfCharacters": [
+          {
+            "origin": [
+              48.02399826049805,
+              58.48999786376953
+            ],
+            "bbox": [
+              48.02399826049805,
+              41.77668762207031,
+              60.06239700317383,
+              62.26203155517578
+            ],
+            "c": "A",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              60.02399826049805,
+              58.48999786376953
+            ],
+            "bbox": [
+              60.02399826049805,
+              41.77668762207031,
+              72.0624008178711,
+              62.26203155517578
+            ],
+            "c": " ",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              72.02400207519531,
+              58.48999786376953
+            ],
+            "bbox": [
+              72.02400207519531,
+              41.77668762207031,
+              84.0624008178711,
+              62.26203155517578
+            ],
+            "c": " ",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              84.02400207519531,
+              58.48999786376953
+            ],
+            "bbox": [
+              84.02400207519531,
+              41.77668762207031,
+              96.0624008178711,
+              62.26203155517578
+            ],
+            "c": "B",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              96.02400207519531,
+              58.48999786376953
+            ],
+            "bbox": [
+              96.02400207519531,
+              41.77668762207031,
+              108.0624008178711,
+              62.26203155517578
+            ],
+            "c": " ",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              48.02399826049805,
+              86.447998046875
+            ],
+            "bbox": [
+              48.02399826049805,
+              69.73468780517578,
+              60.06239700317383,
+              90.22003173828125
+            ],
+            "c": "C",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              60.02399826049805,
+              86.447998046875
+            ],
+            "bbox": [
+              60.02399826049805,
+              69.73468780517578,
+              72.0624008178711,
+              90.22003173828125
+            ],
+            "c": " ",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              72.02400207519531,
+              86.447998046875
+            ],
+            "bbox": [
+              72.02400207519531,
+              69.73468780517578,
+              84.0624008178711,
+              90.22003173828125
+            ],
+            "c": "D",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              84.0479965209961,
+              86.447998046875
+            ],
+            "bbox": [
+              84.0479965209961,
+              69.73468780517578,
+              96.08639526367188,
+              90.22003173828125
+            ],
+            "c": " ",
+            "synthetic": false
+          }
+        ],
+        "pdfiumCharacters": [
+          {
+            "text": "A",
+            "box": [
+              48.18450927734375,
+              59.92195129394531,
+              121.51000213623047,
+              133.12705993652344
+            ],
+            "textObject": 0
+          },
+          {
+            "text": " ",
+            "box": [
+              60.02399826049805,
+              72.06239318847656,
+              121.51000213623047,
+              121.53006744384766
+            ],
+            "textObject": 0
+          },
+          {
+            "text": "B",
+            "box": [
+              84.86668395996094,
+              94.91874694824219,
+              121.51000213623047,
+              133.12705993652344
+            ],
+            "textObject": 0
+          },
+          {
+            "text": " ",
+            "box": [
+              96.02400207519531,
+              108.06239318847656,
+              121.51000213623047,
+              121.53006744384766
+            ],
+            "textObject": 0
+          },
+          {
+            "text": "\r",
+            "box": [
+              108.0624008178711,
+              108.0624008178711,
+              121.51000213623047,
+              121.51000213623047
+            ],
+            "textObject": 1
+          },
+          {
+            "text": "\n",
+            "box": [
+              108.0624008178711,
+              108.0624008178711,
+              121.51000213623047,
+              121.51000213623047
+            ],
+            "textObject": 1
+          },
+          {
+            "text": "C",
+            "box": [
+              49.267967224121094,
+              58.79836654663086,
+              93.25104522705078,
+              105.449951171875
+            ],
+            "textObject": 2
+          },
+          {
+            "text": " ",
+            "box": [
+              60.02399826049805,
+              72.06239318847656,
+              93.552001953125,
+              93.57206726074219
+            ],
+            "textObject": 2
+          },
+          {
+            "text": "D",
+            "box": [
+              73.56892395019531,
+              83.21971130371094,
+              93.552001953125,
+              105.16905975341797
+            ],
+            "textObject": 2
+          }
+        ],
+        "raster": [
+          480,
+          360,
+          "30cab53ef014a460e142e20b0448b9df7796d2d22ff1b9b82c0b3f67f2a2743f"
+        ],
+        "selectionPoints": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            240.0,
+            180.0
+          ]
+        ],
+        "hasStructureTree": true,
+        "contentSha256": "b28c53d308d34e83d8bb3d7fdcb73d61800eacc8b958e204a861ddb5afae6350",
+        "producer": "Microsoft® Word for Microsoft 365"
+      },
+      "resaved": {
+        "pdf": "soft-spaces-tagged-resaved.pdf",
+        "sha256": "2a4deacc555ee3e4115be1a6ce2c9306010290252447ffa36c54e27e6c665ec9",
+        "texts": {
+          "pdfium": "A B \r\nC D",
+          "mupdfSelectionLf": "A  B \nC D ",
+          "mupdfSelectionCrlf": "A  B \r\nC D ",
+          "mupdfPageText": "A  B \nC D \n",
+          "pypdf": "A  B \nC D "
+        },
+        "exact": {
+          "pdfium": false,
+          "mupdfSelectionLf": false,
+          "mupdfSelectionCrlf": false,
+          "mupdfPageText": false,
+          "pypdf": false
+        },
+        "mupdfLines": [
+          "A  B ",
+          "C D "
+        ],
+        "mupdfCharacters": [
+          {
+            "origin": [
+              48.02399826049805,
+              58.48999786376953
+            ],
+            "bbox": [
+              48.02399826049805,
+              41.77668762207031,
+              60.06239700317383,
+              62.26203155517578
+            ],
+            "c": "A",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              60.02399826049805,
+              58.48999786376953
+            ],
+            "bbox": [
+              60.02399826049805,
+              41.77668762207031,
+              72.0624008178711,
+              62.26203155517578
+            ],
+            "c": " ",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              72.02400207519531,
+              58.48999786376953
+            ],
+            "bbox": [
+              72.02400207519531,
+              41.77668762207031,
+              84.0624008178711,
+              62.26203155517578
+            ],
+            "c": " ",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              84.02400207519531,
+              58.48999786376953
+            ],
+            "bbox": [
+              84.02400207519531,
+              41.77668762207031,
+              96.0624008178711,
+              62.26203155517578
+            ],
+            "c": "B",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              96.02400207519531,
+              58.48999786376953
+            ],
+            "bbox": [
+              96.02400207519531,
+              41.77668762207031,
+              108.0624008178711,
+              62.26203155517578
+            ],
+            "c": " ",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              48.02399826049805,
+              86.447998046875
+            ],
+            "bbox": [
+              48.02399826049805,
+              69.73468780517578,
+              60.06239700317383,
+              90.22003173828125
+            ],
+            "c": "C",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              60.02399826049805,
+              86.447998046875
+            ],
+            "bbox": [
+              60.02399826049805,
+              69.73468780517578,
+              72.0624008178711,
+              90.22003173828125
+            ],
+            "c": " ",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              72.02400207519531,
+              86.447998046875
+            ],
+            "bbox": [
+              72.02400207519531,
+              69.73468780517578,
+              84.0624008178711,
+              90.22003173828125
+            ],
+            "c": "D",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              84.0479965209961,
+              86.447998046875
+            ],
+            "bbox": [
+              84.0479965209961,
+              69.73468780517578,
+              96.08639526367188,
+              90.22003173828125
+            ],
+            "c": " ",
+            "synthetic": false
+          }
+        ],
+        "pdfiumCharacters": [
+          {
+            "text": "A",
+            "box": [
+              48.18450927734375,
+              59.92195129394531,
+              121.51000213623047,
+              133.12705993652344
+            ],
+            "textObject": 0
+          },
+          {
+            "text": " ",
+            "box": [
+              60.02399826049805,
+              72.06239318847656,
+              121.51000213623047,
+              121.53006744384766
+            ],
+            "textObject": 0
+          },
+          {
+            "text": "B",
+            "box": [
+              84.86668395996094,
+              94.91874694824219,
+              121.51000213623047,
+              133.12705993652344
+            ],
+            "textObject": 0
+          },
+          {
+            "text": " ",
+            "box": [
+              96.02400207519531,
+              108.06239318847656,
+              121.51000213623047,
+              121.53006744384766
+            ],
+            "textObject": 0
+          },
+          {
+            "text": "\r",
+            "box": [
+              108.0624008178711,
+              108.0624008178711,
+              121.51000213623047,
+              121.51000213623047
+            ],
+            "textObject": 1
+          },
+          {
+            "text": "\n",
+            "box": [
+              108.0624008178711,
+              108.0624008178711,
+              121.51000213623047,
+              121.51000213623047
+            ],
+            "textObject": 1
+          },
+          {
+            "text": "C",
+            "box": [
+              49.267967224121094,
+              58.79836654663086,
+              93.25104522705078,
+              105.449951171875
+            ],
+            "textObject": 2
+          },
+          {
+            "text": " ",
+            "box": [
+              60.02399826049805,
+              72.06239318847656,
+              93.552001953125,
+              93.57206726074219
+            ],
+            "textObject": 2
+          },
+          {
+            "text": "D",
+            "box": [
+              73.56892395019531,
+              83.21971130371094,
+              93.552001953125,
+              105.16905975341797
+            ],
+            "textObject": 2
+          }
+        ],
+        "raster": [
+          480,
+          360,
+          "30cab53ef014a460e142e20b0448b9df7796d2d22ff1b9b82c0b3f67f2a2743f"
+        ],
+        "selectionPoints": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            240.0,
+            180.0
+          ]
+        ],
+        "hasStructureTree": true,
+        "contentSha256": "b28c53d308d34e83d8bb3d7fdcb73d61800eacc8b958e204a861ddb5afae6350",
+        "producer": "Microsoft® Word for Microsoft 365"
+      },
+      "roundtripStable": true,
+      "exactCopyGate": false
+    },
+    {
+      "case": "soft-spaces",
+      "tagged": false,
+      "expected": "A  B C D",
+      "original": {
+        "pdf": "soft-spaces-untagged.pdf",
+        "sha256": "fdff087c0ce8811e6fd8538634508b88409ed79851d6b3fcdf6d684209572655",
+        "texts": {
+          "pdfium": "A B \r\nC D",
+          "mupdfSelectionLf": "A  B \nC D ",
+          "mupdfSelectionCrlf": "A  B \r\nC D ",
+          "mupdfPageText": "A  B \nC D \n",
+          "pypdf": "A  B \nC D "
+        },
+        "exact": {
+          "pdfium": false,
+          "mupdfSelectionLf": false,
+          "mupdfSelectionCrlf": false,
+          "mupdfPageText": false,
+          "pypdf": false
+        },
+        "mupdfLines": [
+          "A  B ",
+          "C D "
+        ],
+        "mupdfCharacters": [
+          {
+            "origin": [
+              48.02399826049805,
+              58.48999786376953
+            ],
+            "bbox": [
+              48.02399826049805,
+              41.77668762207031,
+              60.06239700317383,
+              62.26203155517578
+            ],
+            "c": "A",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              60.02399826049805,
+              58.48999786376953
+            ],
+            "bbox": [
+              60.02399826049805,
+              41.77668762207031,
+              72.0624008178711,
+              62.26203155517578
+            ],
+            "c": " ",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              72.02400207519531,
+              58.48999786376953
+            ],
+            "bbox": [
+              72.02400207519531,
+              41.77668762207031,
+              84.0624008178711,
+              62.26203155517578
+            ],
+            "c": " ",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              84.02400207519531,
+              58.48999786376953
+            ],
+            "bbox": [
+              84.02400207519531,
+              41.77668762207031,
+              96.0624008178711,
+              62.26203155517578
+            ],
+            "c": "B",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              96.02400207519531,
+              58.48999786376953
+            ],
+            "bbox": [
+              96.02400207519531,
+              41.77668762207031,
+              108.0624008178711,
+              62.26203155517578
+            ],
+            "c": " ",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              48.02399826049805,
+              86.447998046875
+            ],
+            "bbox": [
+              48.02399826049805,
+              69.73468780517578,
+              60.06239700317383,
+              90.22003173828125
+            ],
+            "c": "C",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              60.02399826049805,
+              86.447998046875
+            ],
+            "bbox": [
+              60.02399826049805,
+              69.73468780517578,
+              72.0624008178711,
+              90.22003173828125
+            ],
+            "c": " ",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              72.02400207519531,
+              86.447998046875
+            ],
+            "bbox": [
+              72.02400207519531,
+              69.73468780517578,
+              84.0624008178711,
+              90.22003173828125
+            ],
+            "c": "D",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              84.0479965209961,
+              86.447998046875
+            ],
+            "bbox": [
+              84.0479965209961,
+              69.73468780517578,
+              96.08639526367188,
+              90.22003173828125
+            ],
+            "c": " ",
+            "synthetic": false
+          }
+        ],
+        "pdfiumCharacters": [
+          {
+            "text": "A",
+            "box": [
+              48.18450927734375,
+              59.92195129394531,
+              121.51000213623047,
+              133.12705993652344
+            ],
+            "textObject": 0
+          },
+          {
+            "text": " ",
+            "box": [
+              60.02399826049805,
+              72.06239318847656,
+              121.51000213623047,
+              121.53006744384766
+            ],
+            "textObject": 0
+          },
+          {
+            "text": "B",
+            "box": [
+              84.86668395996094,
+              94.91874694824219,
+              121.51000213623047,
+              133.12705993652344
+            ],
+            "textObject": 0
+          },
+          {
+            "text": " ",
+            "box": [
+              96.02400207519531,
+              108.06239318847656,
+              121.51000213623047,
+              121.53006744384766
+            ],
+            "textObject": 0
+          },
+          {
+            "text": "\r",
+            "box": [
+              108.0624008178711,
+              108.0624008178711,
+              121.51000213623047,
+              121.51000213623047
+            ],
+            "textObject": 1
+          },
+          {
+            "text": "\n",
+            "box": [
+              108.0624008178711,
+              108.0624008178711,
+              121.51000213623047,
+              121.51000213623047
+            ],
+            "textObject": 1
+          },
+          {
+            "text": "C",
+            "box": [
+              49.267967224121094,
+              58.79836654663086,
+              93.25104522705078,
+              105.449951171875
+            ],
+            "textObject": 2
+          },
+          {
+            "text": " ",
+            "box": [
+              60.02399826049805,
+              72.06239318847656,
+              93.552001953125,
+              93.57206726074219
+            ],
+            "textObject": 2
+          },
+          {
+            "text": "D",
+            "box": [
+              73.56892395019531,
+              83.21971130371094,
+              93.552001953125,
+              105.16905975341797
+            ],
+            "textObject": 2
+          }
+        ],
+        "raster": [
+          480,
+          360,
+          "30cab53ef014a460e142e20b0448b9df7796d2d22ff1b9b82c0b3f67f2a2743f"
+        ],
+        "selectionPoints": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            240.0,
+            180.0
+          ]
+        ],
+        "hasStructureTree": false,
+        "contentSha256": "8b1d9f4f1d9b87da59e4d7cf263f9f9f856b573e6d3b5499f64ad9e13b64131a",
+        "producer": "Microsoft® Word for Microsoft 365"
+      },
+      "resaved": {
+        "pdf": "soft-spaces-untagged-resaved.pdf",
+        "sha256": "7ce9e8911c280d4d3fe4005bbd1bdad9436c6c2ebe8b6c75c66cab9541c844a0",
+        "texts": {
+          "pdfium": "A B \r\nC D",
+          "mupdfSelectionLf": "A  B \nC D ",
+          "mupdfSelectionCrlf": "A  B \r\nC D ",
+          "mupdfPageText": "A  B \nC D \n",
+          "pypdf": "A  B \nC D "
+        },
+        "exact": {
+          "pdfium": false,
+          "mupdfSelectionLf": false,
+          "mupdfSelectionCrlf": false,
+          "mupdfPageText": false,
+          "pypdf": false
+        },
+        "mupdfLines": [
+          "A  B ",
+          "C D "
+        ],
+        "mupdfCharacters": [
+          {
+            "origin": [
+              48.02399826049805,
+              58.48999786376953
+            ],
+            "bbox": [
+              48.02399826049805,
+              41.77668762207031,
+              60.06239700317383,
+              62.26203155517578
+            ],
+            "c": "A",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              60.02399826049805,
+              58.48999786376953
+            ],
+            "bbox": [
+              60.02399826049805,
+              41.77668762207031,
+              72.0624008178711,
+              62.26203155517578
+            ],
+            "c": " ",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              72.02400207519531,
+              58.48999786376953
+            ],
+            "bbox": [
+              72.02400207519531,
+              41.77668762207031,
+              84.0624008178711,
+              62.26203155517578
+            ],
+            "c": " ",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              84.02400207519531,
+              58.48999786376953
+            ],
+            "bbox": [
+              84.02400207519531,
+              41.77668762207031,
+              96.0624008178711,
+              62.26203155517578
+            ],
+            "c": "B",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              96.02400207519531,
+              58.48999786376953
+            ],
+            "bbox": [
+              96.02400207519531,
+              41.77668762207031,
+              108.0624008178711,
+              62.26203155517578
+            ],
+            "c": " ",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              48.02399826049805,
+              86.447998046875
+            ],
+            "bbox": [
+              48.02399826049805,
+              69.73468780517578,
+              60.06239700317383,
+              90.22003173828125
+            ],
+            "c": "C",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              60.02399826049805,
+              86.447998046875
+            ],
+            "bbox": [
+              60.02399826049805,
+              69.73468780517578,
+              72.0624008178711,
+              90.22003173828125
+            ],
+            "c": " ",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              72.02400207519531,
+              86.447998046875
+            ],
+            "bbox": [
+              72.02400207519531,
+              69.73468780517578,
+              84.0624008178711,
+              90.22003173828125
+            ],
+            "c": "D",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              84.0479965209961,
+              86.447998046875
+            ],
+            "bbox": [
+              84.0479965209961,
+              69.73468780517578,
+              96.08639526367188,
+              90.22003173828125
+            ],
+            "c": " ",
+            "synthetic": false
+          }
+        ],
+        "pdfiumCharacters": [
+          {
+            "text": "A",
+            "box": [
+              48.18450927734375,
+              59.92195129394531,
+              121.51000213623047,
+              133.12705993652344
+            ],
+            "textObject": 0
+          },
+          {
+            "text": " ",
+            "box": [
+              60.02399826049805,
+              72.06239318847656,
+              121.51000213623047,
+              121.53006744384766
+            ],
+            "textObject": 0
+          },
+          {
+            "text": "B",
+            "box": [
+              84.86668395996094,
+              94.91874694824219,
+              121.51000213623047,
+              133.12705993652344
+            ],
+            "textObject": 0
+          },
+          {
+            "text": " ",
+            "box": [
+              96.02400207519531,
+              108.06239318847656,
+              121.51000213623047,
+              121.53006744384766
+            ],
+            "textObject": 0
+          },
+          {
+            "text": "\r",
+            "box": [
+              108.0624008178711,
+              108.0624008178711,
+              121.51000213623047,
+              121.51000213623047
+            ],
+            "textObject": 1
+          },
+          {
+            "text": "\n",
+            "box": [
+              108.0624008178711,
+              108.0624008178711,
+              121.51000213623047,
+              121.51000213623047
+            ],
+            "textObject": 1
+          },
+          {
+            "text": "C",
+            "box": [
+              49.267967224121094,
+              58.79836654663086,
+              93.25104522705078,
+              105.449951171875
+            ],
+            "textObject": 2
+          },
+          {
+            "text": " ",
+            "box": [
+              60.02399826049805,
+              72.06239318847656,
+              93.552001953125,
+              93.57206726074219
+            ],
+            "textObject": 2
+          },
+          {
+            "text": "D",
+            "box": [
+              73.56892395019531,
+              83.21971130371094,
+              93.552001953125,
+              105.16905975341797
+            ],
+            "textObject": 2
+          }
+        ],
+        "raster": [
+          480,
+          360,
+          "30cab53ef014a460e142e20b0448b9df7796d2d22ff1b9b82c0b3f67f2a2743f"
+        ],
+        "selectionPoints": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            240.0,
+            180.0
+          ]
+        ],
+        "hasStructureTree": false,
+        "contentSha256": "8b1d9f4f1d9b87da59e4d7cf263f9f9f856b573e6d3b5499f64ad9e13b64131a",
+        "producer": "Microsoft® Word for Microsoft 365"
+      },
+      "roundtripStable": true,
+      "exactCopyGate": false
+    },
+    {
+      "case": "hard",
+      "tagged": true,
+      "expected": "A\nB",
+      "original": {
+        "pdf": "hard-tagged.pdf",
+        "sha256": "9240eca32f21802ecd73010544654763fac39c74edfe30bb850c548692fdb466",
+        "texts": {
+          "pdfium": "AB",
+          "mupdfSelectionLf": "A \nB ",
+          "mupdfSelectionCrlf": "A \r\nB ",
+          "mupdfPageText": "A \nB \n",
+          "pypdf": "A \nB "
+        },
+        "exact": {
+          "pdfium": false,
+          "mupdfSelectionLf": false,
+          "mupdfSelectionCrlf": false,
+          "mupdfPageText": false,
+          "pypdf": false
+        },
+        "mupdfLines": [
+          "A ",
+          "B "
+        ],
+        "mupdfCharacters": [
+          {
+            "origin": [
+              48.02399826049805,
+              58.48999786376953
+            ],
+            "bbox": [
+              48.02399826049805,
+              41.77668762207031,
+              60.06239700317383,
+              62.26203155517578
+            ],
+            "c": "A",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              60.02399826049805,
+              58.48999786376953
+            ],
+            "bbox": [
+              60.02399826049805,
+              41.77668762207031,
+              72.0624008178711,
+              62.26203155517578
+            ],
+            "c": " ",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              48.02399826049805,
+              86.447998046875
+            ],
+            "bbox": [
+              48.02399826049805,
+              69.73468780517578,
+              60.06239700317383,
+              90.22003173828125
+            ],
+            "c": "B",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              60.02399826049805,
+              86.447998046875
+            ],
+            "bbox": [
+              60.02399826049805,
+              69.73468780517578,
+              72.0624008178711,
+              90.22003173828125
+            ],
+            "c": " ",
+            "synthetic": false
+          }
+        ],
+        "pdfiumCharacters": [
+          {
+            "text": "A",
+            "box": [
+              48.18450927734375,
+              59.92195129394531,
+              121.51000213623047,
+              133.12705993652344
+            ],
+            "textObject": 0
+          },
+          {
+            "text": "B",
+            "box": [
+              48.8666877746582,
+              58.91875076293945,
+              93.552001953125,
+              105.16905975341797
+            ],
+            "textObject": 1
+          }
+        ],
+        "raster": [
+          480,
+          360,
+          "b4c6857b5a12dc8dd1574940a00107043228c92632f01b386994dbbce0f66ce9"
+        ],
+        "selectionPoints": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            240.0,
+            180.0
+          ]
+        ],
+        "hasStructureTree": true,
+        "contentSha256": "bdf89bfe48e052555be88de512d33866e4274c564fa75c1c8719d2a5653b1039",
+        "producer": "Microsoft® Word for Microsoft 365"
+      },
+      "resaved": {
+        "pdf": "hard-tagged-resaved.pdf",
+        "sha256": "47ef82bea6f70ff409040f1dbb090ca618858fd467b5fb76e236c327f09bcb24",
+        "texts": {
+          "pdfium": "AB",
+          "mupdfSelectionLf": "A \nB ",
+          "mupdfSelectionCrlf": "A \r\nB ",
+          "mupdfPageText": "A \nB \n",
+          "pypdf": "A \nB "
+        },
+        "exact": {
+          "pdfium": false,
+          "mupdfSelectionLf": false,
+          "mupdfSelectionCrlf": false,
+          "mupdfPageText": false,
+          "pypdf": false
+        },
+        "mupdfLines": [
+          "A ",
+          "B "
+        ],
+        "mupdfCharacters": [
+          {
+            "origin": [
+              48.02399826049805,
+              58.48999786376953
+            ],
+            "bbox": [
+              48.02399826049805,
+              41.77668762207031,
+              60.06239700317383,
+              62.26203155517578
+            ],
+            "c": "A",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              60.02399826049805,
+              58.48999786376953
+            ],
+            "bbox": [
+              60.02399826049805,
+              41.77668762207031,
+              72.0624008178711,
+              62.26203155517578
+            ],
+            "c": " ",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              48.02399826049805,
+              86.447998046875
+            ],
+            "bbox": [
+              48.02399826049805,
+              69.73468780517578,
+              60.06239700317383,
+              90.22003173828125
+            ],
+            "c": "B",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              60.02399826049805,
+              86.447998046875
+            ],
+            "bbox": [
+              60.02399826049805,
+              69.73468780517578,
+              72.0624008178711,
+              90.22003173828125
+            ],
+            "c": " ",
+            "synthetic": false
+          }
+        ],
+        "pdfiumCharacters": [
+          {
+            "text": "A",
+            "box": [
+              48.18450927734375,
+              59.92195129394531,
+              121.51000213623047,
+              133.12705993652344
+            ],
+            "textObject": 0
+          },
+          {
+            "text": "B",
+            "box": [
+              48.8666877746582,
+              58.91875076293945,
+              93.552001953125,
+              105.16905975341797
+            ],
+            "textObject": 1
+          }
+        ],
+        "raster": [
+          480,
+          360,
+          "b4c6857b5a12dc8dd1574940a00107043228c92632f01b386994dbbce0f66ce9"
+        ],
+        "selectionPoints": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            240.0,
+            180.0
+          ]
+        ],
+        "hasStructureTree": true,
+        "contentSha256": "bdf89bfe48e052555be88de512d33866e4274c564fa75c1c8719d2a5653b1039",
+        "producer": "Microsoft® Word for Microsoft 365"
+      },
+      "roundtripStable": true,
+      "exactCopyGate": false
+    },
+    {
+      "case": "hard",
+      "tagged": false,
+      "expected": "A\nB",
+      "original": {
+        "pdf": "hard-untagged.pdf",
+        "sha256": "1abad2f765fd9c9774a4800e8049509d3d0f1b19bb124f4948e1facf40e33cdd",
+        "texts": {
+          "pdfium": "AB",
+          "mupdfSelectionLf": "A \nB ",
+          "mupdfSelectionCrlf": "A \r\nB ",
+          "mupdfPageText": "A \nB \n",
+          "pypdf": "A \nB "
+        },
+        "exact": {
+          "pdfium": false,
+          "mupdfSelectionLf": false,
+          "mupdfSelectionCrlf": false,
+          "mupdfPageText": false,
+          "pypdf": false
+        },
+        "mupdfLines": [
+          "A ",
+          "B "
+        ],
+        "mupdfCharacters": [
+          {
+            "origin": [
+              48.02399826049805,
+              58.48999786376953
+            ],
+            "bbox": [
+              48.02399826049805,
+              41.77668762207031,
+              60.06239700317383,
+              62.26203155517578
+            ],
+            "c": "A",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              60.02399826049805,
+              58.48999786376953
+            ],
+            "bbox": [
+              60.02399826049805,
+              41.77668762207031,
+              72.0624008178711,
+              62.26203155517578
+            ],
+            "c": " ",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              48.02399826049805,
+              86.447998046875
+            ],
+            "bbox": [
+              48.02399826049805,
+              69.73468780517578,
+              60.06239700317383,
+              90.22003173828125
+            ],
+            "c": "B",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              60.02399826049805,
+              86.447998046875
+            ],
+            "bbox": [
+              60.02399826049805,
+              69.73468780517578,
+              72.0624008178711,
+              90.22003173828125
+            ],
+            "c": " ",
+            "synthetic": false
+          }
+        ],
+        "pdfiumCharacters": [
+          {
+            "text": "A",
+            "box": [
+              48.18450927734375,
+              59.92195129394531,
+              121.51000213623047,
+              133.12705993652344
+            ],
+            "textObject": 0
+          },
+          {
+            "text": "B",
+            "box": [
+              48.8666877746582,
+              58.91875076293945,
+              93.552001953125,
+              105.16905975341797
+            ],
+            "textObject": 1
+          }
+        ],
+        "raster": [
+          480,
+          360,
+          "b4c6857b5a12dc8dd1574940a00107043228c92632f01b386994dbbce0f66ce9"
+        ],
+        "selectionPoints": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            240.0,
+            180.0
+          ]
+        ],
+        "hasStructureTree": false,
+        "contentSha256": "2151e0381adbecc57b3835c0fc741028d6c68026ffeb1cfe0b72b9601820f9e1",
+        "producer": "Microsoft® Word for Microsoft 365"
+      },
+      "resaved": {
+        "pdf": "hard-untagged-resaved.pdf",
+        "sha256": "30c26a721657a07c0af5e89af9f02c024ccd9671fd89656fb9a023d802a90f5c",
+        "texts": {
+          "pdfium": "AB",
+          "mupdfSelectionLf": "A \nB ",
+          "mupdfSelectionCrlf": "A \r\nB ",
+          "mupdfPageText": "A \nB \n",
+          "pypdf": "A \nB "
+        },
+        "exact": {
+          "pdfium": false,
+          "mupdfSelectionLf": false,
+          "mupdfSelectionCrlf": false,
+          "mupdfPageText": false,
+          "pypdf": false
+        },
+        "mupdfLines": [
+          "A ",
+          "B "
+        ],
+        "mupdfCharacters": [
+          {
+            "origin": [
+              48.02399826049805,
+              58.48999786376953
+            ],
+            "bbox": [
+              48.02399826049805,
+              41.77668762207031,
+              60.06239700317383,
+              62.26203155517578
+            ],
+            "c": "A",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              60.02399826049805,
+              58.48999786376953
+            ],
+            "bbox": [
+              60.02399826049805,
+              41.77668762207031,
+              72.0624008178711,
+              62.26203155517578
+            ],
+            "c": " ",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              48.02399826049805,
+              86.447998046875
+            ],
+            "bbox": [
+              48.02399826049805,
+              69.73468780517578,
+              60.06239700317383,
+              90.22003173828125
+            ],
+            "c": "B",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              60.02399826049805,
+              86.447998046875
+            ],
+            "bbox": [
+              60.02399826049805,
+              69.73468780517578,
+              72.0624008178711,
+              90.22003173828125
+            ],
+            "c": " ",
+            "synthetic": false
+          }
+        ],
+        "pdfiumCharacters": [
+          {
+            "text": "A",
+            "box": [
+              48.18450927734375,
+              59.92195129394531,
+              121.51000213623047,
+              133.12705993652344
+            ],
+            "textObject": 0
+          },
+          {
+            "text": "B",
+            "box": [
+              48.8666877746582,
+              58.91875076293945,
+              93.552001953125,
+              105.16905975341797
+            ],
+            "textObject": 1
+          }
+        ],
+        "raster": [
+          480,
+          360,
+          "b4c6857b5a12dc8dd1574940a00107043228c92632f01b386994dbbce0f66ce9"
+        ],
+        "selectionPoints": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            240.0,
+            180.0
+          ]
+        ],
+        "hasStructureTree": false,
+        "contentSha256": "2151e0381adbecc57b3835c0fc741028d6c68026ffeb1cfe0b72b9601820f9e1",
+        "producer": "Microsoft® Word for Microsoft 365"
+      },
+      "roundtripStable": true,
+      "exactCopyGate": false
+    },
+    {
+      "case": "hard-equivalent",
+      "tagged": true,
+      "expected": "A B\nC D",
+      "original": {
+        "pdf": "hard-equivalent-tagged.pdf",
+        "sha256": "b6019215ab1a9cea861c49865b9e02a3215157c02c81d35352a916ca80649320",
+        "texts": {
+          "pdfium": "A B\r\nC D",
+          "mupdfSelectionLf": "A B \nC D ",
+          "mupdfSelectionCrlf": "A B \r\nC D ",
+          "mupdfPageText": "A B \nC D \n",
+          "pypdf": "A B \nC D "
+        },
+        "exact": {
+          "pdfium": false,
+          "mupdfSelectionLf": false,
+          "mupdfSelectionCrlf": false,
+          "mupdfPageText": false,
+          "pypdf": false
+        },
+        "mupdfLines": [
+          "A B ",
+          "C D "
+        ],
+        "mupdfCharacters": [
+          {
+            "origin": [
+              48.02399826049805,
+              58.48999786376953
+            ],
+            "bbox": [
+              48.02399826049805,
+              41.77668762207031,
+              60.06239700317383,
+              62.26203155517578
+            ],
+            "c": "A",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              60.02399826049805,
+              58.48999786376953
+            ],
+            "bbox": [
+              60.02399826049805,
+              41.77668762207031,
+              72.0624008178711,
+              62.26203155517578
+            ],
+            "c": " ",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              72.02400207519531,
+              58.48999786376953
+            ],
+            "bbox": [
+              72.02400207519531,
+              41.77668762207031,
+              84.0624008178711,
+              62.26203155517578
+            ],
+            "c": "B",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              84.0479965209961,
+              58.48999786376953
+            ],
+            "bbox": [
+              84.0479965209961,
+              41.77668762207031,
+              96.08639526367188,
+              62.26203155517578
+            ],
+            "c": " ",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              48.02399826049805,
+              86.447998046875
+            ],
+            "bbox": [
+              48.02399826049805,
+              69.73468780517578,
+              60.06239700317383,
+              90.22003173828125
+            ],
+            "c": "C",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              60.02399826049805,
+              86.447998046875
+            ],
+            "bbox": [
+              60.02399826049805,
+              69.73468780517578,
+              72.0624008178711,
+              90.22003173828125
+            ],
+            "c": " ",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              72.02400207519531,
+              86.447998046875
+            ],
+            "bbox": [
+              72.02400207519531,
+              69.73468780517578,
+              84.0624008178711,
+              90.22003173828125
+            ],
+            "c": "D",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              84.0479965209961,
+              86.447998046875
+            ],
+            "bbox": [
+              84.0479965209961,
+              69.73468780517578,
+              96.08639526367188,
+              90.22003173828125
+            ],
+            "c": " ",
+            "synthetic": false
+          }
+        ],
+        "pdfiumCharacters": [
+          {
+            "text": "A",
+            "box": [
+              48.18450927734375,
+              59.92195129394531,
+              121.51000213623047,
+              133.12705993652344
+            ],
+            "textObject": 0
+          },
+          {
+            "text": " ",
+            "box": [
+              60.02399826049805,
+              72.06239318847656,
+              121.51000213623047,
+              121.53006744384766
+            ],
+            "textObject": 0
+          },
+          {
+            "text": "B",
+            "box": [
+              72.86668395996094,
+              82.91874694824219,
+              121.51000213623047,
+              133.12705993652344
+            ],
+            "textObject": 0
+          },
+          {
+            "text": "\r",
+            "box": [
+              84.06239318847656,
+              84.06239318847656,
+              121.51000213623047,
+              121.51000213623047
+            ],
+            "textObject": 1
+          },
+          {
+            "text": "\n",
+            "box": [
+              84.06239318847656,
+              84.06239318847656,
+              121.51000213623047,
+              121.51000213623047
+            ],
+            "textObject": 1
+          },
+          {
+            "text": "C",
+            "box": [
+              49.267967224121094,
+              58.79836654663086,
+              93.25104522705078,
+              105.449951171875
+            ],
+            "textObject": 2
+          },
+          {
+            "text": " ",
+            "box": [
+              60.02399826049805,
+              72.06239318847656,
+              93.552001953125,
+              93.57206726074219
+            ],
+            "textObject": 2
+          },
+          {
+            "text": "D",
+            "box": [
+              73.56892395019531,
+              83.21971130371094,
+              93.552001953125,
+              105.16905975341797
+            ],
+            "textObject": 2
+          }
+        ],
+        "raster": [
+          480,
+          360,
+          "9bcd3314b07fd7f296b17c6bb10167ab62550d244d70b1d239d9c2b60f6f18c7"
+        ],
+        "selectionPoints": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            240.0,
+            180.0
+          ]
+        ],
+        "hasStructureTree": true,
+        "contentSha256": "a49c585d4ed3166ebdb759c84ec3bfb59115b8f307a5d4d6d04c60c996839d76",
+        "producer": "Microsoft® Word for Microsoft 365"
+      },
+      "resaved": {
+        "pdf": "hard-equivalent-tagged-resaved.pdf",
+        "sha256": "5cf599b35e03cb3767b90fe2b99e604b791c54e35cebb8433846886294e540ca",
+        "texts": {
+          "pdfium": "A B\r\nC D",
+          "mupdfSelectionLf": "A B \nC D ",
+          "mupdfSelectionCrlf": "A B \r\nC D ",
+          "mupdfPageText": "A B \nC D \n",
+          "pypdf": "A B \nC D "
+        },
+        "exact": {
+          "pdfium": false,
+          "mupdfSelectionLf": false,
+          "mupdfSelectionCrlf": false,
+          "mupdfPageText": false,
+          "pypdf": false
+        },
+        "mupdfLines": [
+          "A B ",
+          "C D "
+        ],
+        "mupdfCharacters": [
+          {
+            "origin": [
+              48.02399826049805,
+              58.48999786376953
+            ],
+            "bbox": [
+              48.02399826049805,
+              41.77668762207031,
+              60.06239700317383,
+              62.26203155517578
+            ],
+            "c": "A",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              60.02399826049805,
+              58.48999786376953
+            ],
+            "bbox": [
+              60.02399826049805,
+              41.77668762207031,
+              72.0624008178711,
+              62.26203155517578
+            ],
+            "c": " ",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              72.02400207519531,
+              58.48999786376953
+            ],
+            "bbox": [
+              72.02400207519531,
+              41.77668762207031,
+              84.0624008178711,
+              62.26203155517578
+            ],
+            "c": "B",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              84.0479965209961,
+              58.48999786376953
+            ],
+            "bbox": [
+              84.0479965209961,
+              41.77668762207031,
+              96.08639526367188,
+              62.26203155517578
+            ],
+            "c": " ",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              48.02399826049805,
+              86.447998046875
+            ],
+            "bbox": [
+              48.02399826049805,
+              69.73468780517578,
+              60.06239700317383,
+              90.22003173828125
+            ],
+            "c": "C",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              60.02399826049805,
+              86.447998046875
+            ],
+            "bbox": [
+              60.02399826049805,
+              69.73468780517578,
+              72.0624008178711,
+              90.22003173828125
+            ],
+            "c": " ",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              72.02400207519531,
+              86.447998046875
+            ],
+            "bbox": [
+              72.02400207519531,
+              69.73468780517578,
+              84.0624008178711,
+              90.22003173828125
+            ],
+            "c": "D",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              84.0479965209961,
+              86.447998046875
+            ],
+            "bbox": [
+              84.0479965209961,
+              69.73468780517578,
+              96.08639526367188,
+              90.22003173828125
+            ],
+            "c": " ",
+            "synthetic": false
+          }
+        ],
+        "pdfiumCharacters": [
+          {
+            "text": "A",
+            "box": [
+              48.18450927734375,
+              59.92195129394531,
+              121.51000213623047,
+              133.12705993652344
+            ],
+            "textObject": 0
+          },
+          {
+            "text": " ",
+            "box": [
+              60.02399826049805,
+              72.06239318847656,
+              121.51000213623047,
+              121.53006744384766
+            ],
+            "textObject": 0
+          },
+          {
+            "text": "B",
+            "box": [
+              72.86668395996094,
+              82.91874694824219,
+              121.51000213623047,
+              133.12705993652344
+            ],
+            "textObject": 0
+          },
+          {
+            "text": "\r",
+            "box": [
+              84.06239318847656,
+              84.06239318847656,
+              121.51000213623047,
+              121.51000213623047
+            ],
+            "textObject": 1
+          },
+          {
+            "text": "\n",
+            "box": [
+              84.06239318847656,
+              84.06239318847656,
+              121.51000213623047,
+              121.51000213623047
+            ],
+            "textObject": 1
+          },
+          {
+            "text": "C",
+            "box": [
+              49.267967224121094,
+              58.79836654663086,
+              93.25104522705078,
+              105.449951171875
+            ],
+            "textObject": 2
+          },
+          {
+            "text": " ",
+            "box": [
+              60.02399826049805,
+              72.06239318847656,
+              93.552001953125,
+              93.57206726074219
+            ],
+            "textObject": 2
+          },
+          {
+            "text": "D",
+            "box": [
+              73.56892395019531,
+              83.21971130371094,
+              93.552001953125,
+              105.16905975341797
+            ],
+            "textObject": 2
+          }
+        ],
+        "raster": [
+          480,
+          360,
+          "9bcd3314b07fd7f296b17c6bb10167ab62550d244d70b1d239d9c2b60f6f18c7"
+        ],
+        "selectionPoints": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            240.0,
+            180.0
+          ]
+        ],
+        "hasStructureTree": true,
+        "contentSha256": "a49c585d4ed3166ebdb759c84ec3bfb59115b8f307a5d4d6d04c60c996839d76",
+        "producer": "Microsoft® Word for Microsoft 365"
+      },
+      "roundtripStable": true,
+      "exactCopyGate": false
+    },
+    {
+      "case": "hard-equivalent",
+      "tagged": false,
+      "expected": "A B\nC D",
+      "original": {
+        "pdf": "hard-equivalent-untagged.pdf",
+        "sha256": "f2cf6c2c0047351a86f639887f3eebea160b582529bafba05398047ffd227aab",
+        "texts": {
+          "pdfium": "A B\r\nC D",
+          "mupdfSelectionLf": "A B \nC D ",
+          "mupdfSelectionCrlf": "A B \r\nC D ",
+          "mupdfPageText": "A B \nC D \n",
+          "pypdf": "A B \nC D "
+        },
+        "exact": {
+          "pdfium": false,
+          "mupdfSelectionLf": false,
+          "mupdfSelectionCrlf": false,
+          "mupdfPageText": false,
+          "pypdf": false
+        },
+        "mupdfLines": [
+          "A B ",
+          "C D "
+        ],
+        "mupdfCharacters": [
+          {
+            "origin": [
+              48.02399826049805,
+              58.48999786376953
+            ],
+            "bbox": [
+              48.02399826049805,
+              41.77668762207031,
+              60.06239700317383,
+              62.26203155517578
+            ],
+            "c": "A",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              60.02399826049805,
+              58.48999786376953
+            ],
+            "bbox": [
+              60.02399826049805,
+              41.77668762207031,
+              72.0624008178711,
+              62.26203155517578
+            ],
+            "c": " ",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              72.02400207519531,
+              58.48999786376953
+            ],
+            "bbox": [
+              72.02400207519531,
+              41.77668762207031,
+              84.0624008178711,
+              62.26203155517578
+            ],
+            "c": "B",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              84.0479965209961,
+              58.48999786376953
+            ],
+            "bbox": [
+              84.0479965209961,
+              41.77668762207031,
+              96.08639526367188,
+              62.26203155517578
+            ],
+            "c": " ",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              48.02399826049805,
+              86.447998046875
+            ],
+            "bbox": [
+              48.02399826049805,
+              69.73468780517578,
+              60.06239700317383,
+              90.22003173828125
+            ],
+            "c": "C",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              60.02399826049805,
+              86.447998046875
+            ],
+            "bbox": [
+              60.02399826049805,
+              69.73468780517578,
+              72.0624008178711,
+              90.22003173828125
+            ],
+            "c": " ",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              72.02400207519531,
+              86.447998046875
+            ],
+            "bbox": [
+              72.02400207519531,
+              69.73468780517578,
+              84.0624008178711,
+              90.22003173828125
+            ],
+            "c": "D",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              84.0479965209961,
+              86.447998046875
+            ],
+            "bbox": [
+              84.0479965209961,
+              69.73468780517578,
+              96.08639526367188,
+              90.22003173828125
+            ],
+            "c": " ",
+            "synthetic": false
+          }
+        ],
+        "pdfiumCharacters": [
+          {
+            "text": "A",
+            "box": [
+              48.18450927734375,
+              59.92195129394531,
+              121.51000213623047,
+              133.12705993652344
+            ],
+            "textObject": 0
+          },
+          {
+            "text": " ",
+            "box": [
+              60.02399826049805,
+              72.06239318847656,
+              121.51000213623047,
+              121.53006744384766
+            ],
+            "textObject": 0
+          },
+          {
+            "text": "B",
+            "box": [
+              72.86668395996094,
+              82.91874694824219,
+              121.51000213623047,
+              133.12705993652344
+            ],
+            "textObject": 0
+          },
+          {
+            "text": "\r",
+            "box": [
+              84.06239318847656,
+              84.06239318847656,
+              121.51000213623047,
+              121.51000213623047
+            ],
+            "textObject": 1
+          },
+          {
+            "text": "\n",
+            "box": [
+              84.06239318847656,
+              84.06239318847656,
+              121.51000213623047,
+              121.51000213623047
+            ],
+            "textObject": 1
+          },
+          {
+            "text": "C",
+            "box": [
+              49.267967224121094,
+              58.79836654663086,
+              93.25104522705078,
+              105.449951171875
+            ],
+            "textObject": 2
+          },
+          {
+            "text": " ",
+            "box": [
+              60.02399826049805,
+              72.06239318847656,
+              93.552001953125,
+              93.57206726074219
+            ],
+            "textObject": 2
+          },
+          {
+            "text": "D",
+            "box": [
+              73.56892395019531,
+              83.21971130371094,
+              93.552001953125,
+              105.16905975341797
+            ],
+            "textObject": 2
+          }
+        ],
+        "raster": [
+          480,
+          360,
+          "9bcd3314b07fd7f296b17c6bb10167ab62550d244d70b1d239d9c2b60f6f18c7"
+        ],
+        "selectionPoints": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            240.0,
+            180.0
+          ]
+        ],
+        "hasStructureTree": false,
+        "contentSha256": "7eb346de849e4051e07ea8f50884ddd7f3fd779120344bf46c0ea6f347f6b797",
+        "producer": "Microsoft® Word for Microsoft 365"
+      },
+      "resaved": {
+        "pdf": "hard-equivalent-untagged-resaved.pdf",
+        "sha256": "e3510f59f49d1bd83ef5dd9682470ff72569e0ae48c729cbcde0690020b1b5ea",
+        "texts": {
+          "pdfium": "A B\r\nC D",
+          "mupdfSelectionLf": "A B \nC D ",
+          "mupdfSelectionCrlf": "A B \r\nC D ",
+          "mupdfPageText": "A B \nC D \n",
+          "pypdf": "A B \nC D "
+        },
+        "exact": {
+          "pdfium": false,
+          "mupdfSelectionLf": false,
+          "mupdfSelectionCrlf": false,
+          "mupdfPageText": false,
+          "pypdf": false
+        },
+        "mupdfLines": [
+          "A B ",
+          "C D "
+        ],
+        "mupdfCharacters": [
+          {
+            "origin": [
+              48.02399826049805,
+              58.48999786376953
+            ],
+            "bbox": [
+              48.02399826049805,
+              41.77668762207031,
+              60.06239700317383,
+              62.26203155517578
+            ],
+            "c": "A",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              60.02399826049805,
+              58.48999786376953
+            ],
+            "bbox": [
+              60.02399826049805,
+              41.77668762207031,
+              72.0624008178711,
+              62.26203155517578
+            ],
+            "c": " ",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              72.02400207519531,
+              58.48999786376953
+            ],
+            "bbox": [
+              72.02400207519531,
+              41.77668762207031,
+              84.0624008178711,
+              62.26203155517578
+            ],
+            "c": "B",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              84.0479965209961,
+              58.48999786376953
+            ],
+            "bbox": [
+              84.0479965209961,
+              41.77668762207031,
+              96.08639526367188,
+              62.26203155517578
+            ],
+            "c": " ",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              48.02399826049805,
+              86.447998046875
+            ],
+            "bbox": [
+              48.02399826049805,
+              69.73468780517578,
+              60.06239700317383,
+              90.22003173828125
+            ],
+            "c": "C",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              60.02399826049805,
+              86.447998046875
+            ],
+            "bbox": [
+              60.02399826049805,
+              69.73468780517578,
+              72.0624008178711,
+              90.22003173828125
+            ],
+            "c": " ",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              72.02400207519531,
+              86.447998046875
+            ],
+            "bbox": [
+              72.02400207519531,
+              69.73468780517578,
+              84.0624008178711,
+              90.22003173828125
+            ],
+            "c": "D",
+            "synthetic": false
+          },
+          {
+            "origin": [
+              84.0479965209961,
+              86.447998046875
+            ],
+            "bbox": [
+              84.0479965209961,
+              69.73468780517578,
+              96.08639526367188,
+              90.22003173828125
+            ],
+            "c": " ",
+            "synthetic": false
+          }
+        ],
+        "pdfiumCharacters": [
+          {
+            "text": "A",
+            "box": [
+              48.18450927734375,
+              59.92195129394531,
+              121.51000213623047,
+              133.12705993652344
+            ],
+            "textObject": 0
+          },
+          {
+            "text": " ",
+            "box": [
+              60.02399826049805,
+              72.06239318847656,
+              121.51000213623047,
+              121.53006744384766
+            ],
+            "textObject": 0
+          },
+          {
+            "text": "B",
+            "box": [
+              72.86668395996094,
+              82.91874694824219,
+              121.51000213623047,
+              133.12705993652344
+            ],
+            "textObject": 0
+          },
+          {
+            "text": "\r",
+            "box": [
+              84.06239318847656,
+              84.06239318847656,
+              121.51000213623047,
+              121.51000213623047
+            ],
+            "textObject": 1
+          },
+          {
+            "text": "\n",
+            "box": [
+              84.06239318847656,
+              84.06239318847656,
+              121.51000213623047,
+              121.51000213623047
+            ],
+            "textObject": 1
+          },
+          {
+            "text": "C",
+            "box": [
+              49.267967224121094,
+              58.79836654663086,
+              93.25104522705078,
+              105.449951171875
+            ],
+            "textObject": 2
+          },
+          {
+            "text": " ",
+            "box": [
+              60.02399826049805,
+              72.06239318847656,
+              93.552001953125,
+              93.57206726074219
+            ],
+            "textObject": 2
+          },
+          {
+            "text": "D",
+            "box": [
+              73.56892395019531,
+              83.21971130371094,
+              93.552001953125,
+              105.16905975341797
+            ],
+            "textObject": 2
+          }
+        ],
+        "raster": [
+          480,
+          360,
+          "9bcd3314b07fd7f296b17c6bb10167ab62550d244d70b1d239d9c2b60f6f18c7"
+        ],
+        "selectionPoints": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            240.0,
+            180.0
+          ]
+        ],
+        "hasStructureTree": false,
+        "contentSha256": "7eb346de849e4051e07ea8f50884ddd7f3fd779120344bf46c0ea6f347f6b797",
+        "producer": "Microsoft® Word for Microsoft 365"
+      },
+      "roundtripStable": true,
+      "exactCopyGate": false
+    }
+  ],
+  "softVersusHard": [
+    {
+      "tagged": true,
+      "pair": [
+        "soft",
+        "hard-equivalent"
+      ],
+      "sameRaster": true,
+      "sameCopy": false,
+      "sameTextByMethod": {
+        "pdfium": false,
+        "mupdfSelectionLf": true,
+        "mupdfSelectionCrlf": true,
+        "mupdfPageText": true,
+        "pypdf": true
+      },
+      "sameCharacters": false,
+      "sameContentStream": false
+    },
+    {
+      "tagged": false,
+      "pair": [
+        "soft",
+        "hard-equivalent"
+      ],
+      "sameRaster": true,
+      "sameCopy": false,
+      "sameTextByMethod": {
+        "pdfium": false,
+        "mupdfSelectionLf": true,
+        "mupdfSelectionCrlf": true,
+        "mupdfPageText": true,
+        "pypdf": true
+      },
+      "sameCharacters": false,
+      "sameContentStream": false
+    }
+  ],
+  "taggedVersusUntagged": [
+    {
+      "case": "hard",
+      "sameEvidence": true
+    },
+    {
+      "case": "hard-equivalent",
+      "sameEvidence": true
+    },
+    {
+      "case": "single",
+      "sameEvidence": true
+    },
+    {
+      "case": "soft",
+      "sameEvidence": true
+    },
+    {
+      "case": "soft-spaces",
+      "sameEvidence": true
+    },
+    {
+      "case": "spaces",
+      "sameEvidence": true
+    }
+  ]
+}

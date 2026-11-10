@@ -12,16 +12,24 @@ beforeEach(async()=>{
  await ensureCustomFont(id,info);
 });
 afterEach(async()=>{cleanup();await act(async()=>{await Promise.resolve();await flushFontReleases();});retainCustomFonts(new Set());await releaseUnownedFont(id);vi.restoreAllMocks();vi.unstubAllGlobals();});
-it("retains typed replacement after missing glyph rejection and requires an explicit previewed substitute",async()=>{
- const apply=vi.fn(),cancel=vi.fn();const view=render(<ExistingTextDialog run={run} busy={false} error={null} onApply={apply} onCancel={cancel}/>);
+it.each([false,true])("retains typed replacement and requires an explicit font, form=%s",async(form)=>{
+ const selected={...run,...(form?{objectPath:[1,0,0]}:{})};
+ const apply=vi.fn(),cancel=vi.fn();const view=render(<ExistingTextDialog run={selected} busy={false} error={null} onApply={apply} onCancel={cancel}/>);
  fireEvent.change(screen.getByRole("textbox",{name:"Replacement text"}),{target:{value:"New café"}});
- view.rerender(<ExistingTextDialog run={run} busy={false} error="The subset lacks é. Choose a substitute font." onApply={apply} onCancel={cancel}/>);
+ view.rerender(<ExistingTextDialog run={selected} busy={false} error="The subset lacks é. Choose a substitute font." onApply={apply} onCancel={cancel}/>);
  fireEvent.click(screen.getByRole("button",{name:"Choose substitute font…"}));
  fireEvent.click(screen.getByRole("button",{name:"Use previewed substitute"}));
  expect(screen.getByRole("textbox",{name:"Replacement text"})).toHaveValue("New café");
  expect(screen.getByLabelText("Replacement font preview")).toHaveStyle({fontFamily:"FolioFont_"+id});
  expect(apply).not.toHaveBeenCalled();
  fireEvent.click(screen.getByRole("button",{name:"Apply changes"}));expect(apply).toHaveBeenCalledWith("New café",id);
+});
+it("allows a same-text form font change and resetting the font keeps the draft",()=>{
+ const apply=vi.fn();render(<ExistingTextDialog run={{...run,objectPath:[1,0,0]}} busy={false} error={null} onApply={apply} onCancel={vi.fn()}/>);
+ fireEvent.click(screen.getByRole("button",{name:"Choose substitute font…"}));fireEvent.click(screen.getByRole("button",{name:"Use previewed substitute"}));
+ expect(screen.getByRole("button",{name:"Apply changes"})).toBeEnabled();fireEvent.click(screen.getByRole("button",{name:"Apply changes"}));expect(apply).toHaveBeenCalledWith("Original",id);
+ fireEvent.change(screen.getByRole("textbox",{name:"Replacement text"}),{target:{value:"New café"}});fireEvent.click(screen.getByRole("button",{name:"Use original font"}));
+ expect(screen.getByRole("textbox",{name:"Replacement text"})).toHaveValue("New café");expect(screen.queryByLabelText("Replacement font preview")).not.toBeInTheDocument();
 });
 it("does not offer substitution for an unsafe layout",()=>{
  render(<ExistingTextDialog run={{...run,supported:false,canSubstitute:false,reason:"Clipping is unsupported"}} busy={false} error={null} onApply={vi.fn()} onCancel={vi.fn()}/>);

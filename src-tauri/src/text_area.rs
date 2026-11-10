@@ -2,19 +2,14 @@
 //! source and delimiter ranges address the original request in UTF-8 and UTF-16.
 //! ASCII-space-only rows are empty; other whitespace-only rows are refused by
 //! the existing shaper. Trailing ASCII spaces join the hard/end delimiter.
-use crate::{EngineError, EngineResult, FontAsset, ShapedText, TextDirection, TextRange};
+use crate::{
+    EngineError, EngineResult, FontAsset, ShapedText, TextAreaAlignment, TextDirection, TextRange,
+};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use unicode_script::{Script, UnicodeScript};
 use unicode_segmentation::UnicodeSegmentation;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "lowercase")]
-pub enum TextAreaAlignment {
-    Left,
-    Center,
-    Right,
-}
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum TextAreaBreak {

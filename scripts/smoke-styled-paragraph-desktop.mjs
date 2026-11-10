@@ -1,0 +1,36 @@
+// Repository-owned Windows/WebView2 acceptance with actual native PDFs.
+import {chromium,expect} from '@playwright/test';
+import {execFile} from 'node:child_process';import {promisify} from 'node:util';
+import {readFileSync,writeFileSync,existsSync,renameSync} from 'node:fs';
+import {resolve,basename} from 'node:path';import {createHash} from 'node:crypto';
+const root=resolve('artifacts/styled-paragraph-editor-20261024/desktop'),record=JSON.parse(readFileSync(resolve(root,'profile-2/process.json'),'utf8').replace(/^\uFEFF/,''));
+const browser=await chromium.connectOverCDP(`http://127.0.0.1:${record.port}`),page=browser.contexts()[0].pages().find(p=>!p.url().startsWith('devtools:'));page.setDefaultTimeout(30000);
+const checks=[],errors=[],outputs=[];page.on('pageerror',e=>errors.push(e.message));
+const button=name=>page.getByRole('button',{name,exact:true}),field=name=>page.getByRole('spinbutton',{name,exact:true}),editor=()=>page.getByRole('textbox',{name:'Paragraph text',exact:true});
+const sha=p=>createHash('sha256').update(readFileSync(p)).digest('hex');
+async function picker(action,path,title){await promisify(execFile)('pwsh',['-NoProfile','-File',resolve('scripts/set-native-dialog.ps1'),'-AppProcessId',String(record.pid),'-FilePath',path,'-Action',action,...(title?['-DialogTitle',title]:[]),...(action==='Open'?['-NativeFileName']:[])],{windowsHide:true,timeout:60000});}
+async function open(path){await page.getByRole('button',{name:/^(Open|Open a PDF)$/}).click();await picker('Open',path);await expect(page.getByRole('tab',{name:basename(path),exact:true}).last()).toHaveAttribute('aria-selected','true');await expect(page.locator('.document-page image').first()).toBeVisible();}
+async function save(name){const destination=resolve(root,name),native=resolve(root,'Folio edited.pdf');if(existsSync(native)||existsSync(destination))throw Error('Preserve existing output');await button('Save a copy').click();await picker('Save',native);await expect(page.locator('.statusbar')).toContainText('Saved a copy');renameSync(native,destination);return destination;}
+async function paragraph(text){await button('Edit text').click();await button(`Edit text: ${text}`).first().click();await button('Edit paragraph…').click();await expect(editor()).toBeVisible();}
+async function select(start,end=start){await editor().evaluate((el,{start,end})=>{el.focus();const point=offset=>{const w=document.createTreeWalker(el,NodeFilter.SHOW_TEXT);let n;while((n=w.nextNode())){if(offset<=n.textContent.length)return [n,offset];offset-=n.textContent.length;}return [el,el.childNodes.length];};getSelection().setBaseAndExtent(...point(start),...point(end));},{start,end});await page.waitForTimeout(40);}
+async function preview(){await button('Preview paragraph').click();await expect(page.getByAltText('Paragraph PDF preview')).toBeVisible();}
+try{
+ await page.setViewportSize({width:1280,height:900});
+ for(const rotation of [0,90,180,270]){
+  const source=resolve(root,`Mixed-${rotation}.pdf`),sourceHash=sha(source);await open(source);await paragraph('One ');await button('Adjust selection').click();await page.getByRole('checkbox',{name:'two',exact:true}).check();await button('Check selection').click();await expect(editor()).toHaveText('One two');
+  const values=rotation%180?[100,30,120,250]:[30,50,250,100];for(const [i,label] of ['Left (pt)','Top (pt)','Area width (pt)','Area height (pt)'].entries())await field(label).fill(String(values[i]));
+  await select(4);await page.keyboard.type('this ');await expect(editor()).toHaveText('One this two');await page.keyboard.press('Backspace');await expect(editor()).toHaveText('One thistwo');await page.keyboard.press('Control+z');await expect(editor()).toHaveText('One this two');await page.keyboard.press('Control+z');await expect(editor()).toHaveText('One two');await page.keyboard.press('Control+y');await expect(editor()).toHaveText('One this two');
+  await select(4,8);await field('Font size (pt)').fill('14');await page.getByLabel('Text color',{exact:true}).fill('#0055aa');
+  if(rotation===0){await select(4,8);await editor().evaluate(el=>{const data=new DataTransfer();data.setData('text/plain','this');data.setData('text/html','<b>wrong</b>');el.dispatchEvent(new ClipboardEvent('paste',{bubbles:true,cancelable:true,clipboardData:data}));});await expect(editor()).toHaveText('One this two');await select(4,8);}
+  if(rotation===0){
+   await button('Choose substitute font…').click();await button('Import font…').click();await picker('Open',resolve(root,'Substitute.ttf'),'Import a font');await expect(button('Apply font')).toBeEnabled();await button('Apply font').click();await expect(editor()).toHaveText('One this two');
+   await select(4,8);const cdp=await page.context().newCDPSession(page);await cdp.send('Input.imeSetComposition',{text:'e',selectionStart:1,selectionEnd:1});await cdp.send('Input.insertText',{text:'é'});await expect(editor()).toHaveText('One é two');await page.keyboard.press('Control+z');await expect(editor()).toHaveText('One this two');checks.push('WebView2 CDP composition committed and undid one replacement (not OS IME)');
+  }
+  await select(12);await field('Font size (pt)').fill('20');await editor().focus();await page.keyboard.type('!');await expect(editor()).toHaveText('One this two!');
+  if(rotation===0){await field('Area width (pt)').fill('1');await field('Area height (pt)').fill('1');await button('Preview paragraph').click();await expect(page.getByRole('alert')).toBeVisible();await expect(editor()).toHaveText('One this two!');await field('Area width (pt)').fill(String(values[2]));await field('Area height (pt)').fill(String(values[3]));checks.push('rejected native layout retains styled draft; plain clipboard paste preserves range');}
+  await preview();await page.screenshot({path:resolve(root,`preview-${rotation}.png`)});await button('Apply paragraph').click();await expect(page.locator('.document-page .pdf-text-layer').first()).toContainText('this');await button('Undo').click();await expect(page.locator('.document-page .pdf-text-layer').first()).not.toContainText('this');await button('Redo').click();await expect(page.locator('.document-page .pdf-text-layer').first()).toContainText('this');
+  const output=await save(`Styled-${rotation}.pdf`);await open(output);await paragraph('this');await expect(editor()).toHaveText('One this two!');
+  await preview();await button('Apply paragraph').click();const repeated=await save(`Reedited-${rotation}.pdf`);expect(sha(source)).toBe(sourceHash);outputs.push({rotation,source,sourceHash,output,repeated});checks.push(`rotation ${rotation}: mixed manual selection, insertion/deletion, range size/color, caret size, native preview/apply, workspace undo/redo, save/reopen/no-op re-edit`);
+ }
+ expect(errors).toEqual([]);writeFileSync(resolve(root,'results.json'),JSON.stringify({passed:true,checks,outputs,errors,exe:record,limits:['Composition driven by WebView2 CDP; OS keyboard-layout/dead-key IME acceptance remains separate.']},null,2));console.log(JSON.stringify({passed:true,checks}));
+}catch(error){writeFileSync(resolve(root,'failure.json'),JSON.stringify({error:String(error.stack),checks,outputs,errors},null,2));await page.screenshot({path:resolve(root,'failure.png')}).catch(()=>{});throw error;}finally{await browser.close();}

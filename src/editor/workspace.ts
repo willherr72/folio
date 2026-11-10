@@ -1,6 +1,8 @@
 import { documentToPages, type FolioAdapter } from "./adapter";
 import { createHistory, planDigest, uniqueId } from "./model";
 import type { DocumentInfo, EditorDocument, History } from "./types";
+import {importBookmarks} from "./bookmarks";
+import {emptyNavigationHistory,type NavigationHistory,type NavigationRequest} from './navigation-history';
 export interface ScrollPosition { top: number; left: number }
 export interface DocumentSession {
   id: string;
@@ -9,15 +11,17 @@ export interface DocumentSession {
   history: History<EditorDocument>;
   savedDigest: string;
   zoom: number;
-  navigationRequest: {pageId: string; revision: number; rect?:{x:number;y:number;width:number;height:number}} | null;
+  navigationRequest: NavigationRequest | null;
+  navigationHistory: NavigationHistory;
 }
 export interface Workspace { tabs: DocumentSession[]; activeId: string | null }
 export function emptyWorkspace(): Workspace { return { tabs: [], activeId: null }; }
 export function createSession(info: DocumentInfo, adapter: FolioAdapter, zoom: number): DocumentSession {
   const pages = documentToPages(info);
-  const document: EditorDocument = {name: info.name, pages, selectedPageId:pages[0]?.id??null, selectedOverlayId:null};
+  const document: EditorDocument = {name: info.name, pages, selectedPageId:pages[0]?.id??null, selectedOverlayId:null,
+    ...(info.bookmarks?.length?{bookmarks:importBookmarks(info.bookmarks,pages)}:{}),...(info.bookmarkError?{bookmarkError:info.bookmarkError}:{})};
   return { id:uniqueId("document"), adapter, sourceIds:[info.id], history:createHistory(document), savedDigest:planDigest(document), zoom,
-    navigationRequest: pages[0] ? {pageId:pages[0].id,revision:1} : null };
+    navigationHistory:emptyNavigationHistory(),navigationRequest: pages[0] ? {pageId:pages[0].id,revision:1} : null };
 }
 export function addSession(workspace: Workspace, session: DocumentSession): Workspace {
   return {tabs:[...workspace.tabs,session],activeId:session.id};

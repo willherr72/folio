@@ -1,0 +1,9 @@
+# Combined editing and saved-output fidelity
+
+Use the two hash-bound, locally authored PDFs copied into `artifacts/combined-editing-save-20261030/inputs`. Word.pdf has two pages, a nonempty structure tree, mixed paragraph text and a link. Pictures.pdf has two pages, two reusable image placements on its first page, and a 90-degree intrinsic rotation. The inventory is preparation only, not acceptance.
+
+In one normal desktop session, open Word, append Pictures, edit the established first-page paragraph using the earlier verified draft, edit one existing image on the appended page, and rotate/reorder through the organizer. Check Cancel and local/document Undo/Redo without losing another source's edits. Save to a new path, close, reopen, and re-edit the saved paragraph/image without rebuilding the document from flattened pages. Include a narrow-window portion and a second clean tab to detect ownership mistakes.
+
+Bind the precise native edit requests and saved-file hashes. Independently inspect all four output pages: expected full text/order, unchanged raw glyphs outside the paragraph, image geometry and unrelated placements, rotations/page order, original link destination, embedded fonts, and the nonempty tag graph. Compare rendered output against independently constructed expectations outside explicitly authorized edit regions at multiple scales. Reopen behavior must be verified in Folio itself. Keep source hashes unchanged and verify only owned process cleanup.
+
+Do not remove tags, omit the second producer, flatten output, weaken geometry checks, or substitute an easier PDF merely to pass. If combination exposes a product refusal or defect, preserve it, diagnose the cause, and implement the necessary correction with targeted regressions before rebuilding. Structural correctness and pixels are separate checks; a passing visual comparison alone is insufficient. No commercial-parity claim follows from this one integration case.

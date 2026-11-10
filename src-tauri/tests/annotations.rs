@@ -76,16 +76,17 @@ fn imports_standard_annotations_with_crop_and_every_intrinsic_rotation() {
         let overlays = value["pages"][0]["overlays"]
             .as_array()
             .expect("editable imported annotations");
-        assert_eq!(overlays.len(), 2);
+        assert_eq!(overlays.len(), 1);
         let highlight = overlays.iter().find(|o| o["type"] == "highlight").unwrap();
         for (key, expected) in ["x", "y", "width", "height"].into_iter().zip(rect) {
             assert_eq!(highlight["rects"][0][key].as_f64(), Some(expected as f64));
         }
         assert_eq!(highlight["text"], "Highlight note");
         assert_eq!(highlight["color"], "#ffff00");
-        let note = overlays.iter().find(|o| o["type"] == "comment").unwrap();
+        let notes=engine.list_native_comments(&info.id).unwrap();
+        let note=serde_json::to_value(&notes[0]).unwrap();
         assert_eq!(
-            (note["x"].as_f64().unwrap(), note["y"].as_f64().unwrap()),
+            (note["bounds"]["x"].as_f64().unwrap(), note["bounds"]["y"].as_f64().unwrap()),
             (comment[0] as f64, comment[1] as f64)
         );
         assert_eq!(note["text"], "Review this paragraph");
@@ -93,9 +94,11 @@ fn imports_standard_annotations_with_crop_and_every_intrinsic_rotation() {
             .unwrap()
             .into_rgb8();
         assert!(
-            !rendered
-                .pixels()
-                .any(|p| p[0] > 200 && p[1] > 180 && p[2] < 80),
+            !rendered.enumerate_pixels().any(|(x,y,p)| {
+                let scale=rendered.width() as f64/info.pages[0].width as f64;
+                let (x,y)=(x as f64/scale,y as f64/scale);
+                x>rect[0] as f64+1.0 && x<(rect[0]+rect[2]) as f64-1.0 && y>rect[1] as f64+1.0 && y<(rect[1]+rect[3]) as f64-1.0 && p[0]>200 && p[1]>180 && p[2]<80
+            }),
             "imported highlight must be removed from source raster"
         );
         engine.close_document(&info.id).unwrap();
@@ -122,14 +125,14 @@ fn exports_editable_highlights_comments_and_deletion_without_duplicates() {
         .unwrap();
     let reopened = serde_json::to_value(engine.open_document(&output).unwrap()).unwrap();
     let imported = reopened["pages"][0]["overlays"].as_array().unwrap();
-    assert_eq!(imported.len(), 2, "export must replace imported originals");
+    assert_eq!(imported.len(), 1, "export must replace imported highlights");
     let highlight = imported.iter().find(|o| o["type"] == "highlight").unwrap();
     assert_eq!(highlight["rects"].as_array().unwrap().len(), 2);
     assert_eq!(highlight["color"], "#00ff00");
     assert_eq!(highlight["text"], "Preserved note");
-    assert!(imported
-        .iter()
-        .any(|o| o["text"] == "Unicode comment: café 漢字"));
+    let notes=engine.list_native_comments(reopened["id"].as_str().unwrap()).unwrap();
+    assert_eq!(notes.len(),2,"original native comment and newly added note both survive");
+    assert!(notes.iter().any(|o|o.text=="Unicode comment: café 漢字"));
     let deleted = temp.path().join("deleted.pdf");
     engine
         .export_pdf(
@@ -139,6 +142,7 @@ fn exports_editable_highlights_comments_and_deletion_without_duplicates() {
         .unwrap();
     let deleted_info = serde_json::to_value(engine.open_document(&deleted).unwrap()).unwrap();
     assert_eq!(deleted_info["pages"][0]["overlays"], json!([]));
+    assert_eq!(engine.list_native_comments(deleted_info["id"].as_str().unwrap()).unwrap().len(),2,"removing overlay highlights does not delete native notes");
     let bytes = fs::read(&deleted).unwrap();
     let bytes = String::from_utf8_lossy(&bytes);
     assert!(
@@ -180,14 +184,10 @@ fn recovery_keeps_annotation_edits_and_deletions_after_original_disappears() {
     let request: ExportRequest = serde_json::from_value(json!({"pages":[page]})).unwrap();
     engine.export_pdf(request, output.clone()).unwrap();
     let reopened = serde_json::to_value(engine.open_document(output).unwrap()).unwrap();
-    assert_eq!(
-        reopened["pages"][0]["overlays"].as_array().unwrap().len(),
-        1
-    );
-    assert_eq!(
-        reopened["pages"][0]["overlays"][0]["text"],
-        "Changed recovered comment"
-    );
+    assert!(reopened["pages"][0]["overlays"].as_array().unwrap().is_empty());
+    let notes=engine.list_native_comments(reopened["id"].as_str().unwrap()).unwrap();
+    assert_eq!(notes.len(),2);
+    assert!(notes.iter().any(|n|n.text=="Changed recovered comment"));
 }
 
 #[test]
@@ -206,11 +206,14 @@ fn legacy_recovery_imports_source_annotations_once_before_next_checkpoint() {
         .map(|e| e.unwrap().path())
         .find(|p| p.extension().is_some_and(|e| e == "json"))
         .unwrap();
-    let mut value: Value = serde_json::from_slice(&fs::read(&manifest).unwrap()).unwrap();
+    let mut value: Value = serde_json::from_slice(&folio_engine::private_storage::unseal(
+        folio_engine::private_storage::Purpose::Workspace, &fs::read(&manifest).unwrap(), 32 * 1024 * 1024
+    ).unwrap()).unwrap();
     value
         .as_object_mut()
         .unwrap()
         .remove("annotationImportVersion");
+    for snapshot in value["sources"].as_object_mut().unwrap().values_mut(){snapshot.as_object_mut().unwrap().remove("legacyCommentImport");}
     fs::write(manifest, serde_json::to_vec(&value).unwrap()).unwrap();
     engine.close_document(info["id"].as_str().unwrap()).unwrap();
     fs::remove_file(path).unwrap();
@@ -331,7 +334,7 @@ fn exported_annotation_dictionaries_are_indirect_objects_for_other_readers() {
 }
 
 #[test]
-fn imports_declared_colors_with_appearance_details_and_removes_linked_popups() {
+fn preserves_custom_highlight_and_native_comment_appearance_and_popup() {
     use lopdf::{dictionary, Object, Stream};
     let temp = tempfile::tempdir().unwrap();
     let path = temp.path().join("appearances.pdf");
@@ -364,12 +367,9 @@ fn imports_declared_colors_with_appearance_details_and_removes_linked_popups() {
     let engine = engine();
     let info = serde_json::to_value(engine.open_document(&path).unwrap()).unwrap();
     let overlays = info["pages"][0]["overlays"].as_array().unwrap();
+    assert!(overlays.is_empty(), "the highlight's extra black artwork cannot be reconstructed by an editable rectangle");
     assert_eq!(
-        overlays.iter().find(|o| o["type"] == "highlight").unwrap()["color"],
-        "#00ff00"
-    );
-    assert_eq!(
-        overlays.iter().find(|o| o["type"] == "comment").unwrap()["color"],
+        engine.list_native_comments(info["id"].as_str().unwrap()).unwrap()[0].color.as_deref().unwrap(),
         "#ff8000"
     );
     let output = temp.path().join("deleted.pdf");
@@ -383,14 +383,15 @@ fn imports_declared_colors_with_appearance_details_and_removes_linked_popups() {
     let annotations = pdf.get_page_annotations(pdf.get_pages()[&1]).unwrap();
     assert_eq!(
         annotations.len(),
-        1,
-        "a deleted comment must not leave its popup or parent contents behind"
+        4,
+        "empty workspace overlays must preserve the unimported custom highlight, native comment, popup and square"
     );
-    assert_eq!(
-        annotations[0].get(b"Subtype").unwrap().as_name().unwrap(),
-        b"Square"
-    );
-    assert!(!String::from_utf8_lossy(&fs::read(output).unwrap()).contains("Review this paragraph"));
+    for kind in [b"Square".as_slice(),b"Text",b"Popup",b"Highlight"] {assert!(annotations.iter().any(|d|d.get(b"Subtype").unwrap().as_name().unwrap()==kind));}
+    let highlight=annotations.iter().find(|d|d.get(b"Subtype").unwrap().as_name().unwrap()==b"Highlight").unwrap();
+    let ap=pdf.dereference(highlight.get(b"AP").unwrap()).unwrap().1.as_dict().unwrap();
+    let stream=pdf.dereference(ap.get(b"N").unwrap()).unwrap().1.as_stream().unwrap();
+    let content=if stream.dict.has(b"Filter") {stream.decompressed_content().unwrap()} else {stream.content.clone()};
+    assert_eq!(content,b"0 0 0 rg 0 0 1 1 re f 0 1 0 rg 2 2 70 15 re f","custom artwork must remain intact");
 }
 
 #[test]

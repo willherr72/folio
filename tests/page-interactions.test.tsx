@@ -26,6 +26,8 @@ describe("embedded PDF selection", () => {
   it("copies reading order and zero-size whitespace through an actual browser range", async () => {
     const view = render(<PageView {...props()} />);
     const layer = await view.findByLabelText("Page 1 text");
+    // The labeled container mounts before asynchronous text extraction finishes.
+    await waitFor(() => expect(layer.textContent).toBe("A B\r\nC"));
     const range = document.createRange();
     range.selectNodeContents(layer);
     window.getSelection()!.addRange(range);

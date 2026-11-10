@@ -1,0 +1,20 @@
+import {cleanup,fireEvent,render,screen,waitFor} from "@testing-library/react";
+import {afterEach,beforeEach,expect,it,vi} from "vitest";
+import {App} from "../src/App";
+import {nativeAdapter} from "../src/editor/adapter";
+import {imageExportApi} from "../src/editor/page-image-export";
+import {clearRenderCache} from "../src/components/PageView";
+vi.mock("../src/editor/useWorkspaceRecovery",()=>({useWorkspaceRecovery:()=>({ready:true,checkpoint:vi.fn().mockResolvedValue(undefined)})}));
+vi.mock("../src/components/DocumentViewport",()=>({DocumentViewport:(p:any)=><output data-testid="image-page">{JSON.stringify(p.pages[0])}</output>}));
+beforeEach(()=>{localStorage.clear();Object.defineProperty(window,"__TAURI_INTERNALS__",{value:{invoke:vi.fn().mockResolvedValue(0),transformCallback:()=>0},configurable:true});
+ vi.spyOn(nativeAdapter,"openPdf").mockResolvedValue({id:"image-source",name:"Image.pdf",pages:[{width:300,height:400}]});vi.spyOn(nativeAdapter,"renderPage").mockResolvedValue("data:image/png;base64,AA");vi.spyOn(nativeAdapter,"closeDocument").mockResolvedValue();vi.spyOn(nativeAdapter,"exportPdf").mockResolvedValue("unused.pdf");
+ vi.spyOn(imageExportApi,"register").mockResolvedValue("job");vi.spyOn(imageExportApi,"cancel").mockResolvedValue(false);vi.spyOn(imageExportApi,"start").mockResolvedValue({folder:"C:/exports/Folio images-abc",count:1});
+});
+afterEach(()=>{cleanup();clearRenderCache(["image-source"]);vi.restoreAllMocks();delete(window as any).__TAURI_INTERNALS__;});
+it("exports the edited snapshot without saving the PDF or changing undo history",async()=>{
+ render(<App initialDemo={false}/>);fireEvent.click(screen.getByRole("button",{name:"Open a PDF"}));await screen.findByRole("tab",{name:"Image.pdf"});fireEvent.click(screen.getByRole("button",{name:"Rotate"}));
+ fireEvent.click(screen.getByRole("button",{name:"Save options"}));fireEvent.click(screen.getByRole("menuitem",{name:"Export images…"}));
+ fireEvent.click(screen.getByRole("button",{name:"Choose folder and export…"}));await waitFor(()=>expect(screen.queryByRole("dialog")).toBeNull());
+ expect(imageExportApi.start).toHaveBeenCalledOnce();expect(vi.mocked(imageExportApi.start).mock.calls[0][1].pages[0]).toMatchObject({sourceId:"image-source",rotation:90});expect(nativeAdapter.exportPdf).not.toHaveBeenCalled();expect(screen.getByLabelText("Unsaved changes")).toBeTruthy();
+ fireEvent.click(screen.getByRole("button",{name:"Undo"}));expect(JSON.parse(screen.getByTestId("image-page").textContent!).rotation).toBe(0);expect(screen.getByRole("button",{name:"Undo"})).toBeDisabled();
+});

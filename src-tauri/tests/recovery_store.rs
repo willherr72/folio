@@ -1,3 +1,4 @@
+use folio_engine::private_storage::{seal, unseal, Purpose};
 use folio_engine::{EngineError, ExportRequest, PagePlan, PdfEngine, RecoveryStore};
 use serde_json::{json, Value};
 use std::fs;
@@ -49,6 +50,102 @@ fn workspace(source: &str) -> Value {
     }]})
 }
 
+#[test]
+fn recovery_keeps_crop_in_version_four_and_rejects_invalid_replacement() {
+    let temp=tempfile::tempdir().unwrap();let original=temp.path().join("original.pdf");
+    write_pdf(&original,"Crop recovery");let engine=engine();let source=engine.open_document(&original).unwrap();
+    let root=temp.path().join("recovery");let store=RecoveryStore::new(root.clone()).unwrap();
+    let mut saved=workspace(&source.id);let crop=json!({"x":10,"y":20,"width":120,"height":160});
+    saved["tabs"][0]["document"]["pages"][0]["crop"]=crop.clone();
+    store.save(&engine,saved.clone()).unwrap();
+    let checkpoint=fs::read_dir(&root).unwrap().map(|e|e.unwrap().path()).find(|p|p.extension().is_some_and(|e|e=="json")).unwrap();
+    let manifest:Value=serde_json::from_slice(&unseal(Purpose::Workspace,&fs::read(checkpoint).unwrap(),32*1024*1024).unwrap()).unwrap();
+    assert_eq!(manifest["version"],4);
+    saved["tabs"][0]["document"]["pages"][0]["crop"]["width"]=json!(201);
+    assert!(store.save(&engine,saved).is_err());
+    engine.close_document(&source.id).unwrap();
+    let restored=store.load(&engine).unwrap().unwrap();let page=&restored["tabs"][0]["document"]["pages"][0];
+    assert_eq!(page["crop"],crop);
+    let output=temp.path().join("recovered-crop.pdf");let plan:PagePlan=serde_json::from_value(page.clone()).unwrap();
+    engine.export_pdf(ExportRequest{pages:vec![plan],flatten:false},&output).unwrap();
+    let opened=engine.open_document(&output).unwrap();
+    assert_eq!((opened.pages[0].width,opened.pages[0].height),(160.,120.));
+    engine.close_document(&opened.id).unwrap();engine.close_document(page["sourceId"].as_str().unwrap()).unwrap();
+}
+
+#[test]
+fn recovery_payloads_are_account_protected_and_restore_without_plaintext_files() {
+    let temp = tempfile::tempdir().unwrap();
+    let original = temp.path().join("original.pdf");
+    write_pdf(&original, "SECRET42");
+    let engine = engine();
+    let source = engine.open_document(&original).unwrap();
+    let saved = workspace(&source.id);
+    let root = temp.path().join("recovery");
+    let store = RecoveryStore::new(root.clone()).unwrap();
+    store.save(&engine, saved).unwrap();
+    for directory in [&root, &root.join("sources"), &root.join("fonts")] {
+        for entry in fs::read_dir(directory).unwrap() {
+            let path = entry.unwrap().path();
+            if !path.is_file() || path.file_name().unwrap() == "recovery.lock" {
+                continue;
+            }
+            let bytes = fs::read(&path).unwrap();
+            assert!(
+                bytes.starts_with(b"FOLIO-SEALED-"),
+                "{} was not sealed",
+                path.display()
+            );
+            for secret in [b"SECRET42".as_slice(), b"Editable note"] {
+                assert!(!bytes.windows(secret.len()).any(|w| w == secret));
+            }
+        }
+    }
+    fs::remove_file(original).unwrap();
+    engine.close_document(&source.id).unwrap();
+    drop(store);
+    let store = RecoveryStore::new(root.clone()).unwrap();
+    let restored = store.load(&engine).unwrap().unwrap();
+    let id = restored["tabs"][0]["document"]["pages"][0]["sourceId"]
+        .as_str()
+        .unwrap();
+    assert!(engine.extract_text(id, 0).unwrap().contains("SECRET42"));
+    assert_eq!(
+        restored["tabs"][0]["document"]["pages"][0]["overlays"][0]["text"],
+        "Editable note"
+    );
+    for entry in fs::read_dir(root.join("sources")).unwrap() {
+        assert!(fs::read(entry.unwrap().path())
+            .unwrap()
+            .starts_with(b"FOLIO-SEALED-"));
+    }
+    engine.close_document(id).unwrap();
+}
+
+#[test]
+fn generated_blank_source_recovers_without_an_original_disk_file() {
+    let engine = engine();
+    let blank = engine.create_blank_document(200.0, 300.0).unwrap();
+    let temp = tempfile::tempdir().unwrap();
+    let store = RecoveryStore::new(temp.path().join("recovery")).unwrap();
+    store.save(&engine, workspace(&blank.id)).unwrap();
+    engine.close_document(&blank.id).unwrap();
+    let restored = store.load(&engine).unwrap().unwrap();
+    let page = &restored["tabs"][0]["document"]["pages"][0];
+    let id = page["sourceId"].as_str().unwrap();
+    assert_ne!(id, blank.id);
+    assert!(engine.extract_text(id, 0).unwrap().trim().is_empty());
+    assert_eq!(page["overlays"][0]["text"], "Editable note");
+    let output = temp.path().join("restored.pdf");
+    engine
+        .export_pdf(
+            serde_json::from_value(json!({"pages":[page]})).unwrap(),
+            &output,
+        )
+        .unwrap();
+    assert_eq!(engine.open_document(&output).unwrap().pages.len(), 1);
+}
+
 fn manifests(root: &Path) -> Vec<PathBuf> {
     let mut paths: Vec<_> = fs::read_dir(root)
         .unwrap()
@@ -63,6 +160,214 @@ fn manifests(root: &Path) -> Vec<PathBuf> {
         .collect();
     paths.sort();
     paths
+}
+
+#[test]
+fn abandoned_temporary_payloads_are_removed_on_restore_and_discard() {
+    let temp = tempfile::tempdir().unwrap();
+    let root = temp.path().join("recovery");
+    let store = RecoveryStore::new(root.clone()).unwrap();
+    let engine = engine();
+    for operation in ["load", "clear", "interrupted clear"] {
+        let paths: Vec<_> = [&root, &root.join("sources"), &root.join("fonts")]
+            .into_iter()
+            .map(|dir| dir.join(".folio-recovery-Ab12Cd"))
+            .collect();
+        for path in &paths {
+            fs::write(path, b"Legacy private document content").unwrap();
+        }
+        let unrelated = root.join("unrelated.txt");
+        fs::write(&unrelated, "leave alone").unwrap();
+        // A matching directory must never be recursively traversed or removed.
+        let directory = root.join(".folio-recovery-directory");
+        fs::create_dir_all(&directory).unwrap();
+        fs::write(directory.join("private.txt"), "leave alone").unwrap();
+        if operation == "clear" {
+            store.clear().unwrap();
+        } else {
+            if operation == "interrupted clear" {
+                fs::write(root.join("cleared"), "1").unwrap();
+            }
+            assert!(store.load(&engine).unwrap().is_none());
+        }
+        assert!(paths.iter().all(|path| !path.exists()), "{operation}");
+        assert_eq!(fs::read_to_string(unrelated).unwrap(), "leave alone");
+        assert!(directory.join("private.txt").exists());
+    }
+}
+
+#[test]
+fn migration_failure_in_unused_font_or_latest_checkpoint_does_not_block_recovery_or_save() {
+    let temp = tempfile::tempdir().unwrap();
+    let original = temp.path().join("original.pdf");
+    write_pdf(&original, "VALID");
+    let engine = engine();
+    let source = engine.open_document(&original).unwrap();
+    let root = temp.path().join("recovery");
+    let store = RecoveryStore::new(root.clone()).unwrap();
+    store.save(&engine, workspace(&source.id)).unwrap();
+    let orphan = root.join("fonts").join(format!("{}.font", "a".repeat(64)));
+    fs::File::create(&orphan)
+        .unwrap()
+        .set_len(16 * 1024 * 1024 + 1)
+        .unwrap();
+    let corrupt = root.join("checkpoint-00000000000000000002.json");
+    fs::File::create(&corrupt)
+        .unwrap()
+        .set_len(32 * 1024 * 1024 + 1)
+        .unwrap();
+    let restored = store.load(&engine).unwrap().unwrap();
+    assert_eq!(restored["tabs"][0]["document"]["name"], "Original.pdf");
+    assert!(!orphan.exists());
+    assert!(!corrupt.exists());
+    // Repeat with no load first: a new durable save must be possible too.
+    fs::File::create(&orphan)
+        .unwrap()
+        .set_len(16 * 1024 * 1024 + 1)
+        .unwrap();
+    store.save(&engine, restored).unwrap();
+    assert!(!orphan.exists());
+}
+
+#[test]
+fn failed_required_legacy_migration_is_retained_for_retry_or_explicit_discard() {
+    let temp = tempfile::tempdir().unwrap();
+    let root = temp.path().join("recovery");
+    let store = RecoveryStore::new(root.clone()).unwrap();
+    let checkpoint = root.join("checkpoint-00000000000000000001.json");
+    fs::File::create(&checkpoint)
+        .unwrap()
+        .set_len(32 * 1024 * 1024 + 1)
+        .unwrap();
+    assert!(store.load(&engine()).unwrap_err().contains("checkpoint"));
+    assert_eq!(
+        fs::metadata(&checkpoint).unwrap().len(),
+        32 * 1024 * 1024 + 1
+    );
+    store.clear().unwrap();
+    assert!(!checkpoint.exists());
+}
+
+#[test]
+fn migrates_plaintext_and_interrupted_mixed_legacy_recovery() {
+    for mixed in [false, true] {
+        let temp = tempfile::tempdir().unwrap();
+        let original = temp.path().join("original.pdf");
+        write_pdf(&original, "LEGACY42");
+        let before = fs::read(&original).unwrap();
+        let engine = engine();
+        let source = engine.open_document(&original).unwrap();
+        let root = temp.path().join("recovery");
+        let store = RecoveryStore::new(root.clone()).unwrap();
+        store.save(&engine, workspace(&source.id)).unwrap();
+        drop(store);
+        let checkpoint = manifests(&root).pop().unwrap();
+        let source_path = fs::read_dir(root.join("sources"))
+            .unwrap()
+            .next()
+            .unwrap()
+            .unwrap()
+            .path();
+        for (path, purpose) in [
+            (&checkpoint, Purpose::Workspace),
+            (&source_path, Purpose::Source),
+        ] {
+            if mixed && purpose == Purpose::Workspace {
+                continue;
+            }
+            let plain = unseal(purpose, &fs::read(path).unwrap(), 512 * 1024 * 1024).unwrap();
+            fs::write(path, plain).unwrap(); // Synthetic pre-upgrade disk format.
+        }
+        let unchanged_ciphertext = if mixed {
+            Some(fs::read(&checkpoint).unwrap())
+        } else {
+            None
+        };
+        engine.close_document(&source.id).unwrap();
+        let store = RecoveryStore::new(root.clone()).unwrap();
+        let restored = store.load(&engine).unwrap().unwrap();
+        let id = restored["tabs"][0]["document"]["pages"][0]["sourceId"]
+            .as_str()
+            .unwrap();
+        assert!(engine.extract_text(id, 0).unwrap().contains("LEGACY42"));
+        assert!(fs::read(&source_path)
+            .unwrap()
+            .starts_with(b"FOLIO-SEALED-"));
+        assert!(fs::read(&checkpoint).unwrap().starts_with(b"FOLIO-SEALED-"));
+        if let Some(before) = unchanged_ciphertext {
+            assert_eq!(fs::read(checkpoint).unwrap(), before);
+        }
+        assert_eq!(fs::read(original).unwrap(), before);
+        engine.close_document(id).unwrap();
+    }
+}
+
+#[test]
+fn swapped_payload_purpose_and_unknown_envelope_version_do_not_restore() {
+    let temp = tempfile::tempdir().unwrap();
+    let original = temp.path().join("original.pdf");
+    write_pdf(&original, "PRIVATE");
+    let engine = engine();
+    let source = engine.open_document(&original).unwrap();
+    let root = temp.path().join("recovery");
+    let store = RecoveryStore::new(root.clone()).unwrap();
+    store.save(&engine, workspace(&source.id)).unwrap();
+    let path = manifests(&root).pop().unwrap();
+    let protected = fs::read(&path).unwrap();
+    let plain = unseal(Purpose::Workspace, &protected, 32 * 1024 * 1024).unwrap();
+    fs::write(&path, seal(Purpose::Source, &plain).unwrap()).unwrap();
+    assert!(store.load(&engine).is_err());
+    let mut unknown = protected;
+    unknown[14] = b'9';
+    fs::write(&path, &unknown).unwrap();
+    assert!(store.load(&engine).is_err());
+    assert_eq!(
+        fs::read(path).unwrap(),
+        unknown,
+        "unknown formats must not be rewrapped as legacy"
+    );
+}
+
+#[test]
+fn redirected_source_directory_never_changes_external_files() {
+    let temp = tempfile::tempdir().unwrap();
+    let root = temp.path().join("recovery");
+    let store = RecoveryStore::new(root.clone()).unwrap();
+    let original = temp.path().join("original.pdf");
+    write_pdf(&original, "EXTERNAL_PRIVATE");
+    let before = fs::read(&original).unwrap();
+    let engine = engine();
+    let source = engine.open_document(&original).unwrap();
+    let outside = temp.path().join("outside");
+    fs::create_dir(&outside).unwrap();
+    let external_temporary = outside.join(".folio-recovery-Ab12Cd");
+    fs::write(&external_temporary, "External private content").unwrap();
+    fs::remove_dir(root.join("sources")).unwrap(); // Known empty test-owned directory.
+    #[cfg(windows)]
+    {
+        let status = std::process::Command::new("cmd.exe")
+            .args(["/c", "mklink", "/J"])
+            .arg(root.join("sources"))
+            .arg(&outside)
+            .output()
+            .unwrap();
+        assert!(status.status.success(), "test junction creation failed");
+    }
+    #[cfg(unix)]
+    std::os::unix::fs::symlink(&outside, root.join("sources")).unwrap();
+    assert!(store.save(&engine, workspace(&source.id)).is_err());
+    assert!(store.load(&engine).is_err());
+    assert!(store.clear().is_err());
+    assert_eq!(fs::read(original).unwrap(), before);
+    assert_eq!(
+        fs::read_to_string(&external_temporary).unwrap(),
+        "External private content"
+    );
+    assert_eq!(fs::read_dir(outside).unwrap().count(), 1);
+    #[cfg(windows)]
+    fs::remove_dir(root.join("sources")).unwrap(); // Remove junction itself, never its target.
+    #[cfg(unix)]
+    fs::remove_file(root.join("sources")).unwrap();
 }
 
 #[test]
@@ -104,7 +409,15 @@ fn restores_editable_workspace_after_original_is_replaced_and_removed() {
         .map(|e| e.unwrap().path())
         .collect();
     assert_eq!(snapshots.len(), 1);
-    assert_eq!(fs::read(&snapshots[0]).unwrap(), original_bytes);
+    assert_eq!(
+        unseal(
+            Purpose::Source,
+            &fs::read(&snapshots[0]).unwrap(),
+            512 * 1024 * 1024
+        )
+        .unwrap(),
+        original_bytes
+    );
     engine.close_document(restored_source).unwrap();
 }
 
@@ -227,20 +540,29 @@ fn source_corruption_and_manifest_paths_are_rejected() {
     let store = RecoveryStore::new(root.clone()).unwrap();
     store.save(&engine, workspace(&source.id)).unwrap();
     let manifest_path = manifests(&root).pop().unwrap();
-    let mut manifest: Value = serde_json::from_slice(&fs::read(&manifest_path).unwrap()).unwrap();
+    let mut manifest: Value = serde_json::from_slice(
+        &unseal(
+            Purpose::Workspace,
+            &fs::read(&manifest_path).unwrap(),
+            32 * 1024 * 1024,
+        )
+        .unwrap(),
+    )
+    .unwrap();
     let source_path = root
         .join("sources")
         .join(manifest["sources"][&source.id]["file"].as_str().unwrap());
     let mut bytes = fs::read(&source_path).unwrap();
-    let position = bytes
-        .windows(8)
-        .position(|window| window == b"ORIGINAL")
-        .unwrap();
-    bytes[position..position + 8].copy_from_slice(b"TAMPERED");
+    let last = bytes.len() - 1;
+    bytes[last] ^= 0x80;
     fs::write(&source_path, bytes).unwrap();
     assert!(store.load(&engine).unwrap_err().contains("source"));
     manifest["sources"][&source.id]["file"] = json!("../../original.pdf");
-    fs::write(manifest_path, serde_json::to_vec(&manifest).unwrap()).unwrap();
+    fs::write(
+        manifest_path,
+        seal(Purpose::Workspace, &serde_json::to_vec(&manifest).unwrap()).unwrap(),
+    )
+    .unwrap();
     assert!(store.load(&engine).is_err());
     assert!(fs::read_to_string(original).unwrap().contains("ORIGINAL"));
 }
@@ -418,4 +740,13 @@ fn oversized_sparse_source_is_rejected_before_reading_its_contents() {
         "{error}"
     );
     assert_eq!(file.metadata().unwrap().len(), 512 * 1024 * 1024 + 1);
+}
+
+
+#[test]
+fn recovery_retains_document_metadata_drafts_and_rejects_malformed_actions(){
+ let temp=tempfile::tempdir().unwrap();let input=temp.path().join("source.pdf");write_pdf(&input,"Metadata recovery");let engine=engine();let source=engine.open_document(&input).unwrap();let store=RecoveryStore::new(temp.path().join("recovery")).unwrap();let mut state=workspace(&source.id);
+ let metadata=json!({"mode":"update","clearExisting":true,"title":"Public title"});state["tabs"][0]["document"]["metadata"]=metadata.clone();store.save(&engine,state.clone()).unwrap();
+ for invalid in [json!({"mode":"remove","title":"ignored"}),json!({"mode":"update","title":"x".repeat(16385)}),json!({"mode":"update"})]{state["tabs"][0]["document"]["metadata"]=invalid;assert!(store.save(&engine,state.clone()).is_err());}
+ engine.close_document(&source.id).unwrap();let restored=store.load(&engine).unwrap().unwrap();assert_eq!(restored["tabs"][0]["document"]["metadata"],metadata);
 }

@@ -20,6 +20,16 @@
   display: inline-block;
   transform-origin: left top;
 }
+.pdf-text-layer span[hidden] { display: none; }
+/* Keep reading text available without laying out thousands of positioned glyphs
+   in tools that cannot select it. Select/Highlight restore their exact geometry. */
+.pdf-text-layer .pdf-logical-text {
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
 .pdf-text-layer ::selection { color: transparent; background: rgba(83, 135, 203, .35); }
 .page-canvas > g > image, .page-canvas .overlay { user-select: none; }
 .signature-preview { opacity: .5; pointer-events: none; }

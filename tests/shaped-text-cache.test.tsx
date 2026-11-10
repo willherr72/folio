@@ -8,6 +8,19 @@ import { createDemoAdapter } from "../src/editor/adapter";
 import type { TextOverlay } from "../src/editor/types";
 const id="a".repeat(64);
 const box:TextOverlay={type:"text",id:"box",x:10,y:20,text:"fi",fontSize:24,fontId:id,color:"#112233",shaping:{version:1,direction:"auto",ligatures:true}};
+it("prepares each saved area geometry independently and snapshots queued settings",async()=>{
+ vi.spyOn(fontApi,"release").mockResolvedValue();retainCustomFonts(new Set([id]));
+ const prepare=vi.spyOn(shapedTextApi,"prepare").mockImplementation(async overlay=>result(overlay.text));
+ const area={version:1 as const,width:180,height:240,inset:5,lineSpacing:1.2,alignment:"left" as const};
+ const first=acquireShapedText({...box,area});
+ area.width=220;
+ const second=acquireShapedText({...box,area});
+ await Promise.all([first.promise,second.promise]);
+ expect(prepare).toHaveBeenCalledTimes(2);
+ expect(prepare.mock.calls[0][0].area?.width).toBe(180);
+ expect(prepare.mock.calls[1][0].area?.width).toBe(220);
+ first.release();second.release();
+});
 function result(text="fi"):PreparedTextOverlay {return {preview:{version:1,fontId:id,text,width:300,height:160,rotation:0,color:[0.1,0.2,0.3],outlines:[],glyphs:[]},origin:[48,48],bounds:{x:0,y:3,width:16,height:21},characters:Array.from(text,text=>({text,x:0,y:3,width:16,height:21}))};}
 afterEach(async()=>{cleanup();clearShapedTextCache();retainCustomFonts(new Set());await flushFontReleases();vi.restoreAllMocks();});
 it("shares exact native work across duplicate boxes and ignores placement in its key",async()=>{

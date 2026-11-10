@@ -1,0 +1,7 @@
+# Image action keyboard focus
+
+The native `mode-probe-1` in `artifacts/image-keyboard-entry-20261030` reproduces focus moving from Image action to Move crop window after ArrowDown selects Crop. A second ArrowDown therefore cannot select Remove. Initial image entry and the organizer's initial/range selection and Escape return work.
+
+Keep intentional focus on the image body when an editing session starts. Own that focus once in a stable parent of the position and crop controls, keyed by session identity. Mode changes and preview updates within that session must preserve the user's current menu or precision-field focus. Children retain pointer focus and keyboard manipulation but no longer independently autofocus when mounted. Do not add timers, global focus trapping, or change image geometry/publication.
+
+Verify through real PageView tests (initial position/crop entry, both mode transitions, new session, user focus during updates), existing gesture/dialog tests, the full frontend suite and build, then native keyboard acceptance at normal and narrow window sizes. Check sequential menu arrows, canvas movement/cropping, Cancel/Apply and undo/redo, plus organizer draft operations. Bind a fresh debug candidate to the unchanged native sources/renderer and the prior full native gate. Preserve historical failures and original PDFs. This is a bounded usability correction, not release or parity acceptance.

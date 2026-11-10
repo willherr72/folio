@@ -11,6 +11,7 @@ import "./font-picker.css";
 interface FontPickerProps {
   text: string;
   shaping?: TextOverlay["shaping"];
+  area?: TextOverlay["area"];
   fontSize?: number;
   title?: string;
   description?: string;
@@ -29,7 +30,7 @@ function styleName(info: FontInfo) {
   return `${weight}${info.italic ? " · Italic" : ""}`;
 }
 
-export function FontPicker({ text, shaping, fontSize = 24, title = "Choose a font", description = "Preview an installed font or import your own. The selected font is included when you save your PDF.", currentFontId, onChoose, onClose }: FontPickerProps) {
+export function FontPicker({ text, shaping, area, fontSize = 24, title = "Choose a font", description = "Preview an installed font or import your own. The selected font is included when you save your PDF.", currentFontId, onChoose, onClose }: FontPickerProps) {
   const [fonts, setFonts] = useState<InstalledFont[] | null>(null);
   const [query, setQuery] = useState("");
   const [busy, setBusy] = useState(false);
@@ -47,6 +48,8 @@ export function FontPicker({ text, shaping, fontSize = 24, title = "Choose a fon
   latestText.current = text;
   const latestShaping = useRef(shaping);
   latestShaping.current = shaping;
+  const latestArea = useRef(area);
+  latestArea.current = area;
   const labelId = useId();
 
   const discard = () => {
@@ -85,7 +88,7 @@ export function FontPicker({ text, shaping, fontSize = 24, title = "Choose a fon
             owned = { info, releaseLease: holdCustomFont(info.id) };
             if (!isCurrent()) return;
             loadingFont.current = owned;
-            const problem = customTextError(info, latestText.current, !!latestShaping.current);
+            const problem = customTextError(info, latestArea.current ? latestText.current.replace(/\r\n/g, "\n") : latestText.current, !!latestShaping.current);
             if (problem) throw new Error(problem);
             await ensureCustomFont(info.id, info);
             if (!isCurrent()) return;
@@ -137,10 +140,10 @@ export function FontPicker({ text, shaping, fontSize = 24, title = "Choose a fon
 
   const shaped = useShapedText(selected && shaping ? {
     type: "text", id: "font-preview", x: 0, y: 0, fontSize, color: "#222222",
-    text, fontId: selected.id, shaping,
+    text, fontId: selected.id, shaping, area,
   } : undefined);
   const preparing = !!selected && !!shaping && (!shaped || shaped.status === "loading");
-  const problem = (selected ? customTextError(selected, text, !!shaping) : null)
+  const problem = (selected ? customTextError(selected, area ? text.replace(/\r\n/g, "\n") : text, !!shaping) : null)
     ?? (shaped?.status === "error" ? shaped.error : null);
   const canPreview = selected && !problem && (!shaping || shaped?.status === "ready");
   const apply = () => {

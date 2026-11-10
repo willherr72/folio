@@ -13,13 +13,37 @@ const MAX_COPY_VALUES: usize = 100_000;
 
 /// Charge direct data before cloning; indirect references are copied tokens,
 /// never recursively followed. One budget covers the whole expanded model.
-#[derive(Default)]
 pub(crate) struct CopyBudget {
     bytes: usize,
     values: usize,
+    byte_limit: usize,
+}
+
+impl Default for CopyBudget {
+    fn default() -> Self {
+        Self::with_byte_limit(MAX_COPY_BYTES)
+    }
 }
 
 impl CopyBudget {
+    pub(crate) fn with_byte_limit(byte_limit: usize) -> Self {
+        Self {
+            bytes: 0,
+            values: 0,
+            byte_limit,
+        }
+    }
+    pub(crate) fn bytes_used(&self) -> usize {
+        self.bytes
+    }
+    pub(crate) fn reserve_bytes(&mut self, bytes: usize) -> EngineResult<()> {
+        self.charge(bytes, 0)
+    }
+    /// Charge an owned dictionary entry before cloning its key or value.
+    pub(crate) fn entry(&mut self, key: &[u8], value: &Object) -> EngineResult<()> {
+        self.charge(key.len().saturating_add(64), 0)?;
+        self.object(value, 1)
+    }
     fn charge(&mut self, bytes: usize, values: usize) -> EngineResult<()> {
         self.bytes = self
             .bytes
@@ -29,16 +53,25 @@ impl CopyBudget {
             .values
             .checked_add(values)
             .ok_or_else(|| refused("direct-object value overflow"))?;
-        if self.bytes > MAX_COPY_BYTES || self.values > MAX_COPY_VALUES {
-            return Err(refused(
-                "direct-object copies exceed 16 MiB or 100000 values",
-            ));
+        if self.bytes > self.byte_limit || self.values > MAX_COPY_VALUES {
+            return Err(refused(&format!(
+                "direct-object copies exceed {} bytes or 100000 values",
+                self.byte_limit,
+            )));
         }
         Ok(())
     }
 
     pub(crate) fn dictionary(&mut self, dictionary: &Dictionary) -> EngineResult<()> {
         self.dict_at(dictionary, 0)
+    }
+
+    pub(crate) fn array(&mut self, values: &[Object]) -> EngineResult<()> {
+        self.charge(64, 1)?;
+        for value in values {
+            self.object(value, 1)?;
+        }
+        Ok(())
     }
 
     pub(crate) fn stream(&mut self, stream: &Stream) -> EngineResult<()> {
@@ -304,10 +337,7 @@ impl<'a> Guard<'a> {
 }
 
 pub(crate) fn preflight(bytes: &[u8]) -> EngineResult<()> {
-    let doc = Document::load_mem_with_options(
-        bytes,
-        lopdf::LoadOptions::with_max_decompressed_size(MAX_BYTES),
-    )
+    let doc = crate::request_parse::read(bytes,crate::request_parse::Policy::Compatible64)
     .map_err(|_| refused("document cannot be safely inspected"))?;
     let mut guard = Guard {
         doc: &doc,

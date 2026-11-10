@@ -6,6 +6,19 @@ const runs: EditableTextRun[] = ["Hello ", "world", "!"].map((text, objectIndex)
 const preview: TextGroupPreview = {objectIndices:[0,1],text:"Hello world",fontName:"Helvetica",fontSize:12};
 const options=()=>({anchor:runs[0],runs,busy:false,error:null,onInspect:vi.fn().mockResolvedValue(preview),onApply:vi.fn(),onCancel:vi.fn()});
 afterEach(cleanup);
+it("shows the group's measured size and preserves the inspected payload",async()=>{
+ const measured={...preview,fontSize:1,displayFontSize:20.4};const props=options();render(<TextGroupDialog {...props} onInspect={vi.fn().mockResolvedValue(measured)}/>);
+ fireEvent.click(screen.getByRole("checkbox",{name:"world"}));fireEvent.click(screen.getByRole("button",{name:"Check selection"}));
+ expect(await screen.findByText("Helvetica · 20.4 pt")).toBeInTheDocument();
+ fireEvent.change(screen.getByRole("textbox",{name:"Replacement text"}),{target:{value:"Changed"}});fireEvent.click(screen.getByRole("button",{name:"Apply changes"}));expect(props.onApply).toHaveBeenCalledWith(measured,"Changed");expect(measured.fontSize).toBe(1);
+});
+it("shows the inspected group's embedded display label",async()=>{
+ const labelled={...preview,fontName:`Folio${"c".repeat(64)}`,fontDisplayName:"DejaVu Serif"};
+ const props=options();render(<TextGroupDialog {...props} onInspect={vi.fn().mockResolvedValue(labelled)}/>);
+ fireEvent.click(screen.getByRole("checkbox",{name:"world"}));fireEvent.click(screen.getByRole("button",{name:"Check selection"}));
+ expect(await screen.findByText(/DejaVu Serif.*12/)).toBeInTheDocument();
+ expect(screen.queryByText(new RegExp(labelled.fontName))).not.toBeInTheDocument();
+});
 it("bounds nearby choices, caps membership at eight and requires consecutive pieces",()=>{
  const many=Array.from({length:30},(_,objectIndex)=>({...runs[0],objectIndex,text:`Piece ${objectIndex}`}));
  const props=options();render(<TextGroupDialog {...props} anchor={many[10]} runs={many}/>);

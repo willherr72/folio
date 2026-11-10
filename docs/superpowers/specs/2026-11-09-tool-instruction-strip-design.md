@@ -1,0 +1,9 @@
+# Tool instructions outside the page
+
+Standing user authority: continue autonomously toward everyday commercial-editor usefulness. Routine layout decisions are delegated. Preserve accepted 0.34 and the qualified lazy-selection candidate.
+
+Native pointer traces from the previous milestone show the read-only instruction banner intercepting a drag endpoint over cropped page text. Its absolute positioning covers the page. Making it pointer-transparent would retain the visual obstruction. Instead, reserve a wrapping instruction row above the document viewport while a tool needs it. Existing image/signature action buttons remain in that row, with content-sized widths and a fixed minimum touch/click area rather than a 22px width that clips “Place image”.
+
+Scope: only src/styles.css. Keep the existing React handlers, source coordinates, crop/rotation model, keyboard shortcuts and image/signature ownership. Instructions must not overlap the document viewport. Their content and buttons must fit the declared minimum 900px client width as well as the normal 1280px width. The tradeoff is a small amount of vertical viewport space while instructions are visible; reading mode keeps its current space.
+
+Prove the overlap against the unchanged qualified candidate before implementing. A CSS-injected probe may validate the proposed layout, but is not compiled acceptance. Then build one source-bound optimized GUI with exactly one stylesheet changed and all native code/dependencies unchanged. Verify real text clicks below the strip, draft Cancel preserving the document, image Cancel and Place controls, wrapping at native 900px and 1280px client widths, highlight activation, source raster/text identity, save/reopen and owned-process cleanup. Retain failures and test limits. No new portable or launcher promotion in this correction.
