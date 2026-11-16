@@ -1,0 +1,21 @@
+# Folio 0.55 development integration
+
+The reviewed source now adds broader equivalent-encoding support, CFF ligature reuse, transferred and automatically fitted paragraph drafts, and source-bound accent clusters. Integrate this state into a complete separate development portable so it can be used with OCR assets, examples, licenses and automation. Preserve every existing package and the selected launcher; no installer, public release, Git mutation or new private input/clipboard access.
+
+## Current authority and approach
+
+Start from source `1df5fdb303f78978325620a1d66c4c7ffde3216628468de5f74c0dc84dd8ad82`, bound by the source-accent-cluster completion and sealed checkpoint. Its complete library has 1,759 passes/11 ignored under release dependencies with Folio opt-level 0, and 35 complete ordinary optimized integration targets have 341 passes/3 ignored. Do not present those 35 targets as the whole integration suite.
+
+Before changing the version, run every current ordinary native integration target, both binary targets and documentation tests on this exact source. Cargo metadata currently identifies 150 integration targets and two binaries; six integration targets require the already-default `shaped-text` feature. Discover the actual membership from metadata, reject dropped/duplicate targets, retain all terminal results, and preserve explicit ignores. Reuse the exact current complete-library result with its original profile; do not repeat it without a source/input change. A demonstrated failure must be diagnosed and corrected, with a failing regression and complete affected verification; never weaken an oracle merely to obtain a pass. Record any resulting baseline transition explicitly.
+
+Then use the existing production portable builder and verifier. A new `0.55.0-dev.1` label distinguishes this distribution from immutable 0.54. Permit exactly six version-token substitutions in five files: package.json (1), package-lock.json (2), src-tauri/Cargo.toml (1), src-tauri/Cargo.lock (1), src-tauri/tauri.conf.json (1). Preserve all other bytes, dependency values, native/shared inputs and source membership. Preserve before-images and prove parsed root manifest versions agree. Native evidence remains pre-version current-source evidence, with exact version-only qualification; it is not fresh 0.55 native execution.
+
+## Distribution and actual acceptance
+
+Run fresh full frontend checks with two minimum/maximum workers and default 5,000 ms timeout. Build normally with one Cargo job and the established D: cache/temp directories. Capture and guard distribution documentation, examples and notices. Verify all 26 renderer resources, 12 offline OCR assets, dependency/license records, GUI/default CLI binaries, canonical archive membership, bytes and checksum. Extract to a newly owned outside-checkout D:/Folio-acceptance directory, verify again, and run only those extracted binaries/resources during acceptance.
+
+Cover actual extracted CLI/MCP original-font editing and consecutive re-editing, CFF and accent clusters, paragraph draft transfer/automatic fit and fixed-area opt-out, Preview/Apply, Undo/Redo, save/reopen and refusal recovery. Independently compare exact Unicode/order, physical source glyphs/font programs/native widths and whole-page source-authored pixels. Retain mixed-alias and corruption controls. Include representative retained form, document Find/Replace, reader page-boundary and offline OCR workflows, with exact executable/renderer/resource identity and process cleanup. Use existing authored public fixtures and preserved auditors; do not broaden their masks or tolerances.
+
+This integrated runtime matrix must be reported precisely, without claiming every historical package workload freshly ran. Physical keyboard/IME/clipboard, printing, accessibility, arbitrary producers/readers, continuous memory peaks/leaks and actual 8 GB hardware remain open. Preserve existing sampled resource evidence with its original limits. No commercial-parity or release approval follows from this component.
+
+One fresh final scoped integration review after terminal evidence; one Important/Critical TDD correction pass if needed, no re-review or implementer agents. Bind source/version/distribution/build/extracted-runtime identities in a standalone seal with negative integrity controls. Keep the broad goal active.

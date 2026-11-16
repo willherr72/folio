@@ -32,6 +32,10 @@ mod paragraph_highlight_cells;
 mod paragraph_highlight_publish;
 #[path = "styled_paragraph_layout.rs"]
 mod styled_paragraph_layout;
+#[path = "paragraph_occurrence_plan.rs"]
+mod paragraph_occurrence_plan;
+#[path = "paragraph_occurrence_ink.rs"]
+mod paragraph_occurrence_ink;
 #[path = "styled_paragraph_plan.rs"]
 mod styled_paragraph_plan;
 #[path = "styled_paragraph_native_metrics.rs"]
@@ -49,6 +53,7 @@ use paragraph_layout::wrap;
 const LIMIT: usize = 16 * 1024 * 1024;
 
 fn advance(run: &RunSnapshot, text: &str) -> EngineResult<f32> {
+    if let Some(bound)=&run.source_encoding {return bound.replace(text).map(|text|text.advance()).map_err(invalid);}
     if let Some(proof) = &run.proof {
         return proof.advance(text);
     }
@@ -74,6 +79,7 @@ fn decode(run: &RunSnapshot, bytes: &[u8]) -> EngineResult<String> {
 
 #[derive(Clone)]
 struct TextState {
+    original_rgb:Option<[f32;3]>,
     font: Option<(Vec<u8>, f32)>,
     character: f32,
     word: f32,
@@ -82,7 +88,7 @@ struct TextState {
     mode: f32,
 }
 impl Default for TextState {
-    fn default() -> Self { Self {font:None,character:0.,word:0.,scale:100.,rise:0.,mode:0.} }
+    fn default() -> Self { Self {original_rgb:None,font:None,character:0.,word:0.,scale:100.,rise:0.,mode:0.} }
 }
 
 // Defer this one admission failure only until a complete paragraph hint has been
@@ -95,9 +101,10 @@ fn whitespace_run(run: &RunSnapshot) -> bool {
 }
 
 #[derive(Clone)]
-struct BoundStyle { resource_id:lopdf::ObjectId, resource_name:Vec<u8>, run:RunSnapshot, object_indices:Vec<usize>, background_id:Option<usize> }
+struct BoundStyle { resource_id:lopdf::ObjectId, resource_name:Vec<u8>, run:RunSnapshot, object_indices:Vec<usize>, background_id:Option<usize>, original_rgb:Option<[f32;3]> }
 #[derive(Clone)]
 struct Prepared {
+    occurrence_metrics:bool,
     context:Option<text_context::ShowContext>,
     unit:f32,
     pdf: Document,
@@ -359,6 +366,13 @@ fn prepare_page(
     let mut styles:Vec<BoundStyle>=Vec::new();
     for (op_index, op) in content.operations.iter().enumerate() {
         match op.operator.as_str() {
+            "rg" => {
+                state.original_rgb=if op.operands.len()==3 {
+                    let values=op.operands.iter().map(number).collect::<EngineResult<Vec<_>>>()?;
+                    values.iter().all(|value|(0.0..=1.0).contains(value)).then(||[values[0],values[1],values[2]])
+                }else{None};
+            }
+            "g"|"k"|"cs"|"sc"|"scn" => state.original_rgb=None,
             "q" => {
                 if stack.len() >= 64 {
                     return Err(invalid("Graphics nesting exceeds the limit."));
@@ -482,8 +496,12 @@ fn prepare_page(
                 for value in values {
                     if let Ok(bytes) = value.as_str() {
                         let text = decode(run, bytes)?;
-                        distance += advance(run, &text)? * raw_size
-                            + text.chars().count() as f32 * state.character;
+                        let bound=run.proof.as_ref().map(|proof|proof.bind(bytes)).transpose()?.flatten();
+                        let (nominal,count)=if let Some(bound)=bound {
+                            if bound.encoded().text()!=text{return Err(invalid("The paragraph operand glyphs changed."));}
+                            (bound.encoded().advance(),bound.encoded().atoms().len())
+                        }else{(advance(run,&text)?,text.chars().count())};
+                        distance += nominal * raw_size + count as f32 * state.character;
                         if run.proof.as_ref().is_none_or(|p| p.single_byte()) {
                             distance +=
                                 bytes.iter().filter(|c| **c == 32).count() as f32 * state.word;
@@ -505,8 +523,9 @@ fn prepare_page(
                     && style.run.font==run.font && style.run.program==run.program && style.run.proof==run.proof
                     && style.run.standard==run.standard
                     && style.run.color==run.color
+                    && style.original_rgb==state.original_rgb
                     && (style.run.font_size*style.run.matrix[0]).to_bits()==(run.font_size*run.matrix[0]).to_bits())
-                    .unwrap_or_else(||{styles.push(BoundStyle{resource_id:identity,resource_name:name.clone(),run:run.clone(),object_indices:vec![],background_id:None});styles.len()-1});
+                    .unwrap_or_else(||{styles.push(BoundStyle{resource_id:identity,resource_name:name.clone(),run:run.clone(),object_indices:vec![],background_id:None,original_rgb:state.original_rgb});styles.len()-1});
                 if styles.len()>64{return Err(invalid("Use at most 64 paragraph styles."));}
                 styles[style_id].object_indices.push(run.index);
                 members.push((run, logical,style_id));
@@ -625,7 +644,7 @@ fn prepare_page(
         }
     }
     let source_text=members.iter().map(|(run,text,_)|(run.index,text.clone())).collect();
-    Ok(Prepared {
+    Ok(Prepared {occurrence_metrics:false,
         context,
         unit,
         pdf,
@@ -762,22 +781,26 @@ fn selected_context(operations:&[Operation],before:&[RunSnapshot],indices:&[usiz
     Ok(first.requires_binding().then(||first.clone()))
 }
 impl Prepared {
-    fn remove_uniform_context_envelope(&mut self)->EngineResult<bool> {
-        let Some(context)=self.context.as_ref().filter(|c|self.remembered&&c.has_clip())else{return Ok(false);};
+    fn remove_uniform_envelope(&mut self)->EngineResult<Option<usize>> {
+        if !self.remembered {return Ok(None);}
+        let clip=self.context.as_ref().filter(|c|c.has_clip());
         let bad=||invalid("The saved uniform paragraph clip envelope is not independently owned.");
         let first=self.removals.first().ok_or_else(bad)?.0;let last=self.removals.last().unwrap().0;
-        let start=first.checked_sub(10).ok_or_else(bad)?;let end=last+3;
+        let Some(start)=first.checked_sub(10)else{return if clip.is_some(){Err(bad())}else{Ok(None)};};let end=last+3;
         let ops=&self.content.operations;
         let header=ops.get(start..first).ok_or_else(bad)?;
         if !header.iter().zip(["q","BT","Tf","Tc","Tw","Tz","Ts","Tr","rg","Tm"]).all(|(op,name)|op.operator==name)
             ||self.removals.iter().enumerate().any(|(i,(index,_))|*index!=first+i*2)
             ||!ops.get(last+1..end).is_some_and(|tail|tail[0].operator=="ET"&&tail[1].operator=="Q"&&tail.iter().all(|op|op.operands.is_empty())) {
-            return Err(bad());
+            return if clip.is_some(){Err(bad())}else{Ok(None)};
         }
         for pair in ops[first+1..last+1].chunks_exact(2) {if pair[0].operator!="Tm"||!matches!(pair[1].operator.as_str(),"Tj"|"TJ") {return Err(bad());}}
-        let outer=context.owned_clip_prefix_start(ops,start)?;
-        if !ops.get(end).is_some_and(|op|op.operator=="Q"&&op.operands.is_empty()) {return Err(bad());}
-        self.content.operations.drain(outer..=end);Ok(true)
+        let (outer,end)=if let Some(context)=clip {
+            let outer=context.owned_clip_prefix_start(ops,start)?;
+            if !ops.get(end).is_some_and(|op|op.operator=="Q"&&op.operands.is_empty()) {return Err(bad());}
+            (outer,end+1)
+        }else{(start,end)};
+        self.content.operations.drain(outer..end);Ok(Some(outer))
     }
 
     fn context_binding(&self)->EngineResult<Option<String>> {self.context.as_ref().map(|c|c.binding()).transpose()}
@@ -1057,9 +1080,8 @@ impl WorkerRuntime {
             if object.as_text_object().is_some() {
                 continue;
             }
-            // This legacy emitter appends replacement shows. Unlike the styled
-            // route, it cannot yet preserve reading order inside a callout;
-            // retain whole-object refusal until source-position splicing exists.
+            // Keep the existing graphics admission policy; source-position
+            // splicing alone does not prove ownership of callout artwork.
             let rect = object.bounds()?;
             let other = [
                 rect.left().value,
@@ -1079,40 +1101,26 @@ impl WorkerRuntime {
             prepared.font_resource=paragraph_font::install(&mut prepared.pdf,prepared.page_id,&prepared.resources,asset)?;
         }
         let saved_context=prepared.context_binding()?;
-        if !prepared.remove_uniform_context_envelope()? {
+        let mut anchor=prepared.removals.first().ok_or_else(||invalid("Missing paragraph source show."))?.0;
+        let leading_adjustment=styled_paragraph_splice::leading_adjustment(&prepared.content.operations[anchor])?;
+        if let Some(start)=prepared.remove_uniform_envelope()? {
+            anchor=start;
+        }else{
             for &(index, distance) in &prepared.removals {
                 prepared.content.operations[index] =
                     Operation::new("TJ", vec![Object::Array(vec![Object::Real(distance)])]);
             }
         }
-        // Isolate pre-existing root graphics state once. Our own output already
-        // consists entirely of balanced q/Q scopes, so later edits need no extra
-        // wrapper (which would otherwise hit the nesting limit after 64 edits).
-        let mut depth = 0usize;
-        let mut needs_scope = false;
-        for op in &prepared.content.operations {
-            match op.operator.as_str() {
-                "q" => depth += 1,
-                "Q" => depth -= 1, // balanced by prepare()
-                _ => needs_scope |= depth == 0,
-            }
-        }
+        let original_rgb=prepared.styles.first().and_then(|style|style.original_rgb).filter(|_|color==first.color);
+        let rgb=original_rgb.unwrap_or([color[0]as f32/255.,color[1]as f32/255.,color[2]as f32/255.]);
         let mut operations = Vec::new();
-        if needs_scope {
-            operations.push(Operation::new("q", vec![]));
-        }
-        operations.extend(prepared.content.operations);
-        if needs_scope {
-            operations.push(Operation::new("Q", vec![]));
-        }
         let clip=prepared.context.as_ref().filter(|c|c.has_clip());
-        if let Some(clip)=clip {operations.extend(clip.clip_prefix()?);}
         operations.extend([
             Operation::new("q", vec![]),
             Operation::new("BT", vec![]),
             Operation::new(
                 "Tf",
-                vec![Object::Name(prepared.font_resource), size.into()],
+                vec![Object::Name(prepared.font_resource.clone()), size.into()],
             ),
             Operation::new("Tc", vec![0.into()]),
             Operation::new("Tw", vec![0.into()]),
@@ -1121,10 +1129,7 @@ impl WorkerRuntime {
             Operation::new("Tr", vec![0.into()]),
             Operation::new(
                 "rg",
-                color[..3]
-                    .iter()
-                    .map(|c| Object::Real(*c as f32 / 255.0))
-                    .collect(),
+                rgb.into_iter().map(Object::Real).collect(),
             ),
         ]);
         let mut expected_lines = Vec::new();
@@ -1149,8 +1154,7 @@ impl WorkerRuntime {
             expected_lines.push((line,origin));
         }
         operations.extend([Operation::new("ET", vec![]), Operation::new("Q", vec![])]);
-        if clip.is_some() {operations.push(Operation::new("Q",vec![]));}
-        if operations.len()>100_000 {return Err(invalid("The edited page exceeds its operation limit."));}
+        let (operations,_)=styled_paragraph_splice::insert(std::mem::take(&mut prepared.content.operations),anchor,operations,first,leading_adjustment,clip)?;
         let data = Content { operations }
             .encode()
             .map_err(|_| invalid("The paragraph could not be encoded."))?;
@@ -1188,7 +1192,8 @@ impl WorkerRuntime {
         if after.len() != remaining.len() + expected_lines.len() {
             return Err(invalid("The paragraph changed unexpected text objects."));
         }
-        for (old, new) in remaining.iter().zip(&after) {
+        let range=styled_paragraph_publish::fragment_range(&prepared,expected_lines.len(),after.len())?;
+        for (old, new) in remaining.iter().zip(after[..range.start].iter().chain(&after[range.end..])) {
             let mut adjusted = (*old).clone();
             adjusted.index = new.index;
             let old_glyphs = &prepared.glyphs[&old.index];
@@ -1204,7 +1209,7 @@ impl WorkerRuntime {
                 return Err(invalid("The paragraph would change surrounding text."));
             }
         }
-        for ((line,origin), run) in expected_lines.iter().zip(&after[remaining.len()..]) {
+        for ((line,origin), run) in expected_lines.iter().zip(&after[range.clone()]) {
             let font_matches=if let Some(asset)=&substitute {
                 (run.reason.is_none() || whitespace_run(run)) && run.program.as_deref()==Some(asset.info.id.as_str())
             } else {run.font==first.font && run.program==first.program};
@@ -1251,7 +1256,7 @@ impl WorkerRuntime {
             }
         }
         drop(page);
-        let bytes: Arc<[u8]> = paragraph_memory::write(&bytes, &after, &after_glyphs, &lines, new_bounds, size, alignment, line_spacing,saved_context)?.into();
+        let bytes: Arc<[u8]> = paragraph_memory::write(&bytes, &after, range, &after_glyphs, &lines, new_bounds, size, alignment, line_spacing,saved_context)?.into();
         drop(document);
         let document = self.pdfium.load_pdf_from_reader(Cursor::new(bytes.clone()), None)?;
         {

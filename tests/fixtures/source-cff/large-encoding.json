@@ -1,0 +1,13 @@
+{
+  "path": "large-custom-encoding-v2.cff",
+  "sha256": "856514ab215fcdf7eebbb074219ac2a82a8466267519dc11c8bfa7c3bc3bd9a2",
+  "glyphs": 65535,
+  "code": 255,
+  "sid": 400,
+  "gid": 65135,
+  "width": 500,
+  "nativeAdvance": 0.5,
+  "generatorSha256": "c3cc654710062d1026a9a306ad093b4b75ecef10732a23b6c3349e9e00bb1b0e",
+  "license": "Original generated font data under repository license",
+  "independent": "fontTools encoding/charset/Type2 and native MuPDF advance; candidate parser unused"
+}

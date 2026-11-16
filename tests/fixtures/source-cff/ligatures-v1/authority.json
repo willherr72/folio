@@ -1,0 +1,4442 @@
+{
+  "generatorSha256": "46b04e6ee9ab7d4364d49f3dfb27f2c81a23fbc4ea4f7ed227a115281a6e4a46",
+  "sourceFont": "tests\\fixtures\\shaped-text\\DejaVuSans.ttf",
+  "sourceFontSha256": "3fdf69cabf06049ea70a00b5919340e2ce1e6d02b0cc3c4b44fb6801bd1e0d22",
+  "outlineConversion": "fontTools Qu2CuPen max_err0.01 source units, renamed CFF1 fixtures",
+  "fonts": [
+    {
+      "label": "sid",
+      "rawSha256": "a60c640855a9c617d24e106ef00ddc789ac82021d762d040351d912beb1d6ef7",
+      "wrappedSha256": "20576eaf44fd9fe4576312e4988897ed0b5c3ec38f73c97e047ddb72d2d55fc4",
+      "glyphs": [
+        {
+          "gid": 0,
+          "name": ".notdef",
+          "cid": null,
+          "width": 600.09765625,
+          "bounds": [
+            102,
+            -362,
+            1126,
+            1444
+          ]
+        },
+        {
+          "gid": 1,
+          "name": "space",
+          "cid": null,
+          "width": 317.87109375,
+          "bounds": null
+        },
+        {
+          "gid": 2,
+          "name": "N",
+          "cid": null,
+          "width": 748.046875,
+          "bounds": [
+            201,
+            0,
+            1331,
+            1493
+          ]
+        },
+        {
+          "gid": 3,
+          "name": "O",
+          "cid": null,
+          "width": 787.109375,
+          "bounds": [
+            115.0,
+            -28.999984741210938,
+            1496.999984741211,
+            1520.000015258789
+          ]
+        },
+        {
+          "gid": 4,
+          "name": "a",
+          "cid": null,
+          "width": 612.79296875,
+          "bounds": [
+            122.99996948242188,
+            -28.999984741210938,
+            1069.0,
+            1147.000015258789
+          ]
+        },
+        {
+          "gid": 5,
+          "name": "c",
+          "cid": null,
+          "width": 549.8046875,
+          "bounds": [
+            113.0,
+            -29.000030517578125,
+            999,
+            1146.999984741211
+          ]
+        },
+        {
+          "gid": 6,
+          "name": "e",
+          "cid": null,
+          "width": 615.234375,
+          "bounds": [
+            113.0,
+            -29.0,
+            1151.000015258789,
+            1147.0
+          ]
+        },
+        {
+          "gid": 7,
+          "name": "f",
+          "cid": null,
+          "width": 352.05078125,
+          "bounds": [
+            47.0,
+            0.0,
+            760,
+            1556
+          ]
+        },
+        {
+          "gid": 8,
+          "name": "h",
+          "cid": null,
+          "width": 633.7890625,
+          "bounds": [
+            186.00001525878906,
+            0,
+            1124.000015258789,
+            1556.000015258789
+          ]
+        },
+        {
+          "gid": 9,
+          "name": "i",
+          "cid": null,
+          "width": 277.83203125,
+          "bounds": [
+            193,
+            0,
+            377,
+            1556
+          ]
+        },
+        {
+          "gid": 10,
+          "name": "s",
+          "cid": null,
+          "width": 520.99609375,
+          "bounds": [
+            111.00001525878906,
+            -29.0,
+            967.0000152587891,
+            1147.000015258789
+          ]
+        },
+        {
+          "gid": 11,
+          "name": "t",
+          "cid": null,
+          "width": 392.08984375,
+          "bounds": [
+            55.0,
+            0.0,
+            754,
+            1438
+          ]
+        },
+        {
+          "gid": 12,
+          "name": "w",
+          "cid": null,
+          "width": 817.87109375,
+          "bounds": [
+            86,
+            0,
+            1589,
+            1120
+          ]
+        },
+        {
+          "gid": 13,
+          "name": "fi",
+          "cid": null,
+          "width": 629.8828125,
+          "bounds": [
+            47,
+            0,
+            1098,
+            1556.0
+          ]
+        },
+        {
+          "gid": 14,
+          "name": "ffi",
+          "cid": null,
+          "width": 966.796875,
+          "bounds": [
+            47.0,
+            3.0517578125e-05,
+            1788.0,
+            1556.0000305175781
+          ]
+        }
+      ]
+    },
+    {
+      "label": "cid",
+      "rawSha256": "60377e46117d71df4e0218117c2dd7b5e98e2576494266255cca8cf099dff2d4",
+      "wrappedSha256": "8ef8e644f3ea608cdf7f137c272d7c5b125c9d9708122e76936be90f62dd2bf1",
+      "glyphs": [
+        {
+          "gid": 0,
+          "name": ".notdef",
+          "cid": 0,
+          "width": 600.09765625,
+          "bounds": [
+            102,
+            -362,
+            1126,
+            1444
+          ]
+        },
+        {
+          "gid": 1,
+          "name": "cid00001",
+          "cid": 1,
+          "width": 317.87109375,
+          "bounds": null
+        },
+        {
+          "gid": 2,
+          "name": "cid00002",
+          "cid": 2,
+          "width": 748.046875,
+          "bounds": [
+            201,
+            0,
+            1331,
+            1493
+          ]
+        },
+        {
+          "gid": 3,
+          "name": "cid00003",
+          "cid": 3,
+          "width": 787.109375,
+          "bounds": [
+            115.0,
+            -28.999984741210938,
+            1496.999984741211,
+            1520.000015258789
+          ]
+        },
+        {
+          "gid": 4,
+          "name": "cid00004",
+          "cid": 4,
+          "width": 612.79296875,
+          "bounds": [
+            122.99996948242188,
+            -28.999984741210938,
+            1069.0,
+            1147.000015258789
+          ]
+        },
+        {
+          "gid": 5,
+          "name": "cid00005",
+          "cid": 5,
+          "width": 549.8046875,
+          "bounds": [
+            113.0,
+            -29.000030517578125,
+            999,
+            1146.999984741211
+          ]
+        },
+        {
+          "gid": 6,
+          "name": "cid00006",
+          "cid": 6,
+          "width": 615.234375,
+          "bounds": [
+            113.0,
+            -29.0,
+            1151.000015258789,
+            1147.0
+          ]
+        },
+        {
+          "gid": 7,
+          "name": "cid00007",
+          "cid": 7,
+          "width": 352.05078125,
+          "bounds": [
+            47.0,
+            0.0,
+            760,
+            1556
+          ]
+        },
+        {
+          "gid": 8,
+          "name": "cid00008",
+          "cid": 8,
+          "width": 633.7890625,
+          "bounds": [
+            186.00001525878906,
+            0,
+            1124.000015258789,
+            1556.000015258789
+          ]
+        },
+        {
+          "gid": 9,
+          "name": "cid00009",
+          "cid": 9,
+          "width": 277.83203125,
+          "bounds": [
+            193,
+            0,
+            377,
+            1556
+          ]
+        },
+        {
+          "gid": 10,
+          "name": "cid00010",
+          "cid": 10,
+          "width": 520.99609375,
+          "bounds": [
+            111.00001525878906,
+            -29.0,
+            967.0000152587891,
+            1147.000015258789
+          ]
+        },
+        {
+          "gid": 11,
+          "name": "cid00011",
+          "cid": 11,
+          "width": 392.08984375,
+          "bounds": [
+            55.0,
+            0.0,
+            754,
+            1438
+          ]
+        },
+        {
+          "gid": 12,
+          "name": "cid00012",
+          "cid": 12,
+          "width": 817.87109375,
+          "bounds": [
+            86,
+            0,
+            1589,
+            1120
+          ]
+        },
+        {
+          "gid": 13,
+          "name": "cid00013",
+          "cid": 13,
+          "width": 629.8828125,
+          "bounds": [
+            47,
+            0,
+            1098,
+            1556.0
+          ]
+        },
+        {
+          "gid": 14,
+          "name": "cid00014",
+          "cid": 14,
+          "width": 966.796875,
+          "bounds": [
+            47.0,
+            3.0517578125e-05,
+            1788.0,
+            1556.0000305175781
+          ]
+        }
+      ]
+    }
+  ],
+  "cases": [
+    {
+      "name": "sid-raw-simple-fi-single",
+      "path": "sid-raw-simple-fi-single.pdf",
+      "label": "sid",
+      "wrapped": false,
+      "composite": false,
+      "sequence": "fi",
+      "layout": "single",
+      "codeLength": 1,
+      "sourceHex": "4f66c86365",
+      "sourceText": "Office",
+      "sha256": "60ea68c42be79e694e489f0c334fbd4b33cd894096a2f93518caf0a95595addb",
+      "symbols": [
+        {
+          "text": " ",
+          "gid": 1,
+          "code": 32,
+          "width": 317.87109375,
+          "name": "space"
+        },
+        {
+          "text": "N",
+          "gid": 2,
+          "code": 78,
+          "width": 748.046875,
+          "name": "N"
+        },
+        {
+          "text": "O",
+          "gid": 3,
+          "code": 79,
+          "width": 787.109375,
+          "name": "O"
+        },
+        {
+          "text": "a",
+          "gid": 4,
+          "code": 97,
+          "width": 612.79296875,
+          "name": "a"
+        },
+        {
+          "text": "c",
+          "gid": 5,
+          "code": 99,
+          "width": 549.8046875,
+          "name": "c"
+        },
+        {
+          "text": "e",
+          "gid": 6,
+          "code": 101,
+          "width": 615.234375,
+          "name": "e"
+        },
+        {
+          "text": "f",
+          "gid": 7,
+          "code": 102,
+          "width": 352.05078125,
+          "name": "f"
+        },
+        {
+          "text": "h",
+          "gid": 8,
+          "code": 104,
+          "width": 633.7890625,
+          "name": "h"
+        },
+        {
+          "text": "i",
+          "gid": 9,
+          "code": 105,
+          "width": 277.83203125,
+          "name": "i"
+        },
+        {
+          "text": "s",
+          "gid": 10,
+          "code": 115,
+          "width": 520.99609375,
+          "name": "s"
+        },
+        {
+          "text": "t",
+          "gid": 11,
+          "code": 116,
+          "width": 392.08984375,
+          "name": "t"
+        },
+        {
+          "text": "w",
+          "gid": 12,
+          "code": 119,
+          "width": 817.87109375,
+          "name": "w"
+        },
+        {
+          "text": "fi",
+          "gid": 13,
+          "code": 200,
+          "width": 629.8828125,
+          "name": "fi"
+        },
+        {
+          "text": "ffi",
+          "gid": 14,
+          "code": 201,
+          "width": 966.796875,
+          "name": "ffi"
+        }
+      ]
+    },
+    {
+      "name": "sid-raw-simple-fi-group",
+      "path": "sid-raw-simple-fi-group.pdf",
+      "label": "sid",
+      "wrapped": false,
+      "composite": false,
+      "sequence": "fi",
+      "layout": "group",
+      "codeLength": 1,
+      "sourceHex": "4f66c86365",
+      "sourceText": "Office",
+      "sha256": "47fa58043bb868e985f50b0aa1652d2071ff1b8a2f18111c2cd8f478bd0645cb",
+      "symbols": [
+        {
+          "text": " ",
+          "gid": 1,
+          "code": 32,
+          "width": 317.87109375,
+          "name": "space"
+        },
+        {
+          "text": "N",
+          "gid": 2,
+          "code": 78,
+          "width": 748.046875,
+          "name": "N"
+        },
+        {
+          "text": "O",
+          "gid": 3,
+          "code": 79,
+          "width": 787.109375,
+          "name": "O"
+        },
+        {
+          "text": "a",
+          "gid": 4,
+          "code": 97,
+          "width": 612.79296875,
+          "name": "a"
+        },
+        {
+          "text": "c",
+          "gid": 5,
+          "code": 99,
+          "width": 549.8046875,
+          "name": "c"
+        },
+        {
+          "text": "e",
+          "gid": 6,
+          "code": 101,
+          "width": 615.234375,
+          "name": "e"
+        },
+        {
+          "text": "f",
+          "gid": 7,
+          "code": 102,
+          "width": 352.05078125,
+          "name": "f"
+        },
+        {
+          "text": "h",
+          "gid": 8,
+          "code": 104,
+          "width": 633.7890625,
+          "name": "h"
+        },
+        {
+          "text": "i",
+          "gid": 9,
+          "code": 105,
+          "width": 277.83203125,
+          "name": "i"
+        },
+        {
+          "text": "s",
+          "gid": 10,
+          "code": 115,
+          "width": 520.99609375,
+          "name": "s"
+        },
+        {
+          "text": "t",
+          "gid": 11,
+          "code": 116,
+          "width": 392.08984375,
+          "name": "t"
+        },
+        {
+          "text": "w",
+          "gid": 12,
+          "code": 119,
+          "width": 817.87109375,
+          "name": "w"
+        },
+        {
+          "text": "fi",
+          "gid": 13,
+          "code": 200,
+          "width": 629.8828125,
+          "name": "fi"
+        },
+        {
+          "text": "ffi",
+          "gid": 14,
+          "code": 201,
+          "width": 966.796875,
+          "name": "ffi"
+        }
+      ]
+    },
+    {
+      "name": "sid-raw-simple-fi-shared",
+      "path": "sid-raw-simple-fi-shared.pdf",
+      "label": "sid",
+      "wrapped": false,
+      "composite": false,
+      "sequence": "fi",
+      "layout": "shared",
+      "codeLength": 1,
+      "sourceHex": "4f66c86365",
+      "sourceText": "Office",
+      "sha256": "9ca3a9b707ea53b7a3dcfbe2ea454f0fad028014d5fbb412ef5eddf100b49062",
+      "symbols": [
+        {
+          "text": " ",
+          "gid": 1,
+          "code": 32,
+          "width": 317.87109375,
+          "name": "space"
+        },
+        {
+          "text": "N",
+          "gid": 2,
+          "code": 78,
+          "width": 748.046875,
+          "name": "N"
+        },
+        {
+          "text": "O",
+          "gid": 3,
+          "code": 79,
+          "width": 787.109375,
+          "name": "O"
+        },
+        {
+          "text": "a",
+          "gid": 4,
+          "code": 97,
+          "width": 612.79296875,
+          "name": "a"
+        },
+        {
+          "text": "c",
+          "gid": 5,
+          "code": 99,
+          "width": 549.8046875,
+          "name": "c"
+        },
+        {
+          "text": "e",
+          "gid": 6,
+          "code": 101,
+          "width": 615.234375,
+          "name": "e"
+        },
+        {
+          "text": "f",
+          "gid": 7,
+          "code": 102,
+          "width": 352.05078125,
+          "name": "f"
+        },
+        {
+          "text": "h",
+          "gid": 8,
+          "code": 104,
+          "width": 633.7890625,
+          "name": "h"
+        },
+        {
+          "text": "i",
+          "gid": 9,
+          "code": 105,
+          "width": 277.83203125,
+          "name": "i"
+        },
+        {
+          "text": "s",
+          "gid": 10,
+          "code": 115,
+          "width": 520.99609375,
+          "name": "s"
+        },
+        {
+          "text": "t",
+          "gid": 11,
+          "code": 116,
+          "width": 392.08984375,
+          "name": "t"
+        },
+        {
+          "text": "w",
+          "gid": 12,
+          "code": 119,
+          "width": 817.87109375,
+          "name": "w"
+        },
+        {
+          "text": "fi",
+          "gid": 13,
+          "code": 200,
+          "width": 629.8828125,
+          "name": "fi"
+        },
+        {
+          "text": "ffi",
+          "gid": 14,
+          "code": 201,
+          "width": 966.796875,
+          "name": "ffi"
+        }
+      ]
+    },
+    {
+      "name": "sid-raw-simple-ffi-single",
+      "path": "sid-raw-simple-ffi-single.pdf",
+      "label": "sid",
+      "wrapped": false,
+      "composite": false,
+      "sequence": "ffi",
+      "layout": "single",
+      "codeLength": 1,
+      "sourceHex": "4fc96365",
+      "sourceText": "Office",
+      "sha256": "a8c55e5b5b75c744ee79077d54eb39bc57959957729d1dec06bbc31350e324b7",
+      "symbols": [
+        {
+          "text": " ",
+          "gid": 1,
+          "code": 32,
+          "width": 317.87109375,
+          "name": "space"
+        },
+        {
+          "text": "N",
+          "gid": 2,
+          "code": 78,
+          "width": 748.046875,
+          "name": "N"
+        },
+        {
+          "text": "O",
+          "gid": 3,
+          "code": 79,
+          "width": 787.109375,
+          "name": "O"
+        },
+        {
+          "text": "a",
+          "gid": 4,
+          "code": 97,
+          "width": 612.79296875,
+          "name": "a"
+        },
+        {
+          "text": "c",
+          "gid": 5,
+          "code": 99,
+          "width": 549.8046875,
+          "name": "c"
+        },
+        {
+          "text": "e",
+          "gid": 6,
+          "code": 101,
+          "width": 615.234375,
+          "name": "e"
+        },
+        {
+          "text": "f",
+          "gid": 7,
+          "code": 102,
+          "width": 352.05078125,
+          "name": "f"
+        },
+        {
+          "text": "h",
+          "gid": 8,
+          "code": 104,
+          "width": 633.7890625,
+          "name": "h"
+        },
+        {
+          "text": "i",
+          "gid": 9,
+          "code": 105,
+          "width": 277.83203125,
+          "name": "i"
+        },
+        {
+          "text": "s",
+          "gid": 10,
+          "code": 115,
+          "width": 520.99609375,
+          "name": "s"
+        },
+        {
+          "text": "t",
+          "gid": 11,
+          "code": 116,
+          "width": 392.08984375,
+          "name": "t"
+        },
+        {
+          "text": "w",
+          "gid": 12,
+          "code": 119,
+          "width": 817.87109375,
+          "name": "w"
+        },
+        {
+          "text": "fi",
+          "gid": 13,
+          "code": 200,
+          "width": 629.8828125,
+          "name": "fi"
+        },
+        {
+          "text": "ffi",
+          "gid": 14,
+          "code": 201,
+          "width": 966.796875,
+          "name": "ffi"
+        }
+      ]
+    },
+    {
+      "name": "sid-raw-simple-ffi-group",
+      "path": "sid-raw-simple-ffi-group.pdf",
+      "label": "sid",
+      "wrapped": false,
+      "composite": false,
+      "sequence": "ffi",
+      "layout": "group",
+      "codeLength": 1,
+      "sourceHex": "4fc96365",
+      "sourceText": "Office",
+      "sha256": "5a8c681c6d2fce78b7441e6bfa0e3077035b355edab60372b7c35e3ad81e03c4",
+      "symbols": [
+        {
+          "text": " ",
+          "gid": 1,
+          "code": 32,
+          "width": 317.87109375,
+          "name": "space"
+        },
+        {
+          "text": "N",
+          "gid": 2,
+          "code": 78,
+          "width": 748.046875,
+          "name": "N"
+        },
+        {
+          "text": "O",
+          "gid": 3,
+          "code": 79,
+          "width": 787.109375,
+          "name": "O"
+        },
+        {
+          "text": "a",
+          "gid": 4,
+          "code": 97,
+          "width": 612.79296875,
+          "name": "a"
+        },
+        {
+          "text": "c",
+          "gid": 5,
+          "code": 99,
+          "width": 549.8046875,
+          "name": "c"
+        },
+        {
+          "text": "e",
+          "gid": 6,
+          "code": 101,
+          "width": 615.234375,
+          "name": "e"
+        },
+        {
+          "text": "f",
+          "gid": 7,
+          "code": 102,
+          "width": 352.05078125,
+          "name": "f"
+        },
+        {
+          "text": "h",
+          "gid": 8,
+          "code": 104,
+          "width": 633.7890625,
+          "name": "h"
+        },
+        {
+          "text": "i",
+          "gid": 9,
+          "code": 105,
+          "width": 277.83203125,
+          "name": "i"
+        },
+        {
+          "text": "s",
+          "gid": 10,
+          "code": 115,
+          "width": 520.99609375,
+          "name": "s"
+        },
+        {
+          "text": "t",
+          "gid": 11,
+          "code": 116,
+          "width": 392.08984375,
+          "name": "t"
+        },
+        {
+          "text": "w",
+          "gid": 12,
+          "code": 119,
+          "width": 817.87109375,
+          "name": "w"
+        },
+        {
+          "text": "fi",
+          "gid": 13,
+          "code": 200,
+          "width": 629.8828125,
+          "name": "fi"
+        },
+        {
+          "text": "ffi",
+          "gid": 14,
+          "code": 201,
+          "width": 966.796875,
+          "name": "ffi"
+        }
+      ]
+    },
+    {
+      "name": "sid-raw-simple-ffi-shared",
+      "path": "sid-raw-simple-ffi-shared.pdf",
+      "label": "sid",
+      "wrapped": false,
+      "composite": false,
+      "sequence": "ffi",
+      "layout": "shared",
+      "codeLength": 1,
+      "sourceHex": "4fc96365",
+      "sourceText": "Office",
+      "sha256": "71ac72aed3e669885a8d2d7a2fac912b68bf80237e6bfffb246d68d5a63df410",
+      "symbols": [
+        {
+          "text": " ",
+          "gid": 1,
+          "code": 32,
+          "width": 317.87109375,
+          "name": "space"
+        },
+        {
+          "text": "N",
+          "gid": 2,
+          "code": 78,
+          "width": 748.046875,
+          "name": "N"
+        },
+        {
+          "text": "O",
+          "gid": 3,
+          "code": 79,
+          "width": 787.109375,
+          "name": "O"
+        },
+        {
+          "text": "a",
+          "gid": 4,
+          "code": 97,
+          "width": 612.79296875,
+          "name": "a"
+        },
+        {
+          "text": "c",
+          "gid": 5,
+          "code": 99,
+          "width": 549.8046875,
+          "name": "c"
+        },
+        {
+          "text": "e",
+          "gid": 6,
+          "code": 101,
+          "width": 615.234375,
+          "name": "e"
+        },
+        {
+          "text": "f",
+          "gid": 7,
+          "code": 102,
+          "width": 352.05078125,
+          "name": "f"
+        },
+        {
+          "text": "h",
+          "gid": 8,
+          "code": 104,
+          "width": 633.7890625,
+          "name": "h"
+        },
+        {
+          "text": "i",
+          "gid": 9,
+          "code": 105,
+          "width": 277.83203125,
+          "name": "i"
+        },
+        {
+          "text": "s",
+          "gid": 10,
+          "code": 115,
+          "width": 520.99609375,
+          "name": "s"
+        },
+        {
+          "text": "t",
+          "gid": 11,
+          "code": 116,
+          "width": 392.08984375,
+          "name": "t"
+        },
+        {
+          "text": "w",
+          "gid": 12,
+          "code": 119,
+          "width": 817.87109375,
+          "name": "w"
+        },
+        {
+          "text": "fi",
+          "gid": 13,
+          "code": 200,
+          "width": 629.8828125,
+          "name": "fi"
+        },
+        {
+          "text": "ffi",
+          "gid": 14,
+          "code": 201,
+          "width": 966.796875,
+          "name": "ffi"
+        }
+      ]
+    },
+    {
+      "name": "sid-otf-simple-fi-single",
+      "path": "sid-otf-simple-fi-single.pdf",
+      "label": "sid",
+      "wrapped": true,
+      "composite": false,
+      "sequence": "fi",
+      "layout": "single",
+      "codeLength": 1,
+      "sourceHex": "4f66c86365",
+      "sourceText": "Office",
+      "sha256": "dca52e7e44a97630f5a452a6857f2ac8a1f36374741f502f9304833513a2e697",
+      "symbols": [
+        {
+          "text": " ",
+          "gid": 1,
+          "code": 32,
+          "width": 317.87109375,
+          "name": "space"
+        },
+        {
+          "text": "N",
+          "gid": 2,
+          "code": 78,
+          "width": 748.046875,
+          "name": "N"
+        },
+        {
+          "text": "O",
+          "gid": 3,
+          "code": 79,
+          "width": 787.109375,
+          "name": "O"
+        },
+        {
+          "text": "a",
+          "gid": 4,
+          "code": 97,
+          "width": 612.79296875,
+          "name": "a"
+        },
+        {
+          "text": "c",
+          "gid": 5,
+          "code": 99,
+          "width": 549.8046875,
+          "name": "c"
+        },
+        {
+          "text": "e",
+          "gid": 6,
+          "code": 101,
+          "width": 615.234375,
+          "name": "e"
+        },
+        {
+          "text": "f",
+          "gid": 7,
+          "code": 102,
+          "width": 352.05078125,
+          "name": "f"
+        },
+        {
+          "text": "h",
+          "gid": 8,
+          "code": 104,
+          "width": 633.7890625,
+          "name": "h"
+        },
+        {
+          "text": "i",
+          "gid": 9,
+          "code": 105,
+          "width": 277.83203125,
+          "name": "i"
+        },
+        {
+          "text": "s",
+          "gid": 10,
+          "code": 115,
+          "width": 520.99609375,
+          "name": "s"
+        },
+        {
+          "text": "t",
+          "gid": 11,
+          "code": 116,
+          "width": 392.08984375,
+          "name": "t"
+        },
+        {
+          "text": "w",
+          "gid": 12,
+          "code": 119,
+          "width": 817.87109375,
+          "name": "w"
+        },
+        {
+          "text": "fi",
+          "gid": 13,
+          "code": 200,
+          "width": 629.8828125,
+          "name": "fi"
+        },
+        {
+          "text": "ffi",
+          "gid": 14,
+          "code": 201,
+          "width": 966.796875,
+          "name": "ffi"
+        }
+      ]
+    },
+    {
+      "name": "sid-otf-simple-fi-group",
+      "path": "sid-otf-simple-fi-group.pdf",
+      "label": "sid",
+      "wrapped": true,
+      "composite": false,
+      "sequence": "fi",
+      "layout": "group",
+      "codeLength": 1,
+      "sourceHex": "4f66c86365",
+      "sourceText": "Office",
+      "sha256": "19f90a38f591a914027585d5979252d7e60c805583e28500224f0df458ebe394",
+      "symbols": [
+        {
+          "text": " ",
+          "gid": 1,
+          "code": 32,
+          "width": 317.87109375,
+          "name": "space"
+        },
+        {
+          "text": "N",
+          "gid": 2,
+          "code": 78,
+          "width": 748.046875,
+          "name": "N"
+        },
+        {
+          "text": "O",
+          "gid": 3,
+          "code": 79,
+          "width": 787.109375,
+          "name": "O"
+        },
+        {
+          "text": "a",
+          "gid": 4,
+          "code": 97,
+          "width": 612.79296875,
+          "name": "a"
+        },
+        {
+          "text": "c",
+          "gid": 5,
+          "code": 99,
+          "width": 549.8046875,
+          "name": "c"
+        },
+        {
+          "text": "e",
+          "gid": 6,
+          "code": 101,
+          "width": 615.234375,
+          "name": "e"
+        },
+        {
+          "text": "f",
+          "gid": 7,
+          "code": 102,
+          "width": 352.05078125,
+          "name": "f"
+        },
+        {
+          "text": "h",
+          "gid": 8,
+          "code": 104,
+          "width": 633.7890625,
+          "name": "h"
+        },
+        {
+          "text": "i",
+          "gid": 9,
+          "code": 105,
+          "width": 277.83203125,
+          "name": "i"
+        },
+        {
+          "text": "s",
+          "gid": 10,
+          "code": 115,
+          "width": 520.99609375,
+          "name": "s"
+        },
+        {
+          "text": "t",
+          "gid": 11,
+          "code": 116,
+          "width": 392.08984375,
+          "name": "t"
+        },
+        {
+          "text": "w",
+          "gid": 12,
+          "code": 119,
+          "width": 817.87109375,
+          "name": "w"
+        },
+        {
+          "text": "fi",
+          "gid": 13,
+          "code": 200,
+          "width": 629.8828125,
+          "name": "fi"
+        },
+        {
+          "text": "ffi",
+          "gid": 14,
+          "code": 201,
+          "width": 966.796875,
+          "name": "ffi"
+        }
+      ]
+    },
+    {
+      "name": "sid-otf-simple-fi-shared",
+      "path": "sid-otf-simple-fi-shared.pdf",
+      "label": "sid",
+      "wrapped": true,
+      "composite": false,
+      "sequence": "fi",
+      "layout": "shared",
+      "codeLength": 1,
+      "sourceHex": "4f66c86365",
+      "sourceText": "Office",
+      "sha256": "f9c8aa9ae2b38aea8f47d188ee379f3497e78388bddd7a107c12fe9fea392db0",
+      "symbols": [
+        {
+          "text": " ",
+          "gid": 1,
+          "code": 32,
+          "width": 317.87109375,
+          "name": "space"
+        },
+        {
+          "text": "N",
+          "gid": 2,
+          "code": 78,
+          "width": 748.046875,
+          "name": "N"
+        },
+        {
+          "text": "O",
+          "gid": 3,
+          "code": 79,
+          "width": 787.109375,
+          "name": "O"
+        },
+        {
+          "text": "a",
+          "gid": 4,
+          "code": 97,
+          "width": 612.79296875,
+          "name": "a"
+        },
+        {
+          "text": "c",
+          "gid": 5,
+          "code": 99,
+          "width": 549.8046875,
+          "name": "c"
+        },
+        {
+          "text": "e",
+          "gid": 6,
+          "code": 101,
+          "width": 615.234375,
+          "name": "e"
+        },
+        {
+          "text": "f",
+          "gid": 7,
+          "code": 102,
+          "width": 352.05078125,
+          "name": "f"
+        },
+        {
+          "text": "h",
+          "gid": 8,
+          "code": 104,
+          "width": 633.7890625,
+          "name": "h"
+        },
+        {
+          "text": "i",
+          "gid": 9,
+          "code": 105,
+          "width": 277.83203125,
+          "name": "i"
+        },
+        {
+          "text": "s",
+          "gid": 10,
+          "code": 115,
+          "width": 520.99609375,
+          "name": "s"
+        },
+        {
+          "text": "t",
+          "gid": 11,
+          "code": 116,
+          "width": 392.08984375,
+          "name": "t"
+        },
+        {
+          "text": "w",
+          "gid": 12,
+          "code": 119,
+          "width": 817.87109375,
+          "name": "w"
+        },
+        {
+          "text": "fi",
+          "gid": 13,
+          "code": 200,
+          "width": 629.8828125,
+          "name": "fi"
+        },
+        {
+          "text": "ffi",
+          "gid": 14,
+          "code": 201,
+          "width": 966.796875,
+          "name": "ffi"
+        }
+      ]
+    },
+    {
+      "name": "sid-otf-simple-ffi-single",
+      "path": "sid-otf-simple-ffi-single.pdf",
+      "label": "sid",
+      "wrapped": true,
+      "composite": false,
+      "sequence": "ffi",
+      "layout": "single",
+      "codeLength": 1,
+      "sourceHex": "4fc96365",
+      "sourceText": "Office",
+      "sha256": "77ef5ae07943ee2acc7db1dfac738e6499665f13415667bff2e5471e35907f41",
+      "symbols": [
+        {
+          "text": " ",
+          "gid": 1,
+          "code": 32,
+          "width": 317.87109375,
+          "name": "space"
+        },
+        {
+          "text": "N",
+          "gid": 2,
+          "code": 78,
+          "width": 748.046875,
+          "name": "N"
+        },
+        {
+          "text": "O",
+          "gid": 3,
+          "code": 79,
+          "width": 787.109375,
+          "name": "O"
+        },
+        {
+          "text": "a",
+          "gid": 4,
+          "code": 97,
+          "width": 612.79296875,
+          "name": "a"
+        },
+        {
+          "text": "c",
+          "gid": 5,
+          "code": 99,
+          "width": 549.8046875,
+          "name": "c"
+        },
+        {
+          "text": "e",
+          "gid": 6,
+          "code": 101,
+          "width": 615.234375,
+          "name": "e"
+        },
+        {
+          "text": "f",
+          "gid": 7,
+          "code": 102,
+          "width": 352.05078125,
+          "name": "f"
+        },
+        {
+          "text": "h",
+          "gid": 8,
+          "code": 104,
+          "width": 633.7890625,
+          "name": "h"
+        },
+        {
+          "text": "i",
+          "gid": 9,
+          "code": 105,
+          "width": 277.83203125,
+          "name": "i"
+        },
+        {
+          "text": "s",
+          "gid": 10,
+          "code": 115,
+          "width": 520.99609375,
+          "name": "s"
+        },
+        {
+          "text": "t",
+          "gid": 11,
+          "code": 116,
+          "width": 392.08984375,
+          "name": "t"
+        },
+        {
+          "text": "w",
+          "gid": 12,
+          "code": 119,
+          "width": 817.87109375,
+          "name": "w"
+        },
+        {
+          "text": "fi",
+          "gid": 13,
+          "code": 200,
+          "width": 629.8828125,
+          "name": "fi"
+        },
+        {
+          "text": "ffi",
+          "gid": 14,
+          "code": 201,
+          "width": 966.796875,
+          "name": "ffi"
+        }
+      ]
+    },
+    {
+      "name": "sid-otf-simple-ffi-group",
+      "path": "sid-otf-simple-ffi-group.pdf",
+      "label": "sid",
+      "wrapped": true,
+      "composite": false,
+      "sequence": "ffi",
+      "layout": "group",
+      "codeLength": 1,
+      "sourceHex": "4fc96365",
+      "sourceText": "Office",
+      "sha256": "8f510242ef7ef6099501539520a760925cfeb627cab74c35a09454c67b63f78f",
+      "symbols": [
+        {
+          "text": " ",
+          "gid": 1,
+          "code": 32,
+          "width": 317.87109375,
+          "name": "space"
+        },
+        {
+          "text": "N",
+          "gid": 2,
+          "code": 78,
+          "width": 748.046875,
+          "name": "N"
+        },
+        {
+          "text": "O",
+          "gid": 3,
+          "code": 79,
+          "width": 787.109375,
+          "name": "O"
+        },
+        {
+          "text": "a",
+          "gid": 4,
+          "code": 97,
+          "width": 612.79296875,
+          "name": "a"
+        },
+        {
+          "text": "c",
+          "gid": 5,
+          "code": 99,
+          "width": 549.8046875,
+          "name": "c"
+        },
+        {
+          "text": "e",
+          "gid": 6,
+          "code": 101,
+          "width": 615.234375,
+          "name": "e"
+        },
+        {
+          "text": "f",
+          "gid": 7,
+          "code": 102,
+          "width": 352.05078125,
+          "name": "f"
+        },
+        {
+          "text": "h",
+          "gid": 8,
+          "code": 104,
+          "width": 633.7890625,
+          "name": "h"
+        },
+        {
+          "text": "i",
+          "gid": 9,
+          "code": 105,
+          "width": 277.83203125,
+          "name": "i"
+        },
+        {
+          "text": "s",
+          "gid": 10,
+          "code": 115,
+          "width": 520.99609375,
+          "name": "s"
+        },
+        {
+          "text": "t",
+          "gid": 11,
+          "code": 116,
+          "width": 392.08984375,
+          "name": "t"
+        },
+        {
+          "text": "w",
+          "gid": 12,
+          "code": 119,
+          "width": 817.87109375,
+          "name": "w"
+        },
+        {
+          "text": "fi",
+          "gid": 13,
+          "code": 200,
+          "width": 629.8828125,
+          "name": "fi"
+        },
+        {
+          "text": "ffi",
+          "gid": 14,
+          "code": 201,
+          "width": 966.796875,
+          "name": "ffi"
+        }
+      ]
+    },
+    {
+      "name": "sid-otf-simple-ffi-shared",
+      "path": "sid-otf-simple-ffi-shared.pdf",
+      "label": "sid",
+      "wrapped": true,
+      "composite": false,
+      "sequence": "ffi",
+      "layout": "shared",
+      "codeLength": 1,
+      "sourceHex": "4fc96365",
+      "sourceText": "Office",
+      "sha256": "464672b95c9ba2be76d32a65cf5c5e960872b99af0b675c61f56c64cadf03025",
+      "symbols": [
+        {
+          "text": " ",
+          "gid": 1,
+          "code": 32,
+          "width": 317.87109375,
+          "name": "space"
+        },
+        {
+          "text": "N",
+          "gid": 2,
+          "code": 78,
+          "width": 748.046875,
+          "name": "N"
+        },
+        {
+          "text": "O",
+          "gid": 3,
+          "code": 79,
+          "width": 787.109375,
+          "name": "O"
+        },
+        {
+          "text": "a",
+          "gid": 4,
+          "code": 97,
+          "width": 612.79296875,
+          "name": "a"
+        },
+        {
+          "text": "c",
+          "gid": 5,
+          "code": 99,
+          "width": 549.8046875,
+          "name": "c"
+        },
+        {
+          "text": "e",
+          "gid": 6,
+          "code": 101,
+          "width": 615.234375,
+          "name": "e"
+        },
+        {
+          "text": "f",
+          "gid": 7,
+          "code": 102,
+          "width": 352.05078125,
+          "name": "f"
+        },
+        {
+          "text": "h",
+          "gid": 8,
+          "code": 104,
+          "width": 633.7890625,
+          "name": "h"
+        },
+        {
+          "text": "i",
+          "gid": 9,
+          "code": 105,
+          "width": 277.83203125,
+          "name": "i"
+        },
+        {
+          "text": "s",
+          "gid": 10,
+          "code": 115,
+          "width": 520.99609375,
+          "name": "s"
+        },
+        {
+          "text": "t",
+          "gid": 11,
+          "code": 116,
+          "width": 392.08984375,
+          "name": "t"
+        },
+        {
+          "text": "w",
+          "gid": 12,
+          "code": 119,
+          "width": 817.87109375,
+          "name": "w"
+        },
+        {
+          "text": "fi",
+          "gid": 13,
+          "code": 200,
+          "width": 629.8828125,
+          "name": "fi"
+        },
+        {
+          "text": "ffi",
+          "gid": 14,
+          "code": 201,
+          "width": 966.796875,
+          "name": "ffi"
+        }
+      ]
+    },
+    {
+      "name": "sid-raw-cid-fi-single",
+      "path": "sid-raw-cid-fi-single.pdf",
+      "label": "sid",
+      "wrapped": false,
+      "composite": true,
+      "sequence": "fi",
+      "layout": "single",
+      "codeLength": 2,
+      "sourceHex": "00030007000d00050006",
+      "sourceText": "Office",
+      "sha256": "38f03cb5bc9ce8c227047d82577128cd0b1f37fdac4ac6a8be6c99ebb1c6b0e8",
+      "symbols": [
+        {
+          "text": " ",
+          "gid": 1,
+          "code": 1,
+          "width": 317.87109375,
+          "name": "space"
+        },
+        {
+          "text": "N",
+          "gid": 2,
+          "code": 2,
+          "width": 748.046875,
+          "name": "N"
+        },
+        {
+          "text": "O",
+          "gid": 3,
+          "code": 3,
+          "width": 787.109375,
+          "name": "O"
+        },
+        {
+          "text": "a",
+          "gid": 4,
+          "code": 4,
+          "width": 612.79296875,
+          "name": "a"
+        },
+        {
+          "text": "c",
+          "gid": 5,
+          "code": 5,
+          "width": 549.8046875,
+          "name": "c"
+        },
+        {
+          "text": "e",
+          "gid": 6,
+          "code": 6,
+          "width": 615.234375,
+          "name": "e"
+        },
+        {
+          "text": "f",
+          "gid": 7,
+          "code": 7,
+          "width": 352.05078125,
+          "name": "f"
+        },
+        {
+          "text": "h",
+          "gid": 8,
+          "code": 8,
+          "width": 633.7890625,
+          "name": "h"
+        },
+        {
+          "text": "i",
+          "gid": 9,
+          "code": 9,
+          "width": 277.83203125,
+          "name": "i"
+        },
+        {
+          "text": "s",
+          "gid": 10,
+          "code": 10,
+          "width": 520.99609375,
+          "name": "s"
+        },
+        {
+          "text": "t",
+          "gid": 11,
+          "code": 11,
+          "width": 392.08984375,
+          "name": "t"
+        },
+        {
+          "text": "w",
+          "gid": 12,
+          "code": 12,
+          "width": 817.87109375,
+          "name": "w"
+        },
+        {
+          "text": "fi",
+          "gid": 13,
+          "code": 13,
+          "width": 629.8828125,
+          "name": "fi"
+        },
+        {
+          "text": "ffi",
+          "gid": 14,
+          "code": 14,
+          "width": 966.796875,
+          "name": "ffi"
+        }
+      ]
+    },
+    {
+      "name": "sid-raw-cid-fi-group",
+      "path": "sid-raw-cid-fi-group.pdf",
+      "label": "sid",
+      "wrapped": false,
+      "composite": true,
+      "sequence": "fi",
+      "layout": "group",
+      "codeLength": 2,
+      "sourceHex": "00030007000d00050006",
+      "sourceText": "Office",
+      "sha256": "5e730b966e17f2d0b3c8be730ac5d058b2151e058fc888094c324c8cdde146d8",
+      "symbols": [
+        {
+          "text": " ",
+          "gid": 1,
+          "code": 1,
+          "width": 317.87109375,
+          "name": "space"
+        },
+        {
+          "text": "N",
+          "gid": 2,
+          "code": 2,
+          "width": 748.046875,
+          "name": "N"
+        },
+        {
+          "text": "O",
+          "gid": 3,
+          "code": 3,
+          "width": 787.109375,
+          "name": "O"
+        },
+        {
+          "text": "a",
+          "gid": 4,
+          "code": 4,
+          "width": 612.79296875,
+          "name": "a"
+        },
+        {
+          "text": "c",
+          "gid": 5,
+          "code": 5,
+          "width": 549.8046875,
+          "name": "c"
+        },
+        {
+          "text": "e",
+          "gid": 6,
+          "code": 6,
+          "width": 615.234375,
+          "name": "e"
+        },
+        {
+          "text": "f",
+          "gid": 7,
+          "code": 7,
+          "width": 352.05078125,
+          "name": "f"
+        },
+        {
+          "text": "h",
+          "gid": 8,
+          "code": 8,
+          "width": 633.7890625,
+          "name": "h"
+        },
+        {
+          "text": "i",
+          "gid": 9,
+          "code": 9,
+          "width": 277.83203125,
+          "name": "i"
+        },
+        {
+          "text": "s",
+          "gid": 10,
+          "code": 10,
+          "width": 520.99609375,
+          "name": "s"
+        },
+        {
+          "text": "t",
+          "gid": 11,
+          "code": 11,
+          "width": 392.08984375,
+          "name": "t"
+        },
+        {
+          "text": "w",
+          "gid": 12,
+          "code": 12,
+          "width": 817.87109375,
+          "name": "w"
+        },
+        {
+          "text": "fi",
+          "gid": 13,
+          "code": 13,
+          "width": 629.8828125,
+          "name": "fi"
+        },
+        {
+          "text": "ffi",
+          "gid": 14,
+          "code": 14,
+          "width": 966.796875,
+          "name": "ffi"
+        }
+      ]
+    },
+    {
+      "name": "sid-raw-cid-fi-shared",
+      "path": "sid-raw-cid-fi-shared.pdf",
+      "label": "sid",
+      "wrapped": false,
+      "composite": true,
+      "sequence": "fi",
+      "layout": "shared",
+      "codeLength": 2,
+      "sourceHex": "00030007000d00050006",
+      "sourceText": "Office",
+      "sha256": "9b8fba0cf7cadd3ea16c4a7e4cfb5c657e1c1da75de38a5c1bf648bd79743b3f",
+      "symbols": [
+        {
+          "text": " ",
+          "gid": 1,
+          "code": 1,
+          "width": 317.87109375,
+          "name": "space"
+        },
+        {
+          "text": "N",
+          "gid": 2,
+          "code": 2,
+          "width": 748.046875,
+          "name": "N"
+        },
+        {
+          "text": "O",
+          "gid": 3,
+          "code": 3,
+          "width": 787.109375,
+          "name": "O"
+        },
+        {
+          "text": "a",
+          "gid": 4,
+          "code": 4,
+          "width": 612.79296875,
+          "name": "a"
+        },
+        {
+          "text": "c",
+          "gid": 5,
+          "code": 5,
+          "width": 549.8046875,
+          "name": "c"
+        },
+        {
+          "text": "e",
+          "gid": 6,
+          "code": 6,
+          "width": 615.234375,
+          "name": "e"
+        },
+        {
+          "text": "f",
+          "gid": 7,
+          "code": 7,
+          "width": 352.05078125,
+          "name": "f"
+        },
+        {
+          "text": "h",
+          "gid": 8,
+          "code": 8,
+          "width": 633.7890625,
+          "name": "h"
+        },
+        {
+          "text": "i",
+          "gid": 9,
+          "code": 9,
+          "width": 277.83203125,
+          "name": "i"
+        },
+        {
+          "text": "s",
+          "gid": 10,
+          "code": 10,
+          "width": 520.99609375,
+          "name": "s"
+        },
+        {
+          "text": "t",
+          "gid": 11,
+          "code": 11,
+          "width": 392.08984375,
+          "name": "t"
+        },
+        {
+          "text": "w",
+          "gid": 12,
+          "code": 12,
+          "width": 817.87109375,
+          "name": "w"
+        },
+        {
+          "text": "fi",
+          "gid": 13,
+          "code": 13,
+          "width": 629.8828125,
+          "name": "fi"
+        },
+        {
+          "text": "ffi",
+          "gid": 14,
+          "code": 14,
+          "width": 966.796875,
+          "name": "ffi"
+        }
+      ]
+    },
+    {
+      "name": "sid-raw-cid-ffi-single",
+      "path": "sid-raw-cid-ffi-single.pdf",
+      "label": "sid",
+      "wrapped": false,
+      "composite": true,
+      "sequence": "ffi",
+      "layout": "single",
+      "codeLength": 2,
+      "sourceHex": "0003000e00050006",
+      "sourceText": "Office",
+      "sha256": "2c95c28c18439e5262a34a1d52ab9544aa89b63284b1486801fcb73177f2e9f0",
+      "symbols": [
+        {
+          "text": " ",
+          "gid": 1,
+          "code": 1,
+          "width": 317.87109375,
+          "name": "space"
+        },
+        {
+          "text": "N",
+          "gid": 2,
+          "code": 2,
+          "width": 748.046875,
+          "name": "N"
+        },
+        {
+          "text": "O",
+          "gid": 3,
+          "code": 3,
+          "width": 787.109375,
+          "name": "O"
+        },
+        {
+          "text": "a",
+          "gid": 4,
+          "code": 4,
+          "width": 612.79296875,
+          "name": "a"
+        },
+        {
+          "text": "c",
+          "gid": 5,
+          "code": 5,
+          "width": 549.8046875,
+          "name": "c"
+        },
+        {
+          "text": "e",
+          "gid": 6,
+          "code": 6,
+          "width": 615.234375,
+          "name": "e"
+        },
+        {
+          "text": "f",
+          "gid": 7,
+          "code": 7,
+          "width": 352.05078125,
+          "name": "f"
+        },
+        {
+          "text": "h",
+          "gid": 8,
+          "code": 8,
+          "width": 633.7890625,
+          "name": "h"
+        },
+        {
+          "text": "i",
+          "gid": 9,
+          "code": 9,
+          "width": 277.83203125,
+          "name": "i"
+        },
+        {
+          "text": "s",
+          "gid": 10,
+          "code": 10,
+          "width": 520.99609375,
+          "name": "s"
+        },
+        {
+          "text": "t",
+          "gid": 11,
+          "code": 11,
+          "width": 392.08984375,
+          "name": "t"
+        },
+        {
+          "text": "w",
+          "gid": 12,
+          "code": 12,
+          "width": 817.87109375,
+          "name": "w"
+        },
+        {
+          "text": "fi",
+          "gid": 13,
+          "code": 13,
+          "width": 629.8828125,
+          "name": "fi"
+        },
+        {
+          "text": "ffi",
+          "gid": 14,
+          "code": 14,
+          "width": 966.796875,
+          "name": "ffi"
+        }
+      ]
+    },
+    {
+      "name": "sid-raw-cid-ffi-group",
+      "path": "sid-raw-cid-ffi-group.pdf",
+      "label": "sid",
+      "wrapped": false,
+      "composite": true,
+      "sequence": "ffi",
+      "layout": "group",
+      "codeLength": 2,
+      "sourceHex": "0003000e00050006",
+      "sourceText": "Office",
+      "sha256": "b35cf40e139375a4b5d50bb8837fb71fae2f93adac9665466b02fbc9dfe5c7d3",
+      "symbols": [
+        {
+          "text": " ",
+          "gid": 1,
+          "code": 1,
+          "width": 317.87109375,
+          "name": "space"
+        },
+        {
+          "text": "N",
+          "gid": 2,
+          "code": 2,
+          "width": 748.046875,
+          "name": "N"
+        },
+        {
+          "text": "O",
+          "gid": 3,
+          "code": 3,
+          "width": 787.109375,
+          "name": "O"
+        },
+        {
+          "text": "a",
+          "gid": 4,
+          "code": 4,
+          "width": 612.79296875,
+          "name": "a"
+        },
+        {
+          "text": "c",
+          "gid": 5,
+          "code": 5,
+          "width": 549.8046875,
+          "name": "c"
+        },
+        {
+          "text": "e",
+          "gid": 6,
+          "code": 6,
+          "width": 615.234375,
+          "name": "e"
+        },
+        {
+          "text": "f",
+          "gid": 7,
+          "code": 7,
+          "width": 352.05078125,
+          "name": "f"
+        },
+        {
+          "text": "h",
+          "gid": 8,
+          "code": 8,
+          "width": 633.7890625,
+          "name": "h"
+        },
+        {
+          "text": "i",
+          "gid": 9,
+          "code": 9,
+          "width": 277.83203125,
+          "name": "i"
+        },
+        {
+          "text": "s",
+          "gid": 10,
+          "code": 10,
+          "width": 520.99609375,
+          "name": "s"
+        },
+        {
+          "text": "t",
+          "gid": 11,
+          "code": 11,
+          "width": 392.08984375,
+          "name": "t"
+        },
+        {
+          "text": "w",
+          "gid": 12,
+          "code": 12,
+          "width": 817.87109375,
+          "name": "w"
+        },
+        {
+          "text": "fi",
+          "gid": 13,
+          "code": 13,
+          "width": 629.8828125,
+          "name": "fi"
+        },
+        {
+          "text": "ffi",
+          "gid": 14,
+          "code": 14,
+          "width": 966.796875,
+          "name": "ffi"
+        }
+      ]
+    },
+    {
+      "name": "sid-raw-cid-ffi-shared",
+      "path": "sid-raw-cid-ffi-shared.pdf",
+      "label": "sid",
+      "wrapped": false,
+      "composite": true,
+      "sequence": "ffi",
+      "layout": "shared",
+      "codeLength": 2,
+      "sourceHex": "0003000e00050006",
+      "sourceText": "Office",
+      "sha256": "9039ec5d6128654b65454778aaef98732bad8edd7b0b74d9bcb49f7b6a3b6d0e",
+      "symbols": [
+        {
+          "text": " ",
+          "gid": 1,
+          "code": 1,
+          "width": 317.87109375,
+          "name": "space"
+        },
+        {
+          "text": "N",
+          "gid": 2,
+          "code": 2,
+          "width": 748.046875,
+          "name": "N"
+        },
+        {
+          "text": "O",
+          "gid": 3,
+          "code": 3,
+          "width": 787.109375,
+          "name": "O"
+        },
+        {
+          "text": "a",
+          "gid": 4,
+          "code": 4,
+          "width": 612.79296875,
+          "name": "a"
+        },
+        {
+          "text": "c",
+          "gid": 5,
+          "code": 5,
+          "width": 549.8046875,
+          "name": "c"
+        },
+        {
+          "text": "e",
+          "gid": 6,
+          "code": 6,
+          "width": 615.234375,
+          "name": "e"
+        },
+        {
+          "text": "f",
+          "gid": 7,
+          "code": 7,
+          "width": 352.05078125,
+          "name": "f"
+        },
+        {
+          "text": "h",
+          "gid": 8,
+          "code": 8,
+          "width": 633.7890625,
+          "name": "h"
+        },
+        {
+          "text": "i",
+          "gid": 9,
+          "code": 9,
+          "width": 277.83203125,
+          "name": "i"
+        },
+        {
+          "text": "s",
+          "gid": 10,
+          "code": 10,
+          "width": 520.99609375,
+          "name": "s"
+        },
+        {
+          "text": "t",
+          "gid": 11,
+          "code": 11,
+          "width": 392.08984375,
+          "name": "t"
+        },
+        {
+          "text": "w",
+          "gid": 12,
+          "code": 12,
+          "width": 817.87109375,
+          "name": "w"
+        },
+        {
+          "text": "fi",
+          "gid": 13,
+          "code": 13,
+          "width": 629.8828125,
+          "name": "fi"
+        },
+        {
+          "text": "ffi",
+          "gid": 14,
+          "code": 14,
+          "width": 966.796875,
+          "name": "ffi"
+        }
+      ]
+    },
+    {
+      "name": "sid-otf-cid-fi-single",
+      "path": "sid-otf-cid-fi-single.pdf",
+      "label": "sid",
+      "wrapped": true,
+      "composite": true,
+      "sequence": "fi",
+      "layout": "single",
+      "codeLength": 2,
+      "sourceHex": "00030007000d00050006",
+      "sourceText": "Office",
+      "sha256": "41a47bc5f91ec6679af2d27a28ff07d072fca0f746cf0f9d2c76044c74b24580",
+      "symbols": [
+        {
+          "text": " ",
+          "gid": 1,
+          "code": 1,
+          "width": 317.87109375,
+          "name": "space"
+        },
+        {
+          "text": "N",
+          "gid": 2,
+          "code": 2,
+          "width": 748.046875,
+          "name": "N"
+        },
+        {
+          "text": "O",
+          "gid": 3,
+          "code": 3,
+          "width": 787.109375,
+          "name": "O"
+        },
+        {
+          "text": "a",
+          "gid": 4,
+          "code": 4,
+          "width": 612.79296875,
+          "name": "a"
+        },
+        {
+          "text": "c",
+          "gid": 5,
+          "code": 5,
+          "width": 549.8046875,
+          "name": "c"
+        },
+        {
+          "text": "e",
+          "gid": 6,
+          "code": 6,
+          "width": 615.234375,
+          "name": "e"
+        },
+        {
+          "text": "f",
+          "gid": 7,
+          "code": 7,
+          "width": 352.05078125,
+          "name": "f"
+        },
+        {
+          "text": "h",
+          "gid": 8,
+          "code": 8,
+          "width": 633.7890625,
+          "name": "h"
+        },
+        {
+          "text": "i",
+          "gid": 9,
+          "code": 9,
+          "width": 277.83203125,
+          "name": "i"
+        },
+        {
+          "text": "s",
+          "gid": 10,
+          "code": 10,
+          "width": 520.99609375,
+          "name": "s"
+        },
+        {
+          "text": "t",
+          "gid": 11,
+          "code": 11,
+          "width": 392.08984375,
+          "name": "t"
+        },
+        {
+          "text": "w",
+          "gid": 12,
+          "code": 12,
+          "width": 817.87109375,
+          "name": "w"
+        },
+        {
+          "text": "fi",
+          "gid": 13,
+          "code": 13,
+          "width": 629.8828125,
+          "name": "fi"
+        },
+        {
+          "text": "ffi",
+          "gid": 14,
+          "code": 14,
+          "width": 966.796875,
+          "name": "ffi"
+        }
+      ]
+    },
+    {
+      "name": "sid-otf-cid-fi-group",
+      "path": "sid-otf-cid-fi-group.pdf",
+      "label": "sid",
+      "wrapped": true,
+      "composite": true,
+      "sequence": "fi",
+      "layout": "group",
+      "codeLength": 2,
+      "sourceHex": "00030007000d00050006",
+      "sourceText": "Office",
+      "sha256": "7682dd705fe8b6247db5682a47d365261f17ea3a17269b590261ac052d2ddcae",
+      "symbols": [
+        {
+          "text": " ",
+          "gid": 1,
+          "code": 1,
+          "width": 317.87109375,
+          "name": "space"
+        },
+        {
+          "text": "N",
+          "gid": 2,
+          "code": 2,
+          "width": 748.046875,
+          "name": "N"
+        },
+        {
+          "text": "O",
+          "gid": 3,
+          "code": 3,
+          "width": 787.109375,
+          "name": "O"
+        },
+        {
+          "text": "a",
+          "gid": 4,
+          "code": 4,
+          "width": 612.79296875,
+          "name": "a"
+        },
+        {
+          "text": "c",
+          "gid": 5,
+          "code": 5,
+          "width": 549.8046875,
+          "name": "c"
+        },
+        {
+          "text": "e",
+          "gid": 6,
+          "code": 6,
+          "width": 615.234375,
+          "name": "e"
+        },
+        {
+          "text": "f",
+          "gid": 7,
+          "code": 7,
+          "width": 352.05078125,
+          "name": "f"
+        },
+        {
+          "text": "h",
+          "gid": 8,
+          "code": 8,
+          "width": 633.7890625,
+          "name": "h"
+        },
+        {
+          "text": "i",
+          "gid": 9,
+          "code": 9,
+          "width": 277.83203125,
+          "name": "i"
+        },
+        {
+          "text": "s",
+          "gid": 10,
+          "code": 10,
+          "width": 520.99609375,
+          "name": "s"
+        },
+        {
+          "text": "t",
+          "gid": 11,
+          "code": 11,
+          "width": 392.08984375,
+          "name": "t"
+        },
+        {
+          "text": "w",
+          "gid": 12,
+          "code": 12,
+          "width": 817.87109375,
+          "name": "w"
+        },
+        {
+          "text": "fi",
+          "gid": 13,
+          "code": 13,
+          "width": 629.8828125,
+          "name": "fi"
+        },
+        {
+          "text": "ffi",
+          "gid": 14,
+          "code": 14,
+          "width": 966.796875,
+          "name": "ffi"
+        }
+      ]
+    },
+    {
+      "name": "sid-otf-cid-fi-shared",
+      "path": "sid-otf-cid-fi-shared.pdf",
+      "label": "sid",
+      "wrapped": true,
+      "composite": true,
+      "sequence": "fi",
+      "layout": "shared",
+      "codeLength": 2,
+      "sourceHex": "00030007000d00050006",
+      "sourceText": "Office",
+      "sha256": "5fb140d4ef2ceee122ea03213e46022270e4a22c4f1345e377077483c8e5e93d",
+      "symbols": [
+        {
+          "text": " ",
+          "gid": 1,
+          "code": 1,
+          "width": 317.87109375,
+          "name": "space"
+        },
+        {
+          "text": "N",
+          "gid": 2,
+          "code": 2,
+          "width": 748.046875,
+          "name": "N"
+        },
+        {
+          "text": "O",
+          "gid": 3,
+          "code": 3,
+          "width": 787.109375,
+          "name": "O"
+        },
+        {
+          "text": "a",
+          "gid": 4,
+          "code": 4,
+          "width": 612.79296875,
+          "name": "a"
+        },
+        {
+          "text": "c",
+          "gid": 5,
+          "code": 5,
+          "width": 549.8046875,
+          "name": "c"
+        },
+        {
+          "text": "e",
+          "gid": 6,
+          "code": 6,
+          "width": 615.234375,
+          "name": "e"
+        },
+        {
+          "text": "f",
+          "gid": 7,
+          "code": 7,
+          "width": 352.05078125,
+          "name": "f"
+        },
+        {
+          "text": "h",
+          "gid": 8,
+          "code": 8,
+          "width": 633.7890625,
+          "name": "h"
+        },
+        {
+          "text": "i",
+          "gid": 9,
+          "code": 9,
+          "width": 277.83203125,
+          "name": "i"
+        },
+        {
+          "text": "s",
+          "gid": 10,
+          "code": 10,
+          "width": 520.99609375,
+          "name": "s"
+        },
+        {
+          "text": "t",
+          "gid": 11,
+          "code": 11,
+          "width": 392.08984375,
+          "name": "t"
+        },
+        {
+          "text": "w",
+          "gid": 12,
+          "code": 12,
+          "width": 817.87109375,
+          "name": "w"
+        },
+        {
+          "text": "fi",
+          "gid": 13,
+          "code": 13,
+          "width": 629.8828125,
+          "name": "fi"
+        },
+        {
+          "text": "ffi",
+          "gid": 14,
+          "code": 14,
+          "width": 966.796875,
+          "name": "ffi"
+        }
+      ]
+    },
+    {
+      "name": "sid-otf-cid-ffi-single",
+      "path": "sid-otf-cid-ffi-single.pdf",
+      "label": "sid",
+      "wrapped": true,
+      "composite": true,
+      "sequence": "ffi",
+      "layout": "single",
+      "codeLength": 2,
+      "sourceHex": "0003000e00050006",
+      "sourceText": "Office",
+      "sha256": "4782621ed73b64e1c8fc02a4128aa18691a0eedf951b09831eac852aaa40cbdd",
+      "symbols": [
+        {
+          "text": " ",
+          "gid": 1,
+          "code": 1,
+          "width": 317.87109375,
+          "name": "space"
+        },
+        {
+          "text": "N",
+          "gid": 2,
+          "code": 2,
+          "width": 748.046875,
+          "name": "N"
+        },
+        {
+          "text": "O",
+          "gid": 3,
+          "code": 3,
+          "width": 787.109375,
+          "name": "O"
+        },
+        {
+          "text": "a",
+          "gid": 4,
+          "code": 4,
+          "width": 612.79296875,
+          "name": "a"
+        },
+        {
+          "text": "c",
+          "gid": 5,
+          "code": 5,
+          "width": 549.8046875,
+          "name": "c"
+        },
+        {
+          "text": "e",
+          "gid": 6,
+          "code": 6,
+          "width": 615.234375,
+          "name": "e"
+        },
+        {
+          "text": "f",
+          "gid": 7,
+          "code": 7,
+          "width": 352.05078125,
+          "name": "f"
+        },
+        {
+          "text": "h",
+          "gid": 8,
+          "code": 8,
+          "width": 633.7890625,
+          "name": "h"
+        },
+        {
+          "text": "i",
+          "gid": 9,
+          "code": 9,
+          "width": 277.83203125,
+          "name": "i"
+        },
+        {
+          "text": "s",
+          "gid": 10,
+          "code": 10,
+          "width": 520.99609375,
+          "name": "s"
+        },
+        {
+          "text": "t",
+          "gid": 11,
+          "code": 11,
+          "width": 392.08984375,
+          "name": "t"
+        },
+        {
+          "text": "w",
+          "gid": 12,
+          "code": 12,
+          "width": 817.87109375,
+          "name": "w"
+        },
+        {
+          "text": "fi",
+          "gid": 13,
+          "code": 13,
+          "width": 629.8828125,
+          "name": "fi"
+        },
+        {
+          "text": "ffi",
+          "gid": 14,
+          "code": 14,
+          "width": 966.796875,
+          "name": "ffi"
+        }
+      ]
+    },
+    {
+      "name": "sid-otf-cid-ffi-group",
+      "path": "sid-otf-cid-ffi-group.pdf",
+      "label": "sid",
+      "wrapped": true,
+      "composite": true,
+      "sequence": "ffi",
+      "layout": "group",
+      "codeLength": 2,
+      "sourceHex": "0003000e00050006",
+      "sourceText": "Office",
+      "sha256": "2a637e53b4084d8a438d3c138301313c506e0e7327932ebace3d333b65b31352",
+      "symbols": [
+        {
+          "text": " ",
+          "gid": 1,
+          "code": 1,
+          "width": 317.87109375,
+          "name": "space"
+        },
+        {
+          "text": "N",
+          "gid": 2,
+          "code": 2,
+          "width": 748.046875,
+          "name": "N"
+        },
+        {
+          "text": "O",
+          "gid": 3,
+          "code": 3,
+          "width": 787.109375,
+          "name": "O"
+        },
+        {
+          "text": "a",
+          "gid": 4,
+          "code": 4,
+          "width": 612.79296875,
+          "name": "a"
+        },
+        {
+          "text": "c",
+          "gid": 5,
+          "code": 5,
+          "width": 549.8046875,
+          "name": "c"
+        },
+        {
+          "text": "e",
+          "gid": 6,
+          "code": 6,
+          "width": 615.234375,
+          "name": "e"
+        },
+        {
+          "text": "f",
+          "gid": 7,
+          "code": 7,
+          "width": 352.05078125,
+          "name": "f"
+        },
+        {
+          "text": "h",
+          "gid": 8,
+          "code": 8,
+          "width": 633.7890625,
+          "name": "h"
+        },
+        {
+          "text": "i",
+          "gid": 9,
+          "code": 9,
+          "width": 277.83203125,
+          "name": "i"
+        },
+        {
+          "text": "s",
+          "gid": 10,
+          "code": 10,
+          "width": 520.99609375,
+          "name": "s"
+        },
+        {
+          "text": "t",
+          "gid": 11,
+          "code": 11,
+          "width": 392.08984375,
+          "name": "t"
+        },
+        {
+          "text": "w",
+          "gid": 12,
+          "code": 12,
+          "width": 817.87109375,
+          "name": "w"
+        },
+        {
+          "text": "fi",
+          "gid": 13,
+          "code": 13,
+          "width": 629.8828125,
+          "name": "fi"
+        },
+        {
+          "text": "ffi",
+          "gid": 14,
+          "code": 14,
+          "width": 966.796875,
+          "name": "ffi"
+        }
+      ]
+    },
+    {
+      "name": "sid-otf-cid-ffi-shared",
+      "path": "sid-otf-cid-ffi-shared.pdf",
+      "label": "sid",
+      "wrapped": true,
+      "composite": true,
+      "sequence": "ffi",
+      "layout": "shared",
+      "codeLength": 2,
+      "sourceHex": "0003000e00050006",
+      "sourceText": "Office",
+      "sha256": "d27c8418f81e79a3207028d0260f0aaeee934f3b79bcec7cb91227802ec17870",
+      "symbols": [
+        {
+          "text": " ",
+          "gid": 1,
+          "code": 1,
+          "width": 317.87109375,
+          "name": "space"
+        },
+        {
+          "text": "N",
+          "gid": 2,
+          "code": 2,
+          "width": 748.046875,
+          "name": "N"
+        },
+        {
+          "text": "O",
+          "gid": 3,
+          "code": 3,
+          "width": 787.109375,
+          "name": "O"
+        },
+        {
+          "text": "a",
+          "gid": 4,
+          "code": 4,
+          "width": 612.79296875,
+          "name": "a"
+        },
+        {
+          "text": "c",
+          "gid": 5,
+          "code": 5,
+          "width": 549.8046875,
+          "name": "c"
+        },
+        {
+          "text": "e",
+          "gid": 6,
+          "code": 6,
+          "width": 615.234375,
+          "name": "e"
+        },
+        {
+          "text": "f",
+          "gid": 7,
+          "code": 7,
+          "width": 352.05078125,
+          "name": "f"
+        },
+        {
+          "text": "h",
+          "gid": 8,
+          "code": 8,
+          "width": 633.7890625,
+          "name": "h"
+        },
+        {
+          "text": "i",
+          "gid": 9,
+          "code": 9,
+          "width": 277.83203125,
+          "name": "i"
+        },
+        {
+          "text": "s",
+          "gid": 10,
+          "code": 10,
+          "width": 520.99609375,
+          "name": "s"
+        },
+        {
+          "text": "t",
+          "gid": 11,
+          "code": 11,
+          "width": 392.08984375,
+          "name": "t"
+        },
+        {
+          "text": "w",
+          "gid": 12,
+          "code": 12,
+          "width": 817.87109375,
+          "name": "w"
+        },
+        {
+          "text": "fi",
+          "gid": 13,
+          "code": 13,
+          "width": 629.8828125,
+          "name": "fi"
+        },
+        {
+          "text": "ffi",
+          "gid": 14,
+          "code": 14,
+          "width": 966.796875,
+          "name": "ffi"
+        }
+      ]
+    },
+    {
+      "name": "cid-raw-cid-fi-single",
+      "path": "cid-raw-cid-fi-single.pdf",
+      "label": "cid",
+      "wrapped": false,
+      "composite": true,
+      "sequence": "fi",
+      "layout": "single",
+      "codeLength": 2,
+      "sourceHex": "00030007000d00050006",
+      "sourceText": "Office",
+      "sha256": "82b37f8fc9892da6d6683dcbbe0c3f45a21bb8f7b9e8febeecb87899b9af9484",
+      "symbols": [
+        {
+          "text": " ",
+          "gid": 1,
+          "code": 1,
+          "width": 317.87109375,
+          "name": "cid00001"
+        },
+        {
+          "text": "N",
+          "gid": 2,
+          "code": 2,
+          "width": 748.046875,
+          "name": "cid00002"
+        },
+        {
+          "text": "O",
+          "gid": 3,
+          "code": 3,
+          "width": 787.109375,
+          "name": "cid00003"
+        },
+        {
+          "text": "a",
+          "gid": 4,
+          "code": 4,
+          "width": 612.79296875,
+          "name": "cid00004"
+        },
+        {
+          "text": "c",
+          "gid": 5,
+          "code": 5,
+          "width": 549.8046875,
+          "name": "cid00005"
+        },
+        {
+          "text": "e",
+          "gid": 6,
+          "code": 6,
+          "width": 615.234375,
+          "name": "cid00006"
+        },
+        {
+          "text": "f",
+          "gid": 7,
+          "code": 7,
+          "width": 352.05078125,
+          "name": "cid00007"
+        },
+        {
+          "text": "h",
+          "gid": 8,
+          "code": 8,
+          "width": 633.7890625,
+          "name": "cid00008"
+        },
+        {
+          "text": "i",
+          "gid": 9,
+          "code": 9,
+          "width": 277.83203125,
+          "name": "cid00009"
+        },
+        {
+          "text": "s",
+          "gid": 10,
+          "code": 10,
+          "width": 520.99609375,
+          "name": "cid00010"
+        },
+        {
+          "text": "t",
+          "gid": 11,
+          "code": 11,
+          "width": 392.08984375,
+          "name": "cid00011"
+        },
+        {
+          "text": "w",
+          "gid": 12,
+          "code": 12,
+          "width": 817.87109375,
+          "name": "cid00012"
+        },
+        {
+          "text": "fi",
+          "gid": 13,
+          "code": 13,
+          "width": 629.8828125,
+          "name": "cid00013"
+        },
+        {
+          "text": "ffi",
+          "gid": 14,
+          "code": 14,
+          "width": 966.796875,
+          "name": "cid00014"
+        }
+      ]
+    },
+    {
+      "name": "cid-raw-cid-fi-group",
+      "path": "cid-raw-cid-fi-group.pdf",
+      "label": "cid",
+      "wrapped": false,
+      "composite": true,
+      "sequence": "fi",
+      "layout": "group",
+      "codeLength": 2,
+      "sourceHex": "00030007000d00050006",
+      "sourceText": "Office",
+      "sha256": "13b415a38cf2510b789061aec24d8ec8eccaf94717114e22c9e36cef9f0a58ee",
+      "symbols": [
+        {
+          "text": " ",
+          "gid": 1,
+          "code": 1,
+          "width": 317.87109375,
+          "name": "cid00001"
+        },
+        {
+          "text": "N",
+          "gid": 2,
+          "code": 2,
+          "width": 748.046875,
+          "name": "cid00002"
+        },
+        {
+          "text": "O",
+          "gid": 3,
+          "code": 3,
+          "width": 787.109375,
+          "name": "cid00003"
+        },
+        {
+          "text": "a",
+          "gid": 4,
+          "code": 4,
+          "width": 612.79296875,
+          "name": "cid00004"
+        },
+        {
+          "text": "c",
+          "gid": 5,
+          "code": 5,
+          "width": 549.8046875,
+          "name": "cid00005"
+        },
+        {
+          "text": "e",
+          "gid": 6,
+          "code": 6,
+          "width": 615.234375,
+          "name": "cid00006"
+        },
+        {
+          "text": "f",
+          "gid": 7,
+          "code": 7,
+          "width": 352.05078125,
+          "name": "cid00007"
+        },
+        {
+          "text": "h",
+          "gid": 8,
+          "code": 8,
+          "width": 633.7890625,
+          "name": "cid00008"
+        },
+        {
+          "text": "i",
+          "gid": 9,
+          "code": 9,
+          "width": 277.83203125,
+          "name": "cid00009"
+        },
+        {
+          "text": "s",
+          "gid": 10,
+          "code": 10,
+          "width": 520.99609375,
+          "name": "cid00010"
+        },
+        {
+          "text": "t",
+          "gid": 11,
+          "code": 11,
+          "width": 392.08984375,
+          "name": "cid00011"
+        },
+        {
+          "text": "w",
+          "gid": 12,
+          "code": 12,
+          "width": 817.87109375,
+          "name": "cid00012"
+        },
+        {
+          "text": "fi",
+          "gid": 13,
+          "code": 13,
+          "width": 629.8828125,
+          "name": "cid00013"
+        },
+        {
+          "text": "ffi",
+          "gid": 14,
+          "code": 14,
+          "width": 966.796875,
+          "name": "cid00014"
+        }
+      ]
+    },
+    {
+      "name": "cid-raw-cid-fi-shared",
+      "path": "cid-raw-cid-fi-shared.pdf",
+      "label": "cid",
+      "wrapped": false,
+      "composite": true,
+      "sequence": "fi",
+      "layout": "shared",
+      "codeLength": 2,
+      "sourceHex": "00030007000d00050006",
+      "sourceText": "Office",
+      "sha256": "3accdf6d077d14179c2afcc6cd40252c27e3cb959d13cb349d8d64fb102e2315",
+      "symbols": [
+        {
+          "text": " ",
+          "gid": 1,
+          "code": 1,
+          "width": 317.87109375,
+          "name": "cid00001"
+        },
+        {
+          "text": "N",
+          "gid": 2,
+          "code": 2,
+          "width": 748.046875,
+          "name": "cid00002"
+        },
+        {
+          "text": "O",
+          "gid": 3,
+          "code": 3,
+          "width": 787.109375,
+          "name": "cid00003"
+        },
+        {
+          "text": "a",
+          "gid": 4,
+          "code": 4,
+          "width": 612.79296875,
+          "name": "cid00004"
+        },
+        {
+          "text": "c",
+          "gid": 5,
+          "code": 5,
+          "width": 549.8046875,
+          "name": "cid00005"
+        },
+        {
+          "text": "e",
+          "gid": 6,
+          "code": 6,
+          "width": 615.234375,
+          "name": "cid00006"
+        },
+        {
+          "text": "f",
+          "gid": 7,
+          "code": 7,
+          "width": 352.05078125,
+          "name": "cid00007"
+        },
+        {
+          "text": "h",
+          "gid": 8,
+          "code": 8,
+          "width": 633.7890625,
+          "name": "cid00008"
+        },
+        {
+          "text": "i",
+          "gid": 9,
+          "code": 9,
+          "width": 277.83203125,
+          "name": "cid00009"
+        },
+        {
+          "text": "s",
+          "gid": 10,
+          "code": 10,
+          "width": 520.99609375,
+          "name": "cid00010"
+        },
+        {
+          "text": "t",
+          "gid": 11,
+          "code": 11,
+          "width": 392.08984375,
+          "name": "cid00011"
+        },
+        {
+          "text": "w",
+          "gid": 12,
+          "code": 12,
+          "width": 817.87109375,
+          "name": "cid00012"
+        },
+        {
+          "text": "fi",
+          "gid": 13,
+          "code": 13,
+          "width": 629.8828125,
+          "name": "cid00013"
+        },
+        {
+          "text": "ffi",
+          "gid": 14,
+          "code": 14,
+          "width": 966.796875,
+          "name": "cid00014"
+        }
+      ]
+    },
+    {
+      "name": "cid-raw-cid-ffi-single",
+      "path": "cid-raw-cid-ffi-single.pdf",
+      "label": "cid",
+      "wrapped": false,
+      "composite": true,
+      "sequence": "ffi",
+      "layout": "single",
+      "codeLength": 2,
+      "sourceHex": "0003000e00050006",
+      "sourceText": "Office",
+      "sha256": "4bd7d37d188b23ec62efda48dd1440955efa8f37f70e2c1c1a5a10f171f1c5d4",
+      "symbols": [
+        {
+          "text": " ",
+          "gid": 1,
+          "code": 1,
+          "width": 317.87109375,
+          "name": "cid00001"
+        },
+        {
+          "text": "N",
+          "gid": 2,
+          "code": 2,
+          "width": 748.046875,
+          "name": "cid00002"
+        },
+        {
+          "text": "O",
+          "gid": 3,
+          "code": 3,
+          "width": 787.109375,
+          "name": "cid00003"
+        },
+        {
+          "text": "a",
+          "gid": 4,
+          "code": 4,
+          "width": 612.79296875,
+          "name": "cid00004"
+        },
+        {
+          "text": "c",
+          "gid": 5,
+          "code": 5,
+          "width": 549.8046875,
+          "name": "cid00005"
+        },
+        {
+          "text": "e",
+          "gid": 6,
+          "code": 6,
+          "width": 615.234375,
+          "name": "cid00006"
+        },
+        {
+          "text": "f",
+          "gid": 7,
+          "code": 7,
+          "width": 352.05078125,
+          "name": "cid00007"
+        },
+        {
+          "text": "h",
+          "gid": 8,
+          "code": 8,
+          "width": 633.7890625,
+          "name": "cid00008"
+        },
+        {
+          "text": "i",
+          "gid": 9,
+          "code": 9,
+          "width": 277.83203125,
+          "name": "cid00009"
+        },
+        {
+          "text": "s",
+          "gid": 10,
+          "code": 10,
+          "width": 520.99609375,
+          "name": "cid00010"
+        },
+        {
+          "text": "t",
+          "gid": 11,
+          "code": 11,
+          "width": 392.08984375,
+          "name": "cid00011"
+        },
+        {
+          "text": "w",
+          "gid": 12,
+          "code": 12,
+          "width": 817.87109375,
+          "name": "cid00012"
+        },
+        {
+          "text": "fi",
+          "gid": 13,
+          "code": 13,
+          "width": 629.8828125,
+          "name": "cid00013"
+        },
+        {
+          "text": "ffi",
+          "gid": 14,
+          "code": 14,
+          "width": 966.796875,
+          "name": "cid00014"
+        }
+      ]
+    },
+    {
+      "name": "cid-raw-cid-ffi-group",
+      "path": "cid-raw-cid-ffi-group.pdf",
+      "label": "cid",
+      "wrapped": false,
+      "composite": true,
+      "sequence": "ffi",
+      "layout": "group",
+      "codeLength": 2,
+      "sourceHex": "0003000e00050006",
+      "sourceText": "Office",
+      "sha256": "ac99ce9aac32f798fbe55806f1dc5bc473b67df602ae34ce05c502042432f575",
+      "symbols": [
+        {
+          "text": " ",
+          "gid": 1,
+          "code": 1,
+          "width": 317.87109375,
+          "name": "cid00001"
+        },
+        {
+          "text": "N",
+          "gid": 2,
+          "code": 2,
+          "width": 748.046875,
+          "name": "cid00002"
+        },
+        {
+          "text": "O",
+          "gid": 3,
+          "code": 3,
+          "width": 787.109375,
+          "name": "cid00003"
+        },
+        {
+          "text": "a",
+          "gid": 4,
+          "code": 4,
+          "width": 612.79296875,
+          "name": "cid00004"
+        },
+        {
+          "text": "c",
+          "gid": 5,
+          "code": 5,
+          "width": 549.8046875,
+          "name": "cid00005"
+        },
+        {
+          "text": "e",
+          "gid": 6,
+          "code": 6,
+          "width": 615.234375,
+          "name": "cid00006"
+        },
+        {
+          "text": "f",
+          "gid": 7,
+          "code": 7,
+          "width": 352.05078125,
+          "name": "cid00007"
+        },
+        {
+          "text": "h",
+          "gid": 8,
+          "code": 8,
+          "width": 633.7890625,
+          "name": "cid00008"
+        },
+        {
+          "text": "i",
+          "gid": 9,
+          "code": 9,
+          "width": 277.83203125,
+          "name": "cid00009"
+        },
+        {
+          "text": "s",
+          "gid": 10,
+          "code": 10,
+          "width": 520.99609375,
+          "name": "cid00010"
+        },
+        {
+          "text": "t",
+          "gid": 11,
+          "code": 11,
+          "width": 392.08984375,
+          "name": "cid00011"
+        },
+        {
+          "text": "w",
+          "gid": 12,
+          "code": 12,
+          "width": 817.87109375,
+          "name": "cid00012"
+        },
+        {
+          "text": "fi",
+          "gid": 13,
+          "code": 13,
+          "width": 629.8828125,
+          "name": "cid00013"
+        },
+        {
+          "text": "ffi",
+          "gid": 14,
+          "code": 14,
+          "width": 966.796875,
+          "name": "cid00014"
+        }
+      ]
+    },
+    {
+      "name": "cid-raw-cid-ffi-shared",
+      "path": "cid-raw-cid-ffi-shared.pdf",
+      "label": "cid",
+      "wrapped": false,
+      "composite": true,
+      "sequence": "ffi",
+      "layout": "shared",
+      "codeLength": 2,
+      "sourceHex": "0003000e00050006",
+      "sourceText": "Office",
+      "sha256": "488eeee735270cf4287298cf437e38374cdb56dc3df14d8fc95e78b81ea82391",
+      "symbols": [
+        {
+          "text": " ",
+          "gid": 1,
+          "code": 1,
+          "width": 317.87109375,
+          "name": "cid00001"
+        },
+        {
+          "text": "N",
+          "gid": 2,
+          "code": 2,
+          "width": 748.046875,
+          "name": "cid00002"
+        },
+        {
+          "text": "O",
+          "gid": 3,
+          "code": 3,
+          "width": 787.109375,
+          "name": "cid00003"
+        },
+        {
+          "text": "a",
+          "gid": 4,
+          "code": 4,
+          "width": 612.79296875,
+          "name": "cid00004"
+        },
+        {
+          "text": "c",
+          "gid": 5,
+          "code": 5,
+          "width": 549.8046875,
+          "name": "cid00005"
+        },
+        {
+          "text": "e",
+          "gid": 6,
+          "code": 6,
+          "width": 615.234375,
+          "name": "cid00006"
+        },
+        {
+          "text": "f",
+          "gid": 7,
+          "code": 7,
+          "width": 352.05078125,
+          "name": "cid00007"
+        },
+        {
+          "text": "h",
+          "gid": 8,
+          "code": 8,
+          "width": 633.7890625,
+          "name": "cid00008"
+        },
+        {
+          "text": "i",
+          "gid": 9,
+          "code": 9,
+          "width": 277.83203125,
+          "name": "cid00009"
+        },
+        {
+          "text": "s",
+          "gid": 10,
+          "code": 10,
+          "width": 520.99609375,
+          "name": "cid00010"
+        },
+        {
+          "text": "t",
+          "gid": 11,
+          "code": 11,
+          "width": 392.08984375,
+          "name": "cid00011"
+        },
+        {
+          "text": "w",
+          "gid": 12,
+          "code": 12,
+          "width": 817.87109375,
+          "name": "cid00012"
+        },
+        {
+          "text": "fi",
+          "gid": 13,
+          "code": 13,
+          "width": 629.8828125,
+          "name": "cid00013"
+        },
+        {
+          "text": "ffi",
+          "gid": 14,
+          "code": 14,
+          "width": 966.796875,
+          "name": "cid00014"
+        }
+      ]
+    },
+    {
+      "name": "cid-otf-cid-fi-single",
+      "path": "cid-otf-cid-fi-single.pdf",
+      "label": "cid",
+      "wrapped": true,
+      "composite": true,
+      "sequence": "fi",
+      "layout": "single",
+      "codeLength": 2,
+      "sourceHex": "00030007000d00050006",
+      "sourceText": "Office",
+      "sha256": "e1e3e4cc99b48104829880786f9ea57441e8d3e33a6181678e88b58c5f1700d6",
+      "symbols": [
+        {
+          "text": " ",
+          "gid": 1,
+          "code": 1,
+          "width": 317.87109375,
+          "name": "cid00001"
+        },
+        {
+          "text": "N",
+          "gid": 2,
+          "code": 2,
+          "width": 748.046875,
+          "name": "cid00002"
+        },
+        {
+          "text": "O",
+          "gid": 3,
+          "code": 3,
+          "width": 787.109375,
+          "name": "cid00003"
+        },
+        {
+          "text": "a",
+          "gid": 4,
+          "code": 4,
+          "width": 612.79296875,
+          "name": "cid00004"
+        },
+        {
+          "text": "c",
+          "gid": 5,
+          "code": 5,
+          "width": 549.8046875,
+          "name": "cid00005"
+        },
+        {
+          "text": "e",
+          "gid": 6,
+          "code": 6,
+          "width": 615.234375,
+          "name": "cid00006"
+        },
+        {
+          "text": "f",
+          "gid": 7,
+          "code": 7,
+          "width": 352.05078125,
+          "name": "cid00007"
+        },
+        {
+          "text": "h",
+          "gid": 8,
+          "code": 8,
+          "width": 633.7890625,
+          "name": "cid00008"
+        },
+        {
+          "text": "i",
+          "gid": 9,
+          "code": 9,
+          "width": 277.83203125,
+          "name": "cid00009"
+        },
+        {
+          "text": "s",
+          "gid": 10,
+          "code": 10,
+          "width": 520.99609375,
+          "name": "cid00010"
+        },
+        {
+          "text": "t",
+          "gid": 11,
+          "code": 11,
+          "width": 392.08984375,
+          "name": "cid00011"
+        },
+        {
+          "text": "w",
+          "gid": 12,
+          "code": 12,
+          "width": 817.87109375,
+          "name": "cid00012"
+        },
+        {
+          "text": "fi",
+          "gid": 13,
+          "code": 13,
+          "width": 629.8828125,
+          "name": "cid00013"
+        },
+        {
+          "text": "ffi",
+          "gid": 14,
+          "code": 14,
+          "width": 966.796875,
+          "name": "cid00014"
+        }
+      ]
+    },
+    {
+      "name": "cid-otf-cid-fi-group",
+      "path": "cid-otf-cid-fi-group.pdf",
+      "label": "cid",
+      "wrapped": true,
+      "composite": true,
+      "sequence": "fi",
+      "layout": "group",
+      "codeLength": 2,
+      "sourceHex": "00030007000d00050006",
+      "sourceText": "Office",
+      "sha256": "9c065fed9880ab066d30faf867b425cc092899d4cfa2f54713c3d1cbca434838",
+      "symbols": [
+        {
+          "text": " ",
+          "gid": 1,
+          "code": 1,
+          "width": 317.87109375,
+          "name": "cid00001"
+        },
+        {
+          "text": "N",
+          "gid": 2,
+          "code": 2,
+          "width": 748.046875,
+          "name": "cid00002"
+        },
+        {
+          "text": "O",
+          "gid": 3,
+          "code": 3,
+          "width": 787.109375,
+          "name": "cid00003"
+        },
+        {
+          "text": "a",
+          "gid": 4,
+          "code": 4,
+          "width": 612.79296875,
+          "name": "cid00004"
+        },
+        {
+          "text": "c",
+          "gid": 5,
+          "code": 5,
+          "width": 549.8046875,
+          "name": "cid00005"
+        },
+        {
+          "text": "e",
+          "gid": 6,
+          "code": 6,
+          "width": 615.234375,
+          "name": "cid00006"
+        },
+        {
+          "text": "f",
+          "gid": 7,
+          "code": 7,
+          "width": 352.05078125,
+          "name": "cid00007"
+        },
+        {
+          "text": "h",
+          "gid": 8,
+          "code": 8,
+          "width": 633.7890625,
+          "name": "cid00008"
+        },
+        {
+          "text": "i",
+          "gid": 9,
+          "code": 9,
+          "width": 277.83203125,
+          "name": "cid00009"
+        },
+        {
+          "text": "s",
+          "gid": 10,
+          "code": 10,
+          "width": 520.99609375,
+          "name": "cid00010"
+        },
+        {
+          "text": "t",
+          "gid": 11,
+          "code": 11,
+          "width": 392.08984375,
+          "name": "cid00011"
+        },
+        {
+          "text": "w",
+          "gid": 12,
+          "code": 12,
+          "width": 817.87109375,
+          "name": "cid00012"
+        },
+        {
+          "text": "fi",
+          "gid": 13,
+          "code": 13,
+          "width": 629.8828125,
+          "name": "cid00013"
+        },
+        {
+          "text": "ffi",
+          "gid": 14,
+          "code": 14,
+          "width": 966.796875,
+          "name": "cid00014"
+        }
+      ]
+    },
+    {
+      "name": "cid-otf-cid-fi-shared",
+      "path": "cid-otf-cid-fi-shared.pdf",
+      "label": "cid",
+      "wrapped": true,
+      "composite": true,
+      "sequence": "fi",
+      "layout": "shared",
+      "codeLength": 2,
+      "sourceHex": "00030007000d00050006",
+      "sourceText": "Office",
+      "sha256": "cb9dbfd00f08a00e131bf6da07718044f88298eabaf133c69f26c432ae0ef00b",
+      "symbols": [
+        {
+          "text": " ",
+          "gid": 1,
+          "code": 1,
+          "width": 317.87109375,
+          "name": "cid00001"
+        },
+        {
+          "text": "N",
+          "gid": 2,
+          "code": 2,
+          "width": 748.046875,
+          "name": "cid00002"
+        },
+        {
+          "text": "O",
+          "gid": 3,
+          "code": 3,
+          "width": 787.109375,
+          "name": "cid00003"
+        },
+        {
+          "text": "a",
+          "gid": 4,
+          "code": 4,
+          "width": 612.79296875,
+          "name": "cid00004"
+        },
+        {
+          "text": "c",
+          "gid": 5,
+          "code": 5,
+          "width": 549.8046875,
+          "name": "cid00005"
+        },
+        {
+          "text": "e",
+          "gid": 6,
+          "code": 6,
+          "width": 615.234375,
+          "name": "cid00006"
+        },
+        {
+          "text": "f",
+          "gid": 7,
+          "code": 7,
+          "width": 352.05078125,
+          "name": "cid00007"
+        },
+        {
+          "text": "h",
+          "gid": 8,
+          "code": 8,
+          "width": 633.7890625,
+          "name": "cid00008"
+        },
+        {
+          "text": "i",
+          "gid": 9,
+          "code": 9,
+          "width": 277.83203125,
+          "name": "cid00009"
+        },
+        {
+          "text": "s",
+          "gid": 10,
+          "code": 10,
+          "width": 520.99609375,
+          "name": "cid00010"
+        },
+        {
+          "text": "t",
+          "gid": 11,
+          "code": 11,
+          "width": 392.08984375,
+          "name": "cid00011"
+        },
+        {
+          "text": "w",
+          "gid": 12,
+          "code": 12,
+          "width": 817.87109375,
+          "name": "cid00012"
+        },
+        {
+          "text": "fi",
+          "gid": 13,
+          "code": 13,
+          "width": 629.8828125,
+          "name": "cid00013"
+        },
+        {
+          "text": "ffi",
+          "gid": 14,
+          "code": 14,
+          "width": 966.796875,
+          "name": "cid00014"
+        }
+      ]
+    },
+    {
+      "name": "cid-otf-cid-ffi-single",
+      "path": "cid-otf-cid-ffi-single.pdf",
+      "label": "cid",
+      "wrapped": true,
+      "composite": true,
+      "sequence": "ffi",
+      "layout": "single",
+      "codeLength": 2,
+      "sourceHex": "0003000e00050006",
+      "sourceText": "Office",
+      "sha256": "046edcb3343218975b52d6abc80af2d4d0c238bd827dd293712dcd7cec614f0c",
+      "symbols": [
+        {
+          "text": " ",
+          "gid": 1,
+          "code": 1,
+          "width": 317.87109375,
+          "name": "cid00001"
+        },
+        {
+          "text": "N",
+          "gid": 2,
+          "code": 2,
+          "width": 748.046875,
+          "name": "cid00002"
+        },
+        {
+          "text": "O",
+          "gid": 3,
+          "code": 3,
+          "width": 787.109375,
+          "name": "cid00003"
+        },
+        {
+          "text": "a",
+          "gid": 4,
+          "code": 4,
+          "width": 612.79296875,
+          "name": "cid00004"
+        },
+        {
+          "text": "c",
+          "gid": 5,
+          "code": 5,
+          "width": 549.8046875,
+          "name": "cid00005"
+        },
+        {
+          "text": "e",
+          "gid": 6,
+          "code": 6,
+          "width": 615.234375,
+          "name": "cid00006"
+        },
+        {
+          "text": "f",
+          "gid": 7,
+          "code": 7,
+          "width": 352.05078125,
+          "name": "cid00007"
+        },
+        {
+          "text": "h",
+          "gid": 8,
+          "code": 8,
+          "width": 633.7890625,
+          "name": "cid00008"
+        },
+        {
+          "text": "i",
+          "gid": 9,
+          "code": 9,
+          "width": 277.83203125,
+          "name": "cid00009"
+        },
+        {
+          "text": "s",
+          "gid": 10,
+          "code": 10,
+          "width": 520.99609375,
+          "name": "cid00010"
+        },
+        {
+          "text": "t",
+          "gid": 11,
+          "code": 11,
+          "width": 392.08984375,
+          "name": "cid00011"
+        },
+        {
+          "text": "w",
+          "gid": 12,
+          "code": 12,
+          "width": 817.87109375,
+          "name": "cid00012"
+        },
+        {
+          "text": "fi",
+          "gid": 13,
+          "code": 13,
+          "width": 629.8828125,
+          "name": "cid00013"
+        },
+        {
+          "text": "ffi",
+          "gid": 14,
+          "code": 14,
+          "width": 966.796875,
+          "name": "cid00014"
+        }
+      ]
+    },
+    {
+      "name": "cid-otf-cid-ffi-group",
+      "path": "cid-otf-cid-ffi-group.pdf",
+      "label": "cid",
+      "wrapped": true,
+      "composite": true,
+      "sequence": "ffi",
+      "layout": "group",
+      "codeLength": 2,
+      "sourceHex": "0003000e00050006",
+      "sourceText": "Office",
+      "sha256": "33bd7c5ad881dc80fc777afdc6ed6e9d4c9cfea23dba76b2ead6ee74db384525",
+      "symbols": [
+        {
+          "text": " ",
+          "gid": 1,
+          "code": 1,
+          "width": 317.87109375,
+          "name": "cid00001"
+        },
+        {
+          "text": "N",
+          "gid": 2,
+          "code": 2,
+          "width": 748.046875,
+          "name": "cid00002"
+        },
+        {
+          "text": "O",
+          "gid": 3,
+          "code": 3,
+          "width": 787.109375,
+          "name": "cid00003"
+        },
+        {
+          "text": "a",
+          "gid": 4,
+          "code": 4,
+          "width": 612.79296875,
+          "name": "cid00004"
+        },
+        {
+          "text": "c",
+          "gid": 5,
+          "code": 5,
+          "width": 549.8046875,
+          "name": "cid00005"
+        },
+        {
+          "text": "e",
+          "gid": 6,
+          "code": 6,
+          "width": 615.234375,
+          "name": "cid00006"
+        },
+        {
+          "text": "f",
+          "gid": 7,
+          "code": 7,
+          "width": 352.05078125,
+          "name": "cid00007"
+        },
+        {
+          "text": "h",
+          "gid": 8,
+          "code": 8,
+          "width": 633.7890625,
+          "name": "cid00008"
+        },
+        {
+          "text": "i",
+          "gid": 9,
+          "code": 9,
+          "width": 277.83203125,
+          "name": "cid00009"
+        },
+        {
+          "text": "s",
+          "gid": 10,
+          "code": 10,
+          "width": 520.99609375,
+          "name": "cid00010"
+        },
+        {
+          "text": "t",
+          "gid": 11,
+          "code": 11,
+          "width": 392.08984375,
+          "name": "cid00011"
+        },
+        {
+          "text": "w",
+          "gid": 12,
+          "code": 12,
+          "width": 817.87109375,
+          "name": "cid00012"
+        },
+        {
+          "text": "fi",
+          "gid": 13,
+          "code": 13,
+          "width": 629.8828125,
+          "name": "cid00013"
+        },
+        {
+          "text": "ffi",
+          "gid": 14,
+          "code": 14,
+          "width": 966.796875,
+          "name": "cid00014"
+        }
+      ]
+    },
+    {
+      "name": "cid-otf-cid-ffi-shared",
+      "path": "cid-otf-cid-ffi-shared.pdf",
+      "label": "cid",
+      "wrapped": true,
+      "composite": true,
+      "sequence": "ffi",
+      "layout": "shared",
+      "codeLength": 2,
+      "sourceHex": "0003000e00050006",
+      "sourceText": "Office",
+      "sha256": "c39426c47478addd4d6d169ff8bf7eebf3423fa2b39dfd08e2ca421ded53dae1",
+      "symbols": [
+        {
+          "text": " ",
+          "gid": 1,
+          "code": 1,
+          "width": 317.87109375,
+          "name": "cid00001"
+        },
+        {
+          "text": "N",
+          "gid": 2,
+          "code": 2,
+          "width": 748.046875,
+          "name": "cid00002"
+        },
+        {
+          "text": "O",
+          "gid": 3,
+          "code": 3,
+          "width": 787.109375,
+          "name": "cid00003"
+        },
+        {
+          "text": "a",
+          "gid": 4,
+          "code": 4,
+          "width": 612.79296875,
+          "name": "cid00004"
+        },
+        {
+          "text": "c",
+          "gid": 5,
+          "code": 5,
+          "width": 549.8046875,
+          "name": "cid00005"
+        },
+        {
+          "text": "e",
+          "gid": 6,
+          "code": 6,
+          "width": 615.234375,
+          "name": "cid00006"
+        },
+        {
+          "text": "f",
+          "gid": 7,
+          "code": 7,
+          "width": 352.05078125,
+          "name": "cid00007"
+        },
+        {
+          "text": "h",
+          "gid": 8,
+          "code": 8,
+          "width": 633.7890625,
+          "name": "cid00008"
+        },
+        {
+          "text": "i",
+          "gid": 9,
+          "code": 9,
+          "width": 277.83203125,
+          "name": "cid00009"
+        },
+        {
+          "text": "s",
+          "gid": 10,
+          "code": 10,
+          "width": 520.99609375,
+          "name": "cid00010"
+        },
+        {
+          "text": "t",
+          "gid": 11,
+          "code": 11,
+          "width": 392.08984375,
+          "name": "cid00011"
+        },
+        {
+          "text": "w",
+          "gid": 12,
+          "code": 12,
+          "width": 817.87109375,
+          "name": "cid00012"
+        },
+        {
+          "text": "fi",
+          "gid": 13,
+          "code": 13,
+          "width": 629.8828125,
+          "name": "cid00013"
+        },
+        {
+          "text": "ffi",
+          "gid": 14,
+          "code": 14,
+          "width": 966.796875,
+          "name": "cid00014"
+        }
+      ]
+    }
+  ]
+}

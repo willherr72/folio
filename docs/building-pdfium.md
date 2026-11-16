@@ -3,7 +3,7 @@
 Folio uses the pinned chromium/8044 source with corrections for inherited form
 text state, fractional horizontal font advances, ordered default form colors, and
 original embedded form-font selection, fractional widget border widths, and
-horizontal Form-space text separators. The upstream binary loses
+horizontal Form-space text separators, and index-based List selection paint. The upstream binary loses
 inherited leading, rise and horizontal scale and truncates fractional font widths.
 Its default appearance lookup also chooses the first gray/RGB/CMYK occurrence rather
 than the final effective color. Its form charset heuristic can also substitute a
@@ -11,7 +11,10 @@ system font despite a valid glyph in the original embedded face. Native widget g
 layout truncate fractional border widths, removing sub-unit borders on fill.
 Some line-break comparisons also mix local coordinates from different Form
 invocations, changing extracted separators when equivalent text becomes page text.
-Setup verifies all six patches and rejects older
+The interactive List appearance builder also treats a valid empty export as zero
+selections, despite an authoritative selected index. Folio uses the existing
+native item-selection predicate when painting each row.
+Setup verifies all seven patches and rejects older
 dependencies.
 `scripts/pdfium-source-lock.json` records the revisions, downloads, patches,
 modified source hashes, public probe fixtures and GN arguments.
@@ -58,6 +61,15 @@ out-of-range-glyph and nonembedded fallback behavior. The form probes use a null
 with the pinned x64 FPDF_FORMFILLINFO v2 layout. It writes
 `provenance.json` only after all probes succeed.
 The recipe does not install the candidate.
+
+The List selection probe exercises 31 direct C API fill/save/cold-reopen states:
+ordinary values, paired empty exports and display labels, multiple selections,
+duplicate exports with authoritative indices, scrolling, and value fallback for
+absent or invalid indices. It checks the saved appearance with an independent
+reader using fixed row-center pixels, plus labels, border and outside pixels.
+The saved appearance is drawn as an ordinary Form for this check, so the reader
+cannot regenerate it through `NeedAppearances` and conceal a paint discrepancy.
+These direct checks do not replace engine or desktop workflow acceptance.
 
 The separator probe has 52 synthetic cases covering shared/nested Forms, mixed
 page/Form text, same-line spacing, positive unequal scales, page rotations and

@@ -14,6 +14,9 @@ pub(super) fn cursor_only(op: &lopdf::content::Operation) -> bool {
 }
 
 pub(super) fn encoded(run: &RunSnapshot, value: &str) -> EngineResult<Vec<u8>> {
+    if let Some(bound)=&run.source_encoding {
+        return bound.replace(value).map(|text|text.bytes().to_vec()).map_err(invalid);
+    }
     if let Some(proof) = &run.proof {
         proof.encode(value)
     } else if let Some(proof) = &run.standard {
@@ -26,6 +29,26 @@ pub(super) fn encoded(run: &RunSnapshot, value: &str) -> EngineResult<Vec<u8>> {
             "The positioned text has no verified character encoding.",
         ))
     }
+}
+
+pub(super) fn boundaries(run:&RunSnapshot,value:&str)->EngineResult<Vec<usize>> {
+    if let Some(bound)=&run.source_encoding {return bound.replace(value).map(|text|text.byte_boundaries()).map_err(invalid);}
+    text_show::boundaries(value,|ch|encoded(run,ch))
+}
+pub(super) fn logical_boundaries(run:&RunSnapshot,value:&str)->EngineResult<Vec<usize>> {
+    if let Some(bound)=&run.source_encoding {return bound.replace(value).map(|text|text.unicode_boundaries()).map_err(invalid);}
+    Ok((0..=value.chars().count()).collect())
+}
+pub(super) fn glyph_count(run:&RunSnapshot,value:&str)->EngineResult<usize> {
+    if let Some(bound)=&run.source_encoding {return bound.replace(value).map(|text|text.atoms().len()).map_err(invalid);}
+    Ok(value.chars().count())
+}
+pub(super) fn rewrite(run:&RunSnapshot,values:&[Object],source:&[u8],changed:&[u8],replacement:&str)->EngineResult<Vec<Object>> {
+    let before=boundaries(run,&run.text)?;let after=boundaries(run,replacement)?;
+    if run.source_encoding.is_some() {
+        text_show::rewrite_clusters(values,source,changed,&before,&after,
+            &logical_boundaries(run,&run.text)?,&logical_boundaries(run,replacement)?,replacement==run.text)
+    }else{text_show::rewrite_array(values,source,changed,&before,&after,replacement==run.text)}
 }
 
 pub(super) fn replace(
@@ -178,10 +201,7 @@ pub(super) fn replace(
             *value = Object::String(changed, StringFormat::Hexadecimal);
         }
         ("TJ", [Object::Array(values)]) => {
-            let source_boundaries = text_show::boundaries(&selected.text, |c| encoded(selected, c))?;
-            let replacement_boundaries = text_show::boundaries(replacement, |c| encoded(selected, c))?;
-            *values = text_show::rewrite_array(values, &expected, &changed,
-                &source_boundaries, &replacement_boundaries, replacement == selected.text)?;
+            *values = rewrite(selected,values,&expected,&changed,replacement)?;
         }
         _ => return Err(invalid("Unsupported positioned text operator.")),
     }

@@ -15,6 +15,10 @@ use std::{
 
 const HELP:&str="Folio CLI — local PDF automation\n\n\
 folio-cli info INPUT.pdf [options]\n\
+folio-cli plan-replacement INPUT.pdf --request INTENT.json [options]\n\
+folio-cli preview-replacement INPUT.pdf --request INTENT.json --out-dir EXISTING_DIR [options]\n\
+folio-cli export-pages INPUT.pdf --out NEW.pdf [--request PAGES.json] [options]\n\
+folio-cli compose-pages --input PDF [--input PDF ...] --out NEW.pdf [--request PLAN.json] [--passwords-stdin] [--engine PATH]\n\
 folio-cli fonts --font FONT [--font FONT ...]\n\
 folio-cli inspect-forms INPUT.pdf --page N [--offset N] [options]\n\
 folio-cli preview-form INPUT.pdf --request EDIT.json --out-dir EXISTING_DIR [options]\n\
@@ -22,17 +26,19 @@ folio-cli inspect-text INPUT.pdf --page N [--offset N] [options]\n\
 folio-cli inspect-nested-text INPUT.pdf --page N [--offset N] [options]\n\
 folio-cli inspect-paragraph INPUT.pdf --page N --selection-id TEXT_SELECTION [options]\n\
 folio-cli preview-text INPUT.pdf --request EDIT.json --out-dir EXISTING_DIR [--font FONT ...] [options]\n\
+folio-cli preview-text-batch INPUT.pdf --request EDITS.json --out-dir EXISTING_DIR [--font FONT ...] [options]\n\
 folio-cli preview-paragraph INPUT.pdf --request EDIT.json --out-dir EXISTING_DIR [--font FONT ...] [options]\n\
 folio-cli save-text-preview BUNDLE_DIR --manifest-sha256 HASH --out NEW.pdf [--engine PATH]\n\
 folio-cli text INPUT.pdf --out NEW.txt [--page N] [--include-form-values] [options]\n\
 folio-cli render INPUT.pdf --out-dir EXISTING_DIR [--page N] [--dpi 72|150|300|600] [options]\n\n\
-folio-cli mcp --input PDF [--input PDF ...] --out-dir EXISTING_DIR [--engine PATH] [--font FONT ...]\n\n\
+folio-cli mcp --input PDF [--input PDF ...] --out-dir EXISTING_DIR [--engine PATH] [--font FONT ...] [--credentials FILE]\n\n\
 Options: --engine PATH, --password-stdin\n\
 --help   Show help without loading the PDF engine.\n\
 --version   Show version.\n\n\
 Pages are 1-based; text/render omit --page for all pages. PNG defaults to 150 DPI and a new child folder.\n\
 Inspection requires --page; --offset defaults to 0 and returns up to 100 text runs.\n\
 Text uses the desktop UTF-8 export, with a BOM. Existing files are never overwritten.\n\
+export-pages omits --request for an exact copy. Request example: {\"version\":1,\"pages\":[{\"page\":1,\"rotation\":90}]}.\n\
 Passwords are read as one UTF-8 line from stdin only when requested (maximum 1024 bytes).\n\
 Success JSON goes to stdout; error JSON to stderr. Exit codes: 0 success, 2 arguments, 1 operation.\n\
 Without --engine, PDFium is loaded from resources/pdfium beside this executable.\n";
@@ -42,11 +48,41 @@ struct Invocation {
     password: bool,
     fonts: Vec<PathBuf>,
 }
+struct ComposeInvocation{request:automation::composition::ComposeRequest,engine:Option<PathBuf>,passwords:bool}
 enum Action {
     Help,
     Version,
     Fonts(Vec<PathBuf>),
     Execute(Invocation),
+    Compose(ComposeInvocation),
+}
+#[cfg(test)]
+mod batch_preview_cli_tests{
+    use super::*;
+    #[test]
+    fn batch_preview_cli_accepts_request_directory_fonts_and_password(){
+        let args=["preview-text-batch","Input.pdf","--request","edits.json","--out-dir","Output","--font","Font.ttf","--password-stdin"];
+        let Action::Execute(invocation)=parse(args.into_iter().map(OsString::from).collect()).unwrap()else{panic!("Expected batch invocation")};
+        assert_eq!(invocation.request.command(),"preview-text-batch");assert_eq!(invocation.fonts,vec![PathBuf::from("Font.ttf")]);assert!(invocation.password);
+        for args in [vec!["preview-text-batch","Input.pdf","--out-dir","Output"],vec!["preview-text-batch","Input.pdf","--request","edit.json"],vec!["preview-text-batch","Input.pdf","--request","edit.json","--out-dir","Output","--page","1"]]{assert!(parse(args.into_iter().map(OsString::from).collect()).is_err());}
+    }
+}
+fn parse_compose(args:&[OsString])->Result<Action,&'static str>{
+    let(mut inputs,mut engine,mut request_file,mut output,mut passwords)=(Vec::new(),None,None,None,false);
+    let mut seen=HashSet::new();let mut i=1;
+    while i<args.len(){
+        let flag=args[i].to_str().ok_or("Composition options must be valid UTF-8.")?;
+        if flag!="--input"&&!seen.insert(flag){return Err("An option was repeated.");}
+        if flag=="--passwords-stdin"{passwords=true;i+=1;continue;}
+        if !matches!(flag,"--input"|"--out"|"--request"|"--engine"){return Err("Unknown composition option. See --help.");}
+        let value=args.get(i+1).filter(|s|!s.is_empty()&&!s.to_string_lossy().starts_with("--")).ok_or("An option requires a value.")?;
+        match flag{
+            "--input"=>{if inputs.len()>=64{return Err("Supply 1 to 64 composition inputs.");}inputs.push(PathBuf::from(value));},
+            "--out"=>output=Some(PathBuf::from(value)),"--request"=>request_file=Some(PathBuf::from(value)),"--engine"=>engine=Some(PathBuf::from(value)),_=>unreachable!(),
+        }i+=2;
+    }
+    if inputs.is_empty(){return Err("Supply 1 to 64 composition inputs with --input.");}
+    Ok(Action::Compose(ComposeInvocation{request:automation::composition::ComposeRequest{inputs,request_file,output:output.ok_or("Composition requires --out NEW.pdf.")?},engine,passwords}))
 }
 fn parse(args: Vec<OsString>) -> Result<Action, &'static str> {
     if args.len() == 1 && args[0] == "--version" {
@@ -54,7 +90,7 @@ fn parse(args: Vec<OsString>) -> Result<Action, &'static str> {
     }
     if (args.len() == 1 && args[0] == "--help")
         || (args.len() == 2
-            && matches!(args[0].to_str(), Some("fonts" | "info" | "text" | "render" | "inspect-nested-text" | "inspect-text" | "inspect-paragraph" | "preview-text" | "preview-paragraph" | "preview-form" | "inspect-forms" | "save-text-preview"))
+            && matches!(args[0].to_str(), Some("plan-replacement" | "preview-replacement" | "fonts" | "info" | "export-pages" | "compose-pages" | "text" | "render" | "inspect-nested-text" | "inspect-text" | "inspect-paragraph" | "preview-text" | "preview-text-batch" | "preview-paragraph" | "preview-form" | "inspect-forms" | "save-text-preview"))
             && args[1] == "--help")
     {
         return Ok(Action::Help);
@@ -74,7 +110,8 @@ fn parse(args: Vec<OsString>) -> Result<Action, &'static str> {
         }
         return Ok(Action::Fonts(paths));
     }
-    if !matches!(command, "info" | "text" | "render" | "inspect-nested-text" | "inspect-text" | "inspect-paragraph" | "preview-text" | "preview-paragraph" | "preview-form" | "inspect-forms" | "save-text-preview") {
+    if command=="compose-pages"{return parse_compose(&args);}
+    if !matches!(command, "plan-replacement" | "preview-replacement" | "info" | "export-pages" | "text" | "render" | "inspect-nested-text" | "inspect-text" | "inspect-paragraph" | "preview-text" | "preview-text-batch" | "preview-paragraph" | "preview-form" | "inspect-forms" | "save-text-preview") {
         return Err("Unknown command. See --help.");
     }
     let input = args
@@ -105,10 +142,10 @@ fn parse(args: Vec<OsString>) -> Result<Action, &'static str> {
             continue;
         }
         if !(flag == "--engine"
-            || (flag=="--font" && matches!(command,"preview-text"|"preview-paragraph"))
-            || (flag == "--out" && matches!(command,"text"|"save-text-preview"))
-            || (flag == "--out-dir" && matches!(command,"render"|"preview-text"|"preview-paragraph"|"preview-form"))
-            || (flag == "--request" && matches!(command,"preview-text"|"preview-paragraph"|"preview-form"))
+            || (flag=="--font" && matches!(command,"preview-text"|"preview-text-batch"|"preview-paragraph"))
+            || (flag == "--out" && matches!(command,"text"|"save-text-preview"|"export-pages"))
+            || (flag == "--out-dir" && matches!(command,"preview-replacement"|"render"|"preview-text"|"preview-text-batch"|"preview-paragraph"|"preview-form"))
+            || (flag == "--request" && matches!(command,"plan-replacement"|"preview-replacement"|"preview-text"|"preview-text-batch"|"preview-paragraph"|"preview-form"|"export-pages"))
             || (flag == "--manifest-sha256" && command=="save-text-preview")
             || (flag == "--page" && matches!(command,"text"|"render"|"inspect-nested-text"|"inspect-text"|"inspect-paragraph"|"inspect-forms"))
             || (flag == "--selection-id" && command == "inspect-paragraph")
@@ -160,11 +197,15 @@ fn parse(args: Vec<OsString>) -> Result<Action, &'static str> {
     }
     let input = PathBuf::from(input);
     let request = match command {
+        "plan-replacement"=>Request::PlanReplacement{input,request_file:request_file.ok_or("Replacement planning requires --request INTENT.json.")?},
+        "preview-replacement"=>Request::PreviewReplacement{input,request_file:request_file.ok_or("Replacement preview requires --request INTENT.json.")?,parent:parent.ok_or("Replacement preview requires --out-dir EXISTING_DIR.")?},
         "info" => Request::Info { input },
+        "export-pages"=>Request::ExportPages {input,request_file,output:out.ok_or("Page export requires --out NEW.pdf.")?},
         "inspect-forms"=>Request::InspectForms {input,page:page.ok_or("Form inspection requires --page N.")?,offset:offset as usize},
         "preview-form"=>Request::PreviewForm {input,request_file:request_file.ok_or("Form preview requires --request EDIT.json.")?,parent:parent.ok_or("Form preview requires --out-dir EXISTING_DIR.")?},
         "preview-paragraph"=>Request::PreviewParagraph {input,request_file:request_file.ok_or("Paragraph preview requires --request EDIT.json.")?,parent:parent.ok_or("Paragraph preview requires --out-dir EXISTING_DIR.")?},
         "preview-text"=>Request::PreviewText {input,request_file:request_file.ok_or("Text preview requires --request EDIT.json.")?,parent:parent.ok_or("Text preview requires --out-dir EXISTING_DIR.")?},
+        "preview-text-batch"=>Request::PreviewTextBatch {input,request_file:request_file.ok_or("Batch preview requires --request EDITS.json.")?,parent:parent.ok_or("Batch preview requires --out-dir EXISTING_DIR.")?},
         "save-text-preview"=>Request::SaveTextPreview {input,manifest_hash:manifest_hash.ok_or("Saving requires --manifest-sha256 from the preview result.")?,output:out.ok_or("Saving requires --out NEW.pdf.")?},
         "inspect-paragraph" => Request::InspectParagraph {input,page:page.ok_or("Paragraph inspection requires --page N.")?,selection_id:selection_id.ok_or("Paragraph inspection requires --selection-id.")?},
         "inspect-nested-text" => Request::InspectNestedText {input,page:page.ok_or("Nested text inspection requires --page N.")?,offset:offset as usize},
@@ -199,10 +240,7 @@ fn number(value: &OsString) -> Result<u32, &'static str> {
     s.parse().map_err(|_| "Expected a positive integer.")
 }
 fn password(input: &mut impl Read) -> Result<Sensitive, &'static str> {
-    let mut bytes = Sensitive(Vec::new());
-    input
-        .take(1027)
-        .read_to_end(&mut bytes.0)
+    let mut bytes = automation::credentials::read_sensitive(input,1026)
         .map_err(|_| "Cannot read password stdin.")?;
     if bytes.0.last() == Some(&b'\n') {
         bytes.0.pop();
@@ -259,12 +297,28 @@ fn report(error: &mut impl Write, code: &str, message: &str, status: i32) -> i32
 }
 fn success_response(command: &str, result: Value) -> Result<Value, EngineError> {
     let response=json!({"schemaVersion":1,"ok":true,"command":command,"result":result});
+    if matches!(command,"plan-replacement"|"preview-replacement"){automation::replacement::check_response(&response)?;}
     if command=="inspect-paragraph" {
         automation::paragraph_inspection::check_response(&response)?;
     }
     if command=="inspect-nested-text" {automation::nested_inspection::check_response(&response)?;}
     if command=="inspect-forms" {automation::form_automation::check_response(&response)?;}
+    if matches!(command,"export-pages"|"compose-pages") {automation::page_organization::check_cli_response(&response)?;}
     Ok(response)
+}
+#[cfg(test)]
+mod replacement_automation_cli_tests{
+    use super::*;
+    #[test]
+    fn replacement_automation_cli_parses_plan_and_preview_without_manual_selections(){
+        for command in ["plan-replacement","preview-replacement"]{
+            let mut args=vec![command,"Input.pdf","--request","intent.json","--password-stdin"];
+            if command=="preview-replacement"{args.extend(["--out-dir","Output"]);}
+            let Action::Execute(parsed)=parse(args.into_iter().map(OsString::from).collect()).unwrap()else{panic!("Expected replacement invocation")};
+            assert_eq!(parsed.request.command(),command);assert!(parsed.password);
+        }
+        for args in [vec!["plan-replacement","Input.pdf"],vec!["plan-replacement","Input.pdf","--request","i.json","--out-dir","Output"],vec!["preview-replacement","Input.pdf","--request","i.json"],vec!["plan-replacement","Input.pdf","--request","i.json","--page","1"]]{assert!(parse(args.into_iter().map(OsString::from).collect()).is_err());}
+    }
 }
 /// Console entry point; argument values and stdin are never echoed on parse failures.
 pub fn run(
@@ -278,6 +332,16 @@ pub fn run(
         Err(e) => return report(&mut error, "invalid_arguments", e, 2),
     };
     let result: Result<Value, EngineError> = match action {
+        Action::Compose(invocation)=>{
+            let credentials=if invocation.passwords{
+                match automation::credentials::Credentials::read(&mut input,invocation.request.inputs.len()){
+                    Ok(value)=>value,Err(e)=>return report(&mut error,"invalid_arguments",e,2),
+                }
+            }else{automation::credentials::Credentials::none(invocation.request.inputs.len())};
+            invocation.engine.map(Ok).unwrap_or_else(engine_path).and_then(PdfEngine::start)
+                .and_then(|engine|automation::composition::execute(&engine,invocation.request,&credentials))
+                .and_then(|result|success_response("compose-pages",result))
+        }
         Action::Fonts(paths) => automation::font_inputs::FontInputs::load(&paths)
             .and_then(|fonts|success_response("fonts",fonts.catalog())),
         Action::Help | Action::Version => {

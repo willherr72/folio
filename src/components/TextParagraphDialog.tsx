@@ -198,7 +198,7 @@ export function TextParagraphDialog({adapter:baseAdapter,occurrence,canvas,sourc
     } catch(error) {if(alive.current){candidate.current=value;setError(message(error));}else release(value);}
   };
   const cancel=()=>{invalidate();onCancel();};
-  const pickerView=pickerOpen?<FontPicker text={text} fontSize={chosenSize} currentFontId={font?.id} title="Choose a substitute font" description="Choose a font for this paragraph. Preview the edited PDF before applying the change." onClose={()=>{setPickerOpen(false);requestAnimationFrame(()=>textInput.current?.focus());}} onChoose={info=>{
+  const pickerView=pickerOpen?<FontPicker sourceFontName={selection?.fontDisplayName??selection?.fontName} text={text} fontSize={chosenSize} currentFontId={font?.id} title="Choose a substitute font" description="Choose a font for this paragraph. Preview the edited PDF before applying the change." onClose={()=>{setPickerOpen(false);requestAnimationFrame(()=>textInput.current?.focus());}} onChoose={info=>{
     const previous=fontLease.current;fontLease.current=holdCustomFont(info.id);
     setFont(info);setPickerOpen(false);invalidate();void previous?.();requestAnimationFrame(()=>textInput.current?.focus());
   }}/>:null;

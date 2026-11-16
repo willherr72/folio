@@ -14,7 +14,7 @@ it("finds restricted source and overlay text without requesting or rendering the
  render(<svg><PdfTextLayer adapter={api} page={page} pageNumber={1} selectable={true}/></svg>);
  await waitFor(()=>expect(hook.result.current.searching).toBe(false));
  expect(hook.result.current.matches).toHaveLength(4);expect(hook.result.current.hasText).toBe(true);
- expect(api.searchPage).toHaveBeenCalledWith("protected",0,"needle");expect(api.searchPage).toHaveBeenCalledTimes(1);
+ expect(api.searchPage).toHaveBeenCalledWith("protected",0,"Needle",{matchCase:false,wholeWords:false});expect(api.searchPage).toHaveBeenCalledTimes(1);
  expect(api.getPageText).not.toHaveBeenCalled();expect(screen.queryByText("Private source text")).not.toBeInTheDocument();
 });
 it("reports result limits and ignores stale restricted results after a query change",async()=>{

@@ -33,6 +33,9 @@ const MAX_METADATA_BYTES: usize = 32 * 1024 * 1024;
 pub(super) fn install_paragraph_font_resource(document:&mut Document,asset:&FontAsset)->EngineResult<Object> {
     Ok(custom_font_pdf::install(document,Object::Dictionary(custom_font_pdf::paragraph_font(asset)?)))
 }
+pub(super) fn imported_font_glyph_width(advance:u16,units_per_em:u16,integral:bool)->f32 {
+    custom_font_pdf::glyph_width(advance,units_per_em,integral)
+}
 const MAX_AP_BYTES: usize = 64 * 1024 * 1024;
 
 #[derive(Clone, Serialize, Deserialize)]

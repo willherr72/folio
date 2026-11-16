@@ -87,20 +87,33 @@ impl WorkerRuntime {
     }
 }
 
-pub(super) fn requires_graph_composition(
+// Page import can retain a shared catalog language without imposing the
+// complete graph adapter on otherwise supported ordinary PDFs. Differing
+// defaults need the existing source-specific content/annotation language adapters.
+pub(super) fn composition_route(
     sources: &[crate::acroforms::SourceForm<'_>],
     mut check: impl FnMut() -> EngineResult<()>,
-) -> EngineResult<bool> {
+) -> EngineResult<(bool,Option<Vec<u8>>)> {
+    let mut leading=None;let mut shared_language=None;
     for source in sources {
         check()?;
-        let document = source.document()?;
-        check()?;
-        let catalog = document.catalog().map_err(|error| EngineError::InvalidRequest(error.to_string()))?;
-        if [b"StructTreeRoot".as_slice(), b"MarkInfo", b"OCProperties", b"OutputIntents"]
-            .iter().any(|key| catalog.has(key))
-        {
-            return Ok(true);
+        let document=source.document()?;check()?;
+        let catalog=document.catalog().map_err(|error|EngineError::InvalidRequest(error.to_string()))?;
+        let root=document.trailer.get(b"Root").and_then(lopdf::Object::as_reference)
+            .map_err(|error|EngineError::InvalidRequest(error.to_string()))?;
+        let raw=crate::composition_language::source_default(&document,root)?;
+        let normalized=crate::composition_language::normalized_language(&raw)?;
+        if let Some(leading)=&leading {
+            if leading!=&normalized {return Ok((true,None));}
+        }else{
+            leading=Some(normalized);
+            if let Ok(value)=catalog.get(b"Lang") {
+                let (_,value)=document.dereference(value).map_err(|error|EngineError::InvalidRequest(error.to_string()))?;
+                if !matches!(value,lopdf::Object::Null){shared_language=Some(raw);}
+            }
         }
+        if [b"StructTreeRoot".as_slice(),b"MarkInfo",b"OCProperties",b"OutputIntents"]
+            .iter().any(|key|catalog.has(key)) {return Ok((true,None));}
     }
-    Ok(false)
+    check()?;Ok((false,shared_language))
 }

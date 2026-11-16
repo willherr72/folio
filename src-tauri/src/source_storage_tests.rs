@@ -37,6 +37,66 @@ fn noise(len: usize) -> Arc<[u8]> {
 }
 
 #[test]
+fn varied_sources_share_unchanged_blocks_without_spilling_or_merging_identity() {
+    const KIB: usize = 1024;
+    let store = SourceStore::with_limits(4 * 1024 * KIB, 0);
+    let middle = noise(512 * KIB);
+    let edge = noise(64 * KIB);
+    let mut retained = Vec::new();
+    for marker in 1..=16u8 {
+        let mut original = edge.to_vec();
+        original[0] ^= marker;
+        original.extend_from_slice(&middle);
+        original.extend_from_slice(&edge);
+        *original.last_mut().unwrap() ^= marker;
+        let original: Arc<[u8]> = original.into();
+        let handle = store.capture(original.clone()).unwrap();
+        assert!(retained.iter().all(|(prior, _): &(SourceHandle, Arc<[u8]>)|
+            !handle.identity().same_source(prior.identity())));
+        retained.push((handle, original));
+        store.trim_raw_cache(|_| {});
+    }
+    let usage = store.usage();
+    assert_eq!(usage.sources, 16);
+    assert_eq!(usage.spilled_sources, 0, "unchanged middle blocks should fit once in memory");
+    assert!(usage.encoded_resident_bytes <= 3 * 1024 * KIB,
+        "distinct edge blocks plus one shared middle: {}", usage.encoded_resident_bytes);
+    store.clear_test_raw_cache();
+    assert_eq!(store.usage().raw_cached_bytes, 0);
+    for (handle, original) in &retained {
+        assert_eq!(handle.lease().unwrap().as_ref(), original.as_ref());
+        assert_eq!(handle.identity().sha256(), &digest(original));
+        store.trim_raw_cache(|_| {});
+    }
+    drop(retained);
+    assert_eq!(store.usage().sources, 0);
+    assert_eq!(store.usage().encoded_resident_bytes, 0);
+}
+
+#[test]
+fn shared_payload_ownership_is_counted_once_until_last_source_closes() {
+    let store = SourceStore::with_limits(8192, 0);
+    let original = noise(8192);
+    let first = store.capture(original.clone()).unwrap();
+    let second = store.capture(original.clone()).unwrap();
+    assert!(!first.identity().same_source(second.identity()));
+    assert_eq!(store.usage().encoded_resident_bytes, 8192);
+    assert_eq!(store.usage().spilled_sources, 0, "equal bytes need no second payload allocation");
+    let clone = first.clone();
+    drop(first);
+    assert_eq!(store.usage().sources, 2);
+    drop(clone);
+    assert_eq!(store.usage().sources, 1);
+    assert_eq!(store.usage().encoded_resident_bytes, 8192);
+    store.clear_test_raw_cache();
+    let external = second.lease().unwrap();
+    drop(second);
+    assert_eq!(store.usage().sources, 0);
+    assert_eq!(store.usage().encoded_resident_bytes, 0);
+    assert_eq!(external.as_ref(), original.as_ref());
+}
+
+#[test]
 fn compressed_and_raw_sources_reconstruct_without_expansion() {
     let store = SourceStore::with_limits(4 * 1024 * 1024, 0);
     let text: Arc<[u8]> = vec![b'x'; 2 * 1024 * 1024 + 17].into();
@@ -118,7 +178,8 @@ fn only_most_recent_source_can_exceed_raw_budget() {
 fn resident_encoded_budget_is_aggregate_and_reclaimed_on_close() {
     let store = SourceStore::with_limits(100, 1024);
     let a = store.capture(noise(80)).unwrap();
-    let b = store.capture(noise(80)).unwrap();
+    let mut distinct = noise(80).to_vec(); distinct[0] ^= 1;
+    let b = store.capture(distinct.into()).unwrap();
     assert_eq!(store.usage().encoded_resident_bytes, 80);
     assert_eq!(store.usage().spilled_sources, 1);
     drop(a); drop(b);
@@ -156,7 +217,7 @@ fn truncated_zlib_trailer_is_not_an_exact_stored_block() {
     for cut in 1..=4 {
         let payload = &encoded[..encoded.len()-cut];
         let block = Block { decoded_len: raw.len(), hash: digest(&raw), codec: Codec::Zlib,
-                            payload_len: payload.len(), payload: Payload::Memory(Box::new([])) };
+                            payload_len: payload.len(), payload: Payload::Memory(Arc::from([])) };
         assert!(decode_payload(&block, payload).is_err(), "accepted missing {cut} checksum bytes");
     }
 }
@@ -169,7 +230,7 @@ fn malformed_decoding_is_bounded_and_rejects_trailing_data() {
     encoder.write_all(&raw).unwrap();
     let mut encoded = encoder.finish().unwrap();
     let mut block = Block { decoded_len: 10, hash: digest(&raw[..10]), codec: Codec::Zlib,
-                            payload_len: encoded.len(), payload: Payload::Memory(Box::new([])) };
+                            payload_len: encoded.len(), payload: Payload::Memory(Arc::from([])) };
     assert!(decode_payload(&block, &encoded).is_err());
     block.decoded_len = BLOCK_SIZE + 1;
     assert!(decode_payload(&block, &encoded).is_err());
@@ -183,13 +244,16 @@ fn failed_spill_capture_leaves_existing_source_and_retry_usable() {
     let directory = tempfile::tempdir().unwrap();
     let mut store = SourceStore::with_limits(100, 0);
     let existing = store.capture(noise(80)).unwrap();
+    let mut distinct = noise(80).to_vec(); distinct[0] ^= 1;
+    let distinct: Arc<[u8]> = distinct.into();
     store.spill_directory = Some(directory.path().join("missing-directory"));
-    assert!(store.capture(noise(80)).is_err());
+    assert!(store.capture(distinct.clone()).is_err());
     assert_eq!(store.usage().sources, 1);
     assert_eq!(existing.lease().unwrap().as_ref(), noise(80).as_ref());
     store.spill_directory = None;
-    let retry = store.capture(noise(80)).unwrap();
-    assert_eq!(retry.lease().unwrap().as_ref(), existing.lease().unwrap().as_ref());
+    let retry = store.capture(distinct.clone()).unwrap();
+    assert_eq!(retry.lease().unwrap().as_ref(), distinct.as_ref());
+    assert_eq!(existing.lease().unwrap().as_ref(), noise(80).as_ref());
     assert!(!retry.identity().same_source(existing.identity()));
 }
 

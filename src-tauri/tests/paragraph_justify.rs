@@ -23,6 +23,11 @@ fn lines(bytes:&[u8])->Vec<(String,f32)> {
   (!text.is_empty()).then_some((text,adjustment))
  }).collect()
 }
+fn paragraph_lines(bytes:&[u8])->Vec<(String,f32)> {
+ let mut rows=lines(bytes);
+ assert_eq!(rows.last().map(|row|row.0.as_str()),Some("Neighbor"),"The following neighbor must retain its source reading order");
+ rows.pop();rows
+}
 #[test]
 fn justifies_soft_wrapped_lines_and_reinfers_after_save_at_all_rotations(){
  let e=engine();let temp=tempfile::tempdir().unwrap();
@@ -30,7 +35,7 @@ fn justifies_soft_wrapped_lines_and_reinfers_after_save_at_all_rotations(){
   let path=temp.path().join("source.pdf");fixture(&path,rotation);let original=std::fs::read(&path).unwrap();let source=e.open_document(&path).unwrap();let selected=e.inspect_text_paragraph(&source.id,0,&[0]).unwrap();
   let neighbor=e.list_text_runs(&source.id,0).unwrap().runs[1].clone();
   let edit=e.preview_text_paragraph_with_format(&source.id,0,&[0],&selected.text,"Alpha beta gamma delta epsilon zeta",&area(rotation),&formatting(None)).unwrap();
-  let rows=lines(&e.source_bytes(&edit.id).unwrap());let changed=&rows[1..];assert_eq!(changed.len(),3);assert_eq!(changed[0].0,"Alpha beta gamma ");assert_eq!(changed[1].0,"delta epsilon ");assert_eq!(changed[2].0,"zeta");
+  let rows=paragraph_lines(&e.source_bytes(&edit.id).unwrap());let changed=&rows[..];assert_eq!(changed.len(),3);assert_eq!(changed[0].0,"Alpha beta gamma ");assert_eq!(changed[1].0,"delta epsilon ");assert_eq!(changed[2].0,"zeta");
   for (text,delta) in &changed[..2]{assert!(*delta<0.);assert!((text.trim_end().len() as f32*6.-delta*0.01-100.).abs()<0.02);}
   assert_eq!(changed[2].1,0.);
   let saved=temp.path().join("saved.pdf");e.export_pdf(folio_engine::ExportRequest{flatten:false,pages:vec![folio_engine::PagePlan{crop: None,id:"p".into(),source_id:edit.id.clone(),page_index:0,width:edit.pages[0].width,height:edit.pages[0].height,rotation:0,overlays:vec![]}]},&saved).unwrap();
@@ -45,13 +50,13 @@ fn justifies_soft_wrapped_lines_and_reinfers_after_save_at_all_rotations(){
 fn explicit_breaks_blank_lines_and_single_words_are_not_stretched(){
  let e=engine();let temp=tempfile::tempdir().unwrap();let path=temp.path().join("source.pdf");fixture(&path,0);let source=e.open_document(&path).unwrap();let selected=e.inspect_text_paragraph(&source.id,0,&[0]).unwrap();
  let edit=e.preview_text_paragraph_with_format(&source.id,0,&[0],&selected.text,"Alpha beta\n\nSingle\nBeta gamma delta",&area(0),&formatting(None)).unwrap();
- let rows=lines(&e.source_bytes(&edit.id).unwrap());assert_eq!(rows[1..].iter().map(|r|r.0.as_str()).collect::<Vec<_>>(),vec!["Alpha beta","Single","Beta gamma delta"]);assert!(rows.iter().all(|r|r.1==0.));
+ let rows=paragraph_lines(&e.source_bytes(&edit.id).unwrap());assert_eq!(rows.iter().map(|r|r.0.as_str()).collect::<Vec<_>>(),vec!["Alpha beta","Single","Beta gamma delta"]);assert!(rows.iter().all(|r|r.1==0.));
  for id in [&source.id,&edit.id]{e.close_document(id).unwrap();}
 }
 #[test]
 fn repeated_and_trailing_spaces_and_substitute_unicode_remain_editable(){
  let e=engine();let temp=tempfile::tempdir().unwrap();let path=temp.path().join("source.pdf");fixture(&path,0);let source=e.open_document(&path).unwrap();let selected=e.inspect_text_paragraph(&source.id,0,&[0]).unwrap();
- let edit=e.preview_text_paragraph_with_format(&source.id,0,&[0],&selected.text,"Alpha  beta gamma delta  ",&area(0),&formatting(None)).unwrap();let rows=lines(&e.source_bytes(&edit.id).unwrap());assert!(rows[1].0.contains("  "));assert!(rows.last().unwrap().0.ends_with("  "));
+ let edit=e.preview_text_paragraph_with_format(&source.id,0,&[0],&selected.text,"Alpha  beta gamma delta  ",&area(0),&formatting(None)).unwrap();let rows=paragraph_lines(&e.source_bytes(&edit.id).unwrap());assert!(rows[0].0.contains("  "));assert!(rows.last().unwrap().0.ends_with("  "));
  let indices:Vec<_>=e.list_text_runs(&edit.id,0).unwrap().runs.iter().filter(|r|r.text!="Neighbor").map(|r|r.object_index).collect();assert!(e.inspect_text_paragraph(&edit.id,0,&indices).unwrap().text.contains("Alpha  beta"));assert_eq!(alignment(&e,&edit.id,&indices),"justify");
  let font=e.fonts().register(std::fs::read(root().join("../tests/fixtures/corpus/fonts/DejaVuSerif.ttf")).unwrap()).unwrap();
  let sub=e.preview_text_paragraph_with_format(&source.id,0,&[0],&selected.text,"Cafè words again after more words finish",&area(0),&formatting(Some(&font.id))).unwrap();
@@ -62,8 +67,8 @@ fn repeated_and_trailing_spaces_and_substitute_unicode_remain_editable(){
 fn leading_spaces_single_word_wraps_bearings_embedded_fonts_and_overflow(){
  let e=engine();let temp=tempfile::tempdir().unwrap();let path=temp.path().join("source.pdf");fixture(&path,0);let source=e.open_document(&path).unwrap();let selected=e.inspect_text_paragraph(&source.id,0,&[0]).unwrap();let original=e.source_bytes(&source.id).unwrap();
  for value in ["  Alpha beta gamma delta","XXXXXXXXXXXXXXXX delta"] {
-  let edit=e.preview_text_paragraph_with_format(&source.id,0,&[0],&selected.text,value,&area(0),&formatting(None)).unwrap();let rows=lines(&e.source_bytes(&edit.id).unwrap());
-  if value.starts_with(' '){assert!(rows[1].0.starts_with("  "));}else{assert_eq!(rows[1].1,0.);}
+  let edit=e.preview_text_paragraph_with_format(&source.id,0,&[0],&selected.text,value,&area(0),&formatting(None)).unwrap();let rows=paragraph_lines(&e.source_bytes(&edit.id).unwrap());
+  if value.starts_with(' '){assert!(rows[0].0.starts_with("  "));}else{assert_eq!(rows[0].1,0.);}
   e.close_document(&edit.id).unwrap();
  }
  let font=e.fonts().register(std::fs::read(root().join("../tests/fixtures/corpus/fonts/DejaVuSerif.ttf")).unwrap()).unwrap();

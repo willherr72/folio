@@ -1,0 +1,38 @@
+{
+  "generatorSha256": "a1383befab954e30f687b4e7b88565405582c90c296686a647ce176e7eafb2bf",
+  "controls": [
+    {
+      "kind": "retraced-curve",
+      "label": "sid",
+      "wrapped": false,
+      "path": "retraced-curve-sid.cff",
+      "sha256": "290c6481642e3beb82e3fef7db54ba2caa1968d0c7f7071df8e5a4bd85fa2732",
+      "sourceSha256": "20576eaf44fd9fe4576312e4988897ed0b5c3ec38f73c97e047ddb72d2d55fc4"
+    },
+    {
+      "kind": "retraced-curve",
+      "label": "sid",
+      "wrapped": true,
+      "path": "retraced-curve-sid.otf",
+      "sha256": "9dcfe699d50b8d339d53a54b7c322af7f2bc1c9c1873a09bd1922f8b169934b3",
+      "sourceSha256": "20576eaf44fd9fe4576312e4988897ed0b5c3ec38f73c97e047ddb72d2d55fc4"
+    },
+    {
+      "kind": "retraced-curve",
+      "label": "cid",
+      "wrapped": false,
+      "path": "retraced-curve-cid.cff",
+      "sha256": "8b550a467c45b0f05a2bdfba05ea64cbeff9ae4c3d2e9f026d3df381b4ca250e",
+      "sourceSha256": "8ef8e644f3ea608cdf7f137c272d7c5b125c9d9708122e76936be90f62dd2bf1"
+    },
+    {
+      "kind": "retraced-curve",
+      "label": "cid",
+      "wrapped": true,
+      "path": "retraced-curve-cid.otf",
+      "sha256": "ad5a4f4a7f4e75b02a109a115e3f25d28b779660e1086418b8757a75f4ba06d9",
+      "sourceSha256": "8ef8e644f3ea608cdf7f137c272d7c5b125c9d9708122e76936be90f62dd2bf1"
+    }
+  ],
+  "scope": "Valid positive-width fi/ffi programs with move-only or zero-area diagonal contours; original scalar outlines unchanged."
+}

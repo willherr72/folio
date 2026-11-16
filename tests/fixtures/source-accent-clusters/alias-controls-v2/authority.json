@@ -1,0 +1,61 @@
+{
+  "generatorSha256": "57d34ba50c868416cd0770cd44ce86a1dda583b48fd5ba295e9492068c68786b",
+  "cases": [
+    {
+      "source": "sid-otf-simple-accents-single.pdf",
+      "path": "sid-otf-simple-accents-single-contrary.pdf",
+      "sha256": "844e5d22e2eb7652a0cce8fbbcbda9789dd2d7946741a8edcc639d3d443787ec",
+      "supported": false,
+      "sourceText": "Cafe\u0301 \u03b1\u0301 \u0438\u0306 e\u0302\u0301"
+    },
+    {
+      "source": "sid-otf-simple-accents-single.pdf",
+      "path": "sid-otf-simple-accents-single-equivalent.pdf",
+      "sha256": "a8da1182af18a9a360bcc1040a72c4123e9c8af39c933884d3a77508794ffebc",
+      "supported": true,
+      "sourceText": "Cafe\u0301 \u03b1\u0301 \u0438\u0306 e\u0302\u0301"
+    },
+    {
+      "source": "sid-otf-cid-accents-single.pdf",
+      "path": "sid-otf-cid-accents-single-contrary.pdf",
+      "sha256": "6ecd5dbe9afb1fd4f4cd0d6af1781870d6ce20f685e55d0559768a04463727b4",
+      "supported": false,
+      "sourceText": "Cafe\u0301 \u03b1\u0301 \u0438\u0306 e\u0302\u0301"
+    },
+    {
+      "source": "sid-otf-cid-accents-single.pdf",
+      "path": "sid-otf-cid-accents-single-equivalent.pdf",
+      "sha256": "a3a53c9a3e61d89d7b0dd8ca92d09818e02f45ea359cf844f5e4f189c2173a69",
+      "supported": true,
+      "sourceText": "Cafe\u0301 \u03b1\u0301 \u0438\u0306 e\u0302\u0301"
+    },
+    {
+      "source": "cid-otf-cid-accents-single.pdf",
+      "path": "cid-otf-cid-accents-single-contrary.pdf",
+      "sha256": "2fe1fee09cb49e2489fb1f846b297cc949c587739e7db239885fa51eab12b122",
+      "supported": false,
+      "sourceText": "Cafe\u0301 \u03b1\u0301 \u0438\u0306 e\u0302\u0301"
+    },
+    {
+      "source": "cid-otf-cid-accents-single.pdf",
+      "path": "cid-otf-cid-accents-single-equivalent.pdf",
+      "sha256": "7990542717ccc09e42d702a9e627c382510f20a85827ac581f55597e4b85efe9",
+      "supported": true,
+      "sourceText": "Cafe\u0301 \u03b1\u0301 \u0438\u0306 e\u0302\u0301"
+    },
+    {
+      "source": "ttf-otf-cid-accents-single.pdf",
+      "path": "ttf-otf-cid-accents-single-contrary.pdf",
+      "sha256": "0925cc0ba9f2f5cf0686a2d499612d0071c1953a98e18632463a65099f9a7aa7",
+      "supported": false,
+      "sourceText": "Cafe\u0301 \u03b1\u0301 \u0438\u0306 e\u0302\u0301"
+    },
+    {
+      "source": "ttf-otf-cid-accents-single.pdf",
+      "path": "ttf-otf-cid-accents-single-equivalent.pdf",
+      "sha256": "4d3ebd7b3a9e570af3b6fa7dec34395368127890cfa74de25806c965a20bf36f",
+      "supported": true,
+      "sourceText": "Cafe\u0301 \u03b1\u0301 \u0438\u0306 e\u0302\u0301"
+    }
+  ]
+}

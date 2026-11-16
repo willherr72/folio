@@ -1,5 +1,9 @@
 import {ParagraphViewportHost} from "./components/ParagraphViewportHost";
 import {TextRemovalDialog} from './components/TextRemovalDialog';
+import {WorkspaceReplacementDialog} from './components/WorkspaceReplacementDialog';
+import {captureWorkspaceReplacement,commitWorkspaceReplacement,type WorkspaceReplacementRequest} from './editor/workspace-replacement';
+import {supportsWorkspaceReplacement} from './editor/workspace-replacement-workflow';
+import type {PageSearchOptions} from './editor/types';
 import {captureTextRemoval,commitTextRemoval,supportsTextRemoval,supportsContentRemoval,type RemovalRequest} from './editor/text-removal-workflow';
 import type {CanvasParagraphView} from "./editor/paragraph-canvas";
 import type {CanvasImageView} from "./editor/existing-image-canvas";
@@ -138,19 +142,22 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
   const [bookmarkDialog,setBookmarkDialog]=useState<{id?:string;parentId?:string}|null>(null);
   const [pageJump,setPageJump]=useState(false);
   const [printOpen,setPrintOpen] = useState(false);
-  const [searchTabs,setSearchTabs] = useState<Record<string,{open:boolean;query:string;index:number}>>({});
+  const [searchTabs,setSearchTabs] = useState<Record<string,{open:boolean;query:string;index:number;matchCase:boolean;wholeWords:boolean}>>({});
+  const [searchFocusRequest,setSearchFocusRequest]=useState(0);
   const followedSearch=useRef(new Map<string,string>());
-  const searchState = searchTabs[workspace.activeId??""]??{open:false,query:"",index:0};
-  const search = useDocumentSearch(adapter,history?.present.pages??[],searchState.query,searchState.open);
-  const searchMatch = search.matches[Math.min(searchState.index,search.matches.length-1)];
+  const searchState = searchTabs[workspace.activeId??""]??{open:false,query:"",index:0,matchCase:false,wholeWords:false};
+  const search = useDocumentSearch(adapter,history?.present.pages??[],searchState.query,searchState.open,searchState);
+  // A tab return rebuilds results page by page. Wait for its saved hit instead
+  // of following a temporary earlier hit and recording unsolicited navigation.
+  const searchMatch = search.matches[search.searching?searchState.index:Math.min(searchState.index,search.matches.length-1)];
   const searchPage=history?.present.pages.find(page=>page.id===searchMatch?.pageId);
   const searchTarget=searchMatch&&searchPage?searchNavigationRect(searchPage,searchMatch):undefined;
-  const searchNavigationKey=searchMatch&&searchTarget?JSON.stringify([searchState.query,searchMatch.id,searchTarget]):null;
+  const searchNavigationKey=searchMatch&&searchTarget?JSON.stringify([searchState.query,searchState.matchCase,searchState.wholeWords,searchMatch.id,searchTarget]):null;
   const updateSearch = useCallback((patch:Partial<typeof searchState>)=>{
     if(!workspace.activeId)return;
     // A deliberate query edit may revisit the same result; tab/modal returns may not.
-    if(patch.query!==undefined)followedSearch.current.delete(workspace.activeId);
-    setSearchTabs(value=>({...value,[workspace.activeId!]:{...(value[workspace.activeId!]??{open:false,query:"",index:0}),...patch}}));
+    if(patch.query!==undefined||patch.matchCase!==undefined||patch.wholeWords!==undefined)followedSearch.current.delete(workspace.activeId);
+    setSearchTabs(value=>({...value,[workspace.activeId!]:{...(value[workspace.activeId!]??{open:false,query:"",index:0,matchCase:false,wholeWords:false}),...patch}}));
   },[workspace.activeId]);
   const [newTextId, setNewTextId] = useState<string | null>(null);
   const setHistory = useCallback((action: SetStateAction<History<EditorDocument> | null>) => {
@@ -211,6 +218,7 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
   const [formAuthor,setFormAuthor]=useState<(NonNullable<typeof formFill>&{sourceIds:string[]})|null>(null);
   const [pageReplacement,setPageReplacement]=useState<(NonNullable<typeof formFill>&{sourceIds:string[]})|null>(null);
   const [textRemoval,setTextRemoval]=useState<RemovalRequest|null>(null);
+  const [replacementRequest,setReplacementRequest]=useState<{request:WorkspaceReplacementRequest;query:string;options:PageSearchOptions}|null>(null);
   const [imageReplacement,setImageReplacement]=useState<(NonNullable<typeof pageReplacement>&{image:ExistingImage})|null>(null);
   const [textExport,setTextExport]=useState<{pages:PagePlan[];currentPageId:string|null}|null>(null);
   const [pdfSave,setPdfSave]=useState<PdfSaveView|null>(null);
@@ -231,6 +239,17 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
   const [busy, setBusy] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [failure, setFailure] = useState<string | null>(null);
+  const openButtonRef=useRef<HTMLButtonElement>(null),cancelledOpenFocus=useRef(false);
+  const cancelPdfOpen=useCallback(()=>{
+    if(!passwords.cancel())return;
+    cancelledOpenFocus.current=true;setNotice("Opening cancelled.");
+  },[passwords.cancel]);
+  useEffect(()=>{
+    if(cancelledOpenFocus.current&&!busy&&!passwords.opening){
+      cancelledOpenFocus.current=false;
+      const target=openButtonRef.current;if(target&&!target.disabled)target.focus({preventScroll:true});
+    }
+  },[busy,passwords.opening]);
   const [draggedPageId, setDraggedPageId] = useState<string | null>(null);
   const [dropTarget, setDropTarget] = useState<{ pageId: string; side: "before" | "after" } | null>(null);
   const dragOverlay = useRef<{ document: EditorDocument; pageId: string; x: number; y: number; id: string } | null>(null);
@@ -252,7 +271,7 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
     if(priorImageSession.current&&!imageReplacement)imageToolButton.current?.focus({preventScroll:true});
     priorImageSession.current=!!imageReplacement;
   },[imageReplacement]);
-  const modalOpen = !!documentProperties || !!textRemoval || !!formFrame || !!formRemoval || !!formChoices || !!formProperties || !!formTextAppearance || !!formPosition || !!formAuthor || !!securityCopy || !!pdfSave || !!organizer || !!pdfSplit || !!textExport || !!pageReplacement || !!imageExport || !!cropRequest || !!nativeComment || !!passwords.prompt || !!ocr || (!!formFill&&formOverview) || !!fontPicker || !!textEdit || paragraphModal || !!textGroup || signatureOpen || settingsOpen || printOpen || !!extraction || !!blankRequest || !!imageRequest || !!bookmarkDialog || pageJump || !!confirmation || !recovery.ready;
+  const modalOpen = !!replacementRequest || !!documentProperties || !!textRemoval || !!formFrame || !!formRemoval || !!formChoices || !!formProperties || !!formTextAppearance || !!formPosition || !!formAuthor || !!securityCopy || !!pdfSave || !!organizer || !!pdfSplit || !!textExport || !!pageReplacement || !!imageExport || !!cropRequest || !!nativeComment || !!passwords.prompt || !!ocr || (!!formFill&&formOverview) || !!fontPicker || !!textEdit || paragraphModal || !!textGroup || signatureOpen || settingsOpen || printOpen || !!extraction || !!blankRequest || !!imageRequest || !!bookmarkDialog || pageJump || !!confirmation || !recovery.ready;
   const imagePlacement=useImagePlacement({workspace,setWorkspace,disabled:modalOpen||!!busy,onPlaced:()=>{setTool("select");setNotice("Image placed. Save a copy when finished.");}});
   const nativeReview=useNativeComments(adapter,current?.pages??[]);
   const readingBlocked = modalOpen || !!busy || imagePlacement.importing;
@@ -335,10 +354,17 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
   },[blocked,searchState.open,searchNavigationKey,workspace.activeId,navigateReading]);
   const openSearch=useCallback(()=>{
     if(blocked||!current)return;
-    updateSearch({open:true});setTool("select");setPendingSignature(null);
-    document.querySelector<HTMLInputElement>('[aria-label="Find in document"]')?.select();
+    updateSearch({open:true});setSearchFocusRequest(value=>value+1);setTool("select");setPendingSignature(null);
   },[blocked,current,updateSearch]);
-  const moveSearch=(direction:number)=>{if(search.matches.length)updateSearch({index:(Math.min(searchState.index,search.matches.length-1)+direction+search.matches.length)%search.matches.length});};
+  const openWorkspaceReplacement=useCallback(()=>{
+    if(blocked||operation.current||!current||!supportsWorkspaceReplacement(adapter))return;
+    const value=workspaceCurrent.current,tab=value.tabs.find(tab=>tab.id===value.activeId);if(!tab)return;
+    try{
+      const request=captureWorkspaceReplacement(tab,value.tabs.flatMap(tab=>tab.sourceIds));
+      setReplacementRequest({request,query:searchState.query,options:{matchCase:searchState.matchCase,wholeWords:searchState.wholeWords}});setTool('select');setPendingSignature(null);
+    }catch(error){setNotice(error instanceof Error?error.message:String(error));}
+  },[blocked,current,adapter,searchState.query,searchState.matchCase,searchState.wholeWords]);
+  const moveSearch=useCallback((direction:number)=>{if(search.matches.length&&(!search.searching||searchState.index<search.matches.length))updateSearch({index:(Math.min(searchState.index,search.matches.length-1)+direction+search.matches.length)%search.matches.length});},[search.matches.length,search.searching,searchState.index,updateSearch]);
   const openPrint=useCallback(()=>{
     if(blocked||!current||!canPrint)return;
     if(adapter.kind!=="native"||!isDesktop){setFailure("Printing is available for PDFs in the Windows desktop app.");return;}
@@ -446,7 +472,9 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
     operation.current = true;
     try {
       setBusy("Opening PDF…"); setFailure(null);
-      await drainFontAcquisitions(); await flushFontReleases(); await drainImageAcquisitions(); await flushImageReleases(); installDocument(await passwords.open(nativeAdapter), nativeAdapter);
+      installDocument(await passwords.open(nativeAdapter,async()=>{
+        await drainFontAcquisitions();await flushFontReleases();await drainImageAcquisitions();await flushImageReleases();
+      }),nativeAdapter);
     } catch (error) { setFailure("Couldn’t open PDF: " + errorMessage(error)); }
     finally { operation.current = false; setBusy(null); }
   }, [installDocument, modalOpen]);
@@ -457,8 +485,9 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
     setBusy("Adding PDF…"); setFailure(null);
     let incoming: Awaited<ReturnType<FolioAdapter["openPdf"]>> = null;
     try {
-      await drainFontAcquisitions(); await flushFontReleases(); await drainImageAcquisitions(); await flushImageReleases();
-      incoming = await passwords.open(nativeAdapter);
+      incoming = await passwords.open(nativeAdapter,async()=>{
+        await drainFontAcquisitions();await flushFontReleases();await drainImageAcquisitions();await flushImageReleases();
+      });
       if (incoming && (incoming.protection || current.pages.some(page=>page.protection))) {
         if (!nativeAdapter.checkSourceCombination) throw new Error("Protected PDF combination requires the desktop service.");
         await nativeAdapter.checkSourceCombination([...new Set([...current.pages.map(page=>page.sourceId),incoming.id])]);
@@ -575,7 +604,7 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
         })));
         setNotice(notice);
         // Explicit page creation takes navigation priority over rebuilt Find hits.
-        setSearchTabs(value=>({...value,[request.tabId!]:{...(value[request.tabId!]??{query:"",index:0}),open:false}}));
+        setSearchTabs(value=>({...value,[request.tabId!]:{...(value[request.tabId!]??{query:"",index:0,matchCase:false,wholeWords:false}),open:false}}));
       } else {
         const session=createSession(info,sourceAdapter,preferences.defaultZoom);
         session.savedDigest="";
@@ -871,7 +900,7 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
     try{
       const prepared=request.run.objectPath?await prepareFormParagraph(request.adapter,request.page.sourceId,request.page.pageIndex,request.run):{adapter:request.adapter,anchor:request.run};
       if(!ownsRequest())return;
-      const initialDraft=changed?await prepareParagraphDraft(prepared.adapter,request.page.sourceId,request.page.pageIndex,prepared.anchor,draft!):undefined;
+      const initialDraft=changed?await prepareParagraphDraft(prepared.adapter,request.page.sourceId,request.page.pageIndex,prepared.anchor,draft!,{width:request.page.width,height:request.page.height,crop:request.page.crop,isCurrent:ownsRequest}):undefined;
       if(!ownsRequest())return;
       paragraphDraftLease.current=lease;lease=null;
       setTextParagraph({...request,run:prepared.anchor,adapter:prepared.adapter,initialDraft});setTextEdit(null);
@@ -1051,7 +1080,9 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if (readingBlocked || decision.current || event.defaultPrevented || event.isComposing || event.keyCode === 229) return;
+      if(event.defaultPrevented||event.isComposing||event.keyCode===229)return;
+      if(passwords.opening&&!passwords.prompt&&event.key==="Escape"&&!event.ctrlKey&&!event.metaKey&&!event.altKey&&!event.shiftKey){event.preventDefault();cancelPdfOpen();return;}
+      if(readingBlocked||decision.current)return;
       if(textParagraph&&event.key==="Escape"){event.preventDefault();setTextParagraph(null);return;}
       if(imageReplacement&&event.key==="Escape"){event.preventDefault();setImageReplacement(null);return;}
       const command = event.ctrlKey || event.metaKey;
@@ -1073,6 +1104,8 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
       }
       else if (command && key === "o") { event.preventDefault(); void openPdf(); }
       else if (command && key === "f") { event.preventDefault(); openSearch(); }
+      else if (command && key === "h") { event.preventDefault(); openWorkspaceReplacement(); }
+      else if(event.key==="F3"&&!command&&!event.altKey&&searchState.open){event.preventDefault();moveSearch(event.shiftKey?-1:1);}
       else if (command && key === "p") { event.preventDefault(); openPrint(); }
       else if (command && key === "s") { event.preventDefault(); void exportPdf(); }
       else if (command && !typing && key === "z") { event.preventDefault(); changeHistory(event.shiftKey ? "redo" : "undo"); }
@@ -1086,7 +1119,7 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [textParagraph,imageReplacement, blocked, readingBlocked, changeHistory, closeTab, edit, exportPdf, openPdf, openSearch, openPrint, selectOverlay, selectedOverlay, selectedPage, switchTab, workspace,imagePlacement,travelReading]);
+  }, [passwords.opening,passwords.prompt,cancelPdfOpen,textParagraph,imageReplacement, blocked, readingBlocked, changeHistory, closeTab, edit, exportPdf, openPdf, openSearch,openWorkspaceReplacement,moveSearch,searchState.open, openPrint, selectOverlay, selectedOverlay, selectedPage, switchTab, workspace,imagePlacement,travelReading]);
 
   useEffect(() => {
     if (!isDesktop) {
@@ -1214,6 +1247,15 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
       const next=commitTextRemoval(session,textRemoval,info),updated=updateSession(value,textRemoval.tabId,()=>next);
       workspaceCurrent.current=updated;setWorkspace(updated);setTextRemoval(null);setTool('select');setNotice(`${textRemoval.mode==='content'?'Content':'Text'} removed. Use Undo to restore it, or save a copy.`);return true;
     }}/>} 
+    {replacementRequest&&<WorkspaceReplacementDialog {...replacementRequest} isCurrent={()=>{
+      const value=workspaceCurrent.current,tab=value.tabs.find(tab=>tab.id===replacementRequest.request.tabId);
+      return mounted.current&&value.activeId===replacementRequest.request.tabId&&tab?.adapter===replacementRequest.request.adapter&&tab.history===replacementRequest.request.history;
+    }} borrowedIds={()=>workspaceCurrent.current.tabs.flatMap(tab=>tab.sourceIds)} onCancel={()=>setReplacementRequest(null)} onApply={result=>{
+      const value=workspaceCurrent.current,request=replacementRequest.request,session=value.tabs.find(tab=>tab.id===request.tabId);
+      if(!mounted.current||operation.current||value.activeId!==request.tabId||!session)return false;
+      const next=commitWorkspaceReplacement(session,request,result,value.tabs.flatMap(tab=>tab.sourceIds));
+      const updated=updateSession(value,request.tabId,()=>next);workspaceCurrent.current=updated;setWorkspace(updated);setReplacementRequest(null);setTool('select');setNotice('Replacements applied. Use Undo to restore the previous text.');return true;
+    }}/>}
     {pdfSave&&<PdfSaveProgressDialog view={pdfSave} onCancel={()=>void cancelPdfSave()}/>}
     {textExport&&<ExportTextDialog pages={textExport.pages} currentPageId={textExport.currentPageId} onBusyChange={value=>{operation.current=value;}} onClose={()=>{if(!operation.current)setTextExport(null);}} onComplete={result=>setNotice(`Exported text to ${result.path}`)}/>}
     {pdfSplit&&<SplitPdfDialog {...pdfSplit} onBusyChange={value=>{operation.current=value;}} onClose={()=>{if(!operation.current)setPdfSplit(null);}} onComplete={result=>{setNotice(`Split into ${result.count} PDF${result.count===1?"":"s"} in ${result.folder}`);setPdfSplit(null);}}/>}
@@ -1295,6 +1337,7 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
     {confirmation && <ConfirmDialog {...confirmation} onConfirm={() => settleDecision(true)} onCancel={() => settleDecision(false)}/>}
   </>;
 
+  const openingCancel=passwords.opening&&!passwords.prompt?<button type="button" className="button cancel-opening" onClick={cancelPdfOpen}>Cancel opening</button>:null;
   if (!current) return <main className="empty-shell">
     <div className="empty-brand"><span className="folio-mark">F</span><span>Folio</span></div>
     <button className="icon-button empty-settings" disabled={blocked} aria-label="Settings" onClick={() => setSettingsOpen(true)}><Settings size={20}/></button>
@@ -1303,8 +1346,8 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
       <p className="eyebrow">A PRIVATE PDF WORKSPACE</p>
       <h1>Make PDFs feel finished.</h1>
       <p className="empty-copy">Arrange pages, add text, draw, and place your signature. Your documents stay on this device.</p>
-      <div className="empty-actions"><button className="button primary large" disabled={blocked} onClick={openPdf}><FolderOpen size={18}/> Open a PDF</button><button className="button large" disabled={blocked} onClick={()=>openBlank(false)}>New PDF</button><button className="button large" disabled={blocked} onClick={()=>openImages(false)}>Images to PDF</button><button className="button large" disabled={blocked} onClick={openDemo}>Explore demo</button></div>
-      {recovery.warning&&<p className="error-note" role="status">{recovery.warning}</p>}{!recovery.ready&&!recovery.pending&&!recovery.error&&<p className="busy-note">Checking for recovered work…</p>}{busy && <p className="busy-note">{busy}</p>}{failure && <p className="error-note" role="alert">{failure}</p>}
+      <div className="empty-actions"><button ref={openButtonRef} className="button primary large" disabled={blocked} onClick={openPdf}><FolderOpen size={18}/> Open a PDF</button><button className="button large" disabled={blocked} onClick={()=>openBlank(false)}>New PDF</button><button className="button large" disabled={blocked} onClick={()=>openImages(false)}>Images to PDF</button><button className="button large" disabled={blocked} onClick={openDemo}>Explore demo</button></div>
+      {recovery.warning&&<p className="error-note" role="status">{recovery.warning}</p>}{!recovery.ready&&!recovery.pending&&!recovery.error&&<p className="busy-note">Checking for recovered work…</p>}{busy && <p className="busy-note">{busy}{openingCancel}</p>}{failure && <p className="error-note" role="alert">{failure}</p>}
       <p className="privacy-note"><span>●</span> Local editing · Source files remain untouched</p>
     </section>{dialogs}
   </main>;
@@ -1333,7 +1376,7 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
     </header>
     <div className="toolbar" role="toolbar" aria-label="Document tools">
       <div className="toolbar-actions" role="group" aria-label="Document actions">
-      <div className="tool-group"><button className="tool-button" disabled={blocked} onClick={()=>openImages(false)}>Images to PDF</button><button className="tool-button" disabled={blocked} onClick={()=>openBlank(false)}><Plus size={17}/><span>New PDF</span></button><button className="tool-button" onClick={openPdf} disabled={blocked} title="Open PDF (Ctrl+O)"><FolderOpen size={17}/><span>Open</span></button><button className="tool-button" onClick={addPdf} disabled={blocked || !canArrange || adapter.kind === "demo"} title={canArrange?"Add another PDF":"This PDF does not permit combining pages."}><FilePlus2 size={17}/><span>Add PDF</span></button></div>
+      <div className="tool-group"><button className="tool-button" disabled={blocked} onClick={()=>openImages(false)}>Images to PDF</button><button className="tool-button" disabled={blocked} onClick={()=>openBlank(false)}><Plus size={17}/><span>New PDF</span></button><button ref={openButtonRef} className="tool-button" onClick={openPdf} disabled={blocked} title="Open PDF (Ctrl+O)"><FolderOpen size={17}/><span>Open</span></button><button className="tool-button" onClick={addPdf} disabled={blocked || !canArrange || adapter.kind === "demo"} title={canArrange?"Add another PDF":"This PDF does not permit combining pages."}><FilePlus2 size={17}/><span>Add PDF</span></button></div>
       <div className="separator"/>
       <div className="tool-group"><button className="icon-button" aria-label="Undo" title={`Undo (Ctrl+Z). Keeps up to ${MAX_DOCUMENT_HISTORY_ACTIONS} document actions.`} disabled={blocked || !history?.past.length} onClick={() => changeHistory("undo")}><Undo2 size={18}/></button><button className="icon-button" aria-label="Redo" disabled={blocked || !history?.future.length} onClick={() => changeHistory("redo")}><Redo2 size={18}/></button></div>
       <div className="toolbar-spacer"/>
@@ -1381,7 +1424,7 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
       </aside>
       <div className="document-area">
         {recovery.warning&&<div className="recovery-warning" role="status">{recovery.warning}</div>}
-        {searchState.open&&<SearchBar key={"search-"+activeTab!.id} query={searchState.query} onQueryChange={query=>updateSearch({query,index:0})} index={searchState.index} total={search.matches.length} searching={search.searching} error={search.error} hasText={search.hasText} onNext={()=>moveSearch(1)} onPrevious={()=>moveSearch(-1)} onClose={()=>updateSearch({open:false})}/>}
+        {searchState.open&&<SearchBar key={"search-"+activeTab!.id} query={searchState.query} onQueryChange={query=>updateSearch({query,index:0})} options={{matchCase:searchState.matchCase,wholeWords:searchState.wholeWords}} onOptionsChange={options=>updateSearch({...options,index:0})} focusRequest={searchFocusRequest} index={searchState.index} total={search.matches.length} searching={search.searching} error={search.error} hasText={search.hasText} onReplace={supportsWorkspaceReplacement(adapter)?openWorkspaceReplacement:undefined} onNext={()=>moveSearch(1)} onPrevious={()=>moveSearch(-1)} onClose={()=>updateSearch({open:false})}/>}
         {tool === "images" && !imageReplacement && <div className="placement-banner">Click an outlined image to replace, move, resize, rotate, or remove it.</div>}
         {tool === "edit" && !textParagraph && <div className="placement-banner"><TextCursorInput size={16}/> {textEditMode==="paragraph"?"Click outlined text to edit its paragraph. Review the selected area before applying.":"Click an outlined text run to edit it. Some fonts and layouts are not supported yet."}</div>}
         {tool === "highlight" && <div className="placement-banner"><Highlighter size={16}/> Drag across selectable text to highlight it. Scanned pages need a text layer.</div>}
@@ -1408,7 +1451,7 @@ export function App({ initialDemo = new URLSearchParams(location.search).get("de
         </>}
       </PropertiesPanel>
     </div>
-    <footer className="statusbar"><span>{busy ?? (imagePlacement.importing?"Opening image…":null) ?? notice ?? (dirty ? "Unsaved edits" : "All changes exported")}</span>{(failure||imagePlacement.error) && <span className="status-error" role="alert">{failure||imagePlacement.error}</span>}<span className="status-spacer"/><span>{selectedPage ? `${Math.round(displaySize!.width)} × ${Math.round(displaySize!.height)} pt` : ""}</span><span>Local only</span></footer>
+    <footer className="statusbar"><span>{busy ?? (imagePlacement.importing?"Opening image…":null) ?? notice ?? (dirty ? "Unsaved edits" : "All changes exported")}</span>{openingCancel}{(failure||imagePlacement.error) && <span className="status-error" role="alert">{failure||imagePlacement.error}</span>}<span className="status-spacer"/><span>{selectedPage ? `${Math.round(displaySize!.width)} × ${Math.round(displaySize!.height)} pt` : ""}</span><span>Local only</span></footer>
     {dialogs}
   </div>;
 }

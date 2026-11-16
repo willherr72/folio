@@ -55,6 +55,37 @@ pub(crate) fn valid_hash(value: &str) -> bool {
 fn valid_selection(value: &str) -> bool {
     value.strip_prefix("text-v1-").is_some_and(valid_hash)
 }
+
+#[cfg(test)]
+mod batch_preview_tests{
+    use super::*;
+    fn value()->Value{
+        let proof=|data:&[u8]|json!({"sha256":hex(&Sha256::digest(data)),"bytes":data.len()});
+        json!({"version":6,"sourceFingerprint":"d".repeat(64),"page":1,"selectionId":format!("batch-text-v1-{}","c".repeat(64)),"oldText":"","replacement":"",
+            "candidate":proof(b"candidate"),"before":proof(b"before"),"after":proof(b"after"),
+            "batch":{"version":1,"edits":[{"page":1,"selectionId":format!("text-v1-{}","a".repeat(64)),"oldText":"Alpha","replacement":"First"},{"page":2,"selectionId":format!("nested-text-v1-{}","b".repeat(64)),"oldText":"Beta","replacement":"Second"}],
+            "pages":[{"page":1,"before":proof(b"before"),"after":proof(b"after")},{"page":2,"before":proof(b"page2 before"),"after":proof(b"page2 after")}]}})
+    }
+    #[test]
+    fn batch_preview_manifest_binds_all_pages_and_legacy_primary_images(){
+        let manifest:PreviewManifest=serde_json::from_value(value()).unwrap();manifest.validate().unwrap();
+        assert_eq!(manifest.manifest_limit(),512*1024);assert_eq!(manifest.request_limit(),512*1024);
+        assert_eq!(manifest.bytes(),b"candidate".len() as u64+b"before".len() as u64+b"after".len() as u64+b"page2 before".len() as u64+b"page2 after".len() as u64);
+        for version in 1..=5{let mut bad=value();bad["version"]=json!(version);assert!(serde_json::from_value::<PreviewManifest>(bad).map_or(true,|m|m.validate().is_err()));}
+        for mutate in 0..6{
+            let mut bad=value();match mutate{0=>bad["batch"]["pages"][1]["page"]=json!(1),1=>bad["batch"]["pages"]=json!([bad["batch"]["pages"][0].clone()]),2=>bad["before"]["sha256"]=json!("e".repeat(64)),3=>bad["batch"]=Value::Null,4=>bad["batch"]["edits"][1]["page"]=json!(3),_=>bad["batch"]["pages"][1]["after"]["bytes"]=json!(u64::MAX)}
+            assert!(serde_json::from_value::<PreviewManifest>(bad).map_or(true,|m|m.validate().is_err()),"mutation {mutate}");
+        }
+    }
+    #[test]
+    fn batch_preview_bundle_detects_missing_or_changed_secondary_image(){
+        let dir=tempfile::tempdir().unwrap();let folder=dir.path();
+        for(name,data)in [("candidate.pdf",b"candidate".as_slice()),("before.png",b"before"),("after.png",b"after"),("page-2-before.png",b"page2 before"),("page-2-after.png",b"page2 after")]{fs::write(folder.join(name),data).unwrap();}
+        let bytes=serde_json::to_vec(&value()).unwrap();let hash=hex(&Sha256::digest(&bytes));fs::write(folder.join("manifest.json"),bytes).unwrap();
+        validate_bundle(folder,&hash).unwrap();fs::write(folder.join("page-2-after.png"),b"changed").unwrap();assert!(validate_bundle(folder,&hash).is_err());
+        fs::remove_file(folder.join("page-2-before.png")).unwrap();assert!(validate_bundle(folder,&hash).is_err());
+    }
+}
 fn hex(bytes: &[u8]) -> String {
     bytes.iter().map(|b| format!("{b:02x}")).collect()
 }
@@ -129,17 +160,31 @@ pub(crate) struct PreviewManifest {
     pub paragraph: Option<ParagraphMetadata>,
     #[serde(default,skip_serializing_if="Option::is_none",deserialize_with="paragraph_preview::non_null")]
     pub form: Option<FormMetadata>,
+    #[serde(default,skip_serializing_if="Option::is_none",deserialize_with="paragraph_preview::non_null")]
+    pub batch:Option<super::text_batch_preview::BatchMetadata>,
     pub candidate: FileProof,
     pub before: FileProof,
     pub after: FileProof,
 }
 impl PreviewManifest {
-    pub fn manifest_limit(&self)->u64 {if self.version==3 {form_automation::MAX_MANIFEST as u64}else{MAX_MANIFEST}}
-    pub fn request_limit(&self)->u64 {if self.version==3 {form_automation::MAX_REQUEST as u64}else{32*1024}}
-    pub fn bytes(&self) -> u64 {
-        self.candidate.bytes + self.before.bytes + self.after.bytes
+    pub fn manifest_limit(&self)->u64 {match self.version{3=>form_automation::MAX_MANIFEST as u64,6=>super::text_batch_preview::MAX_MANIFEST as u64,_=>MAX_MANIFEST}}
+    pub fn request_limit(&self)->u64 {match self.version{3=>form_automation::MAX_REQUEST as u64,6=>super::text_batch_preview::MAX_REQUEST as u64,_=>32*1024}}
+    pub fn file_proofs(&self)->Vec<(String,&FileProof,u64)>{
+        let mut files=vec![("candidate.pdf".into(),&self.candidate,MAX_BUNDLE)];
+        if let Some(batch)=&self.batch{
+            for page in &batch.pages{files.push((super::text_batch_preview::image_name(page.page,self.page,true),&page.before,MAX_PNG));files.push((super::text_batch_preview::image_name(page.page,self.page,false),&page.after,MAX_PNG));}
+        }else{files.push(("before.png".into(),&self.before,MAX_PNG));files.push(("after.png".into(),&self.after,MAX_PNG));}
+        files
     }
-    fn validate(&self) -> EngineResult<()> {
+    pub fn bytes(&self) -> u64 {
+        self.file_proofs().iter().fold(0u64,|n,(_,proof,_)|n.saturating_add(proof.bytes))
+    }
+    pub(super) fn validate(&self) -> EngineResult<()> {
+        if self.version==6{
+            let batch=self.batch.as_ref().ok_or_else(||invalid("Missing batch preview metadata."))?;batch.validate()?;
+            if self.paragraph.is_some()||self.form.is_some()||self.substitute_font.is_some()||!super::text_batch_preview::valid_selection(&self.selection_id)||!self.old_text.is_empty()||!self.replacement.is_empty()
+                ||self.page!=batch.pages[0].page||self.before!=batch.pages[0].before||self.after!=batch.pages[0].after{return Err(invalid("Invalid batch preview envelope."));}
+        }else if self.batch.is_some(){return Err(invalid("Batch metadata requires preview version 6."));}
         if let Some(font) = &self.substitute_font {
             if !matches!(self.version, 1 | 4) {
                 return Err(invalid("Single-run font metadata requires a text preview."));
@@ -147,6 +192,7 @@ impl PreviewManifest {
             font.validate()?;
         }
         match (self.version, &self.paragraph, &self.form) {
+            (6,None,None)=>{},
             (version @ (1 | 4), None, None) => {
                 let valid = if version == 1 {valid_selection(&self.selection_id)} else {nested_inspection::valid_selection(&self.selection_id)};
                 if !valid {return Err(invalid("Text preview version and selection kind do not match."));}
@@ -211,11 +257,7 @@ pub(crate) fn read_manifest(folder: &Path, expected: &str) -> EngineResult<Previ
 }
 pub(crate) fn validate_bundle(folder: &Path, expected: &str) -> EngineResult<PreviewManifest> {
     let manifest = read_manifest(folder, expected)?;
-    for (name, proof, limit) in [
-        ("candidate.pdf", &manifest.candidate, MAX_BUNDLE),
-        ("before.png", &manifest.before, MAX_PNG),
-        ("after.png", &manifest.after, MAX_PNG),
-    ] {
+    for (name, proof, limit) in manifest.file_proofs() {
         if copy_hash(&folder.join(name), limit, std::io::sink())? != *proof {
             return Err(invalid(
                 "The preview files changed. Create a fresh preview.",
@@ -358,6 +400,7 @@ pub(super) fn publish(
         substitute_font: description.substitute_font,
         paragraph: description.paragraph,
         form: description.form,
+        batch:None,
         candidate: candidate_proof,
         before: copy_hash(&folder.join("before.png"), MAX_PNG, std::io::sink())?,
         after: copy_hash(&folder.join("after.png"), MAX_PNG, std::io::sink())?,
@@ -372,7 +415,7 @@ pub(super) fn publish(
     fs::write(folder.join("manifest.json"), bytes).map_err(io)?;
     let mut result = json!({"bundleName":folder.file_name().and_then(|s|s.to_str()).ok_or_else(||invalid("Invalid preview bundle name."))?,
         "manifestSha256":manifest_hash,"page":manifest.page,"sourceFingerprint":manifest.source_fingerprint,
-        "oldText":manifest.old_text,"replacement":manifest.replacement,"candidateSha256":manifest.candidate.sha256});
+        "oldText":manifest.old_text,"replacement":manifest.replacement,"candidateSha256":manifest.candidate.sha256,"protected":info.protection.is_some()});
     if let Some(paragraph) = &manifest.paragraph {
         result["paragraphId"] = json!(manifest.selection_id);
         result["paragraph"] = json!(paragraph);

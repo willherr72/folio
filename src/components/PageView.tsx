@@ -24,81 +24,31 @@ import { CommentIcon, HighlightMarks } from "./AnnotationPresentation";
 import type { AnnotationRect, EditableTextRun, EditorTool, InkPoint, Overlay, PagePlan } from "../editor/types";
 import { ExistingTextLayer } from "./ExistingTextLayer";
 import {clearExistingTextCache} from "../editor/existing-text-cache";
+import {pageImageCache} from "../editor/page-image-cache";
 import {CanvasFormLayer} from "./CanvasFormLayer";
 
 import { PdfTextLayer, clearPageTextCache } from "./PdfTextLayer";
 
-interface RenderEntry {
-  sourceId: string;
-  request: Promise<string>;
-  references: number;
-  disposalRequested: boolean;
-  estimatedBytes: number;
-}
-const renderCache = new Map<string, RenderEntry>();
-const MAX_RENDER_CACHE = 60;
-// Bound retained decoded image memory; mounted pages stay valid even over budget.
-const MAX_RENDER_BYTES = 96 * 1024 * 1024;
-
-function releaseEntry(key: string, entry: RenderEntry) {
-  if (renderCache.get(key) !== entry) return;
-  renderCache.delete(key);
-  void entry.request.then((url) => { if (url.startsWith("blob:")) URL.revokeObjectURL(url); }).catch(() => {});
-}
-
 export function clearRenderCache(sourceIds: string[]) {
   clearExistingTextCache(sourceIds);
   clearPageTextCache(sourceIds);
-  const targets = new Set(sourceIds);
-  for (const [key, entry] of renderCache) {
-    if (!targets.has(entry.sourceId)) continue;
-    entry.disposalRequested = true;
-    if (entry.references === 0) releaseEntry(key, entry);
-  }
-}
-
-function pruneRenderCache() {
-  let bytes = [...renderCache.values()].reduce((sum, entry) => sum + entry.estimatedBytes, 0);
-  while (renderCache.size > MAX_RENDER_CACHE || bytes > MAX_RENDER_BYTES) {
-    const candidate = [...renderCache.entries()].find(([, entry]) => entry.references === 0);
-    if (!candidate) return;
-    bytes -= candidate[1].estimatedBytes;
-    releaseEntry(candidate[0], candidate[1]);
-  }
+  pageImageCache.clear(sourceIds);
 }
 
 export function usePageImage(adapter: FolioAdapter, page: Pick<PagePlan,"sourceId"|"pageIndex"|"width"|"height">, pixelWidth: number, enabled=true, revision=0) {
-  const key = `${adapter.kind}:${page.sourceId}:${page.pageIndex}:${Math.round(pixelWidth)}`;
+  const key = pageImageCache.key(adapter,page,pixelWidth);
   const [state, setState] = useState<{ key: string; url?: string; error?: string }>({ key });
   useEffect(() => {
     if(!enabled)return;
     let active = true;
     setState({ key });
-    let entry = renderCache.get(key);
-    if (!entry) {
-      entry = {
-        sourceId: page.sourceId,
-        request: adapter.renderPage(page.sourceId, page.pageIndex, pixelWidth),
-        references: 0,
-        disposalRequested: false,
-        estimatedBytes: pixelWidth * Math.ceil(pixelWidth * page.height / page.width) * 4,
-      };
-      renderCache.set(key, entry);
-    }
-    // Access order makes eviction discard the least recently used idle image.
-    renderCache.delete(key);
-    renderCache.set(key, entry);
-    entry.references += 1;
-    pruneRenderCache();
-    entry.request.then((url) => active && setState({ key, url })).catch((error: unknown) => {
-      if (renderCache.get(key) === entry) renderCache.delete(key);
+    const lease=pageImageCache.acquire(adapter,page,pixelWidth);
+    lease.request.then((url) => active && setState({ key, url })).catch((error: unknown) => {
       if (active) setState({ key, error: error instanceof Error ? error.message : String(error) });
     });
     return () => {
       active = false;
-      entry.references = Math.max(0, entry.references - 1);
-      if (entry.disposalRequested && entry.references === 0) releaseEntry(key, entry);
-      else pruneRenderCache();
+      lease.release();
     };
   }, [adapter, key, page.pageIndex, page.sourceId, pixelWidth, page.width, page.height,enabled,revision]);
   return enabled&&state.key === key ? state : { key };

@@ -11,6 +11,17 @@ use std::{
 const MAX_FONT: usize = 16 * 1024 * 1024;
 const MAX_CMAP: usize = 2 * 1024 * 1024;
 
+#[path = "embedded_cff.rs"]
+mod cff;
+
+#[cfg(test)]
+#[path = "embedded_cff_tests.rs"]
+mod cff_tests;
+
+#[cfg(test)]
+#[path = "cid_font_without_cmap_tests.rs"]
+mod cid_font_without_cmap_tests;
+
 pub(super) fn key(bytes: &[u8]) -> String {
     Sha256::digest(bytes)
         .iter()
@@ -70,6 +81,27 @@ pub(super) fn matches_asset_resource(pdf:&Document,font:&Dictionary,asset:&crate
 pub(super) fn latin(text: &str) -> bool {
     !text.trim().is_empty() && text.len() <= 4096 && text.chars().all(latin_character)
 }
+
+/// Same unshaped scalar policy as imported fonts. Source fonts still need exact
+/// Unicode/code/glyph/width proof; this predicate grants no font authority.
+pub(super) fn unshaped(text: &str) -> bool {
+    !text.trim().is_empty() && text.len() <= 4096
+        && text.chars().all(crate::fonts::allowed_character)
+}
+/// Candidate syntax only. Each sequence still needs the actual physical glyph,
+/// exact source code, width, outline and intrinsic-alias proof below.
+fn source_sequence(text: &str) -> bool {
+    if text.len()>64 {return false;}
+    let count=text.chars().count();
+    if !(2..=16).contains(&count) {return false;}
+    if latin(text) && unshaped(text) && !text.chars().any(char::is_whitespace) {return true;}
+    use unicode_normalization::char::{canonical_combining_class,is_public_assigned};
+    let mut chars=text.chars();let first=chars.next().unwrap();
+    crate::fonts::allowed_character(first) && first.is_alphabetic()
+        && canonical_combining_class(first)==0
+        && chars.all(|c|matches!(c as u32,0x300..=0x36f)
+            && canonical_combining_class(c)!=0 && is_public_assigned(c))
+}
 fn latin_character(c: char) -> bool {
     matches!(c as u32,
         0x20..=0x7e | 0xa0..=0xac | 0xae..=0x2ff | 0x1e00..=0x1eff |
@@ -80,7 +112,10 @@ fn latin_character(c: char) -> bool {
 pub(super) struct VerifiedFont {
     // Unicode -> (PDF character code, actual TrueType glyph, advance in 1000 em).
     characters: BTreeMap<char, (u16, u16, f32)>,
+    book: Option<Arc<super::source_glyphs::Codebook>>,
     code_len: usize,
+    // CFF outlines already validated during bounded proof, in em units.
+    source_ink: Option<Arc<BTreeMap<u16,[f32;4]>>>,
     // A partial ToUnicode repertoire is safe only with an exact source operand
     // proof. Native extraction may omit an excluded code or expand a ligature.
     pub(super) requires_source_operands: bool,
@@ -91,13 +126,45 @@ pub(super) struct VerifiedFont {
 }
 
 impl VerifiedFont {
+    /// Call only after binding the actual code/GID and source program identity.
+    pub(super) fn source_glyph_ink(&self,gid:u16,size:f32)->EngineResult<Option<[f32;4]>> {
+        let Some(ink)=&self.source_ink else{return Ok(None);};
+        let value=ink.get(&gid).ok_or_else(||invalid("Missing proved CFF source glyph outline."))?.map(|v|v*size);
+        if !size.is_finite() || size<=0. || value.iter().any(|v|!v.is_finite()||v.abs()>100_000.) || value[2]<value[0] || value[3]<value[1] {
+            return Err(invalid("Proved CFF glyph ink exceeds paragraph geometry limits."));
+        }
+        Ok(Some(value))
+    }
+    // Exact physical widths for a source-bound cursor plan. This lookup grants
+    // no resource identity; the caller still checks the actual Tf resource,
+    // program hash, static CID TrueType format and publication proof.
+    pub(super) fn cursor_glyphs(&self, bytes: &[u8]) -> EngineResult<Vec<(u16,u16,f32)>> {
+        if self.code_len!=2 || bytes.is_empty() || bytes.len()>8192 || bytes.len()%2!=0 {
+            return Err(invalid("Invalid cursor glyph encoding."));
+        }
+        if let Some(book)=&self.book {
+            let text=book.bind(bytes).map_err(invalid)?;
+            return Ok(text.encoded().atoms().iter().map(|a|(a.code,a.gid,a.width)).collect());
+        }
+        let codes=self.characters.values().map(|(code,gid,width)|(*code,(*gid,*width))).collect::<BTreeMap<_,_>>();
+        bytes.chunks_exact(2).map(|b|{
+            let code=u16::from_be_bytes([b[0],b[1]]);
+            let (gid,width)=codes.get(&code).ok_or_else(||invalid("An exact cursor glyph is unavailable."))?;
+            Ok((code,*gid,*width))
+        }).collect()
+    }
+    pub(super) fn bind(&self, bytes: &[u8]) -> EngineResult<Option<Arc<super::source_glyphs::BoundText>>> {
+        self.book.as_ref().map(|book|book.bind(bytes).map(Arc::new).map_err(invalid)).transpose()
+    }
     pub(super) fn sample(&self)->Option<char> {self.characters.keys().copied().find(|c|!c.is_whitespace())}
     pub(super) fn glyph(&self,c:char)->Option<u16> {self.characters.get(&c).map(|v|v.1)}
     pub(super) fn advance(&self, text: &str) -> EngineResult<f32> {
+        if let Some(book)=&self.book {return book.encode(text).map(|text|text.advance()).map_err(invalid);}
         self.supports(text)?;
         Ok(text.chars().map(|c| self.characters[&c].2 / 1000.0).sum())
     }
     pub(super) fn decode(&self, bytes: &[u8]) -> EngineResult<String> {
+        if let Some(book)=&self.book {return book.bind(bytes).map(|bound|bound.encoded().text().to_owned()).map_err(invalid);}
         if bytes.len() % self.code_len != 0 {
             return Err(invalid("A paragraph character code is incomplete."));
         }
@@ -127,6 +194,7 @@ impl VerifiedFont {
     }
 
     pub(super) fn encode(&self, text: &str) -> EngineResult<Vec<u8>> {
+        if let Some(book)=&self.book {return book.encode(text).map(|text|text.bytes().to_vec()).map_err(invalid);}
         self.supports(text)?;
         Ok(text
             .chars()
@@ -140,7 +208,14 @@ impl VerifiedFont {
             })
             .collect())
     }
+    /// Only an already-verified source codebook can admit non-scalar text.
+    /// This never relaxes imported-font or complete form-font repertoire policy.
+    pub(super) fn allows_source_text(&self,text:&str)->bool {
+        unshaped(text) || (!text.trim().is_empty() && text.len()<=4096
+            && self.book.as_ref().is_some_and(|book|book.encode(text).is_ok()))
+    }
     pub(super) fn supports(&self, text: &str) -> EngineResult<()> {
+        if let Some(book)=&self.book {return book.encode(text).map(|_|()).map_err(invalid);}
         for c in text.chars() {
             if !self.characters.contains_key(&c) {
                 return Err(invalid(&format!("The embedded font has no verified glyph for U+{:04X} ({c}). Choose an explicit substitute font to use this character.", c as u32)));
@@ -228,7 +303,7 @@ impl FontProofs {
                 .get(b"Subtype")
                 .and_then(Object::as_name)
                 .unwrap_or_default();
-            if !matches!(subtype, b"TrueType" | b"Type0") {
+            if !matches!(subtype, b"TrueType" | b"Type0") && !(subtype==b"Type1" && cff::uses(&pdf,font)) {
                 continue;
             }
             resource_count += 1;
@@ -256,6 +331,17 @@ impl FontProofs {
                         EngineError::InvalidRequest(reason) => reason,
                         _ => "The embedded font mapping could not be verified.".into(),
                     });
+            if let Ok(proof)=&verified {
+                if let Some(ink)=&proof.source_ink {
+                    // Conservative BTree node slack and shared-map header.
+                    retained=retained.checked_add(128+ink.len()*128).filter(|n|*n<=128*1024*1024)
+                        .ok_or_else(||invalid("The embedded font ink maps exceed their aggregate memory budget."))?;
+                }
+                if let Some(book)=&proof.book {
+                    retained=retained.checked_add(book.retained_bytes()).filter(|n|*n<=128*1024*1024)
+                        .ok_or_else(||invalid("The embedded font glyph maps exceed their aggregate memory budget."))?;
+                }
+            }
             if verified.is_ok() {
                 result.allowed.insert(*id);
             }
@@ -289,7 +375,7 @@ impl FontProofs {
         let mut preserve_source_encoding = first.preserve_source_encoding;
         for entry in entries {
             let other = entry.clone()?;
-            if other.characters != first.characters || other.code_len != first.code_len
+            if other.characters != first.characters || other.code_len != first.code_len || other.book != first.book
                 || other.display_name != first.display_name
             {
                 return Err("The same embedded program has ambiguous PDF font mappings; it cannot be edited safely.".into());
@@ -352,7 +438,7 @@ fn descendant<'a>(pdf: &'a Document, font: &'a Dictionary) -> EngineResult<&'a D
             ));
         }
         let child = dict(pdf, &children[0])?;
-        if child.get(b"Subtype").and_then(Object::as_name).ok() != Some(b"CIDFontType2") {
+        if !matches!(child.get(b"Subtype").and_then(Object::as_name).ok(), Some(b"CIDFontType2"|b"CIDFontType0")) {
             return Err(invalid("Only embedded TrueType outlines can be edited."));
         }
         Ok(child)
@@ -360,196 +446,43 @@ fn descendant<'a>(pdf: &'a Document, font: &'a Dictionary) -> EngineResult<&'a D
         Ok(font)
     }
 }
-fn program(pdf: &Document, font: &Dictionary) -> EngineResult<Vec<u8>> {
+pub(super) fn program(pdf: &Document, font: &Dictionary) -> EngineResult<Vec<u8>> {
+    if cff::uses(pdf,font) {return cff::program(pdf,font);}
     let child = descendant(pdf, font)?;
+    if child.get(b"Subtype").and_then(Object::as_name).ok()==Some(b"CIDFontType0") {
+        return Err(invalid("A CFF descendant requires a FontFile3 program."));
+    }
     let descriptor = dict(pdf, field(child, b"FontDescriptor")?)?;
+    if descriptor.has(b"FontFile3") {
+        if !matches!(child.get(b"Subtype").and_then(Object::as_name).ok(),Some(b"TrueType"|b"CIDFontType2"))
+            || [b"FontFile".as_slice(),b"FontFile2",b"FontFile3"].iter().filter(|key|descriptor.has(key)).count()!=1 {
+            return Err(invalid("The OpenType TrueType resource has conflicting font programs or types."));
+        }
+        let value=field(descriptor,b"FontFile3")?;
+        let object=pdf.dereference(value).map_err(|_|invalid("The OpenType stream is malformed."))?.1.as_stream().map_err(|_|invalid("The OpenType stream is malformed."))?;
+        if object.dict.get(b"Subtype").and_then(Object::as_name).ok()!=Some(b"OpenType") {
+            return Err(invalid("A TrueType FontFile3 stream must declare OpenType."));
+        }
+        let bytes=stream(pdf,value,MAX_FONT)?;
+        let face=ttf_parser::Face::parse(&bytes,0).map_err(|_|invalid("The OpenType TrueType program is malformed."))?;
+        if face.tables().glyf.is_none() || face.tables().hmtx.is_none() || face.tables().cff.is_some()
+            || face.raw_face().table(ttf_parser::Tag::from_bytes(b"CFF2")).is_some() || face.is_variable() {
+            return Err(invalid("The OpenType TrueType stream has unsupported or conflicting outlines."));
+        }
+        return Ok(bytes);
+    }
     stream(pdf, field(descriptor, b"FontFile2")?, MAX_FONT)
 }
 
-fn hex(value: &Object, length: usize) -> EngineResult<u16> {
-    let bytes = value
-        .as_str()
-        .map_err(|_| invalid("The Unicode mapping contains a non-string code."))?;
-    if bytes.len() != length || !matches!(length, 1 | 2) {
-        return Err(invalid(
-            "The font uses unsupported variable-length character codes.",
-        ));
-    }
-    Ok(bytes
-        .iter()
-        .fold(0u16, |n, byte| n * 256 + u16::from(*byte)))
-}
+#[path = "embedded_cmap_parse.rs"]
+mod cmap_parse;
+use cmap_parse::*;
+
 #[cfg(test)]
 #[path = "embedded_cmap_tests.rs"]
 mod cmap_tests;
 
-fn unicode(bytes: &[u8]) -> EngineResult<char> {
-    if !matches!(bytes.len(), 2 | 4) {
-        return Err(invalid("The font maps one glyph to multiple characters or a ligature. Its text cannot be edited safely."));
-    }
-    let units: Vec<_> = bytes
-        .chunks_exact(2)
-        .map(|b| u16::from_be_bytes([b[0], b[1]]))
-        .collect();
-    let text = String::from_utf16(&units)
-        .map_err(|_| invalid("The font Unicode mapping is malformed."))?;
-    let mut chars = text.chars();
-    let character = chars
-        .next()
-        .ok_or_else(|| invalid("The font Unicode mapping is empty."))?;
-    if chars.next().is_some() {
-        return Err(invalid("The font maps one glyph to multiple characters or a ligature. Its text cannot be edited safely."));
-    }
-    Ok(character)
-}
-
-#[derive(Clone, Copy, PartialEq, Eq)]
-enum CMapPolicy {
-    Complete,
-    LatinEditing,
-}
-
-// PDF ToUnicode ranges increment only the final encoded byte. Do not invent
-// scalar arithmetic, carry into an earlier byte, or repair invalid UTF-16.
-fn destination(value: &Object, offset: u16, policy: CMapPolicy) -> EngineResult<Option<char>> {
-    let bytes = value.as_str()
-        .map_err(|_| invalid("The font Unicode mapping contains a non-string destination."))?;
-    let character = if matches!(bytes.len(), 2 | 4) {
-        let mut encoded = [0u8; 4];
-        encoded[..bytes.len()].copy_from_slice(bytes);
-        u8::try_from(offset).ok()
-            .and_then(|offset| bytes[bytes.len() - 1].checked_add(offset))
-            .and_then(|last| {
-                encoded[bytes.len() - 1] = last;
-                unicode(&encoded[..bytes.len()]).ok()
-            })
-    } else {
-        None
-    };
-    if character.is_none() && policy == CMapPolicy::Complete {
-        return Err(invalid("The font Unicode destination is unavailable: it is not one valid UTF-16 character or its range overflows."));
-    }
-    Ok(character)
-}
-
-// Parse the data sections ourselves: the general PDF CMap parser builds an
-// unbounded reverse map and overwrites overlapping definitions. Both behaviors
-// are unsuitable for positively proving an untrusted font's unique mapping.
-#[cfg(test)]
-fn cmap(bytes: &[u8], code_len: usize) -> EngineResult<BTreeMap<u16, u32>> {
-    Ok(cmap_with_policy(bytes, code_len, CMapPolicy::Complete)?
-        .into_iter().filter_map(|(code, character)| character.map(|c| (code, c as u32)))
-        .collect())
-}
-
-fn cmap_with_policy(bytes: &[u8], code_len: usize, policy: CMapPolicy) -> EngineResult<BTreeMap<u16, Option<char>>> {
-    if bytes.len() > MAX_CMAP {
-        return Err(invalid("The embedded font ToUnicode map exceeds its size limit."));
-    }
-    let content = lopdf::content::Content::decode(bytes)
-        .map_err(|_| invalid("The embedded font ToUnicode map is malformed."))?;
-    let mut result = BTreeMap::new();
-    let mut codespaces = Vec::new();
-    let mut section: Option<(&str, usize)> = None;
-    for operation in &content.operations {
-        let name = operation.operator.as_str();
-        if name == "usecmap" {
-            return Err(invalid("Inherited font CMaps cannot be verified safely."));
-        }
-        if matches!(name, "beginbfchar" | "beginbfrange" | "begincodespacerange") {
-            if section.is_some() || operation.operands.len() != 1 {
-                return Err(invalid("The embedded font CMap sections are ambiguous."));
-            }
-            let count = operation.operands[0]
-                .as_i64()
-                .map_err(|_| invalid("Invalid font CMap count."))?;
-            if !(0..=65536).contains(&count) {
-                return Err(invalid("The embedded font CMap exceeds its size limit."));
-            }
-            section = Some((name, count as usize));
-        } else if matches!(name, "endbfchar" | "endbfrange" | "endcodespacerange") {
-            let (start, count) = section
-                .take()
-                .ok_or_else(|| invalid("The embedded font CMap sections are incomplete."))?;
-            let (expected, arity) = match name {
-                "endbfchar" => ("beginbfchar", 2),
-                "endbfrange" => ("beginbfrange", 3),
-                _ => ("begincodespacerange", 2),
-            };
-            if start != expected || operation.operands.len() != count * arity {
-                return Err(invalid(
-                    "The embedded font CMap count does not match its entries.",
-                ));
-            }
-            for item in operation.operands.chunks_exact(arity) {
-                let first = hex(&item[0], code_len)?;
-                if name == "endcodespacerange" {
-                    let last = hex(&item[1], code_len)?;
-                    if first > last {
-                        return Err(invalid("Invalid font codespace range."));
-                    }
-                    if codespaces.len() >= 65536 {
-                        return Err(invalid("The font codespaces exceed their size limit."));
-                    }
-                    codespaces.push((first, last));
-                    continue;
-                }
-                let last = if name == "endbfchar" {
-                    first
-                } else {
-                    hex(&item[1], code_len)?
-                };
-                if first > last || result.len() + usize::from(last - first) + 1 > 65536 {
-                    return Err(invalid("The embedded font mapping exceeds its size limit."));
-                }
-                let target = &item[arity - 1];
-                if let Object::Array(values) = target {
-                    if name != "endbfrange" {
-                        return Err(invalid("Only font Unicode ranges may have array destinations."));
-                    }
-                    if values.len() != usize::from(last - first) + 1 {
-                        return Err(invalid("The font Unicode mapping array is incomplete."));
-                    }
-                }
-                for code in first..=last {
-                    let character = if let Object::Array(values) = target {
-                        destination(&values[usize::from(code - first)], 0, policy)?
-                    } else {
-                        destination(target, code - first, policy)?
-                    };
-                    if result.insert(code, character).is_some() {
-                        return Err(invalid(
-                            "The embedded font has ambiguous overlapping Unicode mappings.",
-                        ));
-                    }
-                }
-            }
-        } else if section.is_some() {
-            return Err(invalid(
-                "The embedded font CMap contains unsupported instructions.",
-            ));
-        }
-    }
-    codespaces.sort_unstable();
-    if codespaces.windows(2).any(|pair| pair[0].1 >= pair[1].0) {
-        return Err(invalid("The embedded font codespaces overlap ambiguously."));
-    }
-    if section.is_some()
-        || codespaces.is_empty()
-        || result.is_empty()
-        || result.keys().any(|code| {
-            let index = codespaces.partition_point(|(first, _)| first <= code);
-            index == 0 || codespaces[index - 1].1 < *code
-        })
-    {
-        return Err(invalid(
-            "The embedded font Unicode codespaces are incomplete.",
-        ));
-    }
-    Ok(result)
-}
-
-fn widths(pdf: &Document, font: &Dictionary, cid: bool) -> EngineResult<BTreeMap<u16, f32>> {
+pub(super) fn widths(pdf: &Document, font: &Dictionary, cid: bool) -> EngineResult<BTreeMap<u16, f32>> {
     let mut result = BTreeMap::new();
     let mut put = |code: u16, value: &Object| -> EngineResult<()> {
         let n = value
@@ -656,6 +589,15 @@ pub(crate) fn choice_font_codes(
 }
 
 fn verify_domain(pdf: &Document, font: &Dictionary, bytes: &[u8], all_scalars: bool) -> EngineResult<VerifiedFont> {
+    if cff::uses(pdf,font) {return cff::verify(pdf,font,bytes,all_scalars);}
+    let child=descendant(pdf,font)?;
+    if child.get(b"FontDescriptor").ok().and_then(|value|dict(pdf,value).ok()).is_some_and(|descriptor|descriptor.has(b"FontFile3"))
+        && program(pdf,font)?!=bytes {
+        return Err(invalid("The native OpenType program differs from its source resource."));
+    }
+    if descendant(pdf,font)?.get(b"Subtype").and_then(Object::as_name).ok()==Some(b"CIDFontType0") {
+        return Err(invalid("A CFF descendant requires a FontFile3 program."));
+    }
     let face = ttf_parser::Face::parse(bytes, 0)
         .map_err(|_| invalid("The embedded TrueType program is malformed."))?;
     if all_scalars {
@@ -691,17 +633,26 @@ fn verify_domain(pdf: &Document, font: &Dictionary, bytes: &[u8], all_scalars: b
             "This embedded simple font encoding cannot be verified safely.",
         ));
     }
-    let maps = face
-        .tables()
-        .cmap
-        .ok_or_else(|| invalid("The embedded font has no glyph character map."))?;
-    if maps.subtables.len() > 32 {
+    let maps = face.tables().cmap;
+    // A CIDFontType2 can omit its internal Unicode cmap: Identity-H and the
+    // PDF CIDToGIDMap select the glyph, while ToUnicode supplies text semantics.
+    // Keep malformed-present tables, simple encodings and full form repertoire
+    // proof strict. Newly admitted fonts use exact source operators, never a
+    // guessed native Unicode-to-glyph reverse mapping.
+    let pdf_mapped_cid = maps.is_none() && cid && !all_scalars
+        && child.get(b"Subtype").and_then(Object::as_name).ok() == Some(b"CIDFontType2")
+        && face.raw_face().table_records.into_iter()
+            .all(|record| record.tag != ttf_parser::Tag::from_bytes(b"cmap"));
+    if maps.is_none() && !pdf_mapped_cid {
+        return Err(invalid("The embedded font has no glyph character map."));
+    }
+    if maps.is_some_and(|maps| maps.subtables.len() > 32) {
         return Err(invalid(
             "The embedded font contains too many character maps for safe editing.",
         ));
     }
     if legacy
-        && (maps.subtables.len() != 1
+        && maps.is_none_or(|maps| maps.subtables.len() != 1
             || maps.subtables.get(0).is_none_or(|table| {
                 table.platform_id != ttf_parser::PlatformId::Macintosh || table.encoding_id != 0
             }))
@@ -711,8 +662,9 @@ fn verify_domain(pdf: &Document, font: &Dictionary, bytes: &[u8], all_scalars: b
         ));
     }
     let widths = widths(pdf, child, cid)?;
-    let mut requires_source_operands = false;
-    let mut preserve_source_encoding = false;
+    let mut requires_source_operands = pdf_mapped_cid;
+    let mut preserve_source_encoding = pdf_mapped_cid;
+    let mut sequences=BTreeMap::new();
     let unicode: BTreeMap<u16, u32> = if let Ok(value) = font.get(b"ToUnicode") {
         let policy = if all_scalars { CMapPolicy::Complete } else { CMapPolicy::LatinEditing };
         // Excluded entries have already participated in all structural checks.
@@ -727,10 +679,21 @@ fn verify_domain(pdf: &Document, font: &Dictionary, bytes: &[u8], all_scalars: b
             // exception proves the whole writer resource, not just its name or
             // malformed range, and leaves complete form repertoire proof strict.
             (0..=u16::MAX).filter_map(|code| char::from_u32(code as u32).map(|c| (code, Some(c)))).collect()
+        } else if !all_scalars && cid && child.get(b"Subtype").and_then(Object::as_name).ok()==Some(b"CIDFontType2") {
+            source_cmap(&unicode_bytes,2)?.into_iter().map(|(code,value)| {
+                let character=match value {
+                    SourceMapping::Scalar(c)=>Some(c),
+                    SourceMapping::Sequence(text) if source_sequence(&text)=>{
+                        sequences.insert(code,text);None
+                    },
+                    _=>None,
+                };
+                (code,character)
+            }).collect()
         } else {
             cmap_with_policy(&unicode_bytes, if cid { 2 } else { 1 }, policy)?
         };
-        requires_source_operands = map.values().any(Option::is_none);
+        requires_source_operands |= map.values().any(Option::is_none);
         map.into_iter().filter_map(|(code, character)| character.map(|c| (code, c as u32)))
             .collect()
     } else if !cid && !legacy {
@@ -748,7 +711,7 @@ fn verify_domain(pdf: &Document, font: &Dictionary, bytes: &[u8], all_scalars: b
             .keys()
             .filter_map(|&code| {
                 win_ansi(code)
-                    .filter(|c| all_scalars || latin_character(*c))
+                    .filter(|c| all_scalars || crate::fonts::allowed_character(*c))
                     .map(|c| (code, c as u32))
             })
             .collect()
@@ -787,10 +750,10 @@ fn verify_domain(pdf: &Document, font: &Dictionary, bytes: &[u8], all_scalars: b
         // the explicit CIDToGIDMap must still agree with its selected glyph below.
         // The legacy subset path has exactly one verified Macintosh charmap.
         if let Some(character) =
-            character.filter(|character| (all_scalars || !cid) && !legacy && (all_scalars || latin_character(*character)))
+            character.filter(|character| (all_scalars || !cid) && !legacy && (all_scalars || crate::fonts::allowed_character(*character)))
         {
             let mut agreed: Option<Option<ttf_parser::GlyphId>> = None;
-            for table in maps.subtables.into_iter().filter(|table| {
+            for table in maps.into_iter().flat_map(|maps| maps.subtables).filter(|table| {
                 table.is_unicode()
                     && !matches!(
                         table.format,
@@ -830,8 +793,7 @@ fn verify_domain(pdf: &Document, font: &Dictionary, bytes: &[u8], all_scalars: b
                 None => code,
             }
         } else if legacy {
-            maps.subtables
-                .get(0)
+            maps.and_then(|maps| maps.subtables.get(0))
                 .and_then(|table| table.glyph_index(code as u32))
                 .map(|gid| gid.0)
                 .unwrap_or(0)
@@ -864,22 +826,7 @@ fn verify_domain(pdf: &Document, font: &Dictionary, bytes: &[u8], all_scalars: b
                 "The font Unicode mapping disagrees with its embedded glyph mapping.",
             ));
         }
-        let actual = face
-            .glyph_hor_advance(ttf_parser::GlyphId(gid))
-            .ok_or_else(|| invalid("The embedded glyph has no horizontal advance."))?
-            as f32
-            * 1000.0
-            / face.units_per_em() as f32;
-        let width = if let Some(width) = widths.get(&code) {
-            *width
-        } else if cid {
-            match child.get(b"DW") {
-                Ok(value) => value.as_float().map_err(|_| invalid("The embedded default glyph width is malformed."))?,
-                Err(_) => 1000.0,
-            }
-        } else {
-            return Err(invalid("The embedded glyph has no PDF width."));
-        };
+        let (actual,width)=glyph_width(&face,child,&widths,cid,code,gid)?;
         // Some producers leave zero placeholders for unused WinAnsi slots. With
         // no explicit Unicode assertion, editing may use the remaining proven
         // repertoire. Never invent an advance or allow this code in source or
@@ -894,25 +841,127 @@ fn verify_domain(pdf: &Document, font: &Dictionary, bytes: &[u8], all_scalars: b
                 "The PDF glyph width disagrees with the embedded TrueType program.",
             ));
         }
-        if !all_scalars && !latin_character(character) {
+        if !all_scalars && !crate::fonts::allowed_character(character) {
             continue;
         }
         if characters.insert(character, (code, gid, width)).is_some() {
             return Err(invalid("The font has ambiguous Unicode mappings: multiple character codes select the same character."));
         }
     }
-    if characters.is_empty() {
+    // Count declarations before excluding absent/malformed physical glyphs.
+    // An invalid duplicate must not grant its surviving alias reverse authority.
+    let mut sequence_counts=BTreeMap::new();
+    for text in sequences.values() {*sequence_counts.entry(text.clone()).or_insert(0usize)+=1;}
+    let mut sequence_symbols=Vec::new();
+    for (code,text) in sequences {
+        // The PDF CID map chooses the actual glyph. A multi-letter destination
+        // has no single Unicode cmap lookup; never substitute its first letter.
+        let gid=match &glyph_map {
+            Some(bytes)=>bytes.get(code as usize*2..code as usize*2+2)
+                .map(|b|u16::from_be_bytes([b[0],b[1]])).unwrap_or(0),
+            None=>code,
+        };
+        if gid==0 {continue;}
+        // This entry was unavailable under the older scalar policy. Failure to
+        // prove it must keep it unavailable, not revoke unrelated scalar codes.
+        // Exact source decoding still refuses any run that uses that code.
+        if gid>=face.number_of_glyphs() {continue;}
+        let Some(bounds)=face.glyph_bounding_box(ttf_parser::GlyphId(gid))else{continue;};
+        if bounds.x_max<=bounds.x_min || bounds.y_max<=bounds.y_min {continue;}
+        let Ok((actual,width))=glyph_width(&face,child,&widths,true,code,gid)else{continue;};
+        if !actual.is_finite() || actual<=0. || !width.is_finite() || !(0.0..=10000.).contains(&width)
+            || width<=0. || (actual-width).abs()>1.01 {continue;}
+        sequence_symbols.push(super::source_glyphs::Symbol{code,text,gid,width});
+    }
+    // Exclude every code in an ambiguous sequence equivalence class. Never let
+    // definition order choose a reverse mapping, and retain the scalar domain.
+    sequence_symbols.retain(|symbol|sequence_counts[&symbol.text]==1);
+    let intrinsic=sequence_aliases(&face,&sequence_symbols);
+    let mut ordinal=0;
+    sequence_symbols.retain(|_|{let keep=intrinsic[ordinal];ordinal+=1;keep});
+    let book=if sequence_symbols.is_empty() {None}else{
+        requires_source_operands=true;preserve_source_encoding=true;
+        sequence_symbols.extend(characters.iter().map(|(ch,(code,gid,width))|super::source_glyphs::Symbol {
+            code:*code,text:ch.to_string(),gid:*gid,width:*width,
+        }));
+        Some(Arc::new(super::source_glyphs::Codebook::new(sequence_symbols,2).map_err(invalid)?))
+    };
+    if characters.is_empty() && book.is_none() {
         return Err(invalid(
-            if all_scalars { "The embedded font has no verified characters." } else { "The embedded font has no verified Latin characters." },
+            if all_scalars { "The embedded font has no verified characters." } else { "The embedded font has no verified unshaped characters." },
         ));
     }
     Ok(VerifiedFont {
         characters,
+        book,
+        source_ink: None,
         code_len: if cid { 2 } else { 1 },
         requires_source_operands,
         preserve_source_encoding,
         display_name: crate::fonts::font_display_name(&face),
     })
+}
+
+fn glyph_width(face:&ttf_parser::Face<'_>,font:&Dictionary,widths:&BTreeMap<u16,f32>,cid:bool,code:u16,gid:u16)->EngineResult<(f32,f32)> {
+    let actual=face.glyph_hor_advance(ttf_parser::GlyphId(gid))
+        .ok_or_else(||invalid("The embedded glyph has no horizontal advance."))? as f32*1000./face.units_per_em()as f32;
+    let width=if let Some(width)=widths.get(&code) {*width}else if cid {
+        match font.get(b"DW") {
+            Ok(value)=>value.as_float().map_err(|_|invalid("The embedded default glyph width is malformed."))?,
+            Err(_)=>1000.,
+        }
+    }else{return Err(invalid("The embedded glyph has no PDF width."));};
+    Ok((actual,width))
+}
+
+fn sequence_aliases(face:&ttf_parser::Face<'_>,symbols:&[super::source_glyphs::Symbol])->Vec<bool> {
+    use unicode_normalization::UnicodeNormalization;
+    if symbols.is_empty() {return Vec::new();}
+    let Some(maps)=face.tables().cmap else {return vec![true;symbols.len()];};
+    // No callback enumerates an unbounded or malformed cmap. Failure to prove
+    // alias coverage excludes new sequences while retaining the scalar policy.
+    if face.raw_face().table(ttf_parser::Tag::from_bytes(b"cmap"))
+        .is_none_or(|bytes|crate::fonts::bounded_cmap_coverage(bytes).is_err()) {
+        return vec![false;symbols.len()];
+    }
+    let wanted:Vec<_>=symbols.iter().map(|symbol|(symbol.gid,symbol.text.nfkd().collect::<String>())).collect();
+    let keys:HashSet<_>=wanted.iter().cloned().collect();
+    let targets:HashSet<_>=symbols.iter().map(|symbol|symbol.gid).collect();
+    let mut seen=HashSet::new();let mut matched=HashSet::new();
+    let mut contrary=HashSet::new();let mut intrinsic=HashMap::new();
+    for table in maps.subtables.into_iter().filter(|table|table.is_unicode()
+        && !matches!(table.format,ttf_parser::cmap::Format::UnicodeVariationSequences(_))) {
+        table.codepoints(|code| {
+            let Some(character)=char::from_u32(code)else{return;};
+            if !unicode_normalization::char::is_public_assigned(character)||character.is_control(){return;}
+            let Some(gid)=table.glyph_index(code).filter(|gid|targets.contains(&gid.0))else{return;};
+            seen.insert(gid.0);
+            if contrary.contains(&gid.0){return;}
+            let mut utf8=[0;4];let text=character.encode_utf8(&mut utf8);let mut normalized=text.nfkd();
+            let Some(first)=normalized.next()else{return;};
+            // One positive alias must never conceal an ordinary or differently
+            // normalized alias for the same physical glyph. Retain at most one
+            // bounded comparison string per candidate GID, not every cmap entry.
+            let Some(second)=normalized.next()else{contrary.insert(gid.0);return;};
+            let mut text=first.to_string();text.push(second);text.extend(normalized);
+            let key=(gid.0,text);
+            if !keys.contains(&key) || intrinsic.get(&gid.0).is_some_and(|value|value!=&key.1) {
+                contrary.insert(gid.0);return;
+            }
+            intrinsic.entry(gid.0).or_insert_with(||key.1.clone());
+            // A positive alias cannot borrow a different Unicode subtable's
+            // glyph when another actual mapping for that alias disagrees.
+            let agrees=maps.subtables.into_iter().filter(|other|other.is_unicode()
+                && !matches!(other.format,ttf_parser::cmap::Format::UnicodeVariationSequences(_)))
+                .all(|other|other.glyph_index(code).is_none_or(|other_gid|other_gid==gid));
+            if agrees {matched.insert(key);}else{contrary.insert(gid.0);}
+        });
+    }
+    // The font may genuinely lack a Unicode alias for a CID-only glyph. Actual
+    // CID/GID/width/outline and exact source proofs still apply. Known ordinary
+    // 'l' cannot be relabeled 'fi'; known 'ﬁ' can supply the compatible alias.
+    // Normalization is comparison evidence only: source bytes/text never change.
+    wanted.into_iter().map(|key|!contrary.contains(&key.0) && (!seen.contains(&key.0)||matched.contains(&key))).collect()
 }
 
 #[cfg(test)]

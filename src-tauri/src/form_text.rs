@@ -536,13 +536,16 @@ impl Model {
         })
     }
     fn replace(&self, path: &[usize], replacement: &Operation) -> EngineResult<Vec<u8>> {
-        self.replace_with_font(path, replacement, None, None)
+        self.replace_with_font(path, replacement, None, None, None)
     }
-    fn replace_with_font(&self, path: &[usize], replacement: &Operation, font: Option<&FontAsset>, adjustment:Option<f32>) -> EngineResult<Vec<u8>> {
+    fn replace_with_font(&self, path: &[usize], replacement: &Operation, font: Option<&FontAsset>, adjustment:Option<f32>, cursor:Option<&cursor_font::Plan>) -> EngineResult<Vec<u8>> {
         let selected = self.occurrences.iter().find(|o| o.path == path)
             .ok_or_else(|| invalid("The selected form object path is stale."))?;
         let mut pdf = self.pdf.clone();
         let font = font.map(|asset| persistence::install_font_resource(&mut pdf, asset)).transpose()?;
+        let font=if let Some(cursor)=cursor.filter(|c|c.name.is_some()) {
+            Some(cursor.install(&mut pdf,font.as_ref().unwrap_or(&selected.font.resource))?)
+        }else{font};
         let (content, resources) = clone_chain(
             &mut pdf,
             &self.root,
@@ -773,7 +776,7 @@ fn validate_flat(
         } else {
             std::str::from_utf8(&occurrence.encoded).map_err(err)?.to_owned()
         };
-        let valid = if run.embedded || run.standard.is_some() { embedded_font::latin(&decoded) } else { printable(&decoded) };
+        let valid = run.allows_source_text(&decoded);
         // Source bytes own ordinary spaces; native extraction may collapse
         // repeated spaces or add separators. Compare the same word sequence,
         // then retain every verified encoded space in the snapshot and advance.
@@ -787,7 +790,7 @@ fn validate_flat(
         }
         run.text = decoded;
         if let ("TJ", [Object::Array(values)]) = (occurrence.show.operator.as_str(), occurrence.show.operands.as_slice()) {
-            let boundaries = text_show::boundaries(&run.text, |c| positioned_text::encoded(run, c))?;
+            let boundaries = positioned_text::boundaries(run,&run.text)?;
             text_show::validate_segments(values, &occurrence.encoded, &boundaries)?;
         }
         let quad = flat.objects().get(run.index.try_into().map_err(|_| invalid("Form object index exceeds native limits."))?)?.bounds()?;
@@ -1065,10 +1068,10 @@ impl WorkerRuntime {
     )->EngineResult<DocumentInfo>{
         if path.len() < 2
             || path.len() > DEPTH + 1
-            || !embedded_font::latin(replacement)
+            || replacement.trim().is_empty() || replacement.len()>4096
             || replacement.trim_matches(' ').trim() != replacement.trim_matches(' ')
         {
-            return Err(invalid("Select a bounded form occurrence and enter nonblank single-line Latin text."));
+            return Err(invalid("Select a bounded form occurrence and enter nonblank single-line unshaped text."));
         }
         let baseline = self.form_baseline(source_id, page_index,annotations)?;
         let model = Model::read(&baseline)?;
@@ -1083,9 +1086,13 @@ impl WorkerRuntime {
                 "The text changed since it was selected. Select the occurrence again.",
             ));
         }
+        if !(if font_id.is_some() {embedded_font::unshaped(replacement)}
+            else {before[selected].allows_source_text(replacement)}) {
+            return Err(invalid("Enter bounded single-line text supported by the selected original font."));
+        }
         let substitute = font_id.map(|id| self.fonts.get(id)).transpose()?;
         let reuse = substitute.as_ref().filter(|font| before[selected].program.as_deref() == Some(font.info.id.as_str()))
-            .and_then(|_| before[selected].proof.as_ref()).and_then(|proof| proof.encode(replacement).ok());
+            .and_then(|_| positioned_text::encoded(&before[selected],replacement).ok());
         let installed = if reuse.is_some() { None } else { substitute.as_deref() };
         // A verified source encoding can map characters absent from a subset's
         // Unicode cmap. Only a new Identity-H installation needs that cmap.
@@ -1097,6 +1104,8 @@ impl WorkerRuntime {
             encoded
         } else if substitute.is_some() {
             replacement.encode_utf16().flat_map(u16::to_be_bytes).collect()
+        } else if before[selected].source_encoding.is_some() {
+            positioned_text::encoded(&before[selected],replacement)?
         } else if let Some(proof) = &before[selected].proof {
             proof.encode(replacement)?
         } else if let Some(proof) = &before[selected].standard {
@@ -1110,14 +1119,21 @@ impl WorkerRuntime {
         match (replacement_show.operator.as_str(), replacement_show.operands.as_mut_slice()) {
             ("Tj" | "'", [value]) | ("\"", [_, _, value]) => *value = Object::String(encoded.clone(), StringFormat::Hexadecimal),
             ("TJ", [Object::Array(values)]) => {
-                let source_boundaries = text_show::boundaries(&before[selected].text,
-                    |c| positioned_text::encoded(&before[selected], c))?;
-                let replacement_boundaries = text_show::boundaries(replacement, |c| {
-                    if installed.is_some() { Ok(c.encode_utf16().flat_map(u16::to_be_bytes).collect()) }
-                    else { positioned_text::encoded(&before[selected], c) }
-                })?;
-                *values = text_show::rewrite_array(values, &model.occurrences[selected].encoded,
-                    &encoded, &source_boundaries, &replacement_boundaries, replacement == before[selected].text)?;
+                let source_boundaries=positioned_text::boundaries(&before[selected],&before[selected].text)?;
+                let replacement_boundaries=if installed.is_some() {
+                    text_show::boundaries(replacement,|c|Ok(c.encode_utf16().flat_map(u16::to_be_bytes).collect()))?
+                }else{positioned_text::boundaries(&before[selected],replacement)?};
+                *values=if before[selected].source_encoding.is_some() {
+                    if installed.is_some() {
+                        text_show::rewrite_clusters(values,&model.occurrences[selected].encoded,&encoded,
+                            &source_boundaries,&replacement_boundaries,
+                            &positioned_text::logical_boundaries(&before[selected],&before[selected].text)?,
+                            &(0..=replacement.chars().count()).collect::<Vec<_>>(),replacement==before[selected].text)?
+                    }else{
+                        positioned_text::rewrite(&before[selected],values,&model.occurrences[selected].encoded,&encoded,replacement)?
+                    }
+                }else{text_show::rewrite_array(values,&model.occurrences[selected].encoded,&encoded,
+                    &source_boundaries,&replacement_boundaries,replacement==before[selected].text)?};
             }
             _ => return Err(invalid("The selected form text-show operator is malformed.")),
         }
@@ -1135,9 +1151,13 @@ impl WorkerRuntime {
                 "Isolating the chosen form occurrence changes the page.",
             ));
         }
+        let cursor=if model.occurrences[selected].following_depends {
+            let occurrence=&model.occurrences[selected];
+            cursor_font::prepare(&model.pdf,&occurrence.font.resource,&before[selected],&occurrence.encoded,&encoded,replacement,installed.map(|font|(font,cursor_font::AssetWidths::Fractional)))?
+        }else{None};
         let adjustment=model.occurrences[selected].following_depends.then(||
-            advance::correction(&before[selected],&model.occurrences[selected],&replacement_show,replacement,installed)).transpose()?;
-        let bytes: Arc<[u8]> = model.replace_with_font(path, &replacement_show, installed,adjustment)?.into();
+            advance::correction(&before[selected],&model.occurrences[selected],&replacement_show,replacement,installed,cursor.as_ref().map(|c|c.width_delta))).transpose()?;
+        let bytes: Arc<[u8]> = model.replace_with_font(path, &replacement_show, installed,adjustment,cursor.as_ref())?.into();
         let after_model = Model::read(&bytes)?;
         let after = validate_flat(self, &bytes, &after_model)?;
         if before.len() != after.len()
@@ -1150,6 +1170,9 @@ impl WorkerRuntime {
                 if i == selected {
                     b.text != replacement || if let Some(font) = &substitute {
                         !same_layout_style(a, b) || b.program.as_deref() != Some(font.info.id.as_str())
+                            ||cursor.as_ref().and_then(|c|c.name.as_ref()).is_some_and(|name|b.font!=*name)
+                    } else if let Some(name)=cursor.as_ref().and_then(|c|c.name.as_ref()) {
+                        !same_layout_style(a,b)||a.program!=b.program||b.font!=*name
                     } else { !same_style(a, b) }
                 } else {
                     !same_run(a, b)

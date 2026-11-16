@@ -60,8 +60,8 @@ fn spaced_extents(text:&str,metrics:&HashMap<char,[f32;3]>,gaps:&[usize],extra:f
     (left,right.max(cursor))
 }
 pub(super) fn wrap(run:&RunSnapshot,substituted:bool,text:&str,width:f32,metrics:&HashMap<char,[f32;3]>)->EngineResult<Vec<Line>> {
-    if text.trim().is_empty()||text.len()>4096||text.contains('\r')||text.split('\n').any(|s|!s.is_empty()&&!(if run.embedded||run.standard.is_some()||substituted {s.bytes().all(|c|c==b' ')||embedded_font::latin(s)}else{s.bytes().all(|c|(32..=126).contains(&c))})) {
-        return Err(invalid("Enter printable Latin text within 4096 UTF-8 bytes. Use newlines for hard breaks."));
+    if text.trim().is_empty()||text.len()>4096||text.contains('\r')||text.split('\n').any(|s|!s.is_empty()&&!(if run.embedded||run.standard.is_some()||substituted {s.bytes().all(|c|c==b' ')||embedded_font::unshaped(s)}else{s.bytes().all(|c|(32..=126).contains(&c))})) {
+        return Err(invalid("Enter supported unshaped text within 4096 UTF-8 bytes. Use newlines for hard breaks."));
     }
     let measured=|s:&str|{let (left,right)=ink_extents(s.trim_end_matches(' '),metrics);right-left};
     let mut lines=Vec::new();

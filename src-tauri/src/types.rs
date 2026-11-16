@@ -92,6 +92,13 @@ pub struct PageSearchResult {
     pub truncated:bool,
 }
 
+#[derive(Debug,Clone,Copy,Default,PartialEq,Eq,Serialize,Deserialize)]
+#[serde(default,rename_all="camelCase",deny_unknown_fields)]
+pub struct PageSearchOptions {
+    pub match_case:bool,
+    pub whole_words:bool,
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct EditableTextRun {

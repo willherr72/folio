@@ -1,0 +1,1485 @@
+{
+  "fonts": [
+    {
+      "label": "sid",
+      "path": "sid.cff",
+      "sha256": "d77627eaa41acaacb3bf380866b5c6607783dfd82d838ba200a6eb69eaae9305",
+      "cid": false,
+      "glyphs": [
+        {
+          "gid": 0,
+          "name": ".notdef",
+          "cid": null,
+          "width": 653,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.652999997138977,
+          "nativeReaderIndex": 0
+        },
+        {
+          "gid": 1,
+          "name": "space",
+          "cid": null,
+          "width": 200,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.20000000298023224,
+          "nativeReaderIndex": 1
+        },
+        {
+          "gid": 2,
+          "name": "N",
+          "cid": null,
+          "width": 647,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.6470000147819519,
+          "nativeReaderIndex": 2
+        },
+        {
+          "gid": 3,
+          "name": "O",
+          "cid": null,
+          "width": 664,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.6639999747276306,
+          "nativeReaderIndex": 3
+        },
+        {
+          "gid": 4,
+          "name": "T",
+          "cid": null,
+          "width": 536,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.5360000133514404,
+          "nativeReaderIndex": 4
+        },
+        {
+          "gid": 5,
+          "name": "a",
+          "cid": null,
+          "width": 504,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.5040000081062317,
+          "nativeReaderIndex": 5
+        },
+        {
+          "gid": 6,
+          "name": "b",
+          "cid": null,
+          "width": 553,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.5529999732971191,
+          "nativeReaderIndex": 6
+        },
+        {
+          "gid": 7,
+          "name": "c",
+          "cid": null,
+          "width": 456,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.4560000002384186,
+          "nativeReaderIndex": 7
+        },
+        {
+          "gid": 8,
+          "name": "d",
+          "cid": null,
+          "width": 555,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.5550000071525574,
+          "nativeReaderIndex": 8
+        },
+        {
+          "gid": 9,
+          "name": "e",
+          "cid": null,
+          "width": 496,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.4959999918937683,
+          "nativeReaderIndex": 9
+        },
+        {
+          "gid": 10,
+          "name": "l",
+          "cid": null,
+          "width": 255,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.2549999952316284,
+          "nativeReaderIndex": 10
+        },
+        {
+          "gid": 11,
+          "name": "t",
+          "cid": null,
+          "width": 338,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.33799999952316284,
+          "nativeReaderIndex": 11
+        },
+        {
+          "gid": 12,
+          "name": "w",
+          "cid": null,
+          "width": 719,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.718999981880188,
+          "nativeReaderIndex": 12
+        },
+        {
+          "gid": 13,
+          "name": "x",
+          "cid": null,
+          "width": 446,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.44600000977516174,
+          "nativeReaderIndex": 13
+        },
+        {
+          "gid": 14,
+          "name": "y",
+          "cid": null,
+          "width": 467,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.46700000762939453,
+          "nativeReaderIndex": 14
+        },
+        {
+          "gid": 15,
+          "name": "z",
+          "cid": null,
+          "width": 425,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.42500001192092896,
+          "nativeReaderIndex": 15
+        },
+        {
+          "gid": 16,
+          "name": "eacute",
+          "cid": null,
+          "width": 496,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.4959999918937683,
+          "nativeReaderIndex": 16
+        },
+        {
+          "gid": 17,
+          "name": "Delta",
+          "cid": null,
+          "width": 588,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.5879999995231628,
+          "nativeReaderIndex": 17
+        },
+        {
+          "gid": 18,
+          "name": "iota",
+          "cid": null,
+          "width": 262,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.2619999945163727,
+          "nativeReaderIndex": 18
+        },
+        {
+          "gid": 19,
+          "name": "kappa",
+          "cid": null,
+          "width": 494,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.49399998784065247,
+          "nativeReaderIndex": 19
+        },
+        {
+          "gid": 20,
+          "name": "mu",
+          "cid": null,
+          "width": 562,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.5619999766349792,
+          "nativeReaderIndex": 20
+        },
+        {
+          "gid": 21,
+          "name": "omicron",
+          "cid": null,
+          "width": 535,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.5350000262260437,
+          "nativeReaderIndex": 21
+        },
+        {
+          "gid": 22,
+          "name": "etatonos",
+          "cid": null,
+          "width": 541,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.5410000085830688,
+          "nativeReaderIndex": 22
+        },
+        {
+          "gid": 23,
+          "name": "uni041F",
+          "cid": null,
+          "width": 645,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.6449999809265137,
+          "nativeReaderIndex": 23
+        },
+        {
+          "gid": 24,
+          "name": "uni0432",
+          "cid": null,
+          "width": 508,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.5080000162124634,
+          "nativeReaderIndex": 24
+        },
+        {
+          "gid": 25,
+          "name": "uni0435",
+          "cid": null,
+          "width": 496,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.4959999918937683,
+          "nativeReaderIndex": 25
+        },
+        {
+          "gid": 26,
+          "name": "uni0438",
+          "cid": null,
+          "width": 565,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.5649999976158142,
+          "nativeReaderIndex": 26
+        },
+        {
+          "gid": 27,
+          "name": "uni0440",
+          "cid": null,
+          "width": 555,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.5550000071525574,
+          "nativeReaderIndex": 27
+        },
+        {
+          "gid": 28,
+          "name": "uni0442",
+          "cid": null,
+          "width": 460,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.46000000834465027,
+          "nativeReaderIndex": 28
+        },
+        {
+          "gid": 29,
+          "name": "zero",
+          "cid": null,
+          "width": 497,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.4970000088214874,
+          "nativeReaderIndex": 29
+        },
+        {
+          "gid": 30,
+          "name": "one",
+          "cid": null,
+          "width": 497,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.4970000088214874,
+          "nativeReaderIndex": 30
+        },
+        {
+          "gid": 31,
+          "name": "two",
+          "cid": null,
+          "width": 497,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.4970000088214874,
+          "nativeReaderIndex": 31
+        },
+        {
+          "gid": 32,
+          "name": "three",
+          "cid": null,
+          "width": 497,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.4970000088214874,
+          "nativeReaderIndex": 32
+        }
+      ],
+      "fdCount": 0
+    },
+    {
+      "label": "cid",
+      "path": "cid.cff",
+      "sha256": "91fb11e099f3629393fd82d071cdb03455f750a02c19c46668c73c2e5ed3d695",
+      "cid": true,
+      "glyphs": [
+        {
+          "gid": 0,
+          "name": null,
+          "cid": 0,
+          "width": 1000,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 1.0,
+          "nativeReaderIndex": 0
+        },
+        {
+          "gid": 1,
+          "name": null,
+          "cid": 1,
+          "width": 223,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.22300000488758087,
+          "nativeReaderIndex": 1
+        },
+        {
+          "gid": 2,
+          "name": null,
+          "cid": 17,
+          "width": 549,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.5490000247955322,
+          "nativeReaderIndex": 17
+        },
+        {
+          "gid": 3,
+          "name": null,
+          "cid": 18,
+          "width": 549,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.5490000247955322,
+          "nativeReaderIndex": 18
+        },
+        {
+          "gid": 4,
+          "name": null,
+          "cid": 19,
+          "width": 549,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.5490000247955322,
+          "nativeReaderIndex": 19
+        },
+        {
+          "gid": 5,
+          "name": null,
+          "cid": 20,
+          "width": 549,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.5490000247955322,
+          "nativeReaderIndex": 20
+        },
+        {
+          "gid": 6,
+          "name": null,
+          "cid": 47,
+          "width": 718,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.7179999947547913,
+          "nativeReaderIndex": 47
+        },
+        {
+          "gid": 7,
+          "name": null,
+          "cid": 48,
+          "width": 737,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.7369999885559082,
+          "nativeReaderIndex": 48
+        },
+        {
+          "gid": 8,
+          "name": null,
+          "cid": 53,
+          "width": 594,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.593999981880188,
+          "nativeReaderIndex": 53
+        },
+        {
+          "gid": 9,
+          "name": null,
+          "cid": 66,
+          "width": 558,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.5580000281333923,
+          "nativeReaderIndex": 66
+        },
+        {
+          "gid": 10,
+          "name": null,
+          "cid": 67,
+          "width": 614,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.6140000224113464,
+          "nativeReaderIndex": 67
+        },
+        {
+          "gid": 11,
+          "name": null,
+          "cid": 68,
+          "width": 506,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.5059999823570251,
+          "nativeReaderIndex": 68
+        },
+        {
+          "gid": 12,
+          "name": null,
+          "cid": 69,
+          "width": 615,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.6150000095367432,
+          "nativeReaderIndex": 69
+        },
+        {
+          "gid": 13,
+          "name": null,
+          "cid": 70,
+          "width": 549,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.5490000247955322,
+          "nativeReaderIndex": 70
+        },
+        {
+          "gid": 14,
+          "name": null,
+          "cid": 77,
+          "width": 279,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.27900001406669617,
+          "nativeReaderIndex": 77
+        },
+        {
+          "gid": 15,
+          "name": null,
+          "cid": 85,
+          "width": 370,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.3700000047683716,
+          "nativeReaderIndex": 85
+        },
+        {
+          "gid": 16,
+          "name": null,
+          "cid": 88,
+          "width": 792,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.7919999957084656,
+          "nativeReaderIndex": 88
+        },
+        {
+          "gid": 17,
+          "name": null,
+          "cid": 89,
+          "width": 486,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.4860000014305115,
+          "nativeReaderIndex": 89
+        },
+        {
+          "gid": 18,
+          "name": null,
+          "cid": 90,
+          "width": 512,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.5120000243186951,
+          "nativeReaderIndex": 90
+        },
+        {
+          "gid": 19,
+          "name": null,
+          "cid": 91,
+          "width": 468,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.46799999475479126,
+          "nativeReaderIndex": 91
+        },
+        {
+          "gid": 20,
+          "name": null,
+          "cid": 102,
+          "width": 1000,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 1.0,
+          "nativeReaderIndex": 102
+        },
+        {
+          "gid": 21,
+          "name": null,
+          "cid": 167,
+          "width": 549,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.5490000247955322,
+          "nativeReaderIndex": 167
+        },
+        {
+          "gid": 22,
+          "name": null,
+          "cid": 260,
+          "width": 647,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.6470000147819519,
+          "nativeReaderIndex": 260
+        },
+        {
+          "gid": 23,
+          "name": null,
+          "cid": 289,
+          "width": 285,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.2849999964237213,
+          "nativeReaderIndex": 289
+        },
+        {
+          "gid": 24,
+          "name": null,
+          "cid": 290,
+          "width": 542,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.5419999957084656,
+          "nativeReaderIndex": 290
+        },
+        {
+          "gid": 25,
+          "name": null,
+          "cid": 292,
+          "width": 621,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.6209999918937683,
+          "nativeReaderIndex": 292
+        },
+        {
+          "gid": 26,
+          "name": null,
+          "cid": 295,
+          "width": 593,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.5929999947547913,
+          "nativeReaderIndex": 295
+        },
+        {
+          "gid": 27,
+          "name": null,
+          "cid": 322,
+          "width": 716,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.7160000205039978,
+          "nativeReaderIndex": 322
+        },
+        {
+          "gid": 28,
+          "name": null,
+          "cid": 341,
+          "width": 563,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.5630000233650208,
+          "nativeReaderIndex": 341
+        },
+        {
+          "gid": 29,
+          "name": null,
+          "cid": 344,
+          "width": 549,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.5490000247955322,
+          "nativeReaderIndex": 344
+        },
+        {
+          "gid": 30,
+          "name": null,
+          "cid": 347,
+          "width": 626,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.6259999871253967,
+          "nativeReaderIndex": 347
+        },
+        {
+          "gid": 31,
+          "name": null,
+          "cid": 355,
+          "width": 615,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.6150000095367432,
+          "nativeReaderIndex": 355
+        },
+        {
+          "gid": 32,
+          "name": null,
+          "cid": 357,
+          "width": 507,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.5070000290870667,
+          "nativeReaderIndex": 357
+        },
+        {
+          "gid": 33,
+          "name": null,
+          "cid": 372,
+          "width": 920,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.9200000166893005,
+          "nativeReaderIndex": 372
+        },
+        {
+          "gid": 34,
+          "name": null,
+          "cid": 770,
+          "width": 1000,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 1.0,
+          "nativeReaderIndex": 770
+        },
+        {
+          "gid": 35,
+          "name": null,
+          "cid": 958,
+          "width": 1000,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 1.0,
+          "nativeReaderIndex": 958
+        },
+        {
+          "gid": 36,
+          "name": null,
+          "cid": 1078,
+          "width": 1000,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 1.0,
+          "nativeReaderIndex": 1078
+        },
+        {
+          "gid": 37,
+          "name": null,
+          "cid": 1357,
+          "width": 1000,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 1.0,
+          "nativeReaderIndex": 1357
+        },
+        {
+          "gid": 38,
+          "name": null,
+          "cid": 1465,
+          "width": 1000,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 1.0,
+          "nativeReaderIndex": 1465
+        },
+        {
+          "gid": 39,
+          "name": null,
+          "cid": 1654,
+          "width": 1000,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 1.0,
+          "nativeReaderIndex": 1654
+        },
+        {
+          "gid": 40,
+          "name": null,
+          "cid": 59087,
+          "width": 1000,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 1.0,
+          "nativeReaderIndex": 59087
+        },
+        {
+          "gid": 41,
+          "name": null,
+          "cid": 59150,
+          "width": 500,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.5,
+          "nativeReaderIndex": 59150
+        },
+        {
+          "gid": 42,
+          "name": null,
+          "cid": 59220,
+          "width": 500,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.5,
+          "nativeReaderIndex": 59220
+        },
+        {
+          "gid": 43,
+          "name": null,
+          "cid": 63121,
+          "width": 280,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.2800000011920929,
+          "nativeReaderIndex": 63121
+        },
+        {
+          "gid": 44,
+          "name": null,
+          "cid": 63166,
+          "width": 549,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.5490000247955322,
+          "nativeReaderIndex": 63166
+        },
+        {
+          "gid": 45,
+          "name": null,
+          "cid": 63177,
+          "width": 500,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.5,
+          "nativeReaderIndex": 63177
+        },
+        {
+          "gid": 46,
+          "name": null,
+          "cid": 63193,
+          "width": 500,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.5,
+          "nativeReaderIndex": 63193
+        },
+        {
+          "gid": 47,
+          "name": null,
+          "cid": 63275,
+          "width": 500,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.5,
+          "nativeReaderIndex": 63275
+        },
+        {
+          "gid": 48,
+          "name": null,
+          "cid": 65170,
+          "width": 1000,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 1.0,
+          "nativeReaderIndex": 65170
+        }
+      ],
+      "fdCount": 18
+    },
+    {
+      "label": "fractional",
+      "path": "fractional.cff",
+      "sha256": "f505254303293551b9f924993aa2c3c0a2ebdc53d4f006cd172fd39fa3f3c261",
+      "cid": false,
+      "glyphs": [
+        {
+          "gid": 0,
+          "name": ".notdef",
+          "cid": null,
+          "width": 0,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.0,
+          "nativeReaderIndex": 0
+        },
+        {
+          "gid": 1,
+          "name": "space",
+          "cid": null,
+          "width": 250.25,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.25,
+          "nativeReaderIndex": 1
+        },
+        {
+          "gid": 2,
+          "name": "A",
+          "cid": null,
+          "width": 500.75,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.5009999871253967,
+          "nativeReaderIndex": 2
+        },
+        {
+          "gid": 3,
+          "name": "B",
+          "cid": null,
+          "width": 610.5,
+          "matrix": [
+            0.001,
+            0,
+            0,
+            0.001,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.6110000014305115,
+          "nativeReaderIndex": 3
+        }
+      ],
+      "fdCount": 0
+    },
+    {
+      "label": "fractional-2048",
+      "path": "fractional-2048.cff",
+      "sha256": "5b1cea2befb0e4ef06cd46e280ccf2748233970299020b5dab4ee9fc9fa11f7f",
+      "cid": false,
+      "glyphs": [
+        {
+          "gid": 0,
+          "name": ".notdef",
+          "cid": null,
+          "width": 0,
+          "matrix": [
+            0.00048828125,
+            0,
+            0,
+            0.00048828125,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.0,
+          "nativeReaderIndex": 0
+        },
+        {
+          "gid": 1,
+          "name": "space",
+          "cid": null,
+          "width": 250.25,
+          "matrix": [
+            0.00048828125,
+            0,
+            0,
+            0.00048828125,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.1220703125,
+          "nativeReaderIndex": 1
+        },
+        {
+          "gid": 2,
+          "name": "A",
+          "cid": null,
+          "width": 500.75,
+          "matrix": [
+            0.00048828125,
+            0,
+            0,
+            0.00048828125,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.24462890625,
+          "nativeReaderIndex": 2
+        },
+        {
+          "gid": 3,
+          "name": "B",
+          "cid": null,
+          "width": 610.5,
+          "matrix": [
+            0.00048828125,
+            0,
+            0,
+            0.00048828125,
+            0,
+            0
+          ],
+          "nativeAdvance": 0.29833984375,
+          "nativeReaderIndex": 3
+        }
+      ],
+      "fdCount": 0
+    }
+  ],
+  "malformed": {
+    "path": "invalid-fdselect-start.cff",
+    "sha256": "aecc1a07110e191695c840802709315cca6cceac72802132d47b3dae91bed03c",
+    "reason": "FDSelect format3 first range starts at1 instead of0"
+  }
+}

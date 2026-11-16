@@ -112,6 +112,10 @@ def main():
         raise RuntimeError('Folio form-separator coordinate patch differs from lock')
     if digest(WORKSPACE / 'scripts/probe-pdfium-form-separators.py') != LOCK['separatorProbeSha256']:
         raise RuntimeError('Folio form-separator probe differs from lock')
+    if digest(WORKSPACE / LOCK['listSelectionPatch']) != LOCK['listSelectionPatchSha256']:
+        raise RuntimeError('Folio List selection patch differs from lock')
+    if digest(WORKSPACE / 'scripts/probe-pdfium-list-selection.py') != LOCK['listSelectionProbeSha256']:
+        raise RuntimeError('Folio List selection probe differs from lock')
     for path, expected in LOCK['formFontFixtures'].items():
         if digest(WORKSPACE / path) != expected:
             raise RuntimeError(f'Form-font fixture differs from lock: {path}')
@@ -181,6 +185,7 @@ def main():
     apply(WORKSPACE / LOCK['formFontPatch'], source)
     apply(WORKSPACE / LOCK['borderPatch'], source)
     apply(WORKSPACE / LOCK['separatorPatch'], source)
+    apply(WORKSPACE / LOCK['listSelectionPatch'], source)
     resources = (distributor / 'patches/win/resources.rc').read_text(encoding='utf-8')
     for key, value in [('YEAR', '2026'), ('VERSION_CSV', '155,0,8044,0'), ('VERSION', '155.0.8044.0')]:
         resources = resources.replace('${' + key + '}', value).replace('$' + key, value)
@@ -224,6 +229,8 @@ def main():
     run(sys.executable, WORKSPACE / 'scripts/probe-pdfium-form-separators.py',
         '--dll', destination / 'pdfium.dll', '--output', destination / 'form-separator-probe',
         *baseline_args)
+    run(sys.executable, WORKSPACE / 'scripts/probe-pdfium-list-selection.py',
+        '--dll', destination / 'pdfium.dll', '--output', destination / 'list-selection-probe')
     provenance = dict(project='PDFium', distributor='Folio local source build',
                       release='chromium/8044', variant=LOCK['variant'],
                       sourceCommit=LOCK['repositories']['pdfium']['commit'],
@@ -237,6 +244,8 @@ def main():
                       borderPatchSha256=LOCK['borderPatchSha256'],
                       separatorPatchSha256=LOCK['separatorPatchSha256'],
                       separatorProbeSha256=LOCK['separatorProbeSha256'],
+                      listSelectionPatchSha256=LOCK['listSelectionPatchSha256'],
+                      listSelectionProbeSha256=LOCK['listSelectionProbeSha256'],
                       sourceLockSha256=digest(WORKSPACE / 'scripts/pdfium-source-lock.json'),
                       sdkPackageVersion='10.0.28000.2270', msvcVersion='14.44.35207')
     (destination / 'provenance.json').write_text(json.dumps(provenance, indent=2) + '\n', encoding='utf-8')

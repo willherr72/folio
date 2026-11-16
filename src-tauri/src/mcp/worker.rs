@@ -11,12 +11,19 @@ use std::{
     io::{Read, Seek, SeekFrom, Write},
     process::{Child, Command, Stdio},
     time::{Duration, Instant},
+    thread::JoinHandle,
 };
 use tempfile::TempDir;
 
 const MAX_REPLY: u64 = 16 * 1024 * 1024;
 const DEADLINE: Duration = Duration::from_secs(120);
 enum Kind {
+    PlanReplacement,
+    PreviewReplacement,
+    MergeDocuments,
+    ExportComposition,
+    OrganizePages,
+    ExportPages,
     Info,
     InspectText,
     InspectNestedText,
@@ -27,6 +34,7 @@ enum Kind {
     Render,
     Preview,
     PreviewParagraph,
+    PreviewBatch,
     Save,
     Apply,
 }
@@ -41,6 +49,11 @@ pub(super) struct Worker {
     kind: Kind,
     name: String,
     candidate: Option<FileProof>,
+    expected_pages: Option<usize>,
+    credential:super::config::Credential,
+    feeder:Option<JoinHandle<Result<(),()>>>,
+    composition_credentials:Vec<super::config::Credential>,
+    composition_selected:Vec<bool>,
     // Drop runs after stop() has killed/reaped the child, including cancellation.
     _font_files: Vec<tempfile::NamedTempFile>,
 }
@@ -75,10 +88,19 @@ impl Worker {
                 "preview" => Kind::Preview,
                 "save" => Kind::Save,
                 "apply" => Kind::Apply,
+                "organize-pages"=>Kind::OrganizePages,
+                "export-pages"=>Kind::ExportPages,
+                "merge-documents"=>Kind::MergeDocuments,
+                "export-composition"=>Kind::ExportComposition,
                 _ => panic!("Unknown test operation"),
             },
             name: "test".into(),
             candidate: None,
+            expected_pages: None,
+            credential:None,
+            feeder:None,
+            composition_credentials:Vec::new(),
+            composition_selected:Vec::new(),
             _font_files: vec![font],
         }
     }
@@ -98,6 +120,12 @@ impl Worker {
         preview: Option<&Preview>,
     ) -> Result<Self, &'static str> {
         let (document, kind) = match &call {
+            Call::PlanReplacement{document,..}=>(*document,Kind::PlanReplacement),
+            Call::PreviewReplacement{document,..}=>(*document,Kind::PreviewReplacement),
+            Call::MergeDocuments {documents,..}=>(*documents.first().ok_or("Select at least one document.")?,Kind::MergeDocuments),
+            Call::ExportComposition {documents,..}=>(*documents.first().ok_or("Select at least one document.")?,Kind::ExportComposition),
+            Call::OrganizePages {document,..}=>(*document,Kind::OrganizePages),
+            Call::ExportPages {document,..}=>(*document,Kind::ExportPages),
             Call::InspectForms {document,..}=>(*document,Kind::InspectForms),
             Call::PreviewForm {document,..}=>(*document,Kind::PreviewForm),
             Call::Info { document } => (*document, Kind::Info),
@@ -108,13 +136,29 @@ impl Worker {
             Call::Render { document, .. } => (*document, Kind::Render),
             Call::PreviewParagraph {document,..} => (*document,Kind::PreviewParagraph),
             Call::PreviewText { document, .. } => (*document, Kind::Preview),
+            Call::PreviewTextBatch {document,..}=>(*document,Kind::PreviewBatch),
             Call::SavePreview { .. } => (0, Kind::Save),
             Call::ApplyPreview { .. } => (0, Kind::Apply),
             Call::List | Call::ListFonts | Call::DiscardPreview { .. } | Call::CloseDocument { .. } => {
                 return Err("This operation does not require a worker.")
             }
         };
+        let expected_pages=match &call{Call::OrganizePages {organization,..}|Call::ExportPages {organization,..}=>organization.as_ref().map(|o|o.pages.len()),Call::MergeDocuments{organization,..}|Call::ExportComposition{organization,..}=>organization.as_ref().map(|o|o.pages.len()),_=>None};
+        let composition_documents=match &call{Call::MergeDocuments{documents,..}|Call::ExportComposition{documents,..}=>Some(documents.clone()),_=>None};
+        let composition_credentials:Vec<_>=composition_documents.as_ref().map(|ds|ds.iter().map(|index|config.documents[*index].credential.clone()).collect()).unwrap_or_default();
+        let mut composition_selected=vec![true;composition_credentials.len()];
+        if let Call::MergeDocuments{organization:Some(organization),..}|Call::ExportComposition{organization:Some(organization),..}=&call{
+            organization.validate(composition_credentials.len()).map_err(|_|"Invalid composition selection.")?;
+            composition_selected.fill(false);for p in &organization.pages{composition_selected[p.source as usize-1]=true;}
+        }
+        let credential=if matches!(kind,Kind::Save|Kind::Apply){preview.and_then(|p|p.credential.clone())}else{config.documents[document].credential.clone()};
         let mut font_assets=std::collections::BTreeMap::new();
+        if let Call::PreviewTextBatch{edit,..}=&call{
+            for item in &edit.edits{if let Some(id)=&item.font_id{
+                let asset=config.fonts.get(id).map_err(|_|"Unknown authorized font ID. Use folio_list_fonts; font files must be configured at launch.")?;
+                font_assets.insert(id.clone(),asset);
+            }}
+        }
         if let Call::PreviewText {edit,..}=&call {
             if let Some(id)=&edit.font_id {
                 let asset=config.fonts.get(id).map_err(|_|"Unknown authorized font ID. Use folio_list_fonts; font files must be configured at launch.")?;
@@ -141,7 +185,7 @@ impl Worker {
         };
         let directory = if matches!(
             kind,
-            Kind::Info | Kind::InspectForms | Kind::PreviewForm | Kind::InspectText | Kind::InspectNestedText | Kind::InspectParagraph | Kind::Preview | Kind::PreviewParagraph | Kind::Apply
+            Kind::PlanReplacement | Kind::PreviewReplacement | Kind::Info | Kind::InspectForms | Kind::PreviewForm | Kind::InspectText | Kind::InspectNestedText | Kind::InspectParagraph | Kind::Preview | Kind::PreviewBatch | Kind::PreviewParagraph | Kind::Apply | Kind::OrganizePages | Kind::MergeDocuments
         ) {
             tempfile::tempdir()
         } else {
@@ -152,6 +196,10 @@ impl Worker {
         .map_err(|_| "Cannot create a private operation folder.")?;
         let mut command = Command::new(&config.executable);
         let verb = match kind {
+            Kind::PlanReplacement=>"plan-replacement",
+            Kind::PreviewReplacement=>"preview-replacement",
+            Kind::MergeDocuments|Kind::ExportComposition=>"compose-pages",
+            Kind::OrganizePages | Kind::ExportPages=>"export-pages",
             Kind::Info => "info",
             Kind::InspectForms => "inspect-forms",
             Kind::PreviewForm => "preview-form",
@@ -161,14 +209,13 @@ impl Worker {
             Kind::Text => "text",
             Kind::Render => "render",
             Kind::Preview => "preview-text",
+            Kind::PreviewBatch=>"preview-text-batch",
             Kind::PreviewParagraph => "preview-paragraph",
             Kind::Save | Kind::Apply => "save-text-preview",
         };
-        command
-            .arg(verb)
-            .arg(input)
-            .arg("--engine")
-            .arg(&config.engine);
+        command.arg(verb);
+        if let Some(documents)=&composition_documents{for index in documents{command.arg("--input").arg(&config.documents[*index].path);}}else{command.arg(input);}
+        command.arg("--engine").arg(&config.engine);
         let mut font_files=Vec::new();
         for asset in font_assets.values() {
             let mut file=super::config::font_snapshot().map_err(|_|"Cannot create a private font input.")?;
@@ -176,6 +223,32 @@ impl Worker {
             command.arg("--font").arg(file.path());font_files.push(file);
         }
         match call {
+            Call::PlanReplacement{intent,..}|Call::PreviewReplacement{intent,..}=>{
+                let preview=matches!(kind,Kind::PreviewReplacement);intent.validate(preview).map_err(|_|"Invalid replacement intent.")?;
+                let request=directory.path().join("edit.json");
+                let bytes=serde_json::to_vec(&intent).map_err(|_|"Cannot encode replacement intent.")?;
+                if bytes.len()>512*1024{return Err("Replacement intent exceeds its byte limit.");}
+                std::fs::write(&request,bytes).map_err(|_|"Cannot store replacement intent.")?;
+                command.arg("--request").arg(request);
+                if preview{command.arg("--out-dir").arg(directory.path());}
+            }
+            Call::MergeDocuments{organization,..}|Call::ExportComposition{organization,..}=>{
+                if let Some(organization)=organization{
+                    let bytes=serde_json::to_vec(&organization).map_err(|_|"Cannot serialize the composition.")?;
+                    if bytes.len() as u64>crate::automation::page_organization::MAX_REQUEST{return Err("Composition selection exceeds its byte limit.");}
+                    let path=directory.path().join("composition.json");std::fs::write(&path,bytes).map_err(|_|"Cannot store the composition selection.")?;command.arg("--request").arg(path);
+                }
+                command.arg("--out").arg(directory.path().join(if matches!(kind,Kind::MergeDocuments){"Edited.pdf"}else{"Pages.pdf"}));
+            }
+            Call::OrganizePages {organization,..}|Call::ExportPages {organization,..}=>{
+                if let Some(organization)=organization{
+                    let bytes=serde_json::to_vec(&organization).map_err(|_|"Cannot serialize the page selection.")?;
+                    if bytes.len() as u64>crate::automation::page_organization::MAX_REQUEST{return Err("Page selection exceeds its byte limit.");}
+                    let path=directory.path().join("pages.json");std::fs::write(&path,bytes).map_err(|_|"Cannot store the page selection.")?;
+                    command.arg("--request").arg(path);
+                }
+                command.arg("--out").arg(directory.path().join(if matches!(kind,Kind::OrganizePages){"Edited.pdf"}else{"Pages.pdf"}));
+            }
             Call::InspectForms {page,offset,..}=>{command.arg("--page").arg(page.to_string()).arg("--offset").arg(offset.to_string());}
             Call::PreviewForm {edit,..}=>{
                 let request=directory.path().join("edit.json");
@@ -187,6 +260,12 @@ impl Worker {
                 let request=directory.path().join("edit.json");
                 let bytes=serde_json::to_vec(&edit).map_err(|_|"Cannot serialize the paragraph request.")?;
                 std::fs::write(&request,bytes).map_err(|_|"Cannot store the paragraph request.")?;
+                command.arg("--request").arg(request).arg("--out-dir").arg(directory.path());
+            }
+            Call::PreviewTextBatch {edit,..}=>{
+                let request=directory.path().join("edit.json");
+                let bytes=serde_json::to_vec(&edit).map_err(|_|"Cannot serialize the batch request.")?;
+                std::fs::write(&request,bytes).map_err(|_|"Cannot store the batch request.")?;
                 command.arg("--request").arg(request).arg("--out-dir").arg(directory.path());
             }
             Call::PreviewText { edit, .. } => {
@@ -243,8 +322,16 @@ impl Worker {
         }
         let stdout = tempfile::tempfile().map_err(|_| "Cannot create worker output storage.")?;
         let stderr = tempfile::tempfile().map_err(|_| "Cannot create worker error storage.")?;
+        let payload=if composition_documents.is_some(){
+            if composition_credentials.iter().any(Option::is_some){
+                let values:Vec<Option<&str>>=composition_credentials.iter().map(|v|v.as_ref().map(|p|std::str::from_utf8(&p.0).expect("validated credential"))).collect();
+                Some(crate::automation::credentials::encode(&values)?)
+            }else{None}
+        }else if credential.is_some()&&!matches!(kind,Kind::Save|Kind::Apply){let secret=&credential.as_ref().unwrap().0;let mut payload=crate::private_storage::Sensitive(Vec::with_capacity(secret.len()+1));payload.0.extend_from_slice(secret);payload.0.push(b'\n');Some(payload)}else{None};
+        let feed_password=payload.is_some();
+        if feed_password{command.arg(if composition_documents.is_some(){"--passwords-stdin"}else{"--password-stdin"});}
         command
-            .stdin(Stdio::null())
+            .stdin(if feed_password{Stdio::piped()}else{Stdio::null()})
             .stdout(
                 stdout
                     .try_clone()
@@ -261,9 +348,12 @@ impl Worker {
             use std::os::windows::process::CommandExt;
             command.creation_flags(0x08000000); // CREATE_NO_WINDOW
         }
-        let child = command
+        let mut child = command
             .spawn()
             .map_err(|_| "Cannot start the Folio PDF worker.")?;
+        let feeder=if let Some(payload)=payload{
+            match feed_stdin(&mut child,payload){Ok(thread)=>Some(thread),Err(message)=>{let _=child.kill();let _=child.wait();return Err(message);}}
+        }else{None};
         Ok(Self {
             id,
             modern,
@@ -275,15 +365,58 @@ impl Worker {
             kind,
             name,
             candidate: preview.map(|p| p.candidate.clone()),
+            expected_pages,
+            credential,
+            feeder,
+            composition_credentials,
+            composition_selected,
             _font_files: font_files,
         })
     }
     fn stop(&mut self) {
         let _ = self.child.kill();
         let _ = self.child.wait();
+        let _=self.finish_stdin();
     }
+    fn finish_stdin(&mut self)->Result<(),()>{if let Some(thread)=self.feeder.take(){thread.join().map_err(|_|())?}else{Ok(())}}
     fn failure(&self, code: &str, message: &str) -> Value {
         protocol::tool_error(self.id.clone(), self.modern, code, message)
+    }
+    fn pages_completed(&mut self,result:Value,config:&mut Config)->Value{
+        let malformed="The page worker returned an invalid document result.";
+        let composing=matches!(self.kind,Kind::MergeDocuments|Kind::ExportComposition);
+        let credential=if composing{
+            match result.get("protectionSource"){
+                Some(Value::Null)=>None,
+                Some(value)=>match value.as_u64(){Some(index)if index>=1&&index<=self.composition_credentials.len()as u64&&self.composition_selected[index as usize-1]=>self.composition_credentials[index as usize-1].clone(),_=>return self.failure("worker_failed",malformed)},
+                None=>return self.failure("worker_failed",malformed),
+            }
+        }else{let Some(protected)=result["protected"].as_bool()else{return self.failure("worker_failed",malformed)};if protected{self.credential.clone()}else{None}};
+        let Some(page_count)=result["pageCount"].as_u64().filter(|n|(1..=10000).contains(n))else{return self.failure("worker_failed",malformed)};
+        if self.expected_pages.is_some_and(|n|n as u64!=page_count){return self.failure("worker_failed",malformed);}
+        let Ok(proof)=serde_json::from_value::<FileProof>(json!({"bytes":result["bytes"],"sha256":result["sha256"]}))else{return self.failure("worker_failed",malformed)};
+        let folder=self.directory.as_ref().unwrap().path().to_owned();let filename=if matches!(self.kind,Kind::OrganizePages|Kind::MergeDocuments){"Edited.pdf"}else{"Pages.pdf"};let path=folder.join(filename);
+        match std::fs::remove_file(folder.join(if composing{"composition.json"}else{"pages.json"})){
+            Ok(())=>{},Err(e)if e.kind()==std::io::ErrorKind::NotFound=>{},Err(_)=>return self.failure("io_error","Cannot release the owned page-selection request."),
+        }
+        let entries=match std::fs::read_dir(&folder).and_then(|items|items.collect::<std::io::Result<Vec<_>>>()){
+            Ok(entries)=>entries,Err(_)=>return self.failure("io_error","Cannot inspect the owned page-output folder."),
+        };
+        if entries.len()!=1||entries[0].file_name()!=std::ffi::OsStr::new(filename){return self.failure("worker_failed","The page worker left unexpected output files.");}
+        if matches!(self.kind,Kind::OrganizePages|Kind::MergeDocuments){
+            if !config.can_add(proof.bytes){return self.failure("document_limit","Session document storage is full. Close an unused document before organizing pages.");}
+            let id=self.id.clone();let modern=self.modern;let mut response=None;
+            let adopted=config.adopt_authenticated_checked(self.directory.take().unwrap(),&proof,credential,|reply|{
+                reply["pageCount"]=json!(page_count);
+                response=Some(protocol::page_response(id,modern,reply.clone())?);Ok(())
+            });
+            match adopted{Ok(_)=>response.unwrap(),Err(message)=>self.failure("document_rejected",message)}
+        }else{
+            let _held=match super::config::verified_candidate(&path,&proof,false){Ok(file)=>file,Err(message)=>return self.failure("worker_failed",message)};
+            let summary=crate::automation::path_result(json!({"pageCount":page_count,"bytes":proof.bytes,"sha256":proof.sha256}),"path",&path);
+            let response=match protocol::page_response(self.id.clone(),self.modern,summary){Ok(value)=>value,Err(message)=>return self.failure("limit_exceeded",message)};
+            let _=self.directory.take().unwrap().keep();response
+        }
     }
     pub fn poll(&mut self, previews: &mut PreviewStore, config: &mut Config) -> Option<Value> {
         if self.started.elapsed() > DEADLINE {
@@ -304,6 +437,7 @@ impl Worker {
                 Some(self.failure("worker_failed", "Cannot wait for the PDF worker."))
             }
             Ok(Some(status)) => {
+                if self.finish_stdin().is_err()&&status.success(){return Some(self.failure("worker_failed","Cannot deliver the configured PDF credential."));}
                 let parsed = read_json(if status.success() {
                     &mut self.stdout
                 } else {
@@ -324,6 +458,7 @@ impl Worker {
                 if !result.is_object() {
                     return Some(self.failure("worker_failed", "Invalid PDF worker result."));
                 }
+                if matches!(self.kind,Kind::OrganizePages|Kind::ExportPages|Kind::MergeDocuments|Kind::ExportComposition){return Some(self.pages_completed(result,config));}
                 match self.kind {
                     Kind::Info => result["name"] = json!(self.name),
                     Kind::Text => {
@@ -342,9 +477,13 @@ impl Worker {
                             }
                         }
                     }
-                    Kind::Preview | Kind::PreviewParagraph | Kind::PreviewForm => match previews.adopt(self.directory.take().unwrap(), result) {
+                    Kind::PreviewReplacement | Kind::Preview | Kind::PreviewBatch | Kind::PreviewParagraph | Kind::PreviewForm => {
+                      let Some(protected)=result["protected"].as_bool()else{return Some(self.failure("worker_failed","Invalid preview protection status."))};
+                      let credential=if protected{self.credential.clone()}else{None};
+                      match previews.adopt_authenticated(self.directory.take().unwrap(), result,credential) {
                         Ok(adopted) => result = adopted,
                         Err(message) => return Some(self.failure("preview_rejected", message)),
+                      }
                     },
                     Kind::Apply => {
                         let proof = self.candidate.as_ref().unwrap();
@@ -356,20 +495,20 @@ impl Worker {
                                 "The applied document did not match its validated preview.",
                             ));
                         }
-                        match config.adopt(self.directory.take().unwrap(), proof) {
+                        match config.adopt_authenticated(self.directory.take().unwrap(), proof,self.credential.clone()) {
                             Ok(adopted) => result = adopted,
                             Err(message) => {
                                 return Some(self.failure("document_rejected", message))
                             }
                         }
                     }
-                    Kind::Render | Kind::InspectText | Kind::InspectNestedText | Kind::InspectParagraph | Kind::InspectForms | Kind::Save => {}
+                    Kind::PlanReplacement | Kind::Render | Kind::InspectText | Kind::InspectNestedText | Kind::InspectParagraph | Kind::InspectForms | Kind::Save | Kind::OrganizePages | Kind::ExportPages | Kind::MergeDocuments | Kind::ExportComposition => {}
                 }
                 // The response is composed before keeping any exported files. The CLI
                 // already uses lossless native-path JSON rather than serializing PathBuf.
                 let response = if matches!(self.kind,Kind::InspectParagraph) {
                     protocol::paragraph_result(self.id.clone(), self.modern, result)
-                } else if matches!(self.kind,Kind::InspectNestedText) {protocol::nested_result(self.id.clone(),self.modern,result)} else if matches!(self.kind,Kind::InspectForms) {protocol::forms_result(self.id.clone(),self.modern,result)} else {protocol::tool_result(self.id.clone(), self.modern, result, false)};
+                } else if matches!(self.kind,Kind::PlanReplacement|Kind::PreviewReplacement){protocol::replacement_result(self.id.clone(),self.modern,result)} else if matches!(self.kind,Kind::InspectNestedText) {protocol::nested_result(self.id.clone(),self.modern,result)} else if matches!(self.kind,Kind::InspectForms) {protocol::forms_result(self.id.clone(),self.modern,result)} else {protocol::tool_result(self.id.clone(), self.modern, result, false)};
                 if matches!(self.kind, Kind::Text | Kind::Render | Kind::Save) {
                     let _ = self.directory.take().unwrap().keep();
                 }
@@ -394,6 +533,10 @@ fn read_json(file: &mut File) -> Result<Value, ()> {
     }
     serde_json::from_slice(&data).map_err(|_| ())
 }
+fn feed_stdin(child:&mut Child,payload:crate::private_storage::Sensitive)->Result<JoinHandle<Result<(),()>>,&'static str>{
+    let mut stdin=child.stdin.take().ok_or("Cannot connect private worker input.")?;
+    std::thread::Builder::new().name("folio-worker-input".into()).spawn(move||stdin.write_all(&payload.0).map_err(|_|())).map_err(|_|"Cannot start private worker input.")
+}
 fn excerpt(path: &std::path::Path) -> std::io::Result<(String, bool)> {
     let file = File::open(path)?;
     let truncated = file.metadata()?.len() > 65536;
@@ -415,8 +558,9 @@ fn safe_error(code: &str) -> (&'static str, &'static str) {
     match code {
         "password_required" => (
             "password_required",
-            "This PDF requires a password. MCP password entry is not supported yet.",
+            "This PDF requires a launch credential. Configure --credentials before starting MCP.",
         ),
+        "incorrect_password"=>("incorrect_password","The configured PDF credential is incorrect."),
         "permission_denied" => (
             "permission_denied",
             "The PDF does not permit this operation.",
@@ -481,7 +625,7 @@ mod tests {
                 "-Command",
                 "Start-Sleep -Seconds 30",
             ])
-            .stdin(Stdio::null())
+            .stdin(Stdio::piped())
             .stdout(Stdio::null())
             .stderr(Stdio::null())
             .creation_flags(0x08000000)
@@ -498,6 +642,11 @@ mod tests {
             kind: Kind::Info,
             name: "test".into(),
             candidate: None,
+            expected_pages: None,
+            credential:None,
+            feeder:None,
+            composition_credentials:Vec::new(),
+            composition_selected:Vec::new(),
             _font_files: vec![],
         }
     }
@@ -544,4 +693,52 @@ mod tests {
         assert_eq!(wait, 0, "Worker must have terminated");
         assert!(!path.exists());
     }
+    #[cfg(windows)]
+    #[test]
+    fn credential_feeder_cancellation_reaps_and_joins_before_folder_drop(){
+        use std::sync::{Arc,atomic::{AtomicBool,Ordering}};
+        let mut worker=sleeping_worker();let mut input=worker.child.stdin.take().unwrap();
+        let finished=Arc::new(AtomicBool::new(false));let signal=finished.clone();
+        worker.feeder=Some(std::thread::spawn(move||{
+            let payload=crate::private_storage::Sensitive(vec![b'x';128*1024]);
+            let result=input.write_all(&payload.0).map_err(|_|());signal.store(true,Ordering::SeqCst);result
+        }));
+        std::thread::sleep(Duration::from_millis(30));assert!(!finished.load(Ordering::SeqCst));assert!(worker.child.try_wait().unwrap().is_none());
+        let folder=worker.directory.as_ref().unwrap().path().to_owned();let started=Instant::now();drop(worker);
+        assert!(started.elapsed()<Duration::from_secs(3));assert!(finished.load(Ordering::SeqCst));assert!(!folder.exists());
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn credential_feeder_early_exit_cannot_adopt_or_publish(){
+        use std::os::windows::process::CommandExt;
+        let dir=tempfile::tempdir().unwrap();let source=dir.path().join("source.pdf");std::fs::write(&source,b"source").unwrap();
+        let mut config=Config::load(vec!["--input".into(),source.into_os_string(),"--out-dir".into(),dir.path().as_os_str().to_owned()]).unwrap();
+        let mut worker=sleeping_worker();worker.stop();
+        worker.child=Command::new("powershell.exe").args(["-NoProfile","-NonInteractive","-Command","exit 0"]).stdin(Stdio::piped()).stdout(Stdio::null()).stderr(Stdio::null()).creation_flags(0x08000000).spawn().unwrap();
+        worker.feeder=Some(feed_stdin(&mut worker.child,crate::private_storage::Sensitive(vec![b'x';128*1024])).unwrap());
+        let mut previews=PreviewStore::default();let deadline=Instant::now();let result=loop{
+            if let Some(result)=worker.poll(&mut previews,&mut config){break result;}
+            assert!(deadline.elapsed()<Duration::from_secs(5));std::thread::sleep(Duration::from_millis(10));
+        };
+        assert_eq!(result["result"]["isError"],true);assert_eq!(result["result"]["structuredContent"]["error"]["code"],"worker_failed");
+        assert!(result.to_string().contains("Cannot deliver the configured PDF credential"));assert_eq!(config.documents.len(),1);assert!(worker.feeder.is_none());
+        let stage=worker.directory.as_ref().unwrap().path().to_owned();drop(worker);assert!(!stage.exists());
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn composition_rejects_unselected_or_malformed_protection_source_before_adoption(){
+        use sha2::{Digest,Sha256};
+        let dir=tempfile::tempdir().unwrap();let source=dir.path().join("source.pdf");std::fs::write(&source,b"source").unwrap();
+        let mut config=Config::load(vec!["--input".into(),source.into_os_string(),"--out-dir".into(),dir.path().as_os_str().to_owned()]).unwrap();
+        for value in[None,Some(json!(-1)),Some(json!(0)),Some(json!(2)),Some(json!(3)),Some(json!(1.5)),Some(json!("1"))]{
+            let mut worker=sleeping_worker();worker.stop();worker.kind=Kind::MergeDocuments;worker.composition_credentials=vec![None,None];worker.composition_selected=vec![true,false];
+            let folder=worker.directory.as_ref().unwrap().path().to_owned();std::fs::write(folder.join("Edited.pdf"),b"result").unwrap();
+            let digest:String=Sha256::digest(b"result").iter().map(|b|format!("{b:02x}")).collect();let mut result=json!({"pageCount":1,"bytes":6,"sha256":digest});
+            if let Some(value)=value{result["protectionSource"]=value;}
+            let reply=worker.pages_completed(result,&mut config);assert_eq!(reply["result"]["isError"],true);assert_eq!(config.documents.len(),1);assert!(worker.directory.is_some());drop(worker);assert!(!folder.exists());
+        }
+    }
+
 }

@@ -11,12 +11,16 @@ pub(super) fn normalize(
     kind: AnswerKind,
     bounds: Option<[f64; 4]>,
 ) -> EngineResult<Option<(Content, Range<usize>)>> {
-    if !matches!(kind, AnswerKind::Text) {
-        return Ok(None);
-    }
+    // Plain list rows can share this proved frame too. Internal selection
+    // paint remains subject to the same strict static-artwork rejection.
     let Some(bounds) = bounds else { return Ok(None) };
     let interior = &ops[marked.clone()];
     if !interior.iter().any(paints_outside_text) {
+        return Ok(None);
+    }
+    // An already valid choice slot may contain selection paint. Keep its
+    // established answer semantics; repair only compound clipping failures.
+    if matches!(kind, AnswerKind::Combo | AnswerKind::List) && capture(ops, marked).is_ok() {
         return Ok(None);
     }
     let Some(first) = interior.iter().position(|op| op.operator == "BT") else {

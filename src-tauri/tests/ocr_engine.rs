@@ -57,12 +57,10 @@ fn request(info: &DocumentInfo) -> ExportRequest {
     "id":format!("p{i}"),"sourceId":info.id,"pageIndex":i,"rotation":0,"width":p.width,"height":p.height,"overlays":p.overlays})).collect::<Vec<_>>()})).unwrap()
 }
 fn text(e: &PdfEngine, id: &str) -> String {
-    e.page_text(id, 0)
-        .unwrap()
-        .characters
-        .iter()
-        .map(|c| c.text.as_str())
-        .collect()
+    let text: String = e.page_text(id, 0)
+        .unwrap().characters.iter().map(|c| c.text.as_str()).collect();
+    assert_eq!(e.page_reading_text(id, 0).unwrap(), text);
+    text
 }
 
 #[test]

@@ -173,23 +173,24 @@ pub(super) fn restore_with_mapping(p: &Prepared, document: &PdfDocument<'_>, pag
     matches.next().is_none().then_some(selected)
 }
 
-pub(super) fn write(bytes: &[u8], after: &[RunSnapshot], glyphs: &HashMap<usize,Vec<Glyph>>, lines: &[paragraph_layout::Line], bounds: [f32; 4], size: f32, alignment: ParagraphAlignment, spacing: f32, context:Option<String>) -> EngineResult<Vec<u8>> {
+pub(super) fn write(bytes: &[u8], after: &[RunSnapshot], range:std::ops::Range<usize>, glyphs: &HashMap<usize,Vec<Glyph>>, lines: &[paragraph_layout::Line], bounds: [f32; 4], size: f32, alignment: ParagraphAlignment, spacing: f32, context:Option<String>) -> EngineResult<Vec<u8>> {
     let count = lines.iter().filter(|line| !line.text.is_empty()).count();
     if count == 0 || count > 64 { return Ok(bytes.to_vec()); }
+    if range.start>range.end || range.end>after.len() || range.len()!=count {return Err(invalid("The paragraph settings could not be matched to the saved text."));}
     let mut pdf = Document::load_mem_with_options(bytes, lopdf::LoadOptions::with_max_decompressed_size(LIMIT)).map_err(|_| invalid("The paragraph settings could not be saved."))?;
     let page = *pdf.get_pages().values().next().ok_or_else(|| invalid("Missing paragraph page."))?;
     let content = Content::decode(&pdf.get_page_content_with_limit(page, LIMIT).map_err(|_| invalid("Invalid paragraph content."))?).map_err(|_| invalid("Invalid paragraph content."))?;
     let show: Vec<_> = content.operations.iter().filter(|op| matches!(op.operator.as_str(), "Tj"|"TJ"|"'"|"\"") && !positioned_text::cursor_only(op)).collect();
     if show.len() != after.len() || count > after.len() { return Err(invalid("The paragraph settings could not be matched to the saved text.")); }
     let mut records: Vec<_> = read(&pdf, page).into_iter().filter(|r| {
-        indices(r, after).is_some_and(|ids| ids.iter().all(|id| !after[after.len()-count..].iter().any(|run|run.index==*id)) && r.rows.iter().zip(ids).all(|(row, index)| {
+        indices(r, after).is_some_and(|ids| ids.iter().all(|id| !after[range.clone()].iter().any(|run|run.index==*id)) && r.rows.iter().zip(ids).all(|(row, index)| {
             after.iter().position(|run| run.index == index).is_some_and(|ordinal| digest(show[ordinal]).as_deref() == Some(row.digest.as_str()))
         }))
     }).collect();
     let mut rows = Vec::new(); let mut newlines = 0;
     for line in lines {
         if !line.text.is_empty() {
-            let ordinal = after.len()-count+rows.len(); let run = &after[ordinal];
+            let ordinal = range.start+rows.len(); let run = &after[ordinal];
             rows.push(Row { digest: digest(show[ordinal]).ok_or_else(|| invalid("Invalid paragraph text operation."))?, font:run.font.clone(), program:run.program.clone(), size:run.font_size, matrix:run.matrix, color:run.color, newlines, glyphs:glyphs[&run.index].iter().map(|g|g.position).collect() });
             newlines = 0;
         }

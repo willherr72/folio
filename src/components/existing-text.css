@@ -53,3 +53,12 @@
 .paragraph-footer-actions {justify-content:space-between;}
 .paragraph-commit-actions {margin-left:auto;justify-content:flex-end;}
 @media(max-width:700px) {.paragraph-body {display:block;}}
+.paragraph-text-editor{display:grid;gap:10px;min-width:0}
+.paragraph-text-editor>button{justify-self:start}
+.paragraph-find{display:grid;gap:8px;border:1px solid var(--border,#c7ced8);padding:10px;border-radius:8px;min-width:0}
+.paragraph-find label{display:grid;gap:4px;min-width:0}
+.paragraph-find textarea{width:100%;min-width:0;box-sizing:border-box;resize:vertical;font:inherit;padding:6px}
+.paragraph-find-options{display:flex;flex-wrap:wrap;gap:12px}
+.paragraph-find .paragraph-find-options label{display:flex;align-items:center;gap:5px}
+.paragraph-find .paragraph-find-options input{width:auto}
+.paragraph-find p{margin:0}

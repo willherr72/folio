@@ -78,5 +78,5 @@ it("copies across pages only inside the originating document viewport", async ()
   const range = document.createRange(); range.setStart(nodes[0].firstChild!, 0); range.setEnd(nodes[2].firstChild!, 1);
   window.getSelection()!.addRange(range);
   const setData = vi.fn(); fireEvent.copy(document, { clipboardData: { setData } });
-  expect(setData).toHaveBeenCalledWith("text/plain", "AA");
+  expect(setData).toHaveBeenCalledWith("text/plain", "A\nA");
 });

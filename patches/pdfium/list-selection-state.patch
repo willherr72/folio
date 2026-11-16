@@ -1,0 +1,21 @@
+diff --git a/fpdfsdk/cpdfsdk_appstream.cpp b/fpdfsdk/cpdfsdk_appstream.cpp
+--- a/fpdfsdk/cpdfsdk_appstream.cpp
++++ b/fpdfsdk/cpdfsdk_appstream.cpp
+@@ -1626,16 +1626,8 @@
+ 
+   int32_t nTop = pField->GetTopVisibleIndex();
+   int32_t nCount = pField->CountOptions();
+-  int32_t nSelCount = pField->CountSelectedItems();
+-
+   for (int32_t i = nTop; i < nCount; ++i) {
+-    bool bSelected = false;
+-    for (int32_t j = 0; j < nSelCount; ++j) {
+-      if (pField->GetSelectedIndex(j) == i) {
+-        bSelected = true;
+-        break;
+-      }
+-    }
++    const bool bSelected = pField->IsItemSelected(i);
+ 
+     pEdit->SetText(pField->GetOptionLabel(i));
+     pEdit->Paint();

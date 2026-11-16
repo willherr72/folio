@@ -30,6 +30,9 @@ fn width(run: &RunSnapshot, text: &str, substitute: Option<&FontAsset>) -> Engin
             .chars()
             .try_fold(0., |sum, ch| Ok(sum + f64::from(asset.advance(ch)?)));
     }
+    if let Some(bound)=&run.source_encoding {
+        return bound.replace(text).map(|text|f64::from(text.advance())).map_err(invalid);
+    }
     if let Some(proof) = &run.proof {
         return Ok(f64::from(proof.advance(text)?));
     }
@@ -47,6 +50,7 @@ pub(super) fn correction(
     changed: &Operation,
     replacement: &str,
     substitute: Option<&FontAsset>,
+    cursor_width_delta: Option<f64>,
 ) -> EngineResult<f32> {
     let size = f64::from(numbers(std::slice::from_ref(&original.font.size), 1)?[0]);
     if size <= 0. {
@@ -68,12 +72,14 @@ pub(super) fn correction(
         } else {
             0
         };
-    let characters = replacement.chars().count() as f64 - run.text.chars().count() as f64;
+    let new_count=if substitute.is_some(){replacement.chars().count()}else{positioned_text::glyph_count(run,replacement)?};
+    let characters=new_count as f64-positioned_text::glyph_count(run,&run.text)? as f64;
     let spacing = characters * f64::from(original.text_state.character_spacing)
         + (new_words as f64 - old_words as f64) * f64::from(original.text_state.word_spacing);
-    let adjustment = (width(run, replacement, substitute)? - width(run, &run.text, None)?
-        + spacing / size)
-        * 1000.
+    let width_delta=if let Some(delta)=cursor_width_delta{delta}else{
+        (width(run,replacement,substitute)?-width(run,&run.text,None)?)*1000.
+    };
+    let adjustment = width_delta + spacing / size * 1000.
         - gaps(changed)?
         + gaps(&original.show)?;
     if !adjustment.is_finite() || adjustment.abs() > 1_000_000. {

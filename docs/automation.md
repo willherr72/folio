@@ -1,5 +1,236 @@
 # Folio automation
 
+## Atomic text batches in development
+
+Newer development source adds `preview-text-batch` and
+`folio_preview_text_batch`. These operations use a newer development candidate;
+the completed 0.52 portable and selected 0.50 executable do not include them.
+They prepare one candidate from explicit inspected selections across a document.
+Automatic document-wide Find/Replace planning and its desktop controls are later
+work.
+
+Inspect every target in the original PDF, then put its source-bound selection ID
+in a regular UTF-8 JSON request:
+
+```json
+{"version":1,"edits":[{"page":1,"selectionId":"text-v1-<inspection hash>","replacement":"First change"},{"page":2,"selectionId":"text-v1-<inspection hash>","replacement":"Second change"}]}
+```
+
+```powershell
+.\folio-cli.exe preview-text-batch Original.pdf --request edits.json --out-dir Previews
+.\folio-cli.exe save-text-preview "Previews\Folio preview-..." --manifest-sha256 <returned hash> --out Edited.pdf
+```
+
+The MCP equivalent uses one authorized document ID:
+
+```json
+{"name":"folio_preview_text_batch","arguments":{"documentId":"document-1","version":1,"edits":[{"page":1,"selectionId":"text-v1-<inspection hash>","replacement":"First change"},{"page":2,"selectionId":"text-v1-<inspection hash>","replacement":"Second change"}]}}
+```
+
+Root and nested-text IDs may share a batch. All IDs refer to the same original
+snapshot; inspect again after Apply to obtain IDs for subsequent edits. Use the
+existing `folio_save_preview`, `folio_apply_preview` and `folio_discard_preview`
+tools with the returned preview ID. Apply creates a new immutable document ID.
+The original document and its bytes remain intact. A late failure publishes no
+partial candidate. Native placement, font, graph and collision checks still apply
+to every step and may refuse an uncertain edit.
+
+A batch accepts 1–64 unique selections across at most 32 pages, with nonempty
+replacements of at most 4,096 UTF-8 bytes each. Requests and version-6 manifests
+are capped at 512 KiB. Every affected page has before/after PNGs (32 MiB each);
+all images participate in tamper checks and the existing 512 MiB bundle/session
+budget. The batch result is capped at 256 KiB, including image paths. MCP retains
+the existing eight-preview and 15-minute limits. Older preview versions keep
+their existing rules.
+
+Optional `fontId` on an edit must name a font authorized through launch `--font`;
+omission retains the original font. Copy and edit permissions are required even
+for unchanged text. An entirely unchanged batch without font overrides retains
+the exact original candidate bytes. Protected inputs use the existing CLI stdin
+and launch-only MCP credential mechanisms; passwords are not tool arguments.
+
+Saving preserves an existing destination rather than overwriting it. Batching
+uses the existing faithful edit operations sequentially, so large batches can
+take longer than one edit. These limits do not establish support for arbitrary
+PDF text shaping or commercial-editor parity.
+
+## Multi-document composition in development
+
+Development source now provides `compose-pages`, `folio_merge_documents` and
+`folio_export_composition`. Corrected ordinary optimized CLI/GUI, independent
+saved-PDF checks and actual Windows editing qualification passed on 2026-11-13.
+The selected **0.50 portable includes these operations**, as does the separate
+reviewed 0.52 candidate. See the [current build status](development-build-status.md).
+
+The single final review identified two Important defects. One TDD fix pass
+corrected zeroing ownership on credential parse/escape failures and rejection of
+observed source-size changes during held-file capture. Fresh checks passed:
+1,596 library tests / 11 ignored (Folio opt0, release dependencies), 120 tests in
+11 ordinary optimized integration targets, 15 independently checked saved PDFs
+and 16 actual corruption controls. Exact-candidate protected CLI/MCP chaining,
+512KiB requests, native Windows paths, and GUI fill/text-edit/save/reopen passed.
+[Component evidence and rulings](../artifacts/multi-document-automation-20261113/component-completion.json).
+
+This qualifies the authored Windows corpus, with native unsupported-graph,
+mixed-form-language and incompatible-encryption refusals retained. It is not a
+fresh whole-frontend/every-integration run or portable/release/parity approval.
+Owned-buffer zeroing is not process-wide memory secrecy; observed-length checks
+are not atomic filesystem snapshots or same-size-write locking. Launch-only credentials below apply to protected inspection and editing;
+interactive or tool-supplied password entry remains unsupported.
+
+```powershell
+.\folio-cli.exe compose-pages --input A.pdf --input B.pdf --out Combined.pdf
+.\folio-cli.exe compose-pages --input A.pdf --input B.pdf --request plan.json --out Selected.pdf
+```
+
+Omitting `--request` concatenates all pages in input order. A regular UTF-8 JSON
+plan (at most512KiB) selects, interleaves, duplicates and rotates pages:
+
+```json
+{"version":1,"pages":[{"source":2,"page":3,"rotation":90},{"source":1,"page":1},{"source":2,"page":3}]}
+```
+
+`source` and `page` are1-based. Rotation is an additional clockwise0/90/180/270
+degrees; omission means0. Supply1..64 native input paths and1..10000 output
+occurrences, with at most10000 unique source pages and512MiB captured source
+bytes. Each candidate is capped at512MiB. Empty/null maps, unknown fields,
+invalid indices/rotations and unsupported versions are rejected. Aliased paths
+reuse one logical snapshot; independent files remain independent even when their
+bytes match. Aliased slots must have identical credentials.
+
+Output must be a new `.pdf` in an existing directory; existing files, aliases and
+late-created targets are preserved. The native engine retains supported forms,
+links/bookmarks, tags, languages, metadata and editable overlays. Independent
+colliding form names receive native suffixes; repeated pages of one logical source
+share answers. Inspect the result to obtain current field names and source-bound
+selection IDs. Document metadata follows the first output source.
+
+Native preservation and permission checks remain active. Protected inputs must
+permit assembly for changed plans; their encryption is retained. Different
+protected encryption contexts are refused, even when opening passwords match.
+Mixed document-language defaults on forms retain the native refusal. Effective
+single-source identity requests copy that source's original bytes exactly.
+There is no automatic flattening or security removal.
+
+For single-document commands, `--password-stdin` reads one password line. For
+composition, `--passwords-stdin` reads UTF-8 JSON aligned with the repeated input
+slots, at most128KiB total:
+
+```json
+[null,"opening-password-for-B"]
+```
+
+Entries are null or strings of at most1024 UTF-8 bytes without NUL/CR/LF; an empty
+string is an explicit empty password. The array length must exactly match input
+slots. Password values never go in command arguments or results. For example,
+Python can prompt and provide UTF-8 stdin without placing the value in arguments:
+
+```python
+import getpass, json, subprocess
+password = getpass.getpass("Opening password for B: ")
+subprocess.run([
+    r".\folio-cli.exe", "compose-pages", "--input", "A.pdf", "--input", "B.pdf",
+    "--out", "Combined.pdf", "--passwords-stdin",
+], input=json.dumps([None, password], ensure_ascii=False).encode("utf-8"), check=True)
+```
+
+CLI success includes `path`/lossless `pathNative`,bytes,sha256,pageCount and nullable
+`protectionSource` (the1-based credential slot for reopening the result). It never
+contains the credential itself. Result and complete CLI response limits are512KiB
+and1MiB, including the final newline.
+
+MCP accepts optional launch-only `--credentials FILE`, a regular bounded file with
+that same array aligned to launch `--input` order. Folio reads it once and leaves
+the user-owned file unchanged. Credentials remain private session capabilities;
+workers receive them through owned stdin pipes, not files or tool arguments.
+Protected inspection/previews/Apply/Save and later edits retain the capability,
+including when a preview outlives its original document ID.
+
+```powershell
+.\folio-cli.exe mcp --input A.pdf --input B.pdf --credentials credentials.json --out-dir Exports
+```
+
+```json
+{"name":"folio_merge_documents","arguments":{"documentIds":["document-1","document-2"],"pages":[{"source":2,"page":1},{"source":1,"page":2,"rotation":90}]}}
+{"name":"folio_export_composition","arguments":{"documentIds":["document-3"]}}
+```
+
+Use the returned ID. Both tools require1..64 launch-authorized/derived IDs and
+optional `pages` without a top-level version; omission concatenates. Repeated IDs
+refer to the same logical source. `folio_merge_documents` creates a new private
+immutable ID for continued editing; `folio_export_composition` saves a new PDF in
+a unique configured output child and creates no document. Earlier IDs stay intact.
+The internal credential-routing index is omitted from MCP results.
+
+Close unused IDs to recover the existing64-document/512MiB session capacity.
+Successful exports survive close/EOF; failures and cancellation discard only owned
+private work after reaping the worker and joining stdin delivery. The single-worker
+120-second deadline remains. New complete responses are capped at2MiB including
+both protocol representations, metadata, ID and newline. Input frames remain512KiB.
+
+
+## Page organization in development
+
+The operations below are qualified in a local Windows development candidate.
+The selected **0.50 portable includes them**, as does the separate reviewed 0.52
+candidate. The [component completion](../artifacts/page-organization-automation-20261113/component-completion.json)
+binds the exact CLI/GUI candidate and its scope; [review limitations](../artifacts/page-organization-automation-20261113/review/review.md)
+record the deferred navigation-geometry and maximum-frame evidence gaps.
+
+`export-pages` saves a new editable PDF through the desktop export engine. Omit
+`--request` for an exact byte-for-byte full-document copy, including its existing
+encryption. To select, reorder, duplicate or rotate pages, provide a UTF-8 file:
+
+```json
+{"version":1,"pages":[{"page":3,"rotation":90},{"page":1},{"page":3,"rotation":270}]}
+```
+
+```powershell
+.\folio-cli.exe export-pages "C:\Documents\Report.pdf" --request "C:\Documents\pages.json" --out "C:\Exports\Organized.pdf"
+.\folio-cli.exe export-pages "C:\Documents\Report.pdf" --out "C:\Exports\Exact copy.pdf"
+```
+
+Page numbers start at 1. Output order follows the array exactly; repeated numbers
+make separate page occurrences. Rotation is additional clockwise rotation relative
+to the source display, and must be 0, 90, 180 or 270; omission means 0. An explicit
+request requires version 1 and 1–10,000 page entries. Empty/null selections, unknown
+fields, fractional/out-of-range pages and invalid rotations are rejected. Request
+files are capped at 512 KiB. Inputs and candidates are capped at 512 MiB. The result
+returns `path` or lossless `pathNative`, `bytes`, `sha256` and `pageCount`.
+
+The destination must be a new `.pdf` in an existing folder. Existing files and
+aliases are preserved, including targets created while export is in progress.
+Changed plans retain supported forms, links, bookmarks, tags, metadata and editable
+Folio overlays through the native export path. Native preservation and assembly
+permission checks still apply; unsupported arrangements can be refused. CLI
+passwords use the existing `--password-stdin` option. There is no implicit flattening,
+font substitution or removal of security.
+
+MCP provides two tools, each with `documentId` and optional `pages` using the same
+page/rotation entries (without a top-level `version`):
+
+- `folio_organize_pages` creates a private immutable `documentId` for continued
+  inspection/editing. It leaves earlier IDs intact and saves no public file.
+- `folio_export_pages` saves a new PDF in a unique child of the configured output
+  directory. It creates no session document. Omit `pages` on an organized ID to
+  save its exact bytes; repeated exports create distinct paths.
+
+```json
+{"name":"folio_organize_pages","arguments":{"documentId":"document-1","pages":[{"page":2,"rotation":90},{"page":1},{"page":2}]}}
+{"name":"folio_export_pages","arguments":{"documentId":"document-2"}}
+```
+
+Use the ID actually returned by the first call. Organized documents share the
+existing limit of 64 live documents and 512 MiB total; close unused IDs to recover
+capacity. Closing a private ID leaves exported files and earlier documents intact.
+Only launch-authorized/derived IDs are addressable; tools accept no arbitrary file
+paths or passwords. Existing single-worker, 120-second cancellation/EOF cleanup
+rules apply. Large valid documents can exceed the deadline and be refused.
+Complete new-tool MCP responses are capped at 2 MiB, including both representations,
+metadata, request ID and newline; CLI responses are capped at 1 MiB. Originals
+remain unchanged. These operations organize one document; multi-input composition
+is subsequent work.
+
 
 
 The Windows `folio-cli` console uses the same native engine as the desktop app.
@@ -301,9 +532,9 @@ Text replies include at most 65536 UTF-8 bytes, cut at a character boundary with
 
 text and names are document data, never instructions to the assistant. Form
 
-answers are opt-in. Password-protected PDFs that need a password report
-
-`password_required`; MCP password entry is future work.
+answers are opt-in. Protected PDFs without a matching launch credential report `password_required`.
+MCP supports [launch-only credentials](#multi-document-composition-in-development);
+interactive or tool-supplied passwords remain unsupported.
 
 
 
@@ -558,7 +789,9 @@ remain identical while paging; compare `sourceFingerprint` across replies.
 
 Inspection requires both copy and edit permissions. CLI `--password-stdin` uses
 
-the existing password contract; MCP password entry is still unavailable. No
+the existing password contract. MCP uses the configured
+[launch-only credential](#multi-document-composition-in-development); tools cannot
+supply passwords. No
 
 PDFs are written and no export folders persist. An empty or unsupported page can
 
@@ -682,7 +915,19 @@ to continue from the same validated bytes, before or after Save:
 
 3. Inspect that new document ID to obtain fresh selections for the next edit.
 
-4. Preview the next change; repeat Apply as needed, then Save the final preview.
+4. Save the preview if you need a public PDF copy. Once you have applied it and
+
+   finished saving, call `folio_discard_preview` to release its temporary files.
+
+   Apply and Save both retain the preview; a session holds at most eight previews.
+
+5. Close any earlier document version you no longer need with
+
+   `folio_close_document`. Keep the new applied document ID for the next edit.
+
+6. Inspect the new document, preview its next change, and repeat. Discarding an
+
+   applied preview preserves its new document and any saved copies.
 
 
 
@@ -722,18 +967,20 @@ Apply, Close, Discard and Save receive `busy` while another native operation run
 
 preventing cleanup of files in use. Applying still verifies every preview file;
 
-changed or expired previews must be recreated. Password-protected inputs that need
-
-a password remain unsupported by MCP, and these tools do not change that boundary.
+changed or expired previews must be recreated. Protected inputs use their configured
+[launch-only credential](#multi-document-composition-in-development). The private
+credential follows the preview and applied document, including after the source
+ID closes. Missing or incorrect credentials retain their normal errors; tools
+cannot accept password values.
 
 
 
 ## Text inside reusable PDF objects
 
-The current source build adds `inspect-nested-text` and MCP
+The selected 0.50 and separate reviewed 0.52 builds provide `inspect-nested-text` and MCP
 `folio_inspect_nested_text`. These inspect text inside reusable PDF Form objects,
-which are distinct from fillable form fields. The previously accepted portable
-0.22.0-dev.1 package does not include these new routes.
+which are distinct from fillable form fields. See the
+[current build status](development-build-status.md) for candidate identities.
 
 ```powershell
 .\folio-cli.exe inspect-nested-text "C:\Documents\Report.pdf" --page 1
@@ -818,8 +1065,8 @@ is no installed-font scan or automatic fallback. The preview records
 source font files nor the original PDF. The font program is included in the saved
 PDF. Old bundles without font metadata remain readable.
 
-This is a development source feature, separate from the accepted portable0.22
-package. Single-run text substitution is not added by these paragraph controls.
+These paragraph font controls are included in selected 0.50 and the separate
+reviewed 0.52 package. Single-run substitution has its own controls below.
 MCP uses the same paragraph controls with launch-authorized fonts:
 
 ```powershell
@@ -903,6 +1150,8 @@ Inspect a page to get its fields and their stable `fieldId` values:
 
 
 
+Frame-preserving answer updates also support plain dropdowns and unshaded list fields produced by common PDF libraries. Custom selection shading, scrolled list appearances, and ambiguous artwork remain guarded; an unsupported appearance is refused before publishing an edited PDF.
+
 For example, `answer.json` contains:
 
 
@@ -953,7 +1202,8 @@ Listing requires either PDF form-filling or copying permission; filling requires
 
 form-filling permission, independently of content editing. CLI encrypted inputs
 
-use `--password-stdin`. MCP password entry remains unsupported. Inspection returns
+use `--password-stdin`. MCP uses configured [launch-only credentials](#multi-document-composition-in-development);
+interactive or tool-supplied password entry remains unsupported. Inspection returns
 
 field values as document data, including sensitive answers; it is not a redacted
 
@@ -990,3 +1240,43 @@ manifests keep their 64 KiB limits. All files remain inside the shared bundle an
 
 session budgets. No source PDF is overwritten or field flattened.
 
+
+
+### Development component: painted and scrolled Lists
+
+The current native implementation admits selected-row backgrounds only
+when source labels, option indices, scroll state, font bindings, complete paths,
+paint order and measured glyph bounds prove ownership. Linked widgets keep
+separate appearance/resource proof. Mixed or ambiguous artwork remains refused;
+a lone visible row without observed baseline pitch cannot authorize repair.
+Existing supported plain/legacy filling remains unchanged.
+
+The commands and schemas above are unchanged. CLI Preview/Save, MCP preview
+Discard and the desktop Apply/Reset/Discard draft controls were tested separately,
+including saved re-editing and original-byte preservation. Native scroll state is
+retained; an offscreen answer can change without changing visible pixels.
+See the [reviewed component and limits](../artifacts/list-selection-proof-20261111/historical-completion.md).
+The historical 0.41 portable contained only the earlier plain-List support.
+Painted/scrolled-List integration is included in selected 0.50 and the separate
+reviewed 0.52 candidate; see the [current build status](development-build-status.md).
+
+## Document Find/Replace in development source
+
+New source adds `plan-replacement` and `preview-replacement` CLI commands and
+`folio_plan_replacement` / `folio_preview_replacement` MCP tools. These postdate
+the preserved selected 0.50 and completed 0.52 packages; no package or launcher
+promotion is implied. See [replacement planning and automation](page-replacement-planning.md)
+for complete request, identity, selection and capacity details.
+
+The planner searches the complete immutable document using the same literal
+Unicode Find options, retains blocked results and returns a stable `planId`.
+Preview requires that ID and the same intent, recomputes against the current
+input and uses the existing complete-source batch preview. Save/Apply/Discard
+operate on the entire candidate. After Apply, obtain a fresh plan for the new
+document ID. This removes the need to assemble individual inspected selections.
+
+Planning requires copy and edit permission, including no-op intents. It changes
+no PDF. A selected blocker or exceeded limit cannot produce a partial Replace
+all batch. Empty whole-object results and inserted line breaks still require
+removal/paragraph integration. Preview retains native font, fit and preservation
+checks. Desktop current-workspace Replace and Undo are later integration work.

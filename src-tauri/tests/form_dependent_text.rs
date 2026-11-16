@@ -158,6 +158,69 @@ fn nonblank_pieces_retain_ordinary_surrounding_spaces() {
 }
 
 #[test]
+fn cid_subset_deletion_keeps_original_widths_program_and_maps_for_shared_text() {
+    fn payloads(pdf: &Document, key: &[u8]) -> Vec<Vec<u8>> {
+        let mut values = Vec::new();
+        for object in pdf.objects.values() {
+            let dictionary = match object {
+                Object::Dictionary(value) => value,
+                Object::Stream(value) => &value.dict,
+                _ => continue,
+            };
+            if let Ok(value) = dictionary.get(key) {
+                let stream = pdf.dereference(value).unwrap().1.as_stream().unwrap();
+                values.push(stream.get_plain_content().unwrap());
+            }
+        }
+        values.sort();
+        values.dedup();
+        values
+    }
+    fn widths(pdf: &Document, name: &[u8]) -> Vec<Object> {
+        pdf.objects.values().filter_map(|object| {
+            let dictionary = object.as_dict().ok()?;
+            (dictionary.get(b"Subtype").and_then(Object::as_name).ok() == Some(b"CIDFontType2")
+                && dictionary.get(b"BaseFont").and_then(Object::as_name).ok() == Some(name))
+                .then(|| dictionary.get(b"W").unwrap().clone())
+        }).collect()
+    }
+    let temp = tempfile::tempdir().unwrap();
+    let path = temp.path().join("source.pdf");
+    fixture(&path, "cid", "", "Cafe old", "plain", 0);
+    let original = fs::read(&path).unwrap();
+    let source_pdf = Document::load_mem(&original).unwrap();
+    let original_widths = widths(&source_pdf, b"ABCDEF+DejaVuSerif");
+    assert_eq!(original_widths.len(), 1);
+    let engine = engine();
+    let source = engine.open_document(&path).unwrap();
+    let before = engine.list_form_text_runs(&source.id, 0).unwrap();
+    let changed = engine.replace_form_text(&source.id, 0, &before.runs[0].object_path,
+        "Cafe old", "Cafe").unwrap();
+    let after = engine.list_form_text_runs(&changed.id, 0).unwrap();
+    assert_eq!(after.runs[0].text, "Cafe");
+    for (a, b) in before.runs[1..].iter().zip(&after.runs[1..]) { same_run(a, b); }
+    let output = temp.path().join("saved.pdf");
+    engine.export_pdf(ExportRequest {pages:vec![page(&changed,0),page(&source,1)],flatten:false},&output).unwrap();
+    let saved_pdf = Document::load(&output).unwrap();
+    let saved_original_widths = widths(&saved_pdf, b"ABCDEF+DejaVuSerif");
+    assert!(!saved_original_widths.is_empty());
+    // Separate composed source documents may each retain their own identical
+    // original font dictionary. Every copy must keep the exact original widths.
+    assert!(saved_original_widths.iter().all(|value| original_widths.contains(value)));
+    for key in [b"FontFile2".as_slice(), b"ToUnicode", b"CIDToGIDMap"] {
+        let original_payloads = payloads(&source_pdf, key);
+        assert!(!original_payloads.is_empty());
+        assert_eq!(payloads(&saved_pdf, key), original_payloads);
+    }
+    let saved = engine.open_document(&output).unwrap();
+    let restored = engine.replace_form_text(&saved.id,0,&after.runs[0].object_path,"Cafe","Cafe old").unwrap();
+    assert_eq!(engine.render_page(&restored.id,0,1160).unwrap(),engine.render_page(&source.id,0,1160).unwrap());
+    assert_eq!(engine.render_page(&saved.id,1,1160).unwrap(),engine.render_page(&source.id,1,1160).unwrap());
+    assert_eq!(fs::read(path).unwrap(), original);
+    for id in [&restored.id,&saved.id,&changed.id,&source.id] { engine.close_document(id).unwrap(); }
+}
+
+#[test]
 fn positioned_arrays_and_spacing_changes_preserve_dependent_neighbors() {
     let temp = tempfile::tempdir().unwrap();
     let e = engine();

@@ -449,6 +449,10 @@ fn copy_answer(
     }
 }
 impl FillIdentity {
+    pub(crate) fn selected_widget_placements(&self)->impl Iterator<Item=(ObjectId,&[(usize,usize)])> {
+        self.graph.nodes.iter().filter(|(_,node)|node.widget&&node.owner==self.owner)
+            .map(|(id,node)|(*id,node.placements.as_slice()))
+    }
     pub(crate) fn selected_widgets(&self)->Vec<ObjectId> {
         self.graph.nodes.iter().filter_map(|(id,n)|(n.widget&&n.owner==self.owner).then_some(*id)).collect()
     }

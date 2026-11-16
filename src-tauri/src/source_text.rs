@@ -60,16 +60,19 @@ pub(super) fn bind_standard_on_page(pdf: &Document, page: lopdf::ObjectId, runs:
     // Do not assign any authority until the complete operation/native mapping
     // succeeds. Each proof belongs to the actual Tf resource for that show.
     let values = read_on_page(pdf, page, runs)?;
-    for (run, (_, proof)) in runs.iter_mut().zip(values) {
+    for (run, (_, proof, binding)) in runs.iter_mut().zip(values) {
+        run.source_encoding=binding;
         if !run.embedded {
             run.standard = proof;
             if run.standard.is_some() { run.reason = run_content_reason(run); }
+        } else if run.source_encoding.is_some() {
+            run.reason=run_content_reason(run);
         }
     }
     Ok(())
 }
 
-type SourceValue = (Option<String>, Option<Arc<standard_font::StandardFont>>);
+type SourceValue = (Option<String>, Option<Arc<standard_font::StandardFont>>, Option<Arc<source_glyphs::BoundText>>);
 fn read_on_page(pdf: &Document, page: lopdf::ObjectId, runs: &[RunSnapshot]) -> EngineResult<Vec<SourceValue>> {
     if runs.is_empty() { return Ok(vec![]); }
     let error = || invalid("The source text operands cannot be mapped safely.");
@@ -93,6 +96,7 @@ fn read_on_page(pdf: &Document, page: lopdf::ObjectId, runs: &[RunSnapshot]) -> 
     let mut stack = vec![];
     let mut in_text = false;
     let mut result = vec![];
+    let mut binding_budget=16*1024*1024usize;
     for op in &content.operations {
         match op.operator.as_str() {
             "q" => { if stack.len() >= 64 { return Err(error()); } stack.push(active.clone()); }
@@ -113,17 +117,24 @@ fn read_on_page(pdf: &Document, page: lopdf::ObjectId, runs: &[RunSnapshot]) -> 
                 let font = pdf.dereference(fonts.get(name).map_err(|_| error())?).map_err(|_| error())?.1.as_dict().map_err(|_| error())?;
                 if !embedded_font::matches_name(pdf, font, &run.font, run.embedded) || (size - run.font_size).abs() > EPSILON { return Err(error()); }
                 let mut source = run.clone();
+                source.source_encoding=None;
                 if !source.embedded {
                     source.standard = standard_font::StandardFont::read(pdf, font).ok().map(Arc::new);
                 }
                 let run = &source;
                 let max_len = if run.proof.as_ref().is_some_and(|proof| !proof.single_byte()) { 8192 } else { 4096 };
-                let Some(encoded) = operand_bytes(op, max_len)? else { result.push((None, None)); continue; };
+                let Some(encoded) = operand_bytes(op, max_len)? else { result.push((None, None, None)); continue; };
                 // A unique mapping and verified encoding are required. Whitespace
                 // may differ in reader extraction; every non-space character must
                 // agree in the same order. The source owns the actual spaces.
-                let value = (|| -> EngineResult<String> {
-                    let value = if let Some(proof) = &run.proof {
+                let parsed = (|| -> EngineResult<(String,Option<Arc<source_glyphs::BoundText>>)> {
+                    let candidate=run.proof.as_ref().map(|proof|proof.bind(&encoded)).transpose()?.flatten();
+                    // The resource may encode a replacement sequence even when
+                    // this operand currently contains only scalar glyphs.
+                    let binding=candidate.clone();
+                    if binding.as_ref().is_some_and(|bound|bound.retained_bytes()>binding_budget) {return Err(error());}
+                    let mut checked=run.clone();checked.source_encoding=binding.clone();let run=&checked;
+                    let value = if let Some(bound)=candidate {bound.encoded().text().to_owned()}else if let Some(proof) = &run.proof {
                         // Bound decoder work before copying and stop decoded UTF-8
                         // output at the same byte limit used by editable text.
                         let code_len = if proof.single_byte() { 1 } else { 2 };
@@ -142,17 +153,24 @@ fn read_on_page(pdf: &Document, page: lopdf::ObjectId, runs: &[RunSnapshot]) -> 
                     // even when PDFium returns no visible text for the fragment.
                     let nominal_spaces = (run.standard.is_some() || run.proof.is_some()) && !value.is_empty()
                         && value.bytes().all(|byte| byte == b' ');
-                    if !(nominal_spaces || if run.embedded || run.standard.is_some() { embedded_font::latin(&value) } else { printable(&value) })
+                    if !(nominal_spaces || run.allows_source_text(&value))
                         || positioned_text::encoded(run, &value)? != encoded
                         || !value.chars().filter(|c| *c != ' ').eq(run.text.chars().filter(|c| !matches!(c, ' ' | '\r' | '\n'))) { return Err(error()); }
                     if let ("TJ", [Object::Array(values)]) = (op.operator.as_str(), op.operands.as_slice()) {
-                        let boundaries = text_show::boundaries(&value, |c| positioned_text::encoded(run, c))?;
+                        let boundaries = positioned_text::boundaries(run,&value)?;
                         text_show::validate_segments(values, &encoded, &boundaries)?;
                     }
-                    Ok(value)
+                    Ok((value,binding))
                 })().ok();
+                let (value,binding)=match parsed {
+                    Some((value,binding))=>{
+                        binding_budget-=binding.as_ref().map_or(0,|bound|bound.retained_bytes());
+                        (Some(value),binding)
+                    },
+                    None=>(None,None),
+                };
                 let proof = value.as_ref().and(source.standard);
-                result.push((value, proof));
+                result.push((value, proof, binding));
             }
             _ => {}
         }

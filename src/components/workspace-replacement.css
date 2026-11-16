@@ -1,0 +1,15 @@
+.workspace-replacement-dialog { width: min(1100px, calc(100vw - 32px)); max-width: 1100px; }
+.replacement-fields { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
+.replacement-fields label { display: grid; align-content: start; gap: 6px; }
+.replacement-fields input, .replacement-fields textarea { width: 100%; min-width: 0; }
+.replacement-options { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 12px 0; }
+.replacement-options label { display: inline-flex; align-items: center; gap: 6px; }
+.replacement-match-list { max-height: 210px; overflow: auto; border: 1px solid var(--line); border-radius: 6px; }
+.replacement-match-list > label { display: flex; align-items: flex-start; gap: 8px; padding: 8px; border-bottom: 1px solid var(--line); }
+.replacement-match-list .replacement-error { display: block; margin-top: 4px; }
+.replacement-error { color: var(--error); overflow-wrap: anywhere; }
+.replacement-preview-pair { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
+.replacement-preview-pair figure { margin: 0; min-width: 0; }
+.replacement-preview-pair img { display: block; width: 100%; height: auto; border: 1px solid var(--line); }
+.replacement-preview-pair figcaption { margin: 6px 0; }
+@media (max-width: 650px) { .replacement-fields, .replacement-preview-pair { grid-template-columns: minmax(0,1fr); } }

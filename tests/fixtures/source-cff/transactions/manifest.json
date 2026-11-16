@@ -1,0 +1,2464 @@
+{
+  "generatorSha256": "c344c184d5ba32b42a6d767670b7e4ef322761a9877b947cbde91e6fbbb4afdb",
+  "sourceManifestSha256": "5d4a3e9d153edaaff8556d24018799dc472a4b64b244caac3b11f217ba277a58",
+  "independent": "Original source encodings/widths from fontTools manifest; MuPDF reads every page; no Folio layout or candidate coordinates",
+  "scope": "Task3 input authoring only, not editing acceptance",
+  "cases": [
+    {
+      "file": "sid-raw-simple-group.pdf",
+      "sha256": "196247844c6031fea3ae434530994db2066a21c46276d0bb2c62930cf1d9dc7e",
+      "flavor": "sid-raw-simple",
+      "mode": "group",
+      "text": "OldText",
+      "replacement": "NewText",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "Old",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "4F6C64"
+        },
+        {
+          "text": "Text",
+          "x": 98.532,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "54657874"
+        }
+      ],
+      "sourceProgramSha256": "d77627eaa41acaacb3bf380866b5c6607783dfd82d838ba200a6eb69eaae9305",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "OldText\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "sid-raw-simple-uniform.pdf",
+      "sha256": "fd99fcba7af69dae8c84099f5a5bb660e0d3fb3518592e5259ad3be77d919b0e",
+      "flavor": "sid-raw-simple",
+      "mode": "uniform",
+      "text": "OldText",
+      "replacement": "NewText",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "4F6C6454657874"
+        },
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 650,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "4F6C6454657874"
+        }
+      ],
+      "sourceProgramSha256": "d77627eaa41acaacb3bf380866b5c6607783dfd82d838ba200a6eb69eaae9305",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "OldText\nOldText\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "sid-raw-simple-styled.pdf",
+      "sha256": "d7fa8686548d2c88ed72329fa6703a874247da65bafea5a7764924fbc6e421b0",
+      "flavor": "sid-raw-simple",
+      "mode": "styled",
+      "text": "OldText",
+      "replacement": "NewText",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "4F6C6454657874"
+        },
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 650,
+          "size": 16,
+          "font": "Source",
+          "color": "0.1 0.2 0.7",
+          "encoded": "4F6C6454657874"
+        }
+      ],
+      "sourceProgramSha256": "d77627eaa41acaacb3bf380866b5c6607783dfd82d838ba200a6eb69eaae9305",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "OldText\nOldText\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "sid-raw-simple-mixed.pdf",
+      "sha256": "4b94c7e3d118bac22e146908a57283a4c6a086f401cd429aaa40c93c127fd1fa",
+      "flavor": "sid-raw-simple",
+      "mode": "mixed",
+      "text": "OldText",
+      "replacement": "NewText",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "4F6C6454657874"
+        },
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 650,
+          "size": 16,
+          "font": "Mixed",
+          "color": "0.1 0.2 0.7",
+          "encoded": "4F6C6454657874"
+        }
+      ],
+      "sourceProgramSha256": "d77627eaa41acaacb3bf380866b5c6607783dfd82d838ba200a6eb69eaae9305",
+      "additionalProgramSha256": "3fdf69cabf06049ea70a00b5919340e2ce1e6d02b0cc3c4b44fb6801bd1e0d22",
+      "extracted": [
+        "OldText\nOldText\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "sid-raw-simple-nested.pdf",
+      "sha256": "3ea33fa0d0cd31fddece98e5ca26faad1fc95b83bbacff1994c73d5b328aefa3",
+      "flavor": "sid-raw-simple",
+      "mode": "nested",
+      "text": "OldText",
+      "replacement": "NewText",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "OldText",
+          "x": 5,
+          "y": 70,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "4F6C6454657874"
+        },
+        {
+          "text": "OldText",
+          "x": 5,
+          "y": 40,
+          "size": 16,
+          "font": "Source",
+          "color": "0.1 0.2 0.7",
+          "encoded": "4F6C6454657874"
+        }
+      ],
+      "sourceProgramSha256": "d77627eaa41acaacb3bf380866b5c6607783dfd82d838ba200a6eb69eaae9305",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "OldText\nOldText\nOldText\nOldText\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "sid-raw-simple-alias.pdf",
+      "sha256": "0a2205d35102940dceb043b113d3ed3652cdae8321226b650d2c5cf25c8742a8",
+      "flavor": "sid-raw-simple",
+      "mode": "alias",
+      "text": "OldText",
+      "replacement": "NewText",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "4F6C6454657874"
+        },
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 650,
+          "size": 16,
+          "font": "Source",
+          "color": "0.1 0.2 0.7",
+          "encoded": "4F6C6454657874"
+        }
+      ],
+      "sourceProgramSha256": "d77627eaa41acaacb3bf380866b5c6607783dfd82d838ba200a6eb69eaae9305",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "OldText\nOldText\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "sid-raw-simple-clipped.pdf",
+      "sha256": "225de6edd7f6eddbfea29ad58e9e69e808d6645d5b160318d926caf32fafe657",
+      "flavor": "sid-raw-simple",
+      "mode": "clipped",
+      "text": "OldText",
+      "replacement": "NewText",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "4F6C6454657874"
+        },
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 650,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "4F6C6454657874"
+        }
+      ],
+      "sourceProgramSha256": "d77627eaa41acaacb3bf380866b5c6607783dfd82d838ba200a6eb69eaae9305",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "OldText\nOldText\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "sid-raw-simple-tagged.pdf",
+      "sha256": "e29885b2e2002f783be5a988fc198fff8e585346042e889e27564c6e44e87272",
+      "flavor": "sid-raw-simple",
+      "mode": "tagged",
+      "text": "OldText",
+      "replacement": "NewText",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "4F6C6454657874"
+        },
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 650,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "4F6C6454657874"
+        }
+      ],
+      "sourceProgramSha256": "d77627eaa41acaacb3bf380866b5c6607783dfd82d838ba200a6eb69eaae9305",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "OldText\nOldText\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "sid-raw-simple-occurrences.pdf",
+      "sha256": "16e1ed81ed6b2ffa0dc83d799e7b6bc64ab9cd356fc495f75fbd3ce69c5e6682",
+      "flavor": "sid-raw-simple",
+      "mode": "occurrences",
+      "text": "OldText",
+      "replacement": "NewText",
+      "pages": 2,
+      "atoms": [
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "4F6C6454657874"
+        },
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 650,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "4F6C6454657874"
+        }
+      ],
+      "sourceProgramSha256": "d77627eaa41acaacb3bf380866b5c6607783dfd82d838ba200a6eb69eaae9305",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "OldText\nOldText\nUnchanged neighbor\n",
+        "OldText\nOldText\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "sid-wrapped-simple-group.pdf",
+      "sha256": "0ecc24f90cf858e97aecb7ae09a7437640e3e5fe5e5f1a33853e865f2f67c87e",
+      "flavor": "sid-wrapped-simple",
+      "mode": "group",
+      "text": "OldText",
+      "replacement": "NewText",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "Old",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "4F6C64"
+        },
+        {
+          "text": "Text",
+          "x": 98.532,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "54657874"
+        }
+      ],
+      "sourceProgramSha256": "ae36188f9ea36d059076068b46a9136c47eedfc335ce5e75c13b03bd4a48614d",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "OldText\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "sid-wrapped-simple-uniform.pdf",
+      "sha256": "b6f4581687addad60750c201340e6f3df0ad5d56ccbd3314bb4c59a7ceed58e1",
+      "flavor": "sid-wrapped-simple",
+      "mode": "uniform",
+      "text": "OldText",
+      "replacement": "NewText",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "4F6C6454657874"
+        },
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 650,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "4F6C6454657874"
+        }
+      ],
+      "sourceProgramSha256": "ae36188f9ea36d059076068b46a9136c47eedfc335ce5e75c13b03bd4a48614d",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "OldText\nOldText\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "sid-wrapped-simple-styled.pdf",
+      "sha256": "d9b4ef4731aef173d28e538b88969183c3b2fca404a30ee9fff84449cbe5030b",
+      "flavor": "sid-wrapped-simple",
+      "mode": "styled",
+      "text": "OldText",
+      "replacement": "NewText",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "4F6C6454657874"
+        },
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 650,
+          "size": 16,
+          "font": "Source",
+          "color": "0.1 0.2 0.7",
+          "encoded": "4F6C6454657874"
+        }
+      ],
+      "sourceProgramSha256": "ae36188f9ea36d059076068b46a9136c47eedfc335ce5e75c13b03bd4a48614d",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "OldText\nOldText\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "sid-wrapped-simple-mixed.pdf",
+      "sha256": "d107ea60a85d5b98015a4578dcdf184f3dcddcb6762e1a6a59b730ef5e198ab2",
+      "flavor": "sid-wrapped-simple",
+      "mode": "mixed",
+      "text": "OldText",
+      "replacement": "NewText",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "4F6C6454657874"
+        },
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 650,
+          "size": 16,
+          "font": "Mixed",
+          "color": "0.1 0.2 0.7",
+          "encoded": "4F6C6454657874"
+        }
+      ],
+      "sourceProgramSha256": "ae36188f9ea36d059076068b46a9136c47eedfc335ce5e75c13b03bd4a48614d",
+      "additionalProgramSha256": "3fdf69cabf06049ea70a00b5919340e2ce1e6d02b0cc3c4b44fb6801bd1e0d22",
+      "extracted": [
+        "OldText\nOldText\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "sid-wrapped-simple-nested.pdf",
+      "sha256": "41e2fc0e36c805c13adebaa81912362521342bdeaba4cd9d74a01b5d5b683f48",
+      "flavor": "sid-wrapped-simple",
+      "mode": "nested",
+      "text": "OldText",
+      "replacement": "NewText",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "OldText",
+          "x": 5,
+          "y": 70,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "4F6C6454657874"
+        },
+        {
+          "text": "OldText",
+          "x": 5,
+          "y": 40,
+          "size": 16,
+          "font": "Source",
+          "color": "0.1 0.2 0.7",
+          "encoded": "4F6C6454657874"
+        }
+      ],
+      "sourceProgramSha256": "ae36188f9ea36d059076068b46a9136c47eedfc335ce5e75c13b03bd4a48614d",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "OldText\nOldText\nOldText\nOldText\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "sid-wrapped-simple-alias.pdf",
+      "sha256": "71f168390c120b76f8ec571b5e8eab46fd4b2f73bdfa7d7e3c58494992ae04a5",
+      "flavor": "sid-wrapped-simple",
+      "mode": "alias",
+      "text": "OldText",
+      "replacement": "NewText",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "4F6C6454657874"
+        },
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 650,
+          "size": 16,
+          "font": "Source",
+          "color": "0.1 0.2 0.7",
+          "encoded": "4F6C6454657874"
+        }
+      ],
+      "sourceProgramSha256": "ae36188f9ea36d059076068b46a9136c47eedfc335ce5e75c13b03bd4a48614d",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "OldText\nOldText\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "sid-wrapped-simple-clipped.pdf",
+      "sha256": "d0beec938f319fbc96a0829a5540ba81e13101c3a037c94f09d8f24f16496582",
+      "flavor": "sid-wrapped-simple",
+      "mode": "clipped",
+      "text": "OldText",
+      "replacement": "NewText",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "4F6C6454657874"
+        },
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 650,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "4F6C6454657874"
+        }
+      ],
+      "sourceProgramSha256": "ae36188f9ea36d059076068b46a9136c47eedfc335ce5e75c13b03bd4a48614d",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "OldText\nOldText\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "sid-wrapped-simple-tagged.pdf",
+      "sha256": "c915bd7aa0eda9b1e9b2f9029a7af2e530836b4ccc59e5d9a57ed2160a57b5d4",
+      "flavor": "sid-wrapped-simple",
+      "mode": "tagged",
+      "text": "OldText",
+      "replacement": "NewText",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "4F6C6454657874"
+        },
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 650,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "4F6C6454657874"
+        }
+      ],
+      "sourceProgramSha256": "ae36188f9ea36d059076068b46a9136c47eedfc335ce5e75c13b03bd4a48614d",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "OldText\nOldText\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "sid-wrapped-simple-occurrences.pdf",
+      "sha256": "0a1c7ecdeda7b43a2c6cf287eefa00a819822bf1a86b4af2f79c1b3317853818",
+      "flavor": "sid-wrapped-simple",
+      "mode": "occurrences",
+      "text": "OldText",
+      "replacement": "NewText",
+      "pages": 2,
+      "atoms": [
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "4F6C6454657874"
+        },
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 650,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "4F6C6454657874"
+        }
+      ],
+      "sourceProgramSha256": "ae36188f9ea36d059076068b46a9136c47eedfc335ce5e75c13b03bd4a48614d",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "OldText\nOldText\nUnchanged neighbor\n",
+        "OldText\nOldText\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "sid-raw-composite-group.pdf",
+      "sha256": "9e0c1f03bc5cc2fa864ddd8681c2d2d9fc7a98955cbafba052a3b875589d044c",
+      "flavor": "sid-raw-composite",
+      "mode": "group",
+      "text": "OldText",
+      "replacement": "NewText",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "Old",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "0003000A0008"
+        },
+        {
+          "text": "Text",
+          "x": 98.532,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "00040009000D000B"
+        }
+      ],
+      "sourceProgramSha256": "d77627eaa41acaacb3bf380866b5c6607783dfd82d838ba200a6eb69eaae9305",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "OldText\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "sid-raw-composite-uniform.pdf",
+      "sha256": "309de629b1e61e933e60a4ae5bae06f1a745b320a49e9874bec24ca125acfaec",
+      "flavor": "sid-raw-composite",
+      "mode": "uniform",
+      "text": "OldText",
+      "replacement": "NewText",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "0003000A000800040009000D000B"
+        },
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 650,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "0003000A000800040009000D000B"
+        }
+      ],
+      "sourceProgramSha256": "d77627eaa41acaacb3bf380866b5c6607783dfd82d838ba200a6eb69eaae9305",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "OldText\nOldText\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "sid-raw-composite-styled.pdf",
+      "sha256": "72459022c72c222bed693d668832a069ccab4a3c92a72e73a2ac34f99d9ac1cd",
+      "flavor": "sid-raw-composite",
+      "mode": "styled",
+      "text": "OldText",
+      "replacement": "NewText",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "0003000A000800040009000D000B"
+        },
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 650,
+          "size": 16,
+          "font": "Source",
+          "color": "0.1 0.2 0.7",
+          "encoded": "0003000A000800040009000D000B"
+        }
+      ],
+      "sourceProgramSha256": "d77627eaa41acaacb3bf380866b5c6607783dfd82d838ba200a6eb69eaae9305",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "OldText\nOldText\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "sid-raw-composite-mixed.pdf",
+      "sha256": "4e8736899092b0fa3219050352204a00c114613bfc09102cd097e1dcce35e8d9",
+      "flavor": "sid-raw-composite",
+      "mode": "mixed",
+      "text": "OldText",
+      "replacement": "NewText",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "0003000A000800040009000D000B"
+        },
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 650,
+          "size": 16,
+          "font": "Mixed",
+          "color": "0.1 0.2 0.7",
+          "encoded": "4F6C6454657874"
+        }
+      ],
+      "sourceProgramSha256": "d77627eaa41acaacb3bf380866b5c6607783dfd82d838ba200a6eb69eaae9305",
+      "additionalProgramSha256": "3fdf69cabf06049ea70a00b5919340e2ce1e6d02b0cc3c4b44fb6801bd1e0d22",
+      "extracted": [
+        "OldText\nOldText\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "sid-raw-composite-nested.pdf",
+      "sha256": "53551349dd97adaa435dfe7407454a77f3db57ca4e7908f8aadcde50bbf8f17e",
+      "flavor": "sid-raw-composite",
+      "mode": "nested",
+      "text": "OldText",
+      "replacement": "NewText",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "OldText",
+          "x": 5,
+          "y": 70,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "0003000A000800040009000D000B"
+        },
+        {
+          "text": "OldText",
+          "x": 5,
+          "y": 40,
+          "size": 16,
+          "font": "Source",
+          "color": "0.1 0.2 0.7",
+          "encoded": "0003000A000800040009000D000B"
+        }
+      ],
+      "sourceProgramSha256": "d77627eaa41acaacb3bf380866b5c6607783dfd82d838ba200a6eb69eaae9305",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "OldText\nOldText\nOldText\nOldText\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "sid-raw-composite-alias.pdf",
+      "sha256": "fee94dfc33061ba90d9fb743369da1e61afe48336234f74e33edcbb7aceac84e",
+      "flavor": "sid-raw-composite",
+      "mode": "alias",
+      "text": "OldText",
+      "replacement": "NewText",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "0003000A000800040009000D000B"
+        },
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 650,
+          "size": 16,
+          "font": "Source",
+          "color": "0.1 0.2 0.7",
+          "encoded": "0003000A000800040009000D000B"
+        }
+      ],
+      "sourceProgramSha256": "d77627eaa41acaacb3bf380866b5c6607783dfd82d838ba200a6eb69eaae9305",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "OldText\nOldText\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "sid-raw-composite-clipped.pdf",
+      "sha256": "2db9c06bf1bde7dfa1864ab9abdf78539bec0058fc4c697aa59bc22fea5774e2",
+      "flavor": "sid-raw-composite",
+      "mode": "clipped",
+      "text": "OldText",
+      "replacement": "NewText",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "0003000A000800040009000D000B"
+        },
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 650,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "0003000A000800040009000D000B"
+        }
+      ],
+      "sourceProgramSha256": "d77627eaa41acaacb3bf380866b5c6607783dfd82d838ba200a6eb69eaae9305",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "OldText\nOldText\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "sid-raw-composite-tagged.pdf",
+      "sha256": "12ca635257457696829364bebe289dcc5c9505094a3b675e435f0b48c58adf8c",
+      "flavor": "sid-raw-composite",
+      "mode": "tagged",
+      "text": "OldText",
+      "replacement": "NewText",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "0003000A000800040009000D000B"
+        },
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 650,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "0003000A000800040009000D000B"
+        }
+      ],
+      "sourceProgramSha256": "d77627eaa41acaacb3bf380866b5c6607783dfd82d838ba200a6eb69eaae9305",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "OldText\nOldText\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "sid-raw-composite-occurrences.pdf",
+      "sha256": "411f086185caaed4de4d27ab9007b2085b8e7dcfc9dd6733fea196c00412d41f",
+      "flavor": "sid-raw-composite",
+      "mode": "occurrences",
+      "text": "OldText",
+      "replacement": "NewText",
+      "pages": 2,
+      "atoms": [
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "0003000A000800040009000D000B"
+        },
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 650,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "0003000A000800040009000D000B"
+        }
+      ],
+      "sourceProgramSha256": "d77627eaa41acaacb3bf380866b5c6607783dfd82d838ba200a6eb69eaae9305",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "OldText\nOldText\nUnchanged neighbor\n",
+        "OldText\nOldText\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "sid-wrapped-composite-group.pdf",
+      "sha256": "418e3887aa39afc455f9dc61028a0668029dc2cffde31e8ba328a2335f4a8500",
+      "flavor": "sid-wrapped-composite",
+      "mode": "group",
+      "text": "OldText",
+      "replacement": "NewText",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "Old",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "0003000A0008"
+        },
+        {
+          "text": "Text",
+          "x": 98.532,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "00040009000D000B"
+        }
+      ],
+      "sourceProgramSha256": "ae36188f9ea36d059076068b46a9136c47eedfc335ce5e75c13b03bd4a48614d",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "OldText\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "sid-wrapped-composite-uniform.pdf",
+      "sha256": "463bd78350a84c288d6a1d8c2a21f346783545df833dcbecf3301180bf9fadb3",
+      "flavor": "sid-wrapped-composite",
+      "mode": "uniform",
+      "text": "OldText",
+      "replacement": "NewText",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "0003000A000800040009000D000B"
+        },
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 650,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "0003000A000800040009000D000B"
+        }
+      ],
+      "sourceProgramSha256": "ae36188f9ea36d059076068b46a9136c47eedfc335ce5e75c13b03bd4a48614d",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "OldText\nOldText\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "sid-wrapped-composite-styled.pdf",
+      "sha256": "add22646ca7a5c29ec109de11f27d682f5ec5fac4de61f815707822ca444f399",
+      "flavor": "sid-wrapped-composite",
+      "mode": "styled",
+      "text": "OldText",
+      "replacement": "NewText",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "0003000A000800040009000D000B"
+        },
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 650,
+          "size": 16,
+          "font": "Source",
+          "color": "0.1 0.2 0.7",
+          "encoded": "0003000A000800040009000D000B"
+        }
+      ],
+      "sourceProgramSha256": "ae36188f9ea36d059076068b46a9136c47eedfc335ce5e75c13b03bd4a48614d",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "OldText\nOldText\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "sid-wrapped-composite-mixed.pdf",
+      "sha256": "d7431dd397e6ef18e2f89ac0235966146440c5d451adedb2d90ec872cb571396",
+      "flavor": "sid-wrapped-composite",
+      "mode": "mixed",
+      "text": "OldText",
+      "replacement": "NewText",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "0003000A000800040009000D000B"
+        },
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 650,
+          "size": 16,
+          "font": "Mixed",
+          "color": "0.1 0.2 0.7",
+          "encoded": "4F6C6454657874"
+        }
+      ],
+      "sourceProgramSha256": "ae36188f9ea36d059076068b46a9136c47eedfc335ce5e75c13b03bd4a48614d",
+      "additionalProgramSha256": "3fdf69cabf06049ea70a00b5919340e2ce1e6d02b0cc3c4b44fb6801bd1e0d22",
+      "extracted": [
+        "OldText\nOldText\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "sid-wrapped-composite-nested.pdf",
+      "sha256": "479abe79369cb4d86f2d6a9674e87706cf04cfc3821973e6533cc4da6966a7fb",
+      "flavor": "sid-wrapped-composite",
+      "mode": "nested",
+      "text": "OldText",
+      "replacement": "NewText",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "OldText",
+          "x": 5,
+          "y": 70,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "0003000A000800040009000D000B"
+        },
+        {
+          "text": "OldText",
+          "x": 5,
+          "y": 40,
+          "size": 16,
+          "font": "Source",
+          "color": "0.1 0.2 0.7",
+          "encoded": "0003000A000800040009000D000B"
+        }
+      ],
+      "sourceProgramSha256": "ae36188f9ea36d059076068b46a9136c47eedfc335ce5e75c13b03bd4a48614d",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "OldText\nOldText\nOldText\nOldText\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "sid-wrapped-composite-alias.pdf",
+      "sha256": "d7e226ee77d2566e137e0d90f517056c8fe9be4db08835a48d8fb36c8c8a7f40",
+      "flavor": "sid-wrapped-composite",
+      "mode": "alias",
+      "text": "OldText",
+      "replacement": "NewText",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "0003000A000800040009000D000B"
+        },
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 650,
+          "size": 16,
+          "font": "Source",
+          "color": "0.1 0.2 0.7",
+          "encoded": "0003000A000800040009000D000B"
+        }
+      ],
+      "sourceProgramSha256": "ae36188f9ea36d059076068b46a9136c47eedfc335ce5e75c13b03bd4a48614d",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "OldText\nOldText\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "sid-wrapped-composite-clipped.pdf",
+      "sha256": "4b9ffcc9df51801e091f5493036b27e0bded0a9d8a4ebd9e3e13596178301438",
+      "flavor": "sid-wrapped-composite",
+      "mode": "clipped",
+      "text": "OldText",
+      "replacement": "NewText",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "0003000A000800040009000D000B"
+        },
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 650,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "0003000A000800040009000D000B"
+        }
+      ],
+      "sourceProgramSha256": "ae36188f9ea36d059076068b46a9136c47eedfc335ce5e75c13b03bd4a48614d",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "OldText\nOldText\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "sid-wrapped-composite-tagged.pdf",
+      "sha256": "768ef914ea4c35adff401635ca93899282b918deb58b9e985ac99fc6edf901ce",
+      "flavor": "sid-wrapped-composite",
+      "mode": "tagged",
+      "text": "OldText",
+      "replacement": "NewText",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "0003000A000800040009000D000B"
+        },
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 650,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "0003000A000800040009000D000B"
+        }
+      ],
+      "sourceProgramSha256": "ae36188f9ea36d059076068b46a9136c47eedfc335ce5e75c13b03bd4a48614d",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "OldText\nOldText\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "sid-wrapped-composite-occurrences.pdf",
+      "sha256": "4bd90255ab7654561c018818341539b38a8b53a56dedd9b67974ce9e79845a4d",
+      "flavor": "sid-wrapped-composite",
+      "mode": "occurrences",
+      "text": "OldText",
+      "replacement": "NewText",
+      "pages": 2,
+      "atoms": [
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "0003000A000800040009000D000B"
+        },
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 650,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "0003000A000800040009000D000B"
+        }
+      ],
+      "sourceProgramSha256": "ae36188f9ea36d059076068b46a9136c47eedfc335ce5e75c13b03bd4a48614d",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "OldText\nOldText\nUnchanged neighbor\n",
+        "OldText\nOldText\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "cid-raw-composite-group.pdf",
+      "sha256": "4ca4dc8211e451f09d578915f668a33065d9cf30f7e0f1fe7eac659ba489dc3b",
+      "flavor": "cid-raw-composite",
+      "mode": "group",
+      "text": "OldText",
+      "replacement": "NewText",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "Old",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "0030004D0045"
+        },
+        {
+          "text": "Text",
+          "x": 101.358,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "0035004600590055"
+        }
+      ],
+      "sourceProgramSha256": "91fb11e099f3629393fd82d071cdb03455f750a02c19c46668c73c2e5ed3d695",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "OldText\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "cid-raw-composite-uniform.pdf",
+      "sha256": "3e5f4bb19de89f04843448eee1ceb5c2d7f45e1d40305c9df85c1d9a664bdd3e",
+      "flavor": "cid-raw-composite",
+      "mode": "uniform",
+      "text": "OldText",
+      "replacement": "NewText",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "0030004D00450035004600590055"
+        },
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 650,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "0030004D00450035004600590055"
+        }
+      ],
+      "sourceProgramSha256": "91fb11e099f3629393fd82d071cdb03455f750a02c19c46668c73c2e5ed3d695",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "OldText\nOldText\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "cid-raw-composite-styled.pdf",
+      "sha256": "b3645f071d09413318edc08e61200bb5cf44acafa2de2a3a811e18ac91566688",
+      "flavor": "cid-raw-composite",
+      "mode": "styled",
+      "text": "OldText",
+      "replacement": "NewText",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "0030004D00450035004600590055"
+        },
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 650,
+          "size": 16,
+          "font": "Source",
+          "color": "0.1 0.2 0.7",
+          "encoded": "0030004D00450035004600590055"
+        }
+      ],
+      "sourceProgramSha256": "91fb11e099f3629393fd82d071cdb03455f750a02c19c46668c73c2e5ed3d695",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "OldText\nOldText\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "cid-raw-composite-mixed.pdf",
+      "sha256": "6481f242d6dd989aa92f5eceecdde6cabab463630f7ab238f4f3948ed3393efc",
+      "flavor": "cid-raw-composite",
+      "mode": "mixed",
+      "text": "OldText",
+      "replacement": "NewText",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "0030004D00450035004600590055"
+        },
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 650,
+          "size": 16,
+          "font": "Mixed",
+          "color": "0.1 0.2 0.7",
+          "encoded": "4F6C6454657874"
+        }
+      ],
+      "sourceProgramSha256": "91fb11e099f3629393fd82d071cdb03455f750a02c19c46668c73c2e5ed3d695",
+      "additionalProgramSha256": "3fdf69cabf06049ea70a00b5919340e2ce1e6d02b0cc3c4b44fb6801bd1e0d22",
+      "extracted": [
+        "OldText\nOldText\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "cid-raw-composite-nested.pdf",
+      "sha256": "9b8b0c2b373323047b51d51e29dbb76c83f4e692c4eacb0cd0a729b8c468e1f6",
+      "flavor": "cid-raw-composite",
+      "mode": "nested",
+      "text": "OldText",
+      "replacement": "NewText",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "OldText",
+          "x": 5,
+          "y": 70,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "0030004D00450035004600590055"
+        },
+        {
+          "text": "OldText",
+          "x": 5,
+          "y": 40,
+          "size": 16,
+          "font": "Source",
+          "color": "0.1 0.2 0.7",
+          "encoded": "0030004D00450035004600590055"
+        }
+      ],
+      "sourceProgramSha256": "91fb11e099f3629393fd82d071cdb03455f750a02c19c46668c73c2e5ed3d695",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "OldText\nOldText\nOldText\nOldText\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "cid-raw-composite-alias.pdf",
+      "sha256": "85494b4c38b655a4cbff98369a2970561b5f2366aaf0a8c90c05b109db34d1da",
+      "flavor": "cid-raw-composite",
+      "mode": "alias",
+      "text": "OldText",
+      "replacement": "NewText",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "0030004D00450035004600590055"
+        },
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 650,
+          "size": 16,
+          "font": "Source",
+          "color": "0.1 0.2 0.7",
+          "encoded": "0030004D00450035004600590055"
+        }
+      ],
+      "sourceProgramSha256": "91fb11e099f3629393fd82d071cdb03455f750a02c19c46668c73c2e5ed3d695",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "OldText\nOldText\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "cid-raw-composite-clipped.pdf",
+      "sha256": "ca466f1a97654c1b84936a6e2d8b1d2dc2191f2e9664bc8e6cf756df99b287e2",
+      "flavor": "cid-raw-composite",
+      "mode": "clipped",
+      "text": "OldText",
+      "replacement": "NewText",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "0030004D00450035004600590055"
+        },
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 650,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "0030004D00450035004600590055"
+        }
+      ],
+      "sourceProgramSha256": "91fb11e099f3629393fd82d071cdb03455f750a02c19c46668c73c2e5ed3d695",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "OldText\nOldText\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "cid-raw-composite-tagged.pdf",
+      "sha256": "44c3db1ef333338dcf2b084b64b95abc78f01290ef5f56fb8f376ae451a12d77",
+      "flavor": "cid-raw-composite",
+      "mode": "tagged",
+      "text": "OldText",
+      "replacement": "NewText",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "0030004D00450035004600590055"
+        },
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 650,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "0030004D00450035004600590055"
+        }
+      ],
+      "sourceProgramSha256": "91fb11e099f3629393fd82d071cdb03455f750a02c19c46668c73c2e5ed3d695",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "OldText\nOldText\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "cid-raw-composite-occurrences.pdf",
+      "sha256": "e9751402e073bf9286e8804300a828c73309ac71b302ce59c9436753b471aaab",
+      "flavor": "cid-raw-composite",
+      "mode": "occurrences",
+      "text": "OldText",
+      "replacement": "NewText",
+      "pages": 2,
+      "atoms": [
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "0030004D00450035004600590055"
+        },
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 650,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "0030004D00450035004600590055"
+        }
+      ],
+      "sourceProgramSha256": "91fb11e099f3629393fd82d071cdb03455f750a02c19c46668c73c2e5ed3d695",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "OldText\nOldText\nUnchanged neighbor\n",
+        "OldText\nOldText\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "cid-wrapped-composite-group.pdf",
+      "sha256": "faedfa8af4045423bd759440cf3983cbad7d319cac3ab622b1ede3838c1474b1",
+      "flavor": "cid-wrapped-composite",
+      "mode": "group",
+      "text": "OldText",
+      "replacement": "NewText",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "Old",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "0030004D0045"
+        },
+        {
+          "text": "Text",
+          "x": 101.358,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "0035004600590055"
+        }
+      ],
+      "sourceProgramSha256": "4c4f74e8744e116a7587fe041aae4fcec0bbe55cbdc7cf7a78726e646b15c5c2",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "OldText\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "cid-wrapped-composite-uniform.pdf",
+      "sha256": "02342d0c9e28cc5bbba5867e9c9b40acf69fe00c5582e57e843e6973aa3d23f4",
+      "flavor": "cid-wrapped-composite",
+      "mode": "uniform",
+      "text": "OldText",
+      "replacement": "NewText",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "0030004D00450035004600590055"
+        },
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 650,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "0030004D00450035004600590055"
+        }
+      ],
+      "sourceProgramSha256": "4c4f74e8744e116a7587fe041aae4fcec0bbe55cbdc7cf7a78726e646b15c5c2",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "OldText\nOldText\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "cid-wrapped-composite-styled.pdf",
+      "sha256": "c059143362d74ea75ce74f6fcaec700d4059ecf4218402eab6ec58db3841a42c",
+      "flavor": "cid-wrapped-composite",
+      "mode": "styled",
+      "text": "OldText",
+      "replacement": "NewText",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "0030004D00450035004600590055"
+        },
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 650,
+          "size": 16,
+          "font": "Source",
+          "color": "0.1 0.2 0.7",
+          "encoded": "0030004D00450035004600590055"
+        }
+      ],
+      "sourceProgramSha256": "4c4f74e8744e116a7587fe041aae4fcec0bbe55cbdc7cf7a78726e646b15c5c2",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "OldText\nOldText\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "cid-wrapped-composite-mixed.pdf",
+      "sha256": "a3400599c058fb4c765fc75cf1280cb82ff7d57480f97f61a23c68d12e8412a1",
+      "flavor": "cid-wrapped-composite",
+      "mode": "mixed",
+      "text": "OldText",
+      "replacement": "NewText",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "0030004D00450035004600590055"
+        },
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 650,
+          "size": 16,
+          "font": "Mixed",
+          "color": "0.1 0.2 0.7",
+          "encoded": "4F6C6454657874"
+        }
+      ],
+      "sourceProgramSha256": "4c4f74e8744e116a7587fe041aae4fcec0bbe55cbdc7cf7a78726e646b15c5c2",
+      "additionalProgramSha256": "3fdf69cabf06049ea70a00b5919340e2ce1e6d02b0cc3c4b44fb6801bd1e0d22",
+      "extracted": [
+        "OldText\nOldText\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "cid-wrapped-composite-nested.pdf",
+      "sha256": "ebcbe29d780569de8e31f24cae4419ca13d0ecff93b3b71dc2795a6455fbb3dc",
+      "flavor": "cid-wrapped-composite",
+      "mode": "nested",
+      "text": "OldText",
+      "replacement": "NewText",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "OldText",
+          "x": 5,
+          "y": 70,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "0030004D00450035004600590055"
+        },
+        {
+          "text": "OldText",
+          "x": 5,
+          "y": 40,
+          "size": 16,
+          "font": "Source",
+          "color": "0.1 0.2 0.7",
+          "encoded": "0030004D00450035004600590055"
+        }
+      ],
+      "sourceProgramSha256": "4c4f74e8744e116a7587fe041aae4fcec0bbe55cbdc7cf7a78726e646b15c5c2",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "OldText\nOldText\nOldText\nOldText\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "cid-wrapped-composite-alias.pdf",
+      "sha256": "3f7402fb2c3071f5f801c2734d5b51fd4e1b75a925db89dc6bf543f42e9f9831",
+      "flavor": "cid-wrapped-composite",
+      "mode": "alias",
+      "text": "OldText",
+      "replacement": "NewText",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "0030004D00450035004600590055"
+        },
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 650,
+          "size": 16,
+          "font": "Source",
+          "color": "0.1 0.2 0.7",
+          "encoded": "0030004D00450035004600590055"
+        }
+      ],
+      "sourceProgramSha256": "4c4f74e8744e116a7587fe041aae4fcec0bbe55cbdc7cf7a78726e646b15c5c2",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "OldText\nOldText\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "cid-wrapped-composite-clipped.pdf",
+      "sha256": "ffe0d8fd61cc13d8d3b4dbe833961370dbc4622e8163a31d06e8bf0f50f9c33d",
+      "flavor": "cid-wrapped-composite",
+      "mode": "clipped",
+      "text": "OldText",
+      "replacement": "NewText",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "0030004D00450035004600590055"
+        },
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 650,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "0030004D00450035004600590055"
+        }
+      ],
+      "sourceProgramSha256": "4c4f74e8744e116a7587fe041aae4fcec0bbe55cbdc7cf7a78726e646b15c5c2",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "OldText\nOldText\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "cid-wrapped-composite-tagged.pdf",
+      "sha256": "2ef2b45125aea092a61d9c12d4a2d2e5665152cbec74fa91354e49d5be49addc",
+      "flavor": "cid-wrapped-composite",
+      "mode": "tagged",
+      "text": "OldText",
+      "replacement": "NewText",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "0030004D00450035004600590055"
+        },
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 650,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "0030004D00450035004600590055"
+        }
+      ],
+      "sourceProgramSha256": "4c4f74e8744e116a7587fe041aae4fcec0bbe55cbdc7cf7a78726e646b15c5c2",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "OldText\nOldText\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "cid-wrapped-composite-occurrences.pdf",
+      "sha256": "1ace659d51e0a5c8f6901e1eec8d684a9d8f0e0a0cafc0de89a345820973f709",
+      "flavor": "cid-wrapped-composite",
+      "mode": "occurrences",
+      "text": "OldText",
+      "replacement": "NewText",
+      "pages": 2,
+      "atoms": [
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "0030004D00450035004600590055"
+        },
+        {
+          "text": "OldText",
+          "x": 72,
+          "y": 650,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "0030004D00450035004600590055"
+        }
+      ],
+      "sourceProgramSha256": "4c4f74e8744e116a7587fe041aae4fcec0bbe55cbdc7cf7a78726e646b15c5c2",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "OldText\nOldText\nUnchanged neighbor\n",
+        "OldText\nOldText\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "fractional-raw-simple-group.pdf",
+      "sha256": "10828029e78d4664c32bf29b64e31da7651573024bf48a0542e8e773f70e042f",
+      "flavor": "fractional-raw-simple",
+      "mode": "group",
+      "text": "AB",
+      "replacement": "BA",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "A",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "41"
+        },
+        {
+          "text": "B",
+          "x": 81.0135,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "42"
+        }
+      ],
+      "sourceProgramSha256": "f505254303293551b9f924993aa2c3c0a2ebdc53d4f006cd172fd39fa3f3c261",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "AB\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "fractional-raw-simple-uniform.pdf",
+      "sha256": "1acf4045b953ca8056fc58d516371a11753c8cc10fec5fb1764e579a31be75ce",
+      "flavor": "fractional-raw-simple",
+      "mode": "uniform",
+      "text": "AB",
+      "replacement": "BA",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "AB",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "4142"
+        },
+        {
+          "text": "AB",
+          "x": 72,
+          "y": 650,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "4142"
+        }
+      ],
+      "sourceProgramSha256": "f505254303293551b9f924993aa2c3c0a2ebdc53d4f006cd172fd39fa3f3c261",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "AB\nAB\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "fractional-raw-simple-styled.pdf",
+      "sha256": "26dc583d27d72011e9d4f044a08f938289a1b9b40d5e7fdf317fb179b20f9276",
+      "flavor": "fractional-raw-simple",
+      "mode": "styled",
+      "text": "AB",
+      "replacement": "BA",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "AB",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "4142"
+        },
+        {
+          "text": "AB",
+          "x": 72,
+          "y": 650,
+          "size": 16,
+          "font": "Source",
+          "color": "0.1 0.2 0.7",
+          "encoded": "4142"
+        }
+      ],
+      "sourceProgramSha256": "f505254303293551b9f924993aa2c3c0a2ebdc53d4f006cd172fd39fa3f3c261",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "AB\nAB\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "fractional-raw-simple-mixed.pdf",
+      "sha256": "e93c82db8ab65b8b3f44b56ffe659776e2030b407244541658c3473aefc79591",
+      "flavor": "fractional-raw-simple",
+      "mode": "mixed",
+      "text": "AB",
+      "replacement": "BA",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "AB",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "4142"
+        },
+        {
+          "text": "AB",
+          "x": 72,
+          "y": 650,
+          "size": 16,
+          "font": "Mixed",
+          "color": "0.1 0.2 0.7",
+          "encoded": "4142"
+        }
+      ],
+      "sourceProgramSha256": "f505254303293551b9f924993aa2c3c0a2ebdc53d4f006cd172fd39fa3f3c261",
+      "additionalProgramSha256": "3fdf69cabf06049ea70a00b5919340e2ce1e6d02b0cc3c4b44fb6801bd1e0d22",
+      "extracted": [
+        "AB\nAB\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "fractional-raw-simple-nested.pdf",
+      "sha256": "11d8cd544e310d5733c2a726b903e2acb3fc387feb75fee9ddea2d8337b9608c",
+      "flavor": "fractional-raw-simple",
+      "mode": "nested",
+      "text": "AB",
+      "replacement": "BA",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "AB",
+          "x": 5,
+          "y": 70,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "4142"
+        },
+        {
+          "text": "AB",
+          "x": 5,
+          "y": 40,
+          "size": 16,
+          "font": "Source",
+          "color": "0.1 0.2 0.7",
+          "encoded": "4142"
+        }
+      ],
+      "sourceProgramSha256": "f505254303293551b9f924993aa2c3c0a2ebdc53d4f006cd172fd39fa3f3c261",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "AB\nAB\nAB\nAB\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "fractional-raw-simple-alias.pdf",
+      "sha256": "e8512a832480948a2446def359351b20e20e249839de2d797c38a488426876d7",
+      "flavor": "fractional-raw-simple",
+      "mode": "alias",
+      "text": "AB",
+      "replacement": "BA",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "AB",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "4142"
+        },
+        {
+          "text": "AB",
+          "x": 72,
+          "y": 650,
+          "size": 16,
+          "font": "Source",
+          "color": "0.1 0.2 0.7",
+          "encoded": "4142"
+        }
+      ],
+      "sourceProgramSha256": "f505254303293551b9f924993aa2c3c0a2ebdc53d4f006cd172fd39fa3f3c261",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "AB\nAB\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "fractional-raw-simple-clipped.pdf",
+      "sha256": "1959e3d73906c362aecfc4821937cffbf61747022f6b08afd7e575b820e51dff",
+      "flavor": "fractional-raw-simple",
+      "mode": "clipped",
+      "text": "AB",
+      "replacement": "BA",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "AB",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "4142"
+        },
+        {
+          "text": "AB",
+          "x": 72,
+          "y": 650,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "4142"
+        }
+      ],
+      "sourceProgramSha256": "f505254303293551b9f924993aa2c3c0a2ebdc53d4f006cd172fd39fa3f3c261",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "AB\nAB\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "fractional-raw-simple-tagged.pdf",
+      "sha256": "e9fb565da3f06bac6660b55157bebe69f9b0e251719a19bf9f1c5d289ab04c33",
+      "flavor": "fractional-raw-simple",
+      "mode": "tagged",
+      "text": "AB",
+      "replacement": "BA",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "AB",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "4142"
+        },
+        {
+          "text": "AB",
+          "x": 72,
+          "y": 650,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "4142"
+        }
+      ],
+      "sourceProgramSha256": "f505254303293551b9f924993aa2c3c0a2ebdc53d4f006cd172fd39fa3f3c261",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "AB\nAB\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "fractional-raw-simple-occurrences.pdf",
+      "sha256": "857287d294dedf1a4872c8e8dc785de70b1d4df43cba9572c44ba7451a7ea7f5",
+      "flavor": "fractional-raw-simple",
+      "mode": "occurrences",
+      "text": "AB",
+      "replacement": "BA",
+      "pages": 2,
+      "atoms": [
+        {
+          "text": "AB",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "4142"
+        },
+        {
+          "text": "AB",
+          "x": 72,
+          "y": 650,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "4142"
+        }
+      ],
+      "sourceProgramSha256": "f505254303293551b9f924993aa2c3c0a2ebdc53d4f006cd172fd39fa3f3c261",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "AB\nAB\nUnchanged neighbor\n",
+        "AB\nAB\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "fractional-2048-raw-simple-group.pdf",
+      "sha256": "ece321cb5d1b365eb42b26bd41a227af615e245b48cfc844ca07330a0c266707",
+      "flavor": "fractional-2048-raw-simple",
+      "mode": "group",
+      "text": "AB",
+      "replacement": "BA",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "A",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "41"
+        },
+        {
+          "text": "B",
+          "x": 76.401123046875,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "42"
+        }
+      ],
+      "sourceProgramSha256": "5b1cea2befb0e4ef06cd46e280ccf2748233970299020b5dab4ee9fc9fa11f7f",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "AB\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "fractional-2048-raw-simple-uniform.pdf",
+      "sha256": "50316a57358928b49a9bb23ea417943bb2a6c57b8ae7418e49a59ae4f73a1244",
+      "flavor": "fractional-2048-raw-simple",
+      "mode": "uniform",
+      "text": "AB",
+      "replacement": "BA",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "AB",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "4142"
+        },
+        {
+          "text": "AB",
+          "x": 72,
+          "y": 650,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "4142"
+        }
+      ],
+      "sourceProgramSha256": "5b1cea2befb0e4ef06cd46e280ccf2748233970299020b5dab4ee9fc9fa11f7f",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "AB\nAB\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "fractional-2048-raw-simple-styled.pdf",
+      "sha256": "abe4df4971064178d3beec92cb6a08cee6844d03bf81f8a75ee17b2fd9544135",
+      "flavor": "fractional-2048-raw-simple",
+      "mode": "styled",
+      "text": "AB",
+      "replacement": "BA",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "AB",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "4142"
+        },
+        {
+          "text": "AB",
+          "x": 72,
+          "y": 650,
+          "size": 16,
+          "font": "Source",
+          "color": "0.1 0.2 0.7",
+          "encoded": "4142"
+        }
+      ],
+      "sourceProgramSha256": "5b1cea2befb0e4ef06cd46e280ccf2748233970299020b5dab4ee9fc9fa11f7f",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "AB\nAB\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "fractional-2048-raw-simple-mixed.pdf",
+      "sha256": "8425aa9c7db939d098a68fa688ca6353900733f0ad379c9c48c904462ea921ee",
+      "flavor": "fractional-2048-raw-simple",
+      "mode": "mixed",
+      "text": "AB",
+      "replacement": "BA",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "AB",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "4142"
+        },
+        {
+          "text": "AB",
+          "x": 72,
+          "y": 650,
+          "size": 16,
+          "font": "Mixed",
+          "color": "0.1 0.2 0.7",
+          "encoded": "4142"
+        }
+      ],
+      "sourceProgramSha256": "5b1cea2befb0e4ef06cd46e280ccf2748233970299020b5dab4ee9fc9fa11f7f",
+      "additionalProgramSha256": "3fdf69cabf06049ea70a00b5919340e2ce1e6d02b0cc3c4b44fb6801bd1e0d22",
+      "extracted": [
+        "AB\nAB\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "fractional-2048-raw-simple-nested.pdf",
+      "sha256": "f00377269b0cddfa2398c7e3f21aa88dc2330138e50280fc4c6b299ce46a43a1",
+      "flavor": "fractional-2048-raw-simple",
+      "mode": "nested",
+      "text": "AB",
+      "replacement": "BA",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "AB",
+          "x": 5,
+          "y": 70,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "4142"
+        },
+        {
+          "text": "AB",
+          "x": 5,
+          "y": 40,
+          "size": 16,
+          "font": "Source",
+          "color": "0.1 0.2 0.7",
+          "encoded": "4142"
+        }
+      ],
+      "sourceProgramSha256": "5b1cea2befb0e4ef06cd46e280ccf2748233970299020b5dab4ee9fc9fa11f7f",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "AB\nAB\nAB\nAB\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "fractional-2048-raw-simple-alias.pdf",
+      "sha256": "23419da1d54d2e3f5439315e460dc6ff32070d830a101f3488f73c8d966b944f",
+      "flavor": "fractional-2048-raw-simple",
+      "mode": "alias",
+      "text": "AB",
+      "replacement": "BA",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "AB",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "4142"
+        },
+        {
+          "text": "AB",
+          "x": 72,
+          "y": 650,
+          "size": 16,
+          "font": "Source",
+          "color": "0.1 0.2 0.7",
+          "encoded": "4142"
+        }
+      ],
+      "sourceProgramSha256": "5b1cea2befb0e4ef06cd46e280ccf2748233970299020b5dab4ee9fc9fa11f7f",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "AB\nAB\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "fractional-2048-raw-simple-clipped.pdf",
+      "sha256": "25d198083ac194f48f56650659b22490ebe22f17827f792635dae1b4ab991bee",
+      "flavor": "fractional-2048-raw-simple",
+      "mode": "clipped",
+      "text": "AB",
+      "replacement": "BA",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "AB",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "4142"
+        },
+        {
+          "text": "AB",
+          "x": 72,
+          "y": 650,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "4142"
+        }
+      ],
+      "sourceProgramSha256": "5b1cea2befb0e4ef06cd46e280ccf2748233970299020b5dab4ee9fc9fa11f7f",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "AB\nAB\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "fractional-2048-raw-simple-tagged.pdf",
+      "sha256": "ae906907c3d3f2db05aa7b3fc40ef0451d004097a756424cdcef9f13c90f4481",
+      "flavor": "fractional-2048-raw-simple",
+      "mode": "tagged",
+      "text": "AB",
+      "replacement": "BA",
+      "pages": 1,
+      "atoms": [
+        {
+          "text": "AB",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "4142"
+        },
+        {
+          "text": "AB",
+          "x": 72,
+          "y": 650,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "4142"
+        }
+      ],
+      "sourceProgramSha256": "5b1cea2befb0e4ef06cd46e280ccf2748233970299020b5dab4ee9fc9fa11f7f",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "AB\nAB\nUnchanged neighbor\n"
+      ]
+    },
+    {
+      "file": "fractional-2048-raw-simple-occurrences.pdf",
+      "sha256": "b5ec7e329673c7ebcea74d062e1e0f24e6779286cd51f18cce38e6bd021b76cc",
+      "flavor": "fractional-2048-raw-simple",
+      "mode": "occurrences",
+      "text": "AB",
+      "replacement": "BA",
+      "pages": 2,
+      "atoms": [
+        {
+          "text": "AB",
+          "x": 72,
+          "y": 680,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "4142"
+        },
+        {
+          "text": "AB",
+          "x": 72,
+          "y": 650,
+          "size": 18,
+          "font": "Source",
+          "color": "0 0 0",
+          "encoded": "4142"
+        }
+      ],
+      "sourceProgramSha256": "5b1cea2befb0e4ef06cd46e280ccf2748233970299020b5dab4ee9fc9fa11f7f",
+      "additionalProgramSha256": null,
+      "extracted": [
+        "AB\nAB\nUnchanged neighbor\n",
+        "AB\nAB\nUnchanged neighbor\n"
+      ]
+    }
+  ]
+}

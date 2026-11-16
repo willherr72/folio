@@ -77,13 +77,13 @@ pub(super) fn emit_located(prepared:&mut Prepared,layout:&StyledParagraphLayout,
     let mut fragments=Vec::new();
     for fragment in layout.lines.iter().flat_map(|line|&line.runs) {
         let style=&styles[fragment.style_id];let size=style.size;
-        let encoded=style.encode(&fragment.text)?;
+        let encoded=style.encode_at(&fragment.text,fragment.origin)?;
         fragments.extend([
             Operation::new("q",vec![]),Operation::new("BT",vec![]),
             Operation::new("Tf",vec![Object::Name(style.resource_name.clone()),size.into()]),
             Operation::new("Tc",vec![0.into()]),Operation::new("Tw",vec![0.into()]),
             Operation::new("Tz",vec![100.into()]),Operation::new("Ts",vec![0.into()]),Operation::new("Tr",vec![0.into()]),
-            Operation::new("rg",style.color[..3].iter().map(|c|Object::Real(*c as f32/255.)).collect()),
+            Operation::new("rg",style.rgb().into_iter().map(Object::Real).collect()),
             Operation::new("Tm",vec![1.into(),0.into(),0.into(),1.into(),fragment.origin[0].into(),fragment.origin[1].into()]),
             Operation::new("Tj",vec![Object::String(encoded,StringFormat::Hexadecimal)]),
             Operation::new("ET",vec![]),Operation::new("Q",vec![]),
@@ -152,11 +152,17 @@ pub(super) fn verify_fragments(layout:&StyledParagraphLayout,styles:&[ResolvedSt
         }
         let glyphs=&all_glyphs[&actual.index];
         let visible:Vec<_>=glyphs.iter().filter(|g|!g.text.trim().is_empty()).collect();
-        let mut expected_glyphs=Vec::new();let mut x=fragment.origin[0];
-        for ch in fragment.text.chars(){
-            let value=ch.to_string();
-            if !ch.is_whitespace(){expected_glyphs.push((value.clone(),[x,fragment.origin[1]]));}
-            x+=style.advance(ch)?;
+        let mut expected_glyphs=Vec::new();
+        if let Some(plan)=style.fragment(&fragment.text,fragment.origin)?{
+            let source=source_values.get(&actual.index).ok_or_else(||invalid("Missing independent saved glyph operands."))?;
+            if positioned_text::encoded(actual,source)?!=plan.bytes{return Err(invalid("The saved paragraph glyph codes changed."));}
+            for (text,origin,_) in &plan.glyphs{for ch in text.chars(){if !ch.is_whitespace(){expected_glyphs.push((ch.to_string(),*origin));}}}
+        }else{
+            let mut x=fragment.origin[0];
+            for ch in fragment.text.chars(){
+                if !ch.is_whitespace(){expected_glyphs.push((ch.to_string(),[x,fragment.origin[1]]));}
+                x+=style.advance(ch)?;
+            }
         }
         if visible.len()!=expected_glyphs.len()||!visible.iter().zip(&expected_glyphs).all(|(a,b)|a.text==b.0&&close_values(&a.position[..2],&b.1)) {
             return Err(invalid("The styled paragraph could not preserve its glyph positions."));
@@ -172,6 +178,26 @@ pub(super) fn verify_fragments(layout:&StyledParagraphLayout,styles:&[ResolvedSt
 impl WorkerRuntime {
     pub(in crate::engine) fn preview_styled_paragraph(&mut self,source_id:&str,page_index:usize,request:&StyledParagraphLayoutRequest)->EngineResult<DocumentInfo> {
         let ResolvedPlan{mut prepared,original,layout,mut styles}=self.prepare_styled_paragraph(source_id,page_index,request)?;
+        // A genuinely unchanged source paragraph retains its actual TJ offsets.
+        // Match every authored setting against fresh inspection; changing text,
+        // frame, baseline, attribution or fonts must use normal validated reflow.
+        if prepared.before.iter().any(|r|prepared.selection.object_indices.contains(&r.index)&&r.source_encoding.as_ref().is_some_and(|b|b.encoded().uses_sequences()))
+            &&prepared.removals.iter().any(|(op,_)|prepared.content.operations[*op].operator=="TJ")
+            &&styled_paragraph_plan::same_exact_attribution(&prepared,&request.runs,&styles)
+            &&request.baseline_anchor==prepared.baseline_anchor()
+            &&request.alignment==prepared.selection.alignment.unwrap_or(ParagraphAlignment::Left)
+            &&request.line_spacing==prepared.selection.line_spacing.unwrap_or(1.2) {
+            let bounds=if prepared.remembered{prepared.selection.bounds.clone()}else{self.initial_styled_area(source_id,page_index,&prepared)?.unwrap_or_else(||prepared.selection.bounds.clone())};
+            if request.bounds==bounds {
+                let copy=self.editable_page_copy(source_id,page_index)?;
+                let bytes:Arc<[u8]>=copy.save_to_bytes()?.into();
+                let bytes=self.preserve_text_edit_comments(source_id,page_index,bytes)?;
+                let document=self.pdfium.load_pdf_from_reader(Cursor::new(bytes.clone()),None)?;
+                if original!=raster(&document.pages().get(0)?)?{return Err(invalid("An unchanged paragraph could not preserve its original appearance."));}
+                return self.retain_styled_candidate(source_id,page_index,bytes,document);
+            }
+        }
+
         let geometry=prepared.geometry;let page_size=geometry.displayed_size();let new_bounds=layout.pdf_bounds;
         let mut changed_area=new_bounds;
         for mark in &prepared.highlight_sources {let r=mark.rectangle.bounds;changed_area=[changed_area[0].min(r[0]),changed_area[1].min(r[1]),changed_area[2].max(r[2]),changed_area[3].max(r[3])];}
@@ -218,6 +244,10 @@ impl WorkerRuntime {
                 }
             }
         }
+        self.retain_styled_candidate(source_id,page_index,bytes,document)
+    }
+    fn retain_styled_candidate(&mut self,source_id:&str,page_index:usize,bytes:Arc<[u8]>,document:PdfDocument<'static>)->EngineResult<DocumentInfo> {
+        let page_size=page_geometry(&document.pages().get(0)?)?.displayed_size();
         let source=self.editing_document(source_id)?;let path=source.path.clone();let original_path=source.original_path.clone();
         let policy=source.policy.as_ref().map(|p|p.page(page_index)).transpose()?;let protection=policy.as_ref().map(SourcePolicy::info);
         let name=path.file_name().and_then(|n|n.to_str()).unwrap_or("document.pdf").to_string();let id=Uuid::new_v4().to_string();
@@ -226,4 +256,5 @@ impl WorkerRuntime {
             path,original_path,document: native_residency::ResidentDocument::new(document, self.pdfium, retained.clone()),imported_overlay_sources:imported_overlay_sources::Index::unbound(retained.identity().clone()),source_bytes:retained,for_printing:false,print_max_dpi:None,policy,text_edit_restriction:OnceLock::new(),bookmarks:OnceLock::new()});
         Ok(DocumentInfo{id,name,pages:vec![page_size],bookmarks:vec![],bookmark_error:None,protection})
     }
+
 }

@@ -38,6 +38,22 @@ def verify_package(root: Path,archive: Path,expected_version=None):
     fingerprint=hashlib.sha256(json.dumps(manifest['files'],sort_keys=True,separators=(',',':')).encode()).hexdigest()
     require(fingerprint==manifest['fingerprint']==info['sourceFingerprint'],'Package source fingerprint differs')
     require(manifest['files'].get('src-tauri/resources/pdfium/pdfium.dll')==info['pdfiumSha256'],'Renderer differs from source fingerprint')
+    selection_patch='patches/pdfium/list-selection-state.patch'
+    if selection_patch in manifest['files']:
+        recipe_files={'resources/pdfium/list-selection-state.patch':selection_patch,
+            'resources/pdfium/source-lock.json':'scripts/pdfium-source-lock.json',
+            'resources/pdfium/provenance.json':'src-tauri/resources/pdfium/provenance.json'}
+        for packaged,source in recipe_files.items():
+            require((root/packaged).is_file(),'Renderer recipe missing: '+packaged)
+            require(sha256(root/packaged)==manifest['files'].get(source),'Renderer recipe differs: '+packaged)
+        provenance=read_json(root/'resources/pdfium/provenance.json')
+        lock=read_json(root/'resources/pdfium/source-lock.json')
+        require(provenance.get('dllSha256')==info['pdfiumSha256'] and
+                provenance.get('sourceLockSha256')==manifest['files'].get('scripts/pdfium-source-lock.json') and
+                provenance.get('variant')==lock.get('variant')==info.get('pdfiumVariant') and
+                provenance.get('listSelectionPatchSha256')==lock.get('listSelectionPatchSha256')==
+                    info.get('pdfiumListSelectionPatchSha256')==manifest['files'][selection_patch],
+                'Renderer recipe differs from build provenance')
     digest=sha256(archive)
     checksum=Path(str(archive)+'.sha256').read_text(encoding='utf-8-sig').split()
     require(bool(checksum) and checksum[0]==digest,'Archive checksum differs')

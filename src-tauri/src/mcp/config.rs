@@ -1,23 +1,46 @@
 use crate::automation::text_preview::{valid_hash, FileProof};
 use crate::automation::font_inputs::{FontInputs, MAX_FILES};
+use sha2::{Digest,Sha256};
 use std::{
     ffi::OsString,
     fs::{File, OpenOptions},
     io::{self, Read},
-    path::PathBuf,
+    path::{Path,PathBuf},
+    sync::Arc,
 };
 use tempfile::{NamedTempFile, TempDir};
 
 const MAX_INPUT_BYTES: u64 = 512 * 1024 * 1024;
+pub(super) type Credential=Option<Arc<crate::private_storage::Sensitive>>;
+pub(super) fn verified_candidate(path:&Path,proof:&FileProof,delete_on_close:bool)->Result<File,&'static str>{
+    let bad="Cannot validate the worker's immutable document snapshot.";
+    if proof.bytes==0||proof.bytes>MAX_INPUT_BYTES||!valid_hash(&proof.sha256){return Err(bad);}
+    let meta=std::fs::symlink_metadata(path).map_err(|_|bad)?;
+    if !meta.is_file()||meta.file_type().is_symlink()||meta.len()!=proof.bytes{return Err(bad);}
+    let mut options=OpenOptions::new();options.read(true).write(true);
+    #[cfg(windows)]{
+        use std::os::windows::fs::OpenOptionsExt;
+        use windows_sys::Win32::Storage::FileSystem::{FILE_FLAG_DELETE_ON_CLOSE,FILE_FLAG_OPEN_REPARSE_POINT,FILE_SHARE_READ};
+        options.share_mode(FILE_SHARE_READ).custom_flags(FILE_FLAG_OPEN_REPARSE_POINT|if delete_on_close{FILE_FLAG_DELETE_ON_CLOSE}else{0});
+    }
+    #[cfg(not(windows))]let _=delete_on_close;
+    let mut file=options.open(path).map_err(|_|bad)?;let meta=file.metadata().map_err(|_|bad)?;
+    if !meta.is_file()||meta.file_type().is_symlink()||meta.len()!=proof.bytes{return Err(bad);}
+    let mut digest=Sha256::new();let mut count=0u64;let mut chunk=[0u8;32768];
+    loop{let n=file.read(&mut chunk).map_err(|_|bad)?;if n==0{break;}count=count.checked_add(n as u64).filter(|n|*n<=MAX_INPUT_BYTES).ok_or(bad)?;digest.update(&chunk[..n]);}
+    let actual:String=digest.finalize().iter().map(|b|format!("{b:02x}")).collect();
+    if count!=proof.bytes||actual!=proof.sha256{return Err(bad);}Ok(file)
+}
 pub(super) struct Document {
     pub id: String,
     pub name: String,
     pub path: PathBuf,
     pub bytes: u64,
+    pub credential:Credential,
     _snapshot: Snapshot,
 }
 enum Snapshot {
-    Launch { _file: NamedTempFile },
+    Launch { _file: Arc<NamedTempFile> },
     // Close the delete-on-close file before trying to remove its enclosing folder.
     Derived { _file: File, _directory: TempDir },
 }
@@ -33,7 +56,7 @@ impl Config {
     pub fn load(args: Vec<OsString>) -> Result<Self, &'static str> {
         let mut inputs = Vec::new();
         let mut font_paths=Vec::new();
-        let (mut output, mut engine) = (None, None);
+        let (mut output, mut engine,mut credential_file) = (None, None,None);
         let mut args = args.into_iter();
         while let Some(flag) = args.next() {
             let value = args
@@ -45,12 +68,18 @@ impl Config {
                 Some("--font") if font_paths.len()<MAX_FILES => font_paths.push(PathBuf::from(value)),
                 Some("--out-dir") if output.is_none() => output = Some(PathBuf::from(value)),
                 Some("--engine") if engine.is_none() => engine = Some(PathBuf::from(value)),
+                Some("--credentials") if credential_file.is_none()=>credential_file=Some(PathBuf::from(value)),
                 _ => return Err("Unknown, duplicate or excessive MCP option. See mcp --help."),
             }
         }
         if inputs.is_empty() {
             return Err("Specify 1 to 64 input PDFs with --input.");
         }
+        let credentials=if let Some(path)=credential_file{
+            let file=File::open(path).map_err(|_|"Cannot open launch credentials.")?;
+            if !file.metadata().map_err(|_|"Cannot inspect launch credentials.")?.is_file(){return Err("Launch credentials must be a regular bounded JSON file.");}
+            crate::automation::credentials::Credentials::read(file,inputs.len())?
+        }else{crate::automation::credentials::Credentials::none(inputs.len())};
         let output = output
             .ok_or("Specify an existing output folder with --out-dir.")?
             .canonicalize()
@@ -69,20 +98,28 @@ impl Config {
         let executable =
             std::env::current_exe().map_err(|_| "Cannot locate the Folio executable.")?;
         let fonts=FontInputs::load(&font_paths).map_err(|_|"Cannot load configured fonts. Supply supported standalone fonts, at most16 MiB each and64 MiB total; use the fonts command to validate them.")?;
-        let mut documents = Vec::new();
+        let mut documents:Vec<Document> = Vec::new();
+        let mut identities:Vec<(same_file::Handle,usize)>=Vec::new();
         let mut remaining = MAX_INPUT_BYTES;
         for (index, input) in inputs.iter().enumerate() {
-            let source = File::open(input).map_err(|_| "Cannot open a configured input file.")?;
+            let mut source = File::open(input).map_err(|_| "Cannot open a configured input file.")?;
+            let identity=same_file::Handle::from_file(source.try_clone().map_err(|_|"Cannot identify a configured input.")?).map_err(|_|"Cannot identify a configured input.")?;
             let metadata = source
                 .metadata()
                 .map_err(|_| "Cannot inspect a configured input file.")?;
-            if !metadata.is_file() || metadata.len() > remaining {
+            if !metadata.is_file() ||metadata.len()==0|| metadata.len() > remaining {
                 return Err("Inputs must be regular files totaling at most 512 MiB.");
             }
-            let mut destination = snapshot().map_err(|_| "Cannot create an input snapshot.")?;
-            let path = destination.path().to_owned();
-            let bytes = io::copy(&mut source.take(remaining + 1), destination.as_file_mut())
-                .map_err(|_| "Cannot copy a configured input file.")?;
+            let (destination,bytes)=if let Some((_,first))=identities.iter().find(|(id,_)|*id==identity){
+                if credentials.get(index)!=credentials.get(*first){return Err("Aliased inputs must have identical launch credentials.");}
+                let Snapshot::Launch{_file}= &documents[*first]._snapshot else{unreachable!()};(_file.clone(),documents[*first].bytes)
+            }else{
+                let mut destination = snapshot().map_err(|_| "Cannot create an input snapshot.")?;
+                let bytes=crate::automation::copy_stable_file(&mut source,destination.as_file_mut(),metadata.len(),remaining).map_err(|_|"Cannot copy a configured input file or its size changed during capture.")?.bytes;
+                destination.as_file().sync_all().map_err(|_|"Cannot synchronize an input snapshot.")?;
+                identities.push((identity,index));(Arc::new(destination),bytes)
+            };
+            let path=destination.path().to_owned();
             if bytes > remaining {
                 return Err("Inputs exceed the 512 MiB snapshot limit.");
             }
@@ -97,6 +134,7 @@ impl Config {
                 name,
                 path,
                 bytes,
+                credential:credentials.secret(index),
                 _snapshot: Snapshot::Launch { _file: destination },
             });
         }
@@ -130,39 +168,30 @@ impl Config {
         directory: TempDir,
         proof: &FileProof,
     ) -> Result<serde_json::Value, &'static str> {
+        self.adopt_checked(directory,proof,|_|Ok(()))
+    }
+    pub fn adopt_checked(&mut self,directory:TempDir,proof:&FileProof,check:impl FnOnce(&mut serde_json::Value)->Result<(),&'static str>)->Result<serde_json::Value,&'static str>{
+        self.adopt_authenticated_checked(directory,proof,None,check)
+    }
+    pub fn adopt_authenticated(&mut self,directory:TempDir,proof:&FileProof,credential:Credential)->Result<serde_json::Value,&'static str>{
+        self.adopt_authenticated_checked(directory,proof,credential,|_|Ok(()))
+    }
+    pub fn adopt_authenticated_checked(&mut self,directory:TempDir,proof:&FileProof,credential:Credential,check:impl FnOnce(&mut serde_json::Value)->Result<(),&'static str>)->Result<serde_json::Value,&'static str>{
         if !self.can_add(proof.bytes) {
             return Err("Session document storage is full. Close an unused document before applying this preview.");
         }
-        let bad = "Cannot adopt the worker's private document snapshot.";
-        if !valid_hash(&proof.sha256) {
-            return Err(bad);
-        }
         let path = directory.path().join("Edited.pdf");
-        let meta = std::fs::symlink_metadata(&path).map_err(|_| bad)?;
-        if !meta.is_file() || meta.file_type().is_symlink() || meta.len() != proof.bytes {
-            return Err(bad);
-        }
-        let mut options = OpenOptions::new();
-        options.read(true).write(true);
-        #[cfg(windows)]
-        {
-            use std::os::windows::fs::OpenOptionsExt;
-            use windows_sys::Win32::Storage::FileSystem::FILE_FLAG_DELETE_ON_CLOSE;
-            options.custom_flags(FILE_FLAG_DELETE_ON_CLOSE);
-        }
-        let file = options.open(&path).map_err(|_| bad)?;
-        let meta = file.metadata().map_err(|_| bad)?;
-        if !meta.is_file() || meta.len() != proof.bytes {
-            return Err(bad);
-        }
+        let file=verified_candidate(&path,proof,true)?;
         let id = format!("document-{}", self.next_document_id);
         let name = format!("Edited-{}.pdf", self.next_document_id);
-        let reply = serde_json::json!({"documentId":id,"name":name,"bytes":proof.bytes,"sha256":proof.sha256});
+        let mut reply = serde_json::json!({"documentId":id,"name":name,"bytes":proof.bytes,"sha256":proof.sha256});
+        check(&mut reply)?;
         self.documents.push(Document {
             id,
             name,
             path,
             bytes: proof.bytes,
+            credential,
             _snapshot: Snapshot::Derived {
                 _file: file,
                 _directory: directory,
@@ -180,6 +209,20 @@ impl Config {
 #[cfg(test)]
 mod tests {
     use super::*;
+    fn rejects_changed_launch(after_read:bool,grow:bool){
+        use std::io::{Seek,SeekFrom,Write};
+        let dir=tempfile::tempdir().unwrap();let path=dir.path().join("source.pdf");std::fs::write(&path,vec![b'a';64]).unwrap();
+        let mut writer=std::fs::OpenOptions::new().read(true).write(true).open(&path).unwrap();
+        crate::automation::install_capture_hook_for_test(after_read,move||{
+            if grow{writer.seek(SeekFrom::End(0)).unwrap();writer.write_all(b"appended update").unwrap();}else{writer.set_len(8).unwrap();}writer.sync_all().unwrap();
+        });
+        let args=vec!["--input".into(),path.into_os_string(),"--out-dir".into(),dir.path().as_os_str().to_owned()];
+        assert!(Config::load(args).is_err(),"Observed launch source size changes must refuse below the aggregate budget");
+    }
+    #[test]fn capture_rejects_observed_mcp_growth_before_read(){rejects_changed_launch(false,true)}
+    #[test]fn capture_rejects_observed_mcp_shrink_before_read(){rejects_changed_launch(false,false)}
+    #[test]fn capture_rejects_observed_mcp_growth_after_read(){rejects_changed_launch(true,true)}
+    #[test]fn capture_rejects_observed_mcp_shrink_after_read(){rejects_changed_launch(true,false)}
     #[cfg(windows)]
     #[test]
     fn font_snapshot_exit_helper() {
@@ -215,6 +258,14 @@ mod tests {
         .unwrap();
         (dir, config)
     }
+    #[test]
+    fn credential_aliases_share_snapshot_and_reject_conflicting_capabilities(){
+        let dir=tempfile::tempdir().unwrap();let source=dir.path().join("source.pdf");std::fs::write(&source,b"source bytes").unwrap();let alias=dir.path().join("alias.pdf");std::fs::hard_link(&source,&alias).unwrap();let file=dir.path().join("credentials.json");
+        let args=vec!["--input".into(),source.as_os_str().to_owned(),"--input".into(),alias.as_os_str().to_owned(),"--out-dir".into(),dir.path().as_os_str().to_owned(),"--credentials".into(),file.as_os_str().to_owned()];
+        std::fs::write(&file,br#"[null,"reader"]"#).unwrap();assert!(Config::load(args.clone()).is_err());
+        std::fs::write(&file,br#"["reader","reader"]"#).unwrap();let mut config=Config::load(args).unwrap();let snapshot=config.documents[0].path.clone();assert_eq!(snapshot,config.documents[1].path);assert!(!config.list().to_string().contains("reader"));
+        config.close(0).unwrap();assert!(snapshot.exists());config.close(0).unwrap();assert!(!snapshot.exists());assert_eq!(std::fs::read(source).unwrap(),b"source bytes");
+    }
     fn stage() -> (TempDir, FileProof) {
         let dir = tempfile::tempdir().unwrap();
         std::fs::write(dir.path().join("Edited.pdf"), b"result").unwrap();
@@ -222,9 +273,42 @@ mod tests {
             dir,
             FileProof {
                 bytes: 6,
-                sha256: "a".repeat(64),
+                sha256: Sha256::digest(b"result").iter().map(|b|format!("{b:02x}")).collect(),
             },
         )
+    }
+    #[test]
+    fn page_organization_rejects_wrong_candidate_hash_without_adding_document() {
+        let (_dir,mut config)=config();let (dir,mut proof)=stage();proof.sha256="a".repeat(64);let path=dir.path().to_owned();
+        assert!(config.adopt(dir,&proof).is_err(),"A valid-looking wrong hash must not authorize a new document");
+        assert_eq!(config.documents.len(),1);assert!(!path.exists());
+    }
+    #[test]
+    fn page_organization_rejects_same_size_candidate_corruption() {
+        use sha2::{Digest,Sha256};
+        let (_dir,mut config)=config();let (dir,mut proof)=stage();
+        proof.sha256=Sha256::digest(b"result").iter().map(|b|format!("{b:02x}")).collect();
+        std::fs::write(dir.path().join("Edited.pdf"),b"RESULT").unwrap();let path=dir.path().to_owned();
+        assert!(config.adopt(dir,&proof).is_err(),"Matching length is insufficient after the candidate bytes change");
+        assert_eq!(config.documents.len(),1);assert!(!path.exists());
+    }
+    #[cfg(windows)]
+    #[test]
+    fn page_organization_derived_snapshot_denies_mutation_until_close() {
+        use sha2::{Digest,Sha256};
+        let (_dir,mut config)=config();let (dir,mut proof)=stage();
+        proof.sha256=Sha256::digest(b"result").iter().map(|b|format!("{b:02x}")).collect();
+        config.adopt(dir,&proof).unwrap();let path=config.documents[1].path.clone();
+        assert_eq!(std::fs::read(&path).unwrap(),b"result");
+        assert!(std::fs::OpenOptions::new().write(true).open(&path).is_err(),"An adopted immutable source must deny other writers");
+        config.close(1).unwrap();assert!(!path.exists());
+    }
+    #[test]
+    fn page_organization_rejected_reply_does_not_adopt_or_consume_capacity() {
+        let (_dir,mut config)=config();let (dir,proof)=stage();let path=dir.path().to_owned();
+        assert!(config.adopt_checked(dir,&proof,|_|Err("response rejected")).is_err());
+        assert_eq!(config.documents.len(),1);assert!(!path.exists());
+        let (dir,proof)=stage();let accepted=config.adopt(dir,&proof).unwrap();assert_eq!(accepted["documentId"],"document-2");
     }
     #[test]
     fn capacity_is_charged_and_recovered_without_reusing_ids() {

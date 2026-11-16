@@ -1,5 +1,5 @@
 {
-  "variant": "folio-text-state-advances-colors-form-fonts-borders-separators-v7",
+  "variant": "folio-text-state-advances-colors-form-fonts-borders-separators-selection-v8",
   "patch": "patches/pdfium/form-text-state-inheritance.patch",
   "patchSha256": "e2836d7e02da85c7bdee486ea8e416e51dff38039b37b19f2834fe9a8d36acf1",
   "repositories": {
@@ -69,7 +69,7 @@
     "fpdfsdk/cpdfsdk_baannot.cpp": "a67d5850e7ae97d33ced86a3186670a121e01efb26512aef2d3f2c8057a223d0",
     "fpdfsdk/pwl/cpwl_wnd.h": "3b63fcf5fcb6829ca44a20426822f53e39115b41838a4ce3870bb9be34c3806b",
     "fpdfsdk/pwl/cpwl_wnd.cpp": "7b329ad188bc3e0bf91ed154984e8103a3a94634df447ded6807c5f6c57b9f33",
-    "fpdfsdk/cpdfsdk_appstream.cpp": "a3c2f0878e7d2c06b1f85c91e85a9758af8f390470db248d51b1bf28c216c8ee",
+    "fpdfsdk/cpdfsdk_appstream.cpp": "a716331d87db3e857255a430ce81dc5f7e8fd8222b49a935aa13a17968e75e94",
     "core/fpdftext/cpdf_textpage.cpp": "a64a3ad6fbff5a51f9104822d4eb1ca59c33bf647ef4da589da561a57a3ac568"
   },
   "gnArgs": {
@@ -139,5 +139,8 @@
   "borderPatchSha256": "a793d9382144716899a9966f85c723ed644a00445874f5a117e2d18f6e157f79",
   "separatorPatch": "patches/pdfium/form-separator-coordinates.patch",
   "separatorPatchSha256": "d9fa37ecf2dc0810f57f49d9c4a5798b23fd2d683247507c80eca30e94de6c54",
-  "separatorProbeSha256": "9349a13a9a3e5d71b7d6c0b41b51fb92d9f207eab157e9be4c2ceb2cbcb7501c"
+  "separatorProbeSha256": "9349a13a9a3e5d71b7d6c0b41b51fb92d9f207eab157e9be4c2ceb2cbcb7501c",
+  "listSelectionPatch": "patches/pdfium/list-selection-state.patch",
+  "listSelectionPatchSha256": "4034080c7d9c76439169a48e5904129953c1677cc2ef8da1ac767c246882ac1e",
+  "listSelectionProbeSha256": "5dc73343339b036e05336a100130082a990a14855280a294e31294d86c6d6ea7"
 }

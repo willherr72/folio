@@ -206,8 +206,7 @@ fn bind(m: &mut Mapped, ordinal: usize, selected: &RunSnapshot) -> EngineResult<
             }
         }
         ("TJ", [Object::Array(values)]) => {
-            let bounds =
-                text_show::boundaries(&selected.text, |ch| positioned_text::encoded(selected, ch))?;
+            let bounds = positioned_text::boundaries(selected,&selected.text)?;
             text_show::validate_segments(values, &encoded, &bounds)?;
         }
         _ => return Err(bad()),
@@ -273,6 +272,7 @@ fn numeric(value: f64) -> EngineResult<Object> {
     Ok(Object::Real(value as f32))
 }
 fn source_width(run: &RunSnapshot, text: &str) -> EngineResult<f64> {
+    if let Some(bound)=&run.source_encoding {return bound.replace(text).map(|text|f64::from(text.advance())).map_err(invalid);}
     if let Some(proof) = &run.proof {
         return Ok(f64::from(proof.advance(text)?));
     }
@@ -327,8 +327,10 @@ pub(super) struct Plan {
     candidate: Arc<Vec<Operation>>,
     ordinal: usize,
     bytes: Vec<u8>,
+    cursor_font_name: Option<String>,
 }
 impl Plan {
+    pub(super) fn cursor_font_name(&self) -> Option<&str> {self.cursor_font_name.as_deref()}
     pub(super) fn matches_source(&self, ops: &[Operation], ordinal: usize) -> bool {
         self.ordinal == ordinal && equal(&self.source, ops)
     }
@@ -348,12 +350,12 @@ impl Plan {
     ) -> EngineResult<Self> {
         // Outer context planning runs before the transaction's public checks.
         // Bound the input here as well, before mapping or embedded encoding.
-        if !embedded_font::latin(replacement) {
+        if !selected.allows_source_text(replacement) {
             return Err(bad());
         }
         let mut m = map(bytes, selected, runs, FontMode::Original)?;
         let source = Arc::new(m.ops.clone());
-        let original_font = m.state.font.as_ref().ok_or_else(bad)?;
+        let original_font = m.state.font.as_ref().ok_or_else(bad)?.clone();
         let size = number(&original_font[1])?;
         let encoded = positioned_text::encoded(selected, replacement)?;
         let old = m.ops[m.index].clone();
@@ -367,23 +369,16 @@ impl Plan {
             }
             ("TJ", [Object::Array(values)]) => {
                 let old_gaps = gaps(values)?;
-                *values = text_show::rewrite_array(
-                    values,
-                    &m.encoded,
-                    &encoded,
-                    &text_show::boundaries(&selected.text, |ch| {
-                        positioned_text::encoded(selected, ch)
-                    })?,
-                    &text_show::boundaries(replacement, |ch| {
-                        positioned_text::encoded(selected, ch)
-                    })?,
-                    replacement == selected.text,
-                )?;
+                *values = positioned_text::rewrite(selected,values,&m.encoded,&encoded,replacement)?;
                 (old_gaps, gaps(values)?)
             }
             _ => return Err(bad()),
         };
         let end = m.index + 1;
+        let source_resource=m.fonts.get(original_font[0].as_name().map_err(|_|bad())?).map_err(|_|bad())?.clone();
+        let cursor=if replacement!=selected.text&&depends(&m.ops[end..]) {
+            cursor_font::prepare(&m.pdf,&source_resource,selected,&m.encoded,&encoded,replacement,None)?
+        }else{None};
         let correction = if replacement != selected.text && depends(&m.ops[end..]) {
             // Tw applies to encoded single-byte code32, never a byte inside a
             // multibyte code. The original font/encoding remain unchanged.
@@ -393,11 +388,13 @@ impl Plan {
             } else {
                 0.
             };
-            let chars = replacement.chars().count() as f64 - selected.text.chars().count() as f64;
+            let chars = positioned_text::glyph_count(selected,replacement)? as f64 - positioned_text::glyph_count(selected,&selected.text)? as f64;
             let spacing = chars * f64::from(m.state.character) + spaces * f64::from(m.state.word);
-            (source_width(selected, replacement)? - source_width(selected, &selected.text)?
-                + spacing / f64::from(size))
-                * 1000.
+            let width_delta=if let Some(cursor)=&cursor {cursor.width_delta}else{
+                (source_width(selected,replacement)?-source_width(selected,&selected.text)?)*1000.
+            };
+            width_delta
+                + spacing / f64::from(size) * 1000.
                 - new_gaps
                 + old_gaps
         } else {
@@ -420,6 +417,18 @@ impl Plan {
                     Operation::new("TJ", vec![Object::Array(vec![numeric(correction)?])]),
                 );
             }
+        }
+        let cursor_font_name=cursor.as_ref().and_then(|c|c.name.clone());
+        if let Some(cursor)=cursor.as_ref().filter(|c|c.name.is_some()) {
+            let resource=cursor.install(&mut m.pdf,&source_resource)?;
+            let mut alias=b"FolioCursorFont".to_vec();
+            while m.fonts.has(&alias){alias.push(b'_');if alias.len()>1024{return Err(bad());}}
+            m.fonts.set(alias.clone(),resource);
+            m.ops.insert(m.index,Operation::new("Tf",vec![Object::Name(alias),original_font[1].clone()]));
+            let restore=if m.ops.get(m.index+2).is_some_and(positioned_text::cursor_only){m.index+3}else{m.index+2};
+            m.ops.insert(restore,Operation::new("Tf",original_font));
+            m.resources.set("Font",m.fonts.clone());
+            m.pdf.get_dictionary_mut(m.page).map_err(|_|bad())?.set("Resources",m.resources.clone());
         }
         if m.ops.len() > 100_000 {
             return Err(bad());
@@ -448,6 +457,7 @@ impl Plan {
             candidate,
             ordinal: m.ordinal,
             bytes,
+            cursor_font_name,
         })
     }
     pub(super) fn prepare(
@@ -458,7 +468,7 @@ impl Plan {
         asset: &FontAsset,
     ) -> EngineResult<Self> {
         asset.validate_text(replacement)?;
-        if !embedded_font::latin(replacement) {
+        if !embedded_font::unshaped(replacement) {
             return Err(bad());
         }
         let mut m = map(bytes, selected, runs, FontMode::Substitute)?;
@@ -476,18 +486,25 @@ impl Plan {
             ("Tj" | "'", [v]) | ("\"", [_, _, v]) => vec![v.clone()],
             _ => return Err(bad()),
         };
-        let old_boundaries =
-            text_show::boundaries(&selected.text, |ch| positioned_text::encoded(selected, ch))?;
+        let old_boundaries = positioned_text::boundaries(selected,&selected.text)?;
         let new_boundaries = text_show::boundaries(replacement, |ch| Ok(utf16(ch)))?;
         let encoded = utf16(replacement);
-        let values = text_show::rewrite_array(
+        let source_resource=m.fonts.get(original_font[0].as_name().map_err(|_|bad())?).map_err(|_|bad())?.clone();
+        let cursor=if depends(&m.ops[m.index+1..]) {
+            cursor_font::prepare(&m.pdf,&source_resource,selected,&m.encoded,&encoded,replacement,Some((asset,cursor_font::AssetWidths::Integral)))?
+        }else{None};
+        let values = if selected.source_encoding.is_some() {text_show::rewrite_clusters(
+            &old_values,&m.encoded,&encoded,&old_boundaries,&new_boundaries,
+            &positioned_text::logical_boundaries(selected,&selected.text)?,
+            &(0..=replacement.chars().count()).collect::<Vec<_>>(),replacement==selected.text,
+        )?}else{text_show::rewrite_array(
             &old_values,
             &m.encoded,
             &encoded,
             &old_boundaries,
             &new_boundaries,
             replacement == selected.text,
-        )?;
+        )?};
         let single_byte = selected
             .proof
             .as_ref()
@@ -522,7 +539,8 @@ impl Plan {
                 break;
             }
         }
-        let alias = if let Some(name) = reuse {
+        let reused=reuse.is_some();
+        let mut alias = if let Some(name) = reuse {
             name
         } else {
             let mut name = b"FolioReplacement".to_vec();
@@ -536,6 +554,16 @@ impl Plan {
             m.fonts.set(name.clone(), font);
             name
         };
+        let cursor_font_name=cursor.as_ref().and_then(|c|c.name.clone());
+        if let Some(cursor)=cursor.as_ref().filter(|c|c.name.is_some()) {
+            let target=m.fonts.get(&alias).map_err(|_|bad())?.clone();
+            let adjusted=cursor.install(&mut m.pdf,&target)?;
+            if reused {
+                alias=b"FolioCursorFont".to_vec();
+                while m.fonts.has(&alias){alias.push(b'_');if alias.len()>1024{return Err(bad());}}
+            }
+            m.fonts.set(alias.clone(),adjusted);
+        }
         let mut block = Vec::new();
         if old.operator == "\"" {
             block.push(Operation::new("Tw", vec![old.operands[0].clone()]));
@@ -556,11 +584,14 @@ impl Plan {
                 .try_fold(0f64, |sum, ch| -> EngineResult<f64> {
                     Ok(sum + f64::from((asset.advance(ch)? * 1000.).round() / 1000.))
                 })?;
-            let chars = replacement.chars().count() as f64 - selected.text.chars().count() as f64;
+            let chars = replacement.chars().count() as f64 - positioned_text::glyph_count(selected,&selected.text)? as f64;
             let spacing =
                 chars * f64::from(m.state.character) - old_spaces as f64 * f64::from(m.state.word);
-            (new_width - source_width(selected, &selected.text)? + spacing / f64::from(size))
-                * 1000.
+            let width_delta=if let Some(cursor)=&cursor {cursor.width_delta}else{
+                (new_width-source_width(selected,&selected.text)?)*1000.
+            };
+            width_delta
+                + spacing / f64::from(size) * 1000.
                 - gaps(&values)?
                 + gaps(&old_values)?
         } else {
@@ -627,6 +658,7 @@ impl Plan {
             candidate,
             ordinal: m.ordinal,
             bytes,
+            cursor_font_name,
         })
     }
 }

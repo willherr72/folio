@@ -4,6 +4,7 @@ import {paragraphRasterWidth,type ParagraphCanvasPresentation} from "../editor/p
 import {paragraphReadAdapter,previewStyledParagraph,type ParagraphOccurrence,type ParagraphPreview} from "../editor/paragraph-transaction";
 import {useEffect,useMemo,useId,useRef,useState} from "react";
 import type {FolioAdapter} from "../editor/adapter";
+import {applyAutomaticParagraphFit,fitEditedParagraphDraft} from "../editor/paragraph-draft-fit";
 import type {PreparedParagraphDraft} from "../editor/paragraph-draft";
 import type {AnnotationRect,DocumentInfo,PageContentReplacement,EditableTextRun,Overlay,ParagraphAlignment,StyledParagraphSelection} from "../editor/types";
 import {createStyledEditor,editStyledEditor,redoStyledEditor,styledEditorFontIds,styledEditorRequest,undoStyledEditor,type StyledEditorState,type StyledEditorTransaction} from "../editor/styled-paragraph-editor";
@@ -12,7 +13,7 @@ import {customTextError,holdCustomFont,type FontInfo} from "../editor/custom-fon
 import {MAX_PARAGRAPH_PIECES,NO_PARAGRAPH_OVERLAYS,renderParagraphPage,validParagraphBounds} from "../editor/paragraph-preview";
 import {Modal} from "./Modal";
 import {ParagraphPagePreview} from "./ParagraphPagePreview";
-import {StyledParagraphInput} from "./StyledParagraphInput";
+import {ParagraphTextEditor} from "./ParagraphTextEditor";
 import {FontPicker} from "./FontPicker";
 import "./existing-text.css";
 
@@ -52,6 +53,8 @@ export function StyledParagraphDialog({adapter:baseAdapter,occurrence,canvas,sou
  const [editor,setEditor]=useState<StyledEditorState|null>(null),[loading,setLoading]=useState(true),[adjusting,setAdjusting]=useState(false);
  const [operationWorking,setWorking]=useState(false),[dragging,setDragging]=useState(false),[error,setError]=useState<string|null>(null);
  const [fitNotice,setFitNotice]=useState<string|null>(null);
+ const [provisionalInput,setProvisionalInput]=useState(false);
+ const [automaticFit,setAutomaticFit]=useState(true),automaticFitEnabled=useRef(true),needsAutomaticFit=useRef(false);
  const [preview,setPreview]=useState<Candidate|null>(null),[picker,setPicker]=useState<{token:number;state:StyledEditorState}|null>(null);
  const [invalid,setInvalid]=useState<ReadonlySet<string>>(new Set());
  const [positionReset,setPositionReset]=useState(0);
@@ -68,26 +71,39 @@ export function StyledParagraphDialog({adapter:baseAdapter,occurrence,canvas,sou
  const store=(next:StyledEditorState|null)=>{syncFonts(next);current.current=next;setEditor(next);};
  const stop=()=>{generation.current++;pending.current=false;setWorking(false);setError(null);setFitNotice(null);};
  const invalidate=()=>{stop();const owned=candidate.current;candidate.current=null;setPreview(null);release(owned);};
- const change=(next:StyledEditorState)=>{
+ const change=(next:StyledEditorState,reason:"edit"|"other"="other")=>{
   const previous=current.current;if(next===previous)return;
   // Merely moving the selection changes controls, but not the PDF candidate.
-  if(!previous||JSON.stringify(styledEditorRequest(next))!==JSON.stringify(styledEditorRequest(previous)))invalidate();
+  // Keyboard history comes through the text input too. Reused snapshots must
+  // retain their recorded geometry, just like the explicit Undo/Redo buttons.
+  const history=!!previous&&(previous.past.includes(next.present)||previous.future.includes(next.present));
+  if(history&&pending.current)stop();
+  if(!previous||JSON.stringify(styledEditorRequest(next))!==JSON.stringify(styledEditorRequest(previous))){
+   invalidate();needsAutomaticFit.current=reason==="edit"&&!history;
+  }else if(reason!=="edit"||history)needsAutomaticFit.current=false;
   store(next);
  };
- const transact=(transaction:StyledEditorTransaction)=>{if(!current.current)return;try{change(editStyledEditor(current.current,transaction));}catch(error){setError(message(error));}};
+ const transact=(transaction:StyledEditorTransaction)=>{if(!current.current)return;try{change(editStyledEditor(current.current,transaction),transaction.type==="format"||transaction.type==="paragraph"?"edit":"other");}catch(error){setError(message(error));}};
  const install=(selection:StyledParagraphSelection)=>{
-  const next=createStyledEditor(selection);invalidate();store(next);setSelected([...selection.objectIndices]);setInvalid(new Set());setAdjusting(false);setPicker(null);
+  const next=createStyledEditor(selection);setProvisionalInput(false);needsAutomaticFit.current=false;invalidate();store(next);setSelected([...selection.objectIndices]);setInvalid(new Set());setAdjusting(false);setPicker(null);
+ };
+ const notePendingInput=(active:boolean)=>{
+  if(!alive.current)return;
+  setProvisionalInput(active);
+  // Composition and uncancelable beforeinput have browser-owned text that is
+  // not committed yet. Cancel geometry adoption without changing editor value.
+  if(active)invalidate();
  };
  const focusText=()=>requestAnimationFrame(()=>inputContainer.current?.querySelector<HTMLElement>('[role="textbox"]')?.focus());
  useEffect(()=>{
   alive.current=true;let active=true;const token=++generation.current;
-  pending.current=false;setWorking(false);setLoading(true);setRuns([]);setSelected([anchor.objectIndex]);store(null);setAdjusting(false);setPreview(null);setError(null);setFitNotice(null);setPicker(null);setInvalid(new Set());
+  pending.current=false;setProvisionalInput(false);needsAutomaticFit.current=false;automaticFitEnabled.current=true;setAutomaticFit(true);setWorking(false);setLoading(true);setRuns([]);setSelected([anchor.objectIndex]);store(null);setAdjusting(false);setPreview(null);setError(null);setFitNotice(null);setPicker(null);setInvalid(new Set());
   const prepared=initialDraft?.kind==="styled"?initialDraft:null;
   void Promise.allSettled([adapter.listTextRuns!(sourceId,pageIndex),prepared?Promise.resolve(prepared.editor.original as StyledParagraphSelection):adapter.suggestStyledParagraph!(sourceId,pageIndex,anchor.objectIndex,anchor.text)]).then(([listed,suggested])=>{
    if(!active||token!==generation.current)return;
    if(listed.status==="fulfilled")setRuns(listed.value.runs);else setError(message(listed.reason));
    if(suggested.status==="fulfilled"){
-    try{if(prepared){if(prepared.font)fonts.current.set(prepared.font.id,prepared.font);store(prepared.editor);setSelected([...prepared.editor.original.objectIndices]);}else install(suggested.value);}catch(error){setError(message(error));}
+    try{if(prepared){if(prepared.font)fonts.current.set(prepared.font.id,prepared.font);store(prepared.editor);setSelected([...prepared.editor.original.objectIndices]);if(prepared.fitFeedback)setFitNotice(prepared.fitFeedback.message);}else install(suggested.value);}catch(error){setError(message(error));}
    }else setError(message(suggested.reason));
    setLoading(false);
   });
@@ -126,7 +142,7 @@ export function StyledParagraphDialog({adapter:baseAdapter,occurrence,canvas,sou
  let fontError:string|null=null;
  if(snapshot)for(const run of snapshot.draft.runs){const style=snapshot.styles.find(s=>s.id===run.styleId)!;if(style.fontId){const info=fonts.current.get(style.fontId);fontError=info?customTextError(info,run.text):"The substitute font is unavailable. Choose the font again.";if(fontError)break;}}
  const dimensionsValid=!!snapshot&&validParagraphBounds(snapshot.bounds,pageWidth,pageHeight);
- const canPreview=!!editor&&!choosing&&dimensionsValid&&!invalid.size&&!fontError&&!!text.trim();
+ const canPreview=!!editor&&!choosing&&!provisionalInput&&dimensionsValid&&!invalid.size&&!fontError&&!!text.trim();
  const canOfferFit=!!adapter.fitStyledParagraph&&!!editor&&!choosing;
  const fieldError=!choosing&&editor?(invalid.size?"Complete the numeric fields with values in their allowed range.":!dimensionsValid?"Keep the entire paragraph area inside the page.":null):null;
  // A retained draft is hidden during selection adjustment. Report failures of
@@ -134,7 +150,7 @@ export function StyledParagraphDialog({adapter:baseAdapter,occurrence,canvas,sou
  const feedbackError=error||(!choosing?fontError:null)||fieldError;
  const fitArea=async()=>{
   if(pending.current||dragging||!canPreview||!editor||!adapter.fitStyledParagraph)return;
-  const request=styledEditorRequest(editor);stop();const token=generation.current;pending.current=true;setWorking(true);
+  needsAutomaticFit.current=false;const request=styledEditorRequest(editor);stop();const token=generation.current;pending.current=true;setWorking(true);
   const held=[...new Set(request.styleChanges?.flatMap(style=>style.fontId?[style.fontId]:[])??[])].map(id=>holdCustomFont(id));
   try{
    const bounds=await adapter.fitStyledParagraph(sourceId,pageIndex,request);
@@ -149,10 +165,21 @@ export function StyledParagraphDialog({adapter:baseAdapter,occurrence,canvas,sou
  const makePreview=async():Promise<void>=>{
   if((canvas&&(flight.current||!!picker))||pending.current||dragging||!canPreview||!editor)return;
     canvasPreview.consume();
-  const request=styledEditorRequest(editor);invalidate();const token=generation.current;pending.current=true;setWorking(true);if(canvas){flight.current=true;setNativeBusy(true);}
+  let request=styledEditorRequest(editor);invalidate();const token=generation.current;pending.current=true;setWorking(true);if(canvas){flight.current=true;setNativeBusy(true);}
   const requestIds=new Set(request.styleChanges?.flatMap(style=>style.fontId?[style.fontId]:[])??[]);
   const held=[...requestIds].map(id=>holdCustomFont(id));let owned:ParagraphPreview|null=null,url:string|null=null;
   try{
+   if(automaticFitEnabled.current&&needsAutomaticFit.current&&adapter.fitStyledParagraph){
+    const fitted=await fitEditedParagraphDraft(adapter,sourceId,pageIndex,editor,{width:pageWidth,height:pageHeight,crop,
+     isCurrent:()=>alive.current&&token===generation.current});
+    if(!alive.current||token!==generation.current||!current.current)return;
+    needsAutomaticFit.current=false;
+    // Selection can change without changing the native request. Apply owned
+    // geometry to the latest state so a late reply never restores an old caret.
+    const next=applyAutomaticParagraphFit(current.current,fitted.editor.present.bounds);
+    store(next);request=styledEditorRequest(next);
+    if(fitted.fitFeedback)setFitNotice(fitted.fitFeedback.message);
+   }
    owned=await previewStyledParagraph(baseAdapter,occurrence,sourceId,pageIndex,request);if(!alive.current||token!==generation.current)return;
    url=canvas?"":await renderParagraphPage(adapter,owned.document.id,owned.pageIndex,pageWidth,pageHeight,overlays);if(!alive.current||token!==generation.current)return;
    const value={...owned,url};candidate.current=value;setPreview(value);owned=null;url=null;
@@ -175,10 +202,10 @@ export function StyledParagraphDialog({adapter:baseAdapter,occurrence,canvas,sou
  let pickerView:React.ReactNode=null;
  if(picker&&editor){
   const {start,end}=picker.state.present.selection;
-  pickerView=<FontPicker text={styledText(picker.state.present.draft).slice(start,end)} fontSize={common(sizes)??12} currentFontId={common(activeStyles.map(style=>style.fontId))??undefined} title="Choose a substitute font" description={start===end?"Choose a font for text you type next. Check the PDF preview after typing.":"Choose a font for the selected text. Check the PDF preview before applying."} onClose={()=>{setPicker(null);focusText();}} onChoose={info=>{
+  pickerView=<FontPicker sourceFontName={common(activeStyles.map(style=>editor.original.styles[style.sourceStyleId].fontDisplayName??editor.original.styles[style.sourceStyleId].fontName))??undefined} text={styledText(picker.state.present.draft).slice(start,end)} fontSize={common(sizes)??12} currentFontId={common(activeStyles.map(style=>style.fontId))??undefined} title="Choose a substitute font" description={start===end?"Choose a font for text you type next. Check the PDF preview after typing.":"Choose a font for the selected text. Check the PDF preview before applying."} onClose={()=>{setPicker(null);focusText();}} onChoose={info=>{
    if(!alive.current||picker.token!==generation.current||current.current!==picker.state)throw new Error("The paragraph changed. Choose the font again.");
    const next=editStyledEditor(picker.state,{type:"format",patch:{fontId:info.id}});
-   fonts.current.set(info.id,info);change(next);setPicker(null);focusText();
+   fonts.current.set(info.id,info);change(next,"edit");setPicker(null);focusText();
   }}/>;
  }
  const content=<>
@@ -192,7 +219,7 @@ export function StyledParagraphDialog({adapter:baseAdapter,occurrence,canvas,sou
     <div className="paragraph-selection-actions"><button className="button" disabled={working||dragging||!selected.length} onClick={()=>void check()}>Check selection</button>{editor&&<button className="button" onClick={cancelAdjustment}>Cancel adjustment</button>}</div>
    </>:editor&&snapshot&&<>
     <div className="paragraph-editor-heading"><p>{editor.original.objectIndices.length} paragraph pieces</p><button className="button" disabled={working||dragging} onClick={beginAdjustment}>Adjust selection</button></div>
-    <div ref={inputContainer}><StyledParagraphInput value={editor} onChange={change} onError={setError} disabled={dragging}/></div>
+    <div ref={inputContainer}><ParagraphTextEditor value={editor} onChange={next=>change(next,"edit")} onError={setError} onPendingInput={notePendingInput} disabled={dragging} busy={working}/></div>
     <div className="paragraph-selection-actions"><button className="button" disabled={!editor.past.length||dragging} onClick={()=>change(undoStyledEditor(editor))}>Undo</button><button className="button" disabled={!editor.future.length||dragging} onClick={()=>change(redoStyledEditor(editor))}>Redo</button><button className="button" disabled={dragging} onClick={reset}>Reset paragraph</button></div>
     <p>{range!.start===range!.end?"Formatting applies to text you type next.":"Formatting applies to the selected text."} Check the PDF preview for exact font appearance.</p>
     <div className="existing-text-font-choice"><div><span>Font</span><strong>{common(names)??"Mixed"}</strong></div><button className="button" disabled={working||dragging} onClick={()=>setPicker({token:generation.current,state:editor})}>Choose substitute font…</button><button className="existing-text-original-button" disabled={dragging} onClick={()=>format({type:"format",patch:{fontId:null}})}>Use original font</button></div>
@@ -209,9 +236,13 @@ export function StyledParagraphDialog({adapter:baseAdapter,occurrence,canvas,sou
    {(canOfferFit||working||fitNotice||feedbackError)&&<div className="paragraph-feedback" tabIndex={feedbackError?0:undefined}>
     {feedbackError&&<p role="alert" className="existing-text-error">{feedbackError}</p>}
     {working&&<p role="status">Checking the PDF…</p>}{fitNotice&&<p role="status">{fitNotice}</p>}
-    {canOfferFit&&<p id={fitHelpId}>Try Fit area to text when added text does not fit. It keeps your fonts and sizes.</p>}
+    {canOfferFit&&<p id={fitHelpId}>Preview can automatically fit edited text. Fit area to text also adjusts the area without changing fonts or sizes.</p>}
    </div>}
    <div className="paragraph-footer-actions">
+    {canOfferFit&&<label><input type="checkbox" checked={automaticFit} disabled={working||dragging} onChange={event=>{
+     const enabled=event.target.checked;automaticFitEnabled.current=enabled;setAutomaticFit(enabled);
+     if(enabled&&needsAutomaticFit.current)invalidate();
+    }}/>Automatically fit edited text</label>}
     {canOfferFit&&<button className="button" aria-describedby={fitHelpId} disabled={!canPreview||working||dragging} onClick={()=>void fitArea()}>Fit area to text</button>}
     <div className="paragraph-commit-actions"><button className="button" onClick={cancel}>Cancel</button><button className="button" disabled={!canPreview||working||dragging} onClick={()=>void makePreview()}>Preview paragraph</button><button className="button primary" disabled={!canPreview||!preview||working||dragging||!rasterReady} onClick={apply}>Apply paragraph</button></div>
    </div>

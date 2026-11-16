@@ -56,7 +56,13 @@ fn explicit_substitute_supplies_missing_subset_glyph_without_changing_other_runs
  let mut v=draft();v["expectedText"]=json!(selected.text);v["bounds"]=json!({"x":20,"y":60,"width":220,"height":140});v["runs"]=json!([{"text":"Café ","styleId":0},{"text":"Cafè ","styleId":2},{"text":"mix","styleId":1}]);
  let error=e.preview_styled_paragraph(&source.id,0,&request(v.clone())).unwrap_err().to_string();assert!(error.contains("U+00E8"),"{error}");v["styleChanges"][0]["fontId"]=json!(font.id);let edited=e.preview_styled_paragraph(&source.id,0,&request(v.clone())).unwrap();
  let runs=e.list_text_runs(&edited.id,0).unwrap().runs;assert!(runs.iter().any(|r|r.text.trim()=="Café"&&r.font_size==16.&&r.is_embedded&&!r.font_name.starts_with("Folio")));assert!(runs.iter().any(|r|r.text.trim()=="Cafè"&&r.font_size==18.&&r.font_name==format!("Folio{}Paragraph",font.id)));
- for text in ["A\u{0301}","\u{03b1}","\u{4e00}"]{v["runs"][1]["text"]=json!(text);let r=request(v.clone());assert!(e.layout_styled_paragraph(&source.id,0,&r).is_err());assert!(e.preview_styled_paragraph(&source.id,0,&r).is_err());}
+ // A covering explicit substitute supports Greek; it must not acquire the
+ // original subset's missing glyphs or permit shaping/unsupported scripts.
+ v["runs"][1]["text"]=json!("\u{03b1}");let r=request(v.clone());e.layout_styled_paragraph(&source.id,0,&r).unwrap();
+ let greek=e.preview_styled_paragraph(&source.id,0,&r).unwrap();let runs=e.list_text_runs(&greek.id,0).unwrap().runs;
+ assert!(runs.iter().any(|run|run.text=="\u{03b1}"&&run.font_name==format!("Folio{}Paragraph",font.id)));
+ assert!(runs.iter().any(|run|run.text=="Neighbor"&&run.font_name=="Helvetica"));e.close_document(&greek.id).unwrap();
+ for text in ["A\u{0301}","\u{4e00}","\u{03b1}\u{202e}"]{v["runs"][1]["text"]=json!(text);let r=request(v.clone());assert!(e.layout_styled_paragraph(&source.id,0,&r).is_err());assert!(e.preview_styled_paragraph(&source.id,0,&r).is_err());}
  assert_eq!(e.source_bytes(&source.id).unwrap(),original);e.fonts().remove(&font.id).unwrap();for id in [&source.id,&edited.id]{e.close_document(id).unwrap();}
 }
 

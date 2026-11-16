@@ -115,7 +115,7 @@ impl Output {
 }
 pub fn run(args: Vec<OsString>) -> i32 {
     if args == [OsString::from("--help")] {
-        println!("Folio MCP — local stdio PDF tools\nfolio-cli mcp --input PDF [--input PDF ...] --out-dir EXISTING_DIR [--engine PATH] [--font FONT ...]\nLaunch inputs are immutable snapshots (1–64 PDFs, 512 MiB total). Tool calls use document IDs. Optional fonts are immutable launch-authorized inputs: at most16 files,16 MiB each,64 MiB total. Use folio_list_fonts and paragraph fontOverrides.\nExports create new child folders. Inspect text and preview replacements. Apply for further edits, save exact PDF copies, or discard. Close unused session documents to free capacity. Password entry and unsaved desktop tabs are not supported.\nSupports MCP 2026-07-28 and legacy initialization. stdout is reserved for JSON-RPC.");
+        println!("Folio MCP — local stdio PDF tools\nfolio-cli mcp --input PDF [--input PDF ...] --out-dir EXISTING_DIR [--engine PATH] [--font FONT ...] [--credentials FILE]\nLaunch inputs are immutable snapshots (1–64 PDFs, 512 MiB total). Tool calls use document IDs. Optional fonts are immutable launch-authorized inputs: at most16 files,16 MiB each,64 MiB total. Use folio_list_fonts and paragraph fontOverrides.\nExports create new child folders. Inspect text and preview replacements. Apply for further edits, save exact PDF copies, or discard. Close unused session documents to free capacity. Optional launch credentials are a bounded JSON array aligned with inputs; passwords never enter tools. Interactive password entry and unsaved desktop tabs are not supported.\nSupports MCP 2026-07-28 and legacy initialization. stdout is reserved for JSON-RPC.");
         return 0;
     }
     let config = match Config::load(args) {

@@ -1,0 +1,23 @@
+{
+  "custom": {
+    "path": "custom-encoding.cff",
+    "sha256": "204c32ee305362cf0227f499579baf5fdfd83bd503476ce295c995f3452a3b43",
+    "defined": {
+      "32": 1,
+      "65": 2,
+      "66": 3
+    },
+    "omittedCode": 67,
+    "omittedGlyph": 4
+  },
+  "repeated": {
+    "path": "repeated-subroutines.cff",
+    "sha256": "96762052f22af12c372862c9ad65241d4acadde1608cb001e8314c69dd6bfd4e",
+    "glyph": 2,
+    "width": 500.75,
+    "levels": 8,
+    "smallBudget": 32
+  },
+  "generatorSha256": "d30380c02620179ab2264e747433b182af394df0069a49fed4494c22235d91c7",
+  "license": "Original generated test data under the repository license"
+}

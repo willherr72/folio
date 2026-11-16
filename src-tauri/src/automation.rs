@@ -1,12 +1,19 @@
 //! Saved-file automation using the desktop engine. Not a network authorization boundary.
 mod inspection;
 mod original_snapshot;
+#[cfg(test)]pub(crate) use original_snapshot::install_capture_hook_for_test;
+pub(crate) use original_snapshot::copy_stable_file;
 pub(crate) mod font_inputs;
 pub(crate) mod nested_inspection;
 pub(crate) mod form_automation;
 pub(crate) mod paragraph_preview;
 pub(crate) mod paragraph_inspection;
 pub(crate) mod text_preview;
+pub(crate) mod text_batch_preview;
+pub(crate) mod replacement;
+pub(crate) mod page_organization;
+pub(crate) mod composition;
+pub(crate) mod credentials;
 use crate::{
     DocumentInfo, EngineError, EngineResult, PageImageControl, PageImageExportRequest,
     PageImageFormat, PageImageOptions, PagePlan, PdfEngine, TextExportControl, TextExportRequest,
@@ -19,12 +26,16 @@ use std::{
 };
 
 pub enum Request {
+    PlanReplacement{input:PathBuf,request_file:PathBuf},
+    PreviewReplacement{input:PathBuf,request_file:PathBuf,parent:PathBuf},
+    ExportPages {input:PathBuf,request_file:Option<PathBuf>,output:PathBuf},
     InspectNestedText {input:PathBuf,page:u32,offset:usize},
     InspectForms {input:PathBuf,page:u32,offset:usize},
     PreviewForm {input:PathBuf,request_file:PathBuf,parent:PathBuf},
     PreviewParagraph {input:PathBuf,request_file:PathBuf,parent:PathBuf},
     InspectParagraph {input:PathBuf,page:u32,selection_id:String},
     PreviewText {input:PathBuf,request_file:PathBuf,parent:PathBuf},
+    PreviewTextBatch {input:PathBuf,request_file:PathBuf,parent:PathBuf},
     SaveTextPreview {input:PathBuf,manifest_hash:String,output:PathBuf},
     InspectText {
         input: PathBuf,
@@ -50,12 +61,16 @@ pub enum Request {
 impl Request {
     pub fn command(&self) -> &'static str {
         match self {
+            Self::PlanReplacement{..}=>"plan-replacement",
+            Self::PreviewReplacement{..}=>"preview-replacement",
+            Self::ExportPages {..}=>"export-pages",
             Self::InspectNestedText {..}=>"inspect-nested-text",
             Self::InspectForms {..}=>"inspect-forms",
             Self::PreviewForm {..}=>"preview-form",
             Self::InspectParagraph {..}=>"inspect-paragraph",
             Self::PreviewParagraph {..}=>"preview-paragraph",
             Self::PreviewText {..}=>"preview-text",
+            Self::PreviewTextBatch {..}=>"preview-text-batch",
             Self::SaveTextPreview {..}=>"save-text-preview",
             Self::InspectText { .. } => "inspect-text",
             Self::Info { .. } => "info",
@@ -65,9 +80,11 @@ impl Request {
     }
     fn input(&self) -> &Path {
         match self {
+            Self::PlanReplacement{input,..}|Self::PreviewReplacement{input,..}=>input,
+            Self::ExportPages {input,..}=>input,
             Self::InspectNestedText {input,..} | Self::InspectForms {input,..} | Self::PreviewForm {input,..} | Self::Info { input } | Self::Text { input, .. } | Self::Render { input, .. }
             | Self::InspectText { input, .. } | Self::InspectParagraph {input,..} => input,
-            Self::PreviewParagraph {input,..}|Self::PreviewText {input,..}|Self::SaveTextPreview {input,..}=>input,
+            Self::PreviewParagraph {input,..}|Self::PreviewTextBatch {input,..}|Self::PreviewText {input,..}|Self::SaveTextPreview {input,..}=>input,
         }
     }
 }
@@ -132,9 +149,10 @@ pub(crate) fn execute_with_fonts(
     if let Request::SaveTextPreview {input,manifest_hash,output}=&request {
         return text_preview::save(input,manifest_hash,output);
     }
+    let organization=if let Request::ExportPages {request_file:Some(path),..}=&request {Some(page_organization::PageOrganization::read(path)?)}else{None};
     // Keep the exact input (including ciphertext) for a validated no-op. Native
     // opening and eventual no-op publication use the same private snapshot.
-    let original = if matches!(&request, Request::PreviewText { .. } | Request::PreviewParagraph { .. }) {
+    let original = if matches!(&request, Request::PreviewReplacement{..} | Request::PreviewText { .. } | Request::PreviewTextBatch {..} | Request::PreviewParagraph { .. } | Request::ExportPages {..}) {
         Some(original_snapshot::OriginalSnapshot::capture(request.input())?)
     } else {
         None
@@ -150,12 +168,16 @@ pub(crate) fn execute_with_fonts(
         return Err(invalid("Choose a PDF with 1 to 10,000 pages."));
     }
     match request {
+        Request::PlanReplacement{request_file,..}=>replacement::plan(engine,info,replacement::ReplacementRequest::read(&request_file,false)?),
+        Request::PreviewReplacement{request_file,parent,..}=>replacement::preview(engine,info,replacement::ReplacementRequest::read(&request_file,true)?,&parent,password,original.as_ref().ok_or_else(||invalid("Missing immutable replacement input."))?,fonts),
+        Request::ExportPages {output,..}=>page_organization::export(engine,info,organization.as_ref(),original.as_ref().ok_or_else(||invalid("Missing immutable page-organization input."))?,&output,password),
         Request::InspectNestedText {page,offset,..}=>nested_inspection::inspect(engine,info,page,offset),
         Request::InspectForms {page,offset,..}=>form_automation::inspect(engine,info,page,offset),
         Request::PreviewForm {request_file,parent,..}=>form_automation::preview(engine,info,form_automation::FormEdit::read(&request_file)?,&parent,password),
         Request::InspectParagraph {page,selection_id,..}=>paragraph_inspection::inspect(engine,info,page,&selection_id),
         Request::PreviewParagraph {request_file,parent,..}=>paragraph_preview::preview(engine,info,paragraph_preview::ParagraphEdit::read(&request_file)?,&parent,password,original.as_ref().ok_or_else(||invalid("Missing immutable preview input."))?,fonts),
         Request::PreviewText {request_file,parent,..}=>text_preview::preview(engine,info,text_preview::TextEdit::read(&request_file)?,&parent,password,original.as_ref().ok_or_else(||invalid("Missing immutable preview input."))?,fonts),
+        Request::PreviewTextBatch {request_file,parent,..}=>text_batch_preview::preview(engine,info,text_batch_preview::BatchEdit::read(&request_file)?,&parent,password,original.as_ref().ok_or_else(||invalid("Missing immutable preview input."))?,fonts),
         Request::SaveTextPreview {..}=>unreachable!(),
         Request::InspectText { page, offset, .. } => inspection::inspect(engine, info, page, offset),
         Request::Info { .. } => Ok(json!({"name":info.name,"pageCount":info.pages.len(),

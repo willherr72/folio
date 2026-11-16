@@ -34,10 +34,12 @@ export function createStyledParagraph(runs:readonly StyledRun[],styleIds:readonl
   if(!merged.length)merged.push({text:"",styleId:emptyStyle});
   return Object.freeze({runs:Object.freeze(merged.map(run=>Object.freeze(run))),styleIds:Object.freeze([...styleIds])});
 }
-function checkRange(doc:StyledParagraph,start:number,end:number){
-  const text=styledText(doc);
+function checkEndpoints(text:string,edges:ReadonlySet<number>,start:number,end:number){
   if(!Number.isInteger(start)||!Number.isInteger(end)||start<0||end<start||end>text.length)fail("Select a valid paragraph range.");
-  const edges=boundaries(text);if(!edges.has(start)||!edges.has(end))fail("A paragraph range must not split a grapheme.");
+  if(!edges.has(start)||!edges.has(end))fail("A paragraph range must not split a grapheme.");
+}
+function checkRange(doc:StyledParagraph,start:number,end:number){
+  const text=styledText(doc);checkEndpoints(text,boundaries(text),start,end);
 }
 function sliceRuns(doc:StyledParagraph,start:number,end:number):StyledRun[]{
   const runs:StyledRun[]=[];let offset=0;
@@ -69,6 +71,32 @@ export function replaceStyledRange(doc:StyledParagraph,start:number,end:number,t
   if(text.length>MAX_BYTES*2)fail("Use at most 4096 UTF-8 bytes for a paragraph.");
   text=text.replace(/\r\n?/g,"\n");checkText(text);
   return createStyledParagraph([...sliceRuns(doc,0,start),{text,styleId:chosen},...sliceRuns(doc,end,styledText(doc).length)],doc.styleIds,chosen);
+}
+/** Compose final runs from original coordinates; no partially edited snapshot. */
+export function replaceStyledRanges(doc:StyledParagraph,ranges:readonly {start:number;end:number}[],text:string):StyledParagraph {
+ if(ranges.length>MAX_BYTES)fail("Use at most 4096 paragraph matches.");
+ let previous=0;const original=styledText(doc),edges=boundaries(original);
+ for(const item of ranges){checkEndpoints(original,edges,item.start,item.end);if(item.start===item.end||item.start<previous)fail("Use ordered nonoverlapping paragraph matches.");previous=item.end;}
+ if(text.length>MAX_BYTES*2)fail("Use at most 4096 UTF-8 bytes for a paragraph.");
+ text=text.replace(/\r\n?/g,"\n");checkText(text);
+ if(/[\u0000-\u0009\u000b-\u001f\u007f-\u009f]/.test(text))fail("Use plain text and line breaks.");
+ const changes=ranges.filter(item=>original.slice(item.start,item.end)!==text);
+ if(!changes.length)return doc;
+ const insertedBytes=encoder.encode(text).length;
+ const finalBytes=encoder.encode(original).length+changes.reduce((sum,item)=>sum+insertedBytes-encoder.encode(original.slice(item.start,item.end)).length,0);
+ if(finalBytes>MAX_BYTES)fail("Use at most 4096 UTF-8 bytes for a paragraph.");
+ const runs:StyledRun[]=[];
+ const append=(run:StyledRun)=>{if(!run.text)return;const last=runs.at(-1);if(last?.styleId===run.styleId)runs[runs.length-1]={text:last.text+run.text,styleId:run.styleId};else runs.push(run);};
+ let consumed=0,runIndex=0,runStart=0,emptyStyle=doc.runs[0].styleId;
+ const advance=(to:number,copy:boolean)=>{
+  while(consumed<to){const run=doc.runs[runIndex],end=runStart+run.text.length,limit=Math.min(end,to);if(copy)append({text:run.text.slice(consumed-runStart,limit-runStart),styleId:run.styleId});consumed=limit;if(consumed===end){runStart=end;runIndex++;}}
+ };
+ for(const [index,item]of changes.entries()){
+  advance(item.start,true);const styleId=doc.runs[runIndex].styleId;if(index===0)emptyStyle=styleId;
+  advance(item.end,false);append({text,styleId});
+ }
+ advance(original.length,true);
+ return createStyledParagraph(runs,doc.styleIds,emptyStyle);
 }
 /** Nonempty selections change style. A caret's typing override belongs to the
  * editor; only a completely empty draft stores that style in its sole empty run. */

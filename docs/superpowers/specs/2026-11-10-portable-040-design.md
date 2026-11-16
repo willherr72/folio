@@ -1,0 +1,27 @@
+# Folio 0.40 combined development package
+
+Deliver the completed compound dropdown and plain single/multi-select List fixes in a Windows desktop/CLI/MCP portable. Standing user autonomy authorizes local execution and replaces routine approval questions. Preserve accepted039 and its launcher until actual new-package qualification, review and sealing succeed. Do not open the user app automatically, commit, push or publish publicly.
+
+## Authorities and scope
+
+The implementation and actual native-suite source are now the same fingerprint: `04ebe5a65ba21745aa0b3988d846514b53e7c4bb6d2e4e6a290f45298a209fd3`, version0.39.0-dev.1, verified by `artifacts/compound-list-frame-20261110/check-final-contract.py`. Native results are **2692passed/0failed/32ignored**: **1168 optimized integration/bin passes** and **1524 Folio opt-level 0 library correctness passes**. The complete library target was explicitly reused from the source/input-identical focused run; preserve its original full log, qualified extracted section, hashes and both qualification receipts. Do not describe this as a fresh040native run, fall back to old2680/2686authorities, or derive/relabel a version37/38 native map.
+
+The source-review158-file snapshot and parent58-file supplement bind the final List implementation,84saved-output/168RGB/84paint checks, CLI36+5source refusals, actualdesktop12 and canonical process cleanup. The preceding dropdown component has its own retained source review and actual native/build/CLI/desktop evidence. Preserve both components and their outputs; no runtime passes from either are new-package acceptance.
+
+Freeze the actual source/native-test inputs and five original version files before changes. Only package.json, package-lock.json, src-tauri/Cargo.toml, src-tauri/Cargo.lock and src-tauri/tauri.conf.json may change version tokens039→040. All other product/native/shared/renderer/dependency bytes and membership must match. No newline normalization or parser/cache/security/font-policy change. Update README/CHANGELOG and form support documentation before distribution capture. Frozen archive documentation describes integration-start launcher history rather than claiming a future live selection.
+
+## Build and acceptance
+
+Adapt the proven039operational helpers from their actual final bytes with explicit before/after provenance. Copy helpers and controlled public fixtures, never prior successful runtime pass receipts. Direct2692authority replaces the old multi-checkpoint native derivation; corruption controls must cover counts/profiles/receipt/log/source/shared-input binding and the original complete library reuse proof.
+
+Run fresh full frontend tests at the existing default5000ms timeout and two workers; expected1517tests/226files. Build fresh normal optimized GUI/CLI with all25runtime resources,12offlineOCRassets and unchanged567dependency/license identities. Existing portable corruption controls must pass. Verify complete ZIP/directory membership and extract outside checkout; execute those exact extracted binaries and resource tree.
+
+Retain all inherited actual runtime gates:37CLI/MCPworkflows; desktop text/paragraph/OCR with initial preview readiness; current desktop-selection/output-membership production; combined removal and missing-original recovery; independently bound saved outputs;189Preview/Cancelcycles; originalquiz105edits/100Undo/100Redo; separate generated300-page105/100/100history with all300saved pages independently audited;3quiz/form/fonthandoff cases. Keep original source-authorized masks, glyph/style/font/box/RGB/bookmark/comment controls, after105native<512MiB/tree<1GiB targets and first serialized sample authority. No forcedGC, injected styles, history reduction, widened masks, lowered targets, stale pass substitution or resource-sample fishing.
+
+Add new-package form acceptance on extracted identities: the four completed dropdown sources with28CLI saves including editable clear/refill and6desktop saves; the four plain List sources with36CLI saves, five typed source refusals (including selected empty export/display value), and12desktop select/clear/refill saves plus4UndoRedo pairs. Apply the completed independent saved-appearance/RGB proofs and exact raw64-bit process-birth cleanup. Parent helper adaptation may change only package/identity/run paths; UI entry remains trusted input, no direct native edit invocation.
+
+Serialize compilers, suites and owned UI/resource sessions; oneCargojob, D:/Folio-build-cache/t3-8962a327 and its existing temp directory. Preserve originals, profiles, outputs and failed attempts. Private quiz content/raw results/targets/screenshots stay out of ZIP and reviewer context; public aggregate hashes can bind coordinator-only audits.
+
+## Closure
+
+After concrete acceptance, one fresh scoped packaging review; consequential corrections inline with meaningfulRED/GREEN/affected checks, no routine second review. Record every gap/minor/ruling/cost. Freeze historical source/helper/input/package/output evidence and corruption/independence controls, seal, then update only the local launcher target with identity checks. Preserve039and older candidates. Do not infer unrestricted memory/retention, universal performance, printing, accessibility, signatures, general producer/complex-script compatibility or Adobe/Foxit parity. Source-painted/scrolled List repair and the broad project goal remain active after this delivery.

@@ -1,6 +1,7 @@
 import { afterEach, expect, it, vi } from "vitest";
 import { act, cleanup, renderHook, waitFor } from "@testing-library/react";
 import { acquireShapedText, clearShapedTextCache, shapedTextApi, shapedTextState, useShapedText, type PreparedTextOverlay } from "../src/editor/shaped-text";
+import * as shaped from "../src/editor/shaped-text";
 import { fontApi, retainCustomFonts, flushFontReleases } from "../src/editor/custom-fonts";
 import { textOverlayCharacters, textOverlayBounds } from "../src/editor/text-overlay-geometry";
 import { useDocumentSearch } from "../src/editor/search";
@@ -85,4 +86,22 @@ it("can retry an admission error after unused document previews are released",as
  await waitFor(()=>expect(hook.result.current?.status).toBe("error"));
  leases[0].release();await act(async()=>hook.result.current?.retry?.());
  await waitFor(()=>expect(hook.result.current?.status).toBe("ready"));leases.forEach(lease=>lease.release());
+});
+
+it("option changes release the old search lease and ignore its late shaped result while sharing native preparation",async()=>{
+ vi.spyOn(fontApi,"release").mockResolvedValue();retainCustomFonts(new Set([id]));
+ let finish!:(value:PreparedTextOverlay)=>void;
+ const prepare=vi.spyOn(shapedTextApi,"prepare").mockImplementation(()=>new Promise(resolve=>{finish=resolve;}));
+ // Observe real lease acquisition; only the slow native preparation is replaced.
+ const acquire=vi.spyOn(shaped,"acquireShapedText");
+ const adapter={...createDemoAdapter(),getPageText:async()=>({characters:[]})};
+ const pages=[{id:"shape-option-page",sourceId:"shape-option-source",pageIndex:0,width:600,height:800,rotation:0 as const,overlays:[{...box,text:"foo Foo"}]}];
+ const hook=renderHook(({options})=>useDocumentSearch(adapter,pages,"foo",true,options),{initialProps:{options:{matchCase:false,wholeWords:false}}});
+ await waitFor(()=>expect(acquire).toHaveBeenCalledTimes(1));await waitFor(()=>expect(finish).toBeTypeOf("function"));
+ hook.rerender({options:{matchCase:true,wholeWords:true}});expect(hook.result.current.matches).toEqual([]);
+ await waitFor(()=>expect(acquire).toHaveBeenCalledTimes(2));
+ await act(async()=>finish(result("foo Foo")));
+ await waitFor(()=>expect(hook.result.current.searching).toBe(false));
+ expect(hook.result.current.matches).toHaveLength(1);expect(hook.result.current.matches[0].rects).toEqual([{x:10,y:23,width:16,height:21}]);
+ expect(prepare).toHaveBeenCalledTimes(1);
 });

@@ -20,6 +20,25 @@ function setup(overrides:Partial<FolioAdapter>={}){
 }
 const click=(name:string)=>fireEvent.click(screen.getByRole("button",{name}));
 async function ready(){return screen.findByRole("textbox",{name:"Paragraph text"});}
+it("keeps a PDF candidate for Find navigation and invalidates it for one undoable Replace all",async()=>{
+ const h=setup();await ready();await preview();click("Find and replace…");fireEvent.change(screen.getByRole("textbox",{name:"Find in paragraph"}),{target:{value:"two"}});click("Next match");
+ expect(screen.getByRole("button",{name:"Apply paragraph"})).toBeEnabled();expect(h.adapter.closeDocument).not.toHaveBeenCalled();expect(screen.getByRole("button",{name:"Undo"})).toBeDisabled();
+ fireEvent.change(screen.getByRole("textbox",{name:"Replace with in paragraph"}),{target:{value:"new"}});click("Replace all");expect(await ready()).toHaveTextContent("one new");expect(screen.getByRole("button",{name:"Apply paragraph"})).toBeDisabled();expect(h.adapter.closeDocument).toHaveBeenCalledWith("preview");
+ click("Undo");expect(await ready()).toHaveTextContent("one two");expect(screen.getByRole("button",{name:"Undo"})).toBeDisabled();click("Redo");await preview();expect(h.adapter.previewStyledParagraph).toHaveBeenLastCalledWith("source",0,expect.objectContaining({expectedText:"one two",runs:[{text:"one ",styleId:0},{text:"new",styleId:1}]}));
+});
+it("closes Find before canceling a modal paragraph when Escape starts at a sibling field",async()=>{
+ const h=setup();await ready();select(4,7);type("new");await preview();click("Find and replace…");const field=screen.getByRole("spinbutton",{name:"Font size (pt)"});field.focus();fireEvent.keyDown(field,{key:"Escape"});expect(h.props.onCancel).not.toHaveBeenCalled();expect(screen.queryByRole("textbox",{name:"Find in paragraph"})).toBeNull();expect(await ready()).toHaveTextContent("one new");expect(screen.getByRole("button",{name:"Apply paragraph"})).toBeEnabled();expect(h.adapter.closeDocument).not.toHaveBeenCalled();fireEvent.keyDown(await ready(),{key:"Escape"});expect(h.props.onCancel).toHaveBeenCalledTimes(1);
+});
+it("keeps the native preview and draft history when Find shortcuts start at formatting controls",async()=>{
+ const h=setup();await ready();select(4,7);type("new");await preview();
+ const size=screen.getByRole("spinbutton",{name:"Font size (pt)"});size.focus();fireEvent.keyDown(size,{key:"f",ctrlKey:true});
+ fireEvent.change(screen.getByRole("textbox",{name:"Find in paragraph"}),{target:{value:"new"}});
+ const alignment=screen.getByRole("combobox",{name:"Paragraph alignment"});alignment.focus();fireEvent.keyDown(alignment,{key:"F3"});
+ expect(screen.getByRole("button",{name:"Apply paragraph"})).toBeEnabled();expect(h.adapter.previewStyledParagraph).toHaveBeenCalledTimes(1);expect(h.adapter.closeDocument).not.toHaveBeenCalled();
+ expect(screen.getByRole("button",{name:"Undo"})).toBeEnabled();expect(screen.getByRole("button",{name:"Redo"})).toBeDisabled();expect(await ready()).toHaveTextContent("one new");
+ size.focus();fireEvent.keyDown(size,{key:"Escape"});expect(screen.queryByRole("textbox",{name:"Find in paragraph"})).toBeNull();expect(h.props.onCancel).not.toHaveBeenCalled();expect(screen.getByRole("button",{name:"Apply paragraph"})).toBeEnabled();
+ click("Undo");expect(await ready()).toHaveTextContent("one two");expect(screen.getByRole("button",{name:"Undo"})).toBeDisabled();
+});
 it("shows compact bounds without changing untouched exact requests or history",async()=>{
  const bounds={x:143.99998474121094,y:30.123456789,width:200.123456789,height:50.987654321};
  const h=setup({suggestStyledParagraph:vi.fn().mockResolvedValue({...selection,bounds})});await ready();
@@ -33,7 +52,7 @@ function select(start:number,end=start){const root=screen.getByRole("textbox",{n
 function type(text:string){act(()=>screen.getByRole("textbox",{name:"Paragraph text"}).dispatchEvent(new InputEvent("beforeinput",{bubbles:true,cancelable:true,inputType:"insertText",data:text})));}
 
 it("fits the complete current draft as one undoable area change and requires a new preview",async()=>{
- const fitted={...selection.bounds,width:240,height:80};const h=setup({fitStyledParagraph:vi.fn().mockResolvedValue(fitted)});await ready();select(4,7);type("longer");fireEvent.change(screen.getByRole("spinbutton",{name:"Font size (pt)"}),{target:{value:"16"}});await preview();click("Fit area to text");
+ const fitted={...selection.bounds,width:240,height:80};const h=setup({fitStyledParagraph:vi.fn().mockResolvedValue(fitted)});await ready();select(4,7);type("longer");fireEvent.change(screen.getByRole("spinbutton",{name:"Font size (pt)"}),{target:{value:"16"}});fireEvent.click(screen.getByRole("checkbox",{name:"Automatically fit edited text"}));await preview();click("Fit area to text");
  await waitFor(()=>expect(screen.getByRole("spinbutton",{name:"Area width (pt)"})).toHaveValue(240));expect(h.adapter.fitStyledParagraph).toHaveBeenCalledWith("source",0,expect.objectContaining({expectedText:"one two",runs:expect.arrayContaining([expect.objectContaining({text:"longer"})]),bounds:selection.bounds}));expect(screen.getByRole("button",{name:"Apply paragraph"})).toBeDisabled();expect(h.adapter.closeDocument).toHaveBeenCalledWith("preview");expect(await ready()).toHaveTextContent("one longer");click("Undo");expect(screen.getByRole("spinbutton",{name:"Area width (pt)"})).toHaveValue(selection.bounds.width);expect(await ready()).toHaveTextContent("one longer");click("Redo");expect(screen.getByRole("spinbutton",{name:"Area width (pt)"})).toHaveValue(240);
 });
 it("keeps a valid preview and history when fitting returns the current area",async()=>{

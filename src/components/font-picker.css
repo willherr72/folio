@@ -1,6 +1,7 @@
 .modal-dialog.font-picker { width: min(720px, 100%); display: flex; flex-direction: column; overflow: hidden; }
 .font-picker .modal-heading { flex: 0 0 auto; }
 .font-picker-body { padding: 0 24px 20px; overflow-y: auto; min-height: 0; }
+.font-picker-source { margin: 0 0 14px; color: var(--muted); font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }
 .font-picker-search { display: grid; gap: 7px; margin-bottom: 20px; font-size: 13px; font-weight: 600; }
 .font-picker-search > span { position: relative; display: flex; align-items: center; }
 .font-picker-search svg { position: absolute; left: 11px; color: var(--muted); pointer-events: none; }

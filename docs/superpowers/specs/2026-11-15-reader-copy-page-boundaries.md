@@ -1,0 +1,11 @@
+# Reader copy page boundaries
+
+The broad product goal is reliable everyday PDF editing and reading. Current PdfTextLayer copies exact selected scalar text but concatenates selected page layers with no separator. tests/reader-selection.test.tsx explicitly expects AA for two pages containing A. A page break must not merge words.
+
+Use the existing React text layer and source-bound character spans. Preserve exact selected Unicode and whitespace within a page, surrogate-safe range handling, crop-hidden exclusion, native copy permissions and originating document viewport ownership. Join nonempty selected page fragments with one LF only when neither adjoining fragment already supplies CR or LF at the boundary. Retain existing line endings and spaces verbatim. Empty or hidden-only page fragments must not create extra separators. Page occurrences, including duplicates of one source page, are distinct boundaries. No native extraction, PDF mutation, eager page fetching or OS clipboard access is introduced.
+
+This is the coordinator's implementation choice under standing autonomous authorization, not a separate user-approved typography preference. A form-feed separator is less useful for ordinary pasted prose; blindly joining fragments merges words; always adding LF needlessly duplicates existing breaks.
+
+The fresh current053 native audit must finish before product changes so its source guards remain valid. Then use focused failing/passing tests for distinct pages, duplicate occurrences, existing CR/LF/CRLF, cropped/empty fragments, partial supplementary characters, backwards ranges, permission/viewport isolation and ordinary single-page copying. Tests and Windows runtime checks use only constructed copy events/detached data, never the system clipboard. Physical Ctrl+C/clipboard/IME acceptance remains open.
+
+Run the complete frontend suite (two workers/default5000ms), normal optimized GUI with all26resources, and one owned Windows workflow against authored public fixtures. Record exact captured text, source hashes, process cleanup and no OS clipboard operation. One final component review, at most one Important correction pass; no new portable/version/launcher/Git mutation. The source component must not be described as part of the already sealed053 archive.

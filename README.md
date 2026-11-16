@@ -8,47 +8,54 @@ Tauri and native PDFium. No AI, account, cloud upload or subscription.
 ## Get Folio
 
 Download the Windows portable ZIP from [Releases](https://github.com/willherr72/folio/releases).
-Extract it and open **Folio.exe**. Keep the resources folder beside the executable.
-Microsoft Edge WebView2 Runtime is required.
+Extract it and open **Folio.exe**, keeping the adjacent `resources` folder.
+Microsoft Edge WebView2 Runtime is required. The local development builds below
+are separate from published releases.
 
-The latest qualified combined local development package is **0.39.0-dev.1**.
-This is not a published release. The [quality checklist](docs/product-quality-loop.md) records
-verification scopes and remaining limitations.
+| Local build | Status | Included work |
+| --- | --- | --- |
+| **0.56.0-dev.1 portable** | Reviewed separate development portable; not selected | Compact reading, commit-ready Copy, editing/automation/forms/OCR and full 300-page history; [completion](artifacts/portable-056-20261116/completion.json) |
+| **Compact reading source candidate** | Reviewed normal GUI; finite memory workload passed | String-only inactive reading, exact ready-to-copy selection, 105/100/100 history and 300-page fidelity; [completion](artifacts/compact-reading-data-20261115/completion.json) |
+| **0.50.0-dev.1** | Qualified and selected by **Launch Folio.cmd** | Existing-text/paragraph editing, CLI/MCP page organization and editable multi-PDF composition |
+| **0.52.0-dev.1 portable** | Reviewed separate candidate; not selected | Source-bound CID TrueType ligatures, additional source-font mappings, paragraph Find/Replace and staged Paste as paragraph |
+| **0.53.0-dev.1 portable** | Reviewed separate development candidate; not selected | Verified document Find/Replace, atomic CLI/MCP replacement and workspace preview/Cancel/Undo |
+| **0.54.0-dev.1 portable** | Reviewed separate development candidate; not selected | CID original-font deletion/re-edit and page-boundary copy, with fresh extracted CLI/MCP, paragraph and offline OCR checks |
+| **0.55.0-dev.1 portable** | Reviewed separate development portable; not selected | Equivalent source encodings, CFF ligatures, source-bound accent clusters and automatically fitted paragraph editing, with extracted CLI/MCP/Windows/forms/OCR checks |
+| **Deferred reading-geometry source candidate** | Reviewed normal GUI; resource gate remains open | Avoids inactive glyph-geometry allocations; full history/fidelity passes, with peak still 1.35 MiB above the memory target |
+| **Workspace Find/Replace source candidate** | Verified GUI/CLI test build; separate from portable packages | Literal Unicode matching across imported/duplicated pages and added text, with checked preview and one Undo |
+| **CID original-font source repair** | Verified GUI/CLI source component; separate from portable packages | Safe retained-code deletion through isolated font resources, saved re-edit and shared-text preservation |
+| **Page-boundary copy source candidate** | Verified Windows source component; separate from portable packages | Retains exact page text and adds missing copy boundaries between selected page occurrences |
 
-The combined package includes **Folio.exe** for the desktop editor and
-**folio-cli.exe** for command-line and local MCP automation. Both use the adjacent
-`resources` folder. The [automation guide](docs/automation.md) covers inspection,
-validated existing-text/paragraph edits, form filling, preview/apply/save and MCP
-setup. Automation reads saved documents; it does not attach to unsaved desktop tabs.
+The [build status](docs/development-build-status.md) links the exact candidates
+and verification records. The [0.56 completion record](artifacts/portable-056-20261116/completion.json) binds its full finite editing/memory acceptance. The [0.55 completion record](artifacts/portable-055-20261115/completion.json) binds its current package, reviewed evidence and bounded acceptance. The [0.54 completion record](artifacts/portable-054-20261115/completion.json)
+binds its actual extracted GUI/CLI/MCP checks, package identity and review. The
+[preserved 0.53 record](artifacts/portable-053-20261115/completion.json) retains
+its earlier, broader historical runtime matrix and standalone evidence.
+Each archive retains its build-time documentation snapshot. Keep each executable beside its own resources; use its checkpoint to
+identify the tested build. The separate 0.51 candidate and older packages remain
+preserved. Packaging never replaces a running editor automatically.
 
-The qualified executable is **artifacts/Folio-v0.39.0-dev.1/Folio.exe** in this checkout.
-**Launch Folio.cmd** selects this package through its reviewed checkpoint. The archive is
-**artifacts/Folio-v0.39.0-dev.1-windows-x64.zip**, with an adjacent SHA-256 checksum.
-The previous accepted 0.36 and unqualified 0.37/0.38 candidates remain preserved,
-with their original evidence. Version 0.39 combines the reviewed 64 MiB decoded
-source cache and OCR review readiness correction, preserving all 100 Undo/Redo
-states. The [sealed checkpoint](artifacts/portable-039-20261110/checkpoint.json)
-and local launcher manifest record acceptance. Repository status notes were updated
-after sealing; documentation inside the unchanged ZIP remains its candidate-time snapshot.
-This package does not replace a running editor.
+The combined portable includes **Folio.exe** and **folio-cli.exe**. Both use the
+adjacent resources. The [automation guide](docs/automation.md) covers local MCP,
+inspection, text/paragraph edits, form filling, page organization and composition.
+Automation opens saved PDFs; it does not attach to unsaved desktop tabs.
 
 Supported workflows include existing-text and uniform/mixed paragraph editing,
 images, form filling and common form authoring, page organization, comments, OCR,
-password-protected documents and recovery. PDF compatibility remains conditional:
-Folio validates supported edits and refuses changes it cannot safely preserve.
-See the [quality checklist](docs/product-quality-loop.md) for tested workflows and
-remaining gaps; feature breadth is not an Adobe/Foxit parity claim.
+protected documents and recovery. Native checks refuse edits they cannot safely
+preserve. Supported tagged-document workflows retain source structure, form
+answers, navigation and page-copy ownership through supported edits and saving.
+Supported document Info/XMP can be inspected, edited or explicitly removed;
+recognized conformance claims are removed during changed composition.
 
-Supported tagged-document workflows now retain source structure, form answers,
-navigation and page-copy ownership through composition, added content, saving
-and recovery. Native comments and conservatively retained highlights are
-preserved where supported; they are not universally editable drawing objects.
-Supported composition preserves ordinary document Info and XMP, including custom
-properties, while removing recognized conformance claims. Document properties can
-be inspected, edited or explicitly removed from the desktop draft. Malformed or
-unsupported metadata is refused before publication. General producer compatibility,
-sustained memory usage, physical printing and accessibility verification remain
-open quality work.
+Physical system Ctrl+V/installed IME, broader producer/reader compatibility,
+printing, accessibility and sustained-resource qualification remain open.
+Injected paste events do not establish physical-input acceptance. The current 0.55 sustained-history
+run passed document fidelity but exceeded its lifetime memory target; see the
+[measured resource finding](artifacts/packaged-memory-highwater-20261115/completion.json). These local
+development records do not certify Adobe/Foxit parity or a public release.
+See the [quality record](docs/product-quality-loop.md) and
+[changelog](CHANGELOG.md) for bounded evidence and historical milestones.
 
 ## Everyday editing
 
@@ -70,6 +77,12 @@ not separate applications needed for individual features.
   A replacement and chosen font carry from Edit text into Edit paragraph, with
   one local Undo/Redo action; failed preparation keeps the original input open.
   [Supported workflows and limits](docs/existing-text-editing.md).
+- **Find and Replace:** use Find or Ctrl+F, then Replace text; Ctrl+H also opens
+  replacement from the document workspace. Check matches, choose a subset when
+  needed, preview the changes and Apply as one Undo action. Current-source
+  verification includes imported/duplicate pages, local crops/rotations, added
+  text and protected PDFs. This workflow is being integrated into the separate
+  0.53 portable. [Workflow and limits](docs/document-find-replace.md).
 - **Local automation:** inspect, preview, apply and save page or nested text and
   paragraphs, including explicit font choices and consecutive edits. Supported
   forms can be inspected and filled. CLI and MCP use the same native preservation
@@ -132,6 +145,10 @@ not separate applications needed for individual features.
   lists on the current page, with a PDF preview and one-step undo for each applied
   field. Shared fields update together; edits survive recovery and remain interactive
   after saving. Editable combo boxes support listed options or custom text.
+  Supported bordered dropdowns and plain single- or multi-select lists retain their
+  frame when filled, cleared and filled again. Use Ctrl or Shift to select multiple
+  list options. Lists with custom row shading or artwork can still be unavailable
+  when Folio cannot safely distinguish the answer from that artwork.
   Click an outlined field in the preview to
   select it and focus its value control. Dirty drafts stay protected until Apply
   or Reset; hidden fields have no page target, and visible read-only fields explain
@@ -314,6 +331,16 @@ authenticated PDF protection without storing your password.
 A restored owner-unlocked session keeps that access within the same Windows account;
 saved PDFs still require the original credentials and retain their original permissions.
 
+
+The separate **0.55 development candidate** integrates newer original-font
+compatibility and paragraph fitting. A replacement typed in **Edit text** stays
+with the draft when transferred through **Edit paragraph…**. Paragraph Preview
+fits edited text automatically by default; turn off **Automatically fit edited
+text** to keep a fixed area. Original-font CFF ligatures and verified accent
+clusters retain their original physical glyphs and exact text. See
+[editing support](docs/existing-text-editing.md) and the
+[development build guide](docs/development-build-status.md) for the current
+build/acceptance state; the selected launcher remains on its existing version.
 
 ## Roadmap
 

@@ -144,10 +144,10 @@ fn native_residency_render_refreshes_recency_without_reopening_metadata_only_sou
     assert_eq!(Arc::strong_count(&held[0].1)+1,held[0].2);
     render(&mut rt,&held[0].0,0).unwrap();
     assert_eq!(Arc::strong_count(&held[0].1),held[0].2);
-    for _ in 0..2 {rt.create_blank_document(200.0,200.0).unwrap();}
+    rt.create_blank_document(200.0,200.0).unwrap();
     let (reply,receive)=mpsc::channel();request(&mut rt,WorkerRequest::Status{reply});receive.recv().unwrap();
     assert_eq!(Arc::strong_count(&held[0].1),held[0].2,"Recently rendered old source must remain native");
-    assert_eq!(Arc::strong_count(&held[4].1)+1,held[4].2,"An older unaccessed source must be evicted instead");
+    assert_eq!(Arc::strong_count(&held[6].1)+1,held[6].2,"The older source must leave the two-reader window instead");
 }
 
 #[test]
@@ -190,13 +190,13 @@ fn native_residency_completed_requests_release_old_native_readers_but_keep_sourc
     request(&mut rt, WorkerRequest::Status { reply });
     assert!(receive.recv().unwrap().contains("ready"));
     let released = held.iter().filter(|(_, bytes, before)| Arc::strong_count(bytes) + 1 == *before).count();
-    assert_eq!(released, 6, "Six older PDFium reader owners must be released at the worker boundary; retain four native documents");
+    assert_eq!(released, 8, "Eight older PDFium reader owners must be released at the worker boundary; retain two native documents");
     for (id, bytes, _) in &held {
         let (reply, receive) = mpsc::channel();
         request(&mut rt, WorkerRequest::SourceBytes { source_id: id.clone(), reply });
         assert!(Arc::ptr_eq(&receive.recv().unwrap().unwrap(), bytes));
     }
-    assert_eq!(held.iter().filter(|(_, bytes, before)| Arc::strong_count(bytes) + 1 == *before).count(),6,"Metadata reads must not reopen PDFium documents");
+    assert_eq!(held.iter().filter(|(_, bytes, before)| Arc::strong_count(bytes) + 1 == *before).count(),8,"Metadata reads must not reopen PDFium documents");
     for (id, _, _) in &held { rt.close_document(id).unwrap(); }
     for (_, bytes, _) in &held { assert_eq!(Arc::strong_count(bytes),1); }
 }

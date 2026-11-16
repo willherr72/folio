@@ -44,3 +44,13 @@ it("keeps a font lease until an in-flight apply finishes even when the dialog un
  await act(async()=>{await Promise.resolve();});expect(fontApi.release).not.toHaveBeenCalled();expect(customFontState(id)?.status).toBe("ready");
  await act(async()=>finish());await waitFor(()=>expect(fontApi.release).toHaveBeenCalledWith(id));
 });
+
+it("carries a staged multiline paste through the font picker with the current immutable font",()=>{
+ const paragraph=vi.fn();render(<ExistingTextDialog run={run} busy={false} error={null} onApply={vi.fn()} onCancel={vi.fn()} onEditParagraph={paragraph}/>);
+ const input=screen.getByRole("textbox",{name:"Replacement text"}) as HTMLInputElement;input.setSelectionRange(0,run.text.length);
+ fireEvent.paste(input,{clipboardData:{getData:()=>"café\r\nnext"}});
+ fireEvent.click(screen.getByRole("button",{name:"Choose substitute font…"}));fireEvent.click(screen.getByRole("button",{name:"Use previewed substitute"}));
+ fireEvent.click(screen.getByRole("button",{name:"Paste as paragraph"}));expect(paragraph.mock.calls[0][0]).toMatchObject({replacement:"café\nnext",font:{id},selection:{start:9,end:9}});
+ expect(Object.isFrozen(paragraph.mock.calls[0][0].font.coverage)).toBe(true);expect(customFontState(id)?.status).toBe("ready");
+ fireEvent.click(screen.getByRole("button",{name:"Use original font"}));fireEvent.click(screen.getByRole("button",{name:"Paste as paragraph"}));expect(paragraph.mock.calls[1][0].font).toBeNull();
+});

@@ -11,6 +11,9 @@ mod embedded_font;
 use embedded_font::{FontProofs, VerifiedFont};
 pub(crate) use embedded_font::{choice_font_codes,redaction_font_codes};
 
+#[path = "embedded_cff_encodings.rs"]
+mod encoding_names;
+
 #[path = "equivalent_encoding.rs"]
 mod equivalent_encoding;
 
@@ -49,6 +52,14 @@ mod positioned_text;
 mod text_substitution;
 #[path = "text_show.rs"]
 mod text_show;
+#[path = "source_glyphs.rs"]
+mod source_glyphs;
+#[path = "cursor_widths.rs"]
+mod cursor_widths;
+#[path = "cursor_font.rs"]
+mod cursor_font;
+#[path = "paragraph_occurrences.rs"]
+mod paragraph_occurrences;
 #[path = "source_text.rs"]
 mod source_text;
 #[path = "text_context.rs"]
@@ -103,6 +114,24 @@ pub(super) struct Glyph {
     position: [f32; 6],
 }
 
+/// Owner-bound glyphs for an isolated source appearance, in content-object order.
+/// Return plain records so the private paragraph glyph model stays private.
+pub(crate) fn list_source_glyphs(page:&PdfPage<'_>,limit:usize)->EngineResult<Vec<(String,[f32;6])>> {
+    let text=page.text()?;
+    if usize::try_from(text.len()).ok().is_none_or(|count|count>limit){
+        return Err(invalid("Source list native character count exceeds its limit."));
+    }
+    drop(text);
+    let glyphs=text_paragraph::page_object_glyphs(page)?;
+    let mut objects:Vec<_>=glyphs.into_iter().collect();objects.sort_unstable_by_key(|(index,_)|*index);
+    let mut output=Vec::new();
+    for(_,glyphs)in objects {for glyph in glyphs{
+        if output.len()>=limit{return Err(invalid("Source list native glyph count exceeds its limit."));}
+        output.push((glyph.text,glyph.position));
+    }}
+    Ok(output)
+}
+
 #[derive(Debug, Clone, PartialEq)]
 struct RunSnapshot {
     index: usize,
@@ -118,9 +147,15 @@ struct RunSnapshot {
     program: Option<String>,
     proof: Option<Arc<VerifiedFont>>,
     standard: Option<Arc<standard_font::StandardFont>>,
+    source_encoding: Option<Arc<source_glyphs::BoundText>>,
 }
 
 impl RunSnapshot {
+    fn allows_source_text(&self,text:&str)->bool {
+        if let Some(proof)=&self.proof {proof.allows_source_text(text)}
+        else if self.embedded || self.standard.is_some() {embedded_font::unshaped(text)}
+        else {printable(text)}
+    }
     fn display_font_size(&self) -> Option<f32> {
         // The Tf operand can be 1 while Tm/CTM scales the em to 12 points.
         // Use the full vertical vector so quarter turns and reflection retain
@@ -138,9 +173,9 @@ impl RunSnapshot {
 fn run_content_reason(run: &RunSnapshot) -> Option<String> {
     if !run.embedded && !base_font(&run.font) {
         Some("This non-embedded custom font cannot be edited safely.".into())
-    } else if !(if run.embedded || run.standard.is_some() { embedded_font::latin(&run.text) } else { printable(&run.text) }) {
+    } else if !(run.allows_source_text(&run.text)) {
         Some(if run.embedded || run.standard.is_some() {
-            "Only bounded single-line Latin text runs can be edited."
+            "Only bounded single-line unshaped text runs can be edited."
         } else {
             "Only single-line printable ASCII text runs can be edited."
         }.into())
@@ -247,6 +282,7 @@ fn snapshot(page: &PdfPage<'_>, proofs: Option<&FontProofs>) -> EngineResult<Vec
             program,
             proof,
             standard: None,
+            source_encoding: None,
         };
         run.reason = run_content_reason(&run).or(run.reason);
         result.push(run);
@@ -1054,12 +1090,9 @@ impl WorkerRuntime {
                 "The text changed since it was selected. Select the run again.",
             ));
         }
-        if !(if selected.embedded || selected.standard.is_some() || font_id.is_some() {
-            embedded_font::latin(replacement)
-        } else {
-            printable(replacement)
-        }) {
-            return Err(invalid("Enter nonempty printable Latin text on one line, within 4096 UTF-8 bytes. Combining text, ligatures, and other scripts are not supported."));
+        if !(if font_id.is_some() {embedded_font::unshaped(replacement)}
+        else {selected.allows_source_text(replacement)}) {
+            return Err(invalid("Enter nonempty supported unshaped text on one line, within 4096 UTF-8 bytes. Combining text, ligatures, bidirectional controls, and scripts requiring shaping are not supported."));
         }
         let substitute = font_id.map(|id| self.fonts.get(id)).transpose()?;
         if let Some(font) = &substitute {
@@ -1125,6 +1158,7 @@ impl WorkerRuntime {
                 "Copying this page would change its appearance. Its text cannot be edited safely.",
             ));
         }
+        let cursor_font_name=planned.as_ref().and_then(|p|p.cursor_font_name()).map(str::to_owned);
         let bytes: Arc<[u8]> = if let Some(plan)=planned {plan.into_bytes().into()} else if let Some(font) = &substitute {
             // Normalize the selected stream through the already-proven no-op.
             // New PDFium text objects save into a new trailing stream and can
@@ -1169,6 +1203,9 @@ impl WorkerRuntime {
         let style_preserved = if let Some(font) = &substitute {
             same_layout_style(selected, changed)
                 && changed.program.as_deref() == Some(font.info.id.as_str())
+                && cursor_font_name.as_ref().is_none_or(|expected|changed.font==*expected)
+        } else if let Some(expected)=&cursor_font_name {
+            same_layout_style(selected,changed)&&selected.program==changed.program&&changed.font==*expected
         } else {
             same_style(selected, changed)
         };

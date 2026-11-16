@@ -147,6 +147,26 @@ impl<'a> PdfPageText<'a> {
         ))
     }
 
+    /// Groups input text objects by their actual Pdfium identity and returns each
+    /// group's input object indices and native page character indices. Duplicate
+    /// shared-form handles are represented once. No raw handle leaves this API.
+    /// Unlike repeated `chars_for_object()` calls, this scans characters once.
+    #[cfg(any(feature="pdfium_future",feature="pdfium_7881",feature="pdfium_7763",feature="pdfium_7543",feature="pdfium_7350",feature="pdfium_7215",feature="pdfium_7123",feature="pdfium_6996",feature="pdfium_6721",feature="pdfium_6666",feature="pdfium_6611"))]
+    pub fn character_groups_for_objects(&self,objects:&[&PdfPageTextObject])->Vec<(Vec<usize>,Vec<usize>)>{
+        let mut lookup=std::collections::HashMap::new();
+        let mut groups:Vec<(Vec<usize>,Vec<usize>)>=Vec::new();
+        for(index,object)in objects.iter().enumerate(){
+            let next=groups.len();let group=*lookup.entry(object.object_handle()as usize).or_insert(next);
+            if group==groups.len(){groups.push((Vec::new(),Vec::new()));}
+            groups[group].0.push(index);
+        }
+        for character in self.chars().iter(){
+            let handle=unsafe{self.bindings().FPDFText_GetTextObject(self.text_page_handle(),character.index()as i32)}as usize;
+            if let Some(group)=lookup.get(&handle){groups[*group].1.push(character.index());}
+        }
+        groups
+    }
+
     /// Returns a collection of all the `PdfPageTextChar` characters in the given [PdfPageAnnotation].
     ///
     /// The return result will be empty if the given [PdfPageAnnotation] is not attached to the

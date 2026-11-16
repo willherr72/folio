@@ -333,3 +333,24 @@ fn shared_source_page_dictionary_cannot_apply_one_rotation_to_both_occurrences()
     assert!(engine.export_pdf(plan,&output).is_err(),"A transform must not mutate another page occurrence");
     assert!(!output.exists());
 }
+
+#[test]
+fn untagged_language_only_sources_keep_language_when_imported_or_duplicated() {
+    let engine=engine();let temp=tempfile::tempdir().unwrap();let mut opened=Vec::new();
+    for index in 0..2 {
+        let mut doc=Document::with_version("1.7");let parent=doc.new_object_id();
+        let font=doc.add_object(dictionary!{"Type"=>"Font","Subtype"=>"Type1","BaseFont"=>"Helvetica"});
+        let content=doc.add_object(Stream::new(dictionary!{},format!("BT /F1 12 Tf 30 330 Td (Source {index}) Tj ET").into_bytes()));
+        let page=doc.add_object(dictionary!{"Type"=>"Page","Parent"=>parent,"MediaBox"=>vec![0.into(),0.into(),400.into(),500.into()],"Resources"=>dictionary!{"Font"=>dictionary!{"F1"=>font}},"Contents"=>content});
+        doc.objects.insert(parent,dictionary!{"Type"=>"Pages","Count"=>1,"Kids"=>vec![Object::Reference(page)]}.into());
+        let catalog=doc.add_object(dictionary!{"Type"=>"Catalog","Pages"=>parent,"Lang"=>Object::string_literal("en-US")});doc.trailer.set("Root",catalog);
+        let path=temp.path().join(format!("source-{index}.pdf"));doc.save(&path).unwrap();opened.push(engine.open_document(&path).unwrap());
+    }
+    let a=request(&opened[0]).pages.remove(0);let mut duplicate=a.clone();duplicate.id="duplicate".into();duplicate.rotation=90;
+    let mut imported=request(&opened[1]).pages.remove(0);imported.id="imported".into();
+    let plans=vec![a,duplicate,imported];let output=temp.path().join("saved.pdf");engine.export_pdf(ExportRequest{pages:plans,flatten:false},&output).unwrap();
+    let saved=Document::load(&output).unwrap();assert_eq!(saved.catalog().unwrap().get(b"Lang").unwrap().as_str().unwrap(),b"en-US");
+    assert_eq!(saved.get_pages().len(),3);let reopened=engine.open_document(&output).unwrap();
+    assert_eq!(engine.page_text(&reopened.id,0).unwrap(),engine.page_text(&opened[0].id,0).unwrap());
+    assert_eq!(engine.page_text(&reopened.id,2).unwrap(),engine.page_text(&opened[1].id,0).unwrap());
+}

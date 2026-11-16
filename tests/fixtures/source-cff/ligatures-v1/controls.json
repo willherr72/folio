@@ -1,0 +1,70 @@
+{
+  "generatorSha256": "23f3d2231e6d026006b38239b62a2fd597f53cd8f0e7336176719238f726372d",
+  "controls": [
+    {
+      "kind": "empty",
+      "label": "sid",
+      "wrapped": false,
+      "path": "empty-sid.cff",
+      "sha256": "a0c2cf6a790c3f0d45229528eb6a4bfd59b0536cd36d8bafd0ff1567f5434216",
+      "sourceSha256": "20576eaf44fd9fe4576312e4988897ed0b5c3ec38f73c97e047ddb72d2d55fc4"
+    },
+    {
+      "kind": "empty",
+      "label": "sid",
+      "wrapped": true,
+      "path": "empty-sid.otf",
+      "sha256": "ef471afe2a316878b1e03a00e53aef8f527c079ff28252735657d6dec8ed6e76",
+      "sourceSha256": "20576eaf44fd9fe4576312e4988897ed0b5c3ec38f73c97e047ddb72d2d55fc4"
+    },
+    {
+      "kind": "budget",
+      "label": "sid",
+      "wrapped": false,
+      "path": "budget-sid.cff",
+      "sha256": "710d34936ac63618f461e292a09310ca12c09eab137a8d1ad0f044a7d09a44d7",
+      "sourceSha256": "20576eaf44fd9fe4576312e4988897ed0b5c3ec38f73c97e047ddb72d2d55fc4"
+    },
+    {
+      "kind": "budget",
+      "label": "sid",
+      "wrapped": true,
+      "path": "budget-sid.otf",
+      "sha256": "6cbd4ddfad78c74fcafeb7038d75f67aca24cec500746ce619f22f5950221254",
+      "sourceSha256": "20576eaf44fd9fe4576312e4988897ed0b5c3ec38f73c97e047ddb72d2d55fc4"
+    },
+    {
+      "kind": "empty",
+      "label": "cid",
+      "wrapped": false,
+      "path": "empty-cid.cff",
+      "sha256": "9a3cc52c447d95a2d90c657426610bc2824c83851656a6c595b062ea732f11e0",
+      "sourceSha256": "8ef8e644f3ea608cdf7f137c272d7c5b125c9d9708122e76936be90f62dd2bf1"
+    },
+    {
+      "kind": "empty",
+      "label": "cid",
+      "wrapped": true,
+      "path": "empty-cid.otf",
+      "sha256": "b1386366cae636902de53954a624d18cbf9458cc97a80eba2b1a5a459ffc178f",
+      "sourceSha256": "8ef8e644f3ea608cdf7f137c272d7c5b125c9d9708122e76936be90f62dd2bf1"
+    },
+    {
+      "kind": "budget",
+      "label": "cid",
+      "wrapped": false,
+      "path": "budget-cid.cff",
+      "sha256": "1a22c6f40525faf6b2905912c1a5d4b1981f70a2f07121d7287f5c8ac319a078",
+      "sourceSha256": "8ef8e644f3ea608cdf7f137c272d7c5b125c9d9708122e76936be90f62dd2bf1"
+    },
+    {
+      "kind": "budget",
+      "label": "cid",
+      "wrapped": true,
+      "path": "budget-cid.otf",
+      "sha256": "25184d928e1fbf24274bb43ca793cfa6be4fa43fa202fc228839fbe05daaa8c2",
+      "sourceSha256": "8ef8e644f3ea608cdf7f137c272d7c5b125c9d9708122e76936be90f62dd2bf1"
+    }
+  ],
+  "expansion": "Eight-level/eight-way valid post-width expansion exceeds existing two-million CFF work limit; zero-ink controls retain valid positive widths."
+}

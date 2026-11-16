@@ -47,3 +47,15 @@ it("disables both existing-text tools when the source denies content edits",asyn
  expect(screen.getByRole("button",{name:"Edit text"})).toBeDisabled();
  expect(screen.getByRole("button",{name:"Edit paragraphs"})).toBeDisabled();
 });
+it("returns to the reader before cancelled owner verification replies",async()=>{
+ let finish!:(value:any)=>void;
+ vi.spyOn(nativeAdapter as Required<typeof nativeAdapter>,"unlockSources").mockImplementation(()=>new Promise(resolve=>{finish=resolve;}));
+ render(<App initialDemo={false}/>);fireEvent.click(screen.getByRole("button",{name:"Open a PDF"}));await screen.findByRole("tab",{name:"Protected.pdf"});
+ fireEvent.click(screen.getByRole("button",{name:"Unlock editing"}));const input=await screen.findByLabelText("Owner password");
+ fireEvent.change(input,{target:{value:"owner"}});fireEvent.submit(input.closest("form")!);await screen.findByText("Checking password…");
+ fireEvent.click(screen.getByRole("button",{name:"Cancel"}));
+ try {await waitFor(()=>expect(screen.getByRole("button",{name:"Open"})).toBeEnabled());}
+ finally {await act(async()=>finish([{sourceId:"reader",document:owner}]));}
+ await waitFor(()=>expect(nativeAdapter.closeDocument).toHaveBeenCalledWith("owner"));
+ expect(screen.getByTestId("source")).toHaveTextContent("reader");expect(screen.getByRole("button",{name:"Unlock editing"})).toBeEnabled();
+});

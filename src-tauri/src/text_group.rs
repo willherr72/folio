@@ -130,6 +130,68 @@ fn prove_encoded_members(
     Ok(())
 }
 
+
+// A native Unicode setter can decompose a source ligature or require scalar
+// glyphs that this PDF never contained. Merge only its already proved operands;
+// all text/graphics state stays in source order. The ordinary glyph, style,
+// object-count and raster checks below still gate the resulting private page.
+fn merge_source_members(
+    bytes: &[u8], runs: &[RunSnapshot], members: &[(usize, String)], logical: &str,
+) -> EngineResult<Vec<u8>> {
+    use lopdf::{content::Content, dictionary, Document, Object, Stream};
+    let mut joined = Vec::new();
+    let mut ordinals = std::collections::BTreeSet::new();
+    for (index, text) in members {
+        let ordinal = runs.iter().position(|r| r.index == *index)
+            .ok_or_else(|| invalid("A selected group piece is missing."))?;
+        joined.extend(positioned_text::encoded(&runs[ordinal], text)?);
+        if joined.len() > 8192 { return Err(invalid("The encoded group exceeds its limit.")); }
+        ordinals.insert(ordinal);
+    }
+    let first = *ordinals.first().ok_or_else(|| invalid("The group is empty."))?;
+    let bound = runs[first].proof.as_ref()
+        .ok_or_else(|| invalid("The grouped source font has no exact proof."))?
+        .bind(&joined)?.ok_or_else(|| invalid("The grouped source has no glyph codebook."))?;
+    if bound.encoded().text() != logical {
+        return Err(invalid("The grouped source glyphs do not match its logical text."));
+    }
+    let mut pdf = Document::load_mem_with_options(bytes,
+        lopdf::LoadOptions::with_max_decompressed_size(16 * 1024 * 1024))
+        .map_err(|_| invalid("The grouped page cannot be decoded."))?;
+    let pages = pdf.get_pages();
+    if pages.len() != 1 { return Err(invalid("The group needs an isolated page.")); }
+    let page = *pages.values().next().unwrap();
+    let data = pdf.get_page_content_with_limit(page, 16 * 1024 * 1024)
+        .map_err(|_| invalid("The grouped content exceeds its limit."))?;
+    let mut content = Content::decode(&data).map_err(|_| invalid("Malformed group content."))?;
+    if content.operations.len() > 100_000 { return Err(invalid("Too many group operations.")); }
+    let mut ordinal = 0;
+    let mut remove = std::collections::BTreeSet::new();
+    for (index, op) in content.operations.iter_mut().enumerate() {
+        if !matches!(op.operator.as_str(), "Tj" | "TJ" | "'" | "\"")
+            || positioned_text::cursor_only(op) { continue; }
+        if ordinals.contains(&ordinal) {
+            // prove_encoded_members admitted only Tj or a one-string TJ.
+            if ordinal == first {
+                op.operator = "Tj".into();
+                op.operands = vec![Object::string_literal(joined.clone())];
+            } else { remove.insert(index); }
+        }
+        ordinal += 1;
+    }
+    if ordinal != runs.len() { return Err(invalid("The group show mapping changed.")); }
+    content.operations = content.operations.into_iter().enumerate()
+        .filter_map(|(index, op)| (!remove.contains(&index)).then_some(op)).collect();
+    let data = content.encode().map_err(|_| invalid("The grouped content cannot be encoded."))?;
+    if data.len() > 16 * 1024 * 1024 { return Err(invalid("The grouped content exceeds its limit.")); }
+    let stream = pdf.add_object(Stream::new(dictionary! {}, data));
+    pdf.get_dictionary_mut(page).map_err(|_| invalid("The grouped page is malformed."))?
+        .set("Contents", stream);
+    let mut output = Vec::new();
+    pdf.save_to(&mut output).map_err(|_| invalid("The grouped page cannot be saved."))?;
+    Ok(output)
+}
+
 impl WorkerRuntime {
     pub(in crate::engine) fn group_source_admission(&self,source_id:&str)->EngineResult<()> {
         if let Some(reason) = self.source_text_edit_restriction(source_id)? {
@@ -303,12 +365,8 @@ impl WorkerRuntime {
         if rotated && !first_origin.is_some_and(|(x, _)| previous_x > x) {
             return Err(invalid("This rotated selection has text directions that cannot be grouped safely."));
         }
-        if !(if first.embedded || first.standard.is_some() {
-            embedded_font::latin(&logical)
-        } else {
-            printable(&logical)
-        }) {
-            return Err(invalid("Select bounded single-line Latin text pieces."));
+        if !(first.allows_source_text(&logical)) {
+            return Err(invalid("Select bounded single-line unshaped text pieces."));
         }
         prove_encoded_members(&baseline, &before, &members)?;
         let preview = TextGroupPreview {
@@ -322,7 +380,9 @@ impl WorkerRuntime {
         drop(text_page);
         drop(first_object);
         drop(page);
-        {
+        let bytes: Arc<[u8]> = if before.iter().any(|r| indices.contains(&r.index) && r.source_encoding.is_some()) {
+            merge_source_members(&baseline, &before, &members, &logical)?.into()
+        } else {
             let mut page = copy.pages().get(0)?;
             let mut object = page.objects().get(indices[0])?;
             object
@@ -335,8 +395,9 @@ impl WorkerRuntime {
             }
             page.regenerate_content()?;
             page.set_rotation(rotation);
-        }
-        let bytes: Arc<[u8]> = copy.save_to_bytes()?.into();
+            drop(page);
+            copy.save_to_bytes()?.into()
+        };
         let bytes = self.preserve_text_edit_comments(source_id, page_index, bytes)?;
         let candidate = self.pdfium.load_pdf_from_byte_slice(&bytes, None)?;
         let mut page = candidate.pages().get(0)?;

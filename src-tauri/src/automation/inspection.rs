@@ -68,7 +68,7 @@ pub(super) fn bounded_json(value: &impl Serialize, limit: usize) -> EngineResult
     Ok(writer.bytes)
 }
 
-fn selection(
+pub(super) fn selection(
     source_hash: &[u8],
     page: u32,
     run: &EditableTextRun,

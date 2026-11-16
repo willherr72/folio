@@ -3,7 +3,7 @@ use super::*;
 use std::cell::{Cell, OnceCell};
 use std::time::Instant;
 
-const IDLE_DOCUMENT_LIMIT: usize = 4;
+const IDLE_DOCUMENT_LIMIT: usize = 2;
 
 pub(super) struct ResidentDocument {
     native: OnceCell<PdfDocument<'static>>,

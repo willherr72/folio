@@ -439,7 +439,6 @@ pub(super) fn replace(
     source_geometry: PageGeometry,
 ) -> EngineResult<Vec<u8>> {
     replace_impl(destination, destination_page, incoming, incoming_page, target_geometry, source_geometry, false, None)
-        .map(page_admission::Publication::into_bytes)
 }
 
 /// Exact text publication has no fitting transform and carries disposable
@@ -447,21 +446,21 @@ pub(super) fn replace(
 pub(super) fn replace_edited_text(
     destination: &[u8], destination_page: usize, incoming: &[u8],
     target_geometry: PageGeometry, source_geometry: PageGeometry,
-) -> EngineResult<page_admission::Publication> {
+) -> EngineResult<Vec<u8>> {
     replace_impl(destination, destination_page, incoming, 0, target_geometry, source_geometry, true, None)
 }
 
 pub(super) fn replace_context_text(
     destination: &[u8], destination_page: usize, incoming: &[u8],
     target_geometry: PageGeometry, source_geometry: PageGeometry, context: &text_edit::PublicationProof,
-) -> EngineResult<page_admission::Publication> {
+) -> EngineResult<Vec<u8>> {
     replace_impl(destination,destination_page,incoming,0,target_geometry,source_geometry,true,Some(context))
 }
 
 fn replace_impl(
     destination: &[u8], destination_page: usize, incoming: &[u8], incoming_page: usize,
     target_geometry: PageGeometry, source_geometry: PageGeometry, exact_text: bool, context: Option<&text_edit::PublicationProof>,
-) -> EngineResult<page_admission::Publication> {
+) -> EngineResult<Vec<u8>> {
     crate::form_graph::preflight(destination)?;
     crate::form_graph::preflight(incoming)?;
     let mut target = crate::pdf_output::load(destination)?;
@@ -578,7 +577,7 @@ fn replace_impl(
     for (key,value) in hints {page.set(key,value);}
     crate::page_resources::prune_unreachable(&mut target)?;
     if let Some(context)=context {context.published(&target,target_page)?;}
-    page_admission::Publication::save(&mut target,exact_text)
+    crate::pdf_output::save(&mut target)
 }
 
 impl WorkerRuntime {

@@ -72,7 +72,7 @@ impl Session {
                 Err(message) => protocol::tool_error(id, modern, "unknown_preview", message),
             });
         }
-        if matches!(&call, Call::PreviewText { .. } | Call::PreviewParagraph {..} | Call::PreviewForm {..}) && !self.previews.has_room() {
+        if matches!(&call, Call::PreviewReplacement{..} | Call::PreviewText { .. } | Call::PreviewTextBatch {..} | Call::PreviewParagraph {..} | Call::PreviewForm {..}) && !self.previews.has_room() {
             return Some(protocol::tool_error(
                 id,
                 modern,
@@ -100,6 +100,9 @@ impl Session {
             && !self.config.can_add(preview.unwrap().candidate.bytes)
         {
             return Some(protocol::tool_error(id,modern,"document_limit","Session document storage is full. Close an unused document before applying this preview."));
+        }
+        if matches!(&call,Call::OrganizePages {..}|Call::MergeDocuments {..})&&!self.config.can_add(1){
+            return Some(protocol::tool_error(id,modern,"document_limit","Session document storage is full. Close an unused document before organizing pages."));
         }
         match Worker::start(&self.config, id.clone(), modern, call, preview) {
             Ok(worker) => {
@@ -241,5 +244,18 @@ mod tests {
             assert!(!bundle.exists());
             assert!(!input.exists());
         }
+    }
+    #[test]
+    fn page_organization_cancel_and_drop_reap_before_owned_stage_cleanup() {
+        for kind in["organize-pages","export-pages","merge-documents","export-composition"]{for cancel in[false,true]{
+            let(dir,mut session)=fixture();let input=session.config.documents[0].path.clone();
+            let saved=dir.path().join("already-saved.pdf");fs::write(&saved,b"public output preserved").unwrap();
+            let(stage,process)=owned_worker(&mut session,kind);
+            if cancel{
+                assert!(session.dispatch(json!({"jsonrpc":"2.0","method":"notifications/cancelled","params":{"requestId":1}})).is_none());
+                reaped(process);assert!(!stage.exists());assert!(input.exists());assert!(session.active.is_none());drop(session);
+            }else{drop(session);reaped(process);}
+            assert!(!stage.exists());assert!(!input.exists());assert_eq!(fs::read(saved).unwrap(),b"public output preserved");
+        }}
     }
 }

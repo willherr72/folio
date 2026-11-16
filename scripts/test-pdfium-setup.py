@@ -29,6 +29,11 @@ class SetupTests(unittest.TestCase):
         shutil.copyfile(REPO / 'patches/pdfium/ordered-default-colors.patch', self.color_patch)
         self.form_font_patch = self.root / 'patches/pdfium/embedded-form-font-preference.patch'
         shutil.copyfile(REPO / 'patches/pdfium/embedded-form-font-preference.patch', self.form_font_patch)
+        self.border_patch = self.root / lock['borderPatch']
+        self.separator_patch = self.root / lock['separatorPatch']
+        self.selection_patch = self.root / lock['listSelectionPatch']
+        for path in [self.border_patch, self.separator_patch, self.selection_patch]:
+            shutil.copyfile(REPO / path.relative_to(self.root), path)
         self.resource = self.root / 'src-tauri/resources/pdfium'
         self.resource.mkdir(parents=True)
         self.dll = self.resource / 'pdfium.dll'
@@ -41,6 +46,11 @@ class SetupTests(unittest.TestCase):
                              advancePatchSha256=hashlib.sha256(self.advance_patch.read_bytes()).hexdigest(),
                              colorPatchSha256=hashlib.sha256(self.color_patch.read_bytes()).hexdigest(),
                              formFontPatchSha256=hashlib.sha256(self.form_font_patch.read_bytes()).hexdigest(),
+                             borderPatchSha256=hashlib.sha256(self.border_patch.read_bytes()).hexdigest(),
+                             separatorPatchSha256=hashlib.sha256(self.separator_patch.read_bytes()).hexdigest(),
+                             separatorProbeSha256=lock['separatorProbeSha256'],
+                             listSelectionPatchSha256=hashlib.sha256(self.selection_patch.read_bytes()).hexdigest(),
+                             listSelectionProbeSha256=lock['listSelectionProbeSha256'],
                              buildCommit=lock['repositories']['build']['commit'],
                              distributorCommit=lock['repositories']['distributor']['commit'],
                              depotToolsCommit=lock['repositories']['depot_tools']['commit'])
@@ -102,6 +112,26 @@ class SetupTests(unittest.TestCase):
     def test_missing_form_font_provenance_is_rejected(self):
         self.metadata.pop('formFontPatchSha256')
         self.register()
+        self.assertNotEqual(self.run_setup().returncode, 0)
+
+    def test_changed_selection_patch_is_preserved_and_rejected(self):
+        self.register()
+        before = self.dll.read_bytes()
+        self.selection_patch.write_bytes(b'changed selection behavior')
+        self.assertNotEqual(self.run_setup().returncode, 0)
+        self.assertEqual(self.dll.read_bytes(), before)
+        self.assertEqual(self.selection_patch.read_bytes(), b'changed selection behavior')
+
+    def test_missing_selection_patch_is_rejected(self):
+        self.register(); self.selection_patch.unlink()
+        self.assertNotEqual(self.run_setup().returncode, 0)
+
+    def test_missing_selection_provenance_is_rejected(self):
+        self.metadata.pop('listSelectionPatchSha256'); self.register()
+        self.assertNotEqual(self.run_setup().returncode, 0)
+
+    def test_mismatched_selection_probe_is_rejected(self):
+        self.metadata['listSelectionProbeSha256'] = '0' * 64; self.register()
         self.assertNotEqual(self.run_setup().returncode, 0)
 
     def test_missing_registration_never_downloads_baseline(self):

@@ -2,7 +2,11 @@
 
 Folio edits existing text objects in supported PDFs. This changes the PDF content itself: exported and recovered pages contain the replacement as searchable text, and reopening an export exposes the edited run normally.
 
-Folio supports visible, filled, top-level single-line text using the twelve Latin standard PDF fonts, plus positively verified embedded TrueType fonts. Current source builds also support representable accented Latin text in nominal Standard, WinAnsi and MacRoman standard-font resources. Each selected source operation must prove its exact encoding and advances; a familiar font name alone is insufficient. Embedded simple fonts and Type0 Identity-H CIDFontType2 fonts can reuse supported Latin characters, including precomposed accents, only when their code, glyph and width mappings are unambiguous. Replacement text stays on one line. The desktop replacement field accepts at most 1,000 characters; native and CLI/MCP requests are bounded to 4096 UTF-8 bytes. Original font, size, color and baseline are retained by default. Page crop offsets and intrinsic quarter-turn rotations are supported.
+Folio supports visible, filled, top-level single-line text using the twelve Latin standard PDF fonts, plus positively verified embedded TrueType fonts. Current source builds also support representable accented Latin text in nominal Standard, WinAnsi and MacRoman standard-font resources. Each selected source operation must prove its exact encoding and advances; a familiar font name alone is insufficient. Current development source can reuse covered unshaped BMP Latin, Greek, Cyrillic, punctuation and symbols in embedded simple fonts and Type0 Identity-H CIDFontType2 fonts, only when their code, glyph and width mappings are unambiguous. Replacement text stays on one line. The desktop replacement field accepts at most 1,000 characters; native and CLI/MCP requests are bounded to 4096 UTF-8 bytes. Original font, size, color and baseline are retained by default. Page crop offsets and intrinsic quarter-turn rotations are supported.
+
+Source development after portable 0.43 applies this shared unshaped repertoire to eligible individual runs, groups, uniform/styled paragraphs and reusable-object text, including paragraphs promoted from one shared invocation and saved re-editing. Explicit substitute fonts use their own proved glyph coverage. Standard-font encoding rules remain unchanged; unproved combining sequences, bidirectional controls and scripts needing shaping remain outside these existing-text paths. The historical 0.43 package predates this extension; selected 0.50 includes it. Native, desktop and CLI/MCP validation on authored fixtures has passed; broader producer and commercial-parity acceptance remains open.
+
+Development source also recognizes bounded accent clusters when the original PDF maps one proved physical glyph to a base letter followed by combining accents, such as `e` followed by U+0301. The original font must prove its exact character code, glyph, outline and width; any available intrinsic aliases must agree. Source and replacement Unicode remain exact; the editor does not normalize them or draw new combining marks. This applies to eligible original-font single runs, groups, shared-object text and modern styled paragraphs. Explicit substitute-font requests and the legacy scalar paragraph route retain their stricter policies. The reviewed diagnostic source candidate passed complete library correctness (1,759 tests), 35 complete optimized integration targets (341 tests), 1,793 frontend tests, actual CLI/MCP/Windows editing and 100 independently audited saved outputs. The [completion record](../artifacts/source-accent-clusters-20261115/completion.json) binds the exact source and executable, profiles, ignored counts and acceptance limits. Existing portable packages predate this change.
 
 The standard-font extension covers eligible individual runs, groups, paragraphs
 and reusable-form text, including saved re-editing. Overridden widths, descriptors,
@@ -13,19 +17,24 @@ are tracked in the [quality record](product-quality-loop.md).
 
 Development builds also accept explicitly WinAnsi-encoded, nonsymbolic embedded TrueType fonts without a `ToUnicode` table, as commonly produced by print-to-PDF drivers. The embedded Unicode glyph maps must agree and the PDF widths must match the font metrics. Missing maps in other encodings, conflicting maps, symbolic fonts, incorrect widths and malformed present `ToUnicode` tables still fail verification. This does not add characters missing from a subset font.
 
-Current development source also recognizes equivalent encoding dictionaries with
-an explicit WinAnsi or MacRoman base. Empty differences and exact, redundant ASCII
-glyph assignments no longer block text or paragraph edits. Embedded simple fonts
-still require WinAnsi and their usual Unicode/glyph/width proof. Actual remapping,
-alternate glyph names, implicit bases and non-ASCII differences remain unsupported;
-the usable repertoire still comes from the proved named base encoding. Source
-encoding objects and all appearance/neighbor checks are retained.
+Qualified local packages recognize equivalent encoding dictionaries with an
+explicit WinAnsi or MacRoman base: empty differences and exact, redundant ASCII
+glyph assignments do not block text or paragraph edits. A newer reviewed workspace source
+candidate extends this check to exact nominal accented and symbol glyph names,
+such as WinAnsi byte 233 or MacRoman byte 142 mapped to `eacute`. Native, CLI and Windows candidate checks passed; the completed 0.54 package predates this extension. An unused
+nominal accented assignment can also be retained while editing ASCII text.
+
+Embedded simple TrueType fonts still require WinAnsi and their usual Unicode/glyph/width
+proof. Actual remapping, alternate glyph-name aliases, implicit bases, undefined
+slots and ambiguous source-byte roundtrips remain unsupported. The usable
+repertoire comes from the proved named base, with original encoding objects and
+all appearance/neighbor checks retained.
 
 For an eligible run whose subset lacks a needed character, choose **Choose substitute font…**, preview an installed or imported font, choose **Apply font**, then **Apply changes**. This explicitly changes the font while retaining size, color and baseline. The substitute travels inside the changed source PDF, so export/reopen and recovery do not depend on an installed font or separate imported file. The dialog keeps your typed replacement when a glyph or layout check fails.
 
 Since v0.7.1, replacements can extend beyond the original run into available space while remaining within the visible page. Folio rejects new or expanded overlap with neighboring source text and graphics using conservative object bounds. Only a proven opaque, unstroked rectangular page fill painted behind the run is treated as a background. Images, forms and compound paths remain subject to conservative collision bounds, even when they cover the whole page. It does not reflow a paragraph or shrink the font to make an edit fit. Collision checks cover source page objects; separately placed annotations and overlays still need visual checking when expanding text.
 
-Unverified or ambiguous font mappings, embedded CFF/Type1/Type3 programs, symbolic fonts, multi-character ligatures, and invisible/stroked/clipping text are unsupported. Scans do not produce editable source-text runs. Nested forms have the occurrence-editing support described below. Documents containing optional content (PDF layers) remain unsupported by these editing routes.
+Current development source can reuse verified static embedded CFF1 programs through the supported routes described in the [CFF status](source-cff-status.md). It also supports bounded source-bound ligatures in eligible CID TrueType fonts; the [source-font status](source-font-editing-status.md) describes the proof and remaining limits. Unverified or ambiguous mappings, unsupported Type1/Type3 programs, symbolic fonts and invisible or stroked text remain unsupported. Arbitrary clipping effects are not enabled. Scans do not produce editable source-text runs. Nested forms have the occurrence-editing support described below. Documents containing optional content (PDF layers) remain unsupported by these editing routes.
 
 Current development builds preserve verified rectangular clipping, page transparency groups and marked-content ownership for eligible text, including tagged Word PDFs. Eligible single runs can also use an explicit substitute font within that preserved context. This does not enable arbitrary clipping shapes, transparency effects, custom encodings, pattern paints or ambiguous tag ownership. Some remaining encoding, text-state or placement problems can only be identified when applying the replacement; the editor reports the error and keeps the existing page and draft. See the [single-run font workflow](automation.md#explicit-fonts-for-single-text-runs) for the equivalent CLI/MCP controls.
 
@@ -44,10 +53,27 @@ from any of its verified pieces, including its entered line breaks and formattin
 
 Current source builds also keep the replacement you already typed when choosing
 **Edit paragraph…** from Edit text. A chosen substitute font follows that source
-piece, while surrounding text keeps its formatting. The transfer is one local
-paragraph Undo/Redo action. Use **Fit area to text** and **Preview paragraph**
-before applying longer text. If preparation fails, the original text dialog
-keeps your replacement and font for correction or copying.
+piece, while surrounding text keeps its formatting. Folio asks the native fitter
+to propose an area for a changed transferred draft, retaining its font sizes and
+source baseline. The transfer and proposed area form one local paragraph
+Undo/Redo action. Inspect **Preview paragraph** before applying. If automatic
+fitting cannot find a safe area, your transferred text and font remain available;
+adjust them or use **Fit area to text**. A proposal outside the visible page crop
+is not adopted. If source preparation fails, the original text dialog keeps your
+replacement and font for correction or copying.
+
+Direct paragraph edits now use **Automatically fit edited text** by default
+when fitting is available. **Preview paragraph** asks for a safe area while
+keeping the current fonts, sizes and source baseline. The fitted area joins the
+text edit's local Undo/Redo step, including intervening future-typing formatting.
+Undoing only that formatting keeps the fitted area for the existing text.
+Uncheck the option to keep a fixed area; manual
+area changes and restored history retain their chosen geometry. Untouched
+previews and caret-only formatting do not request fitting. A refused or
+out-of-crop proposal keeps the draft and current area, then uses the ordinary
+checked preview path. **Fit area to text** remains available explicitly. Preview
+and Apply still enforce native source-font, placement and neighboring-content
+checks; automatic fitting does not guarantee every replacement can be applied.
 
 Select words in **Paragraph text** to change their size, color or substitute
 font. With only a caret, formatting applies to text typed next. Unselected styles
@@ -151,7 +177,7 @@ embedded subset lacks a character. **Apply font** selects it for the draft;
 the page. Canceling the picker keeps your draft and existing preview. **Use
 original font** clears the choice while retaining text and other formatting.
 The chosen font is embedded in the PDF, so subsequent edits and saved copies do
-not need the imported file. Printable Latin paragraph limits still apply.
+not need the imported file. The same bounded unshaped character and font-coverage limits apply.
 
 **Text color** changes the whole selected uniform paragraph. The picker starts
 with its current color; **Use original color** restores the source value. Changing

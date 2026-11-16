@@ -1,6 +1,6 @@
 [package]
 name = "folio"
-version = "0.39.0-dev.1"
+version = "0.56.0-dev.1"
 description = "Native backend for the Folio desktop PDF editor"
 edition = "2021"
 default-run = "folio"
@@ -27,6 +27,7 @@ harfrust = { path = "vendor/harfrust-0.13.3" }
 lopdf = { path = "vendor/lopdf-0.45.0" }
 jpeg-decoder = { path = "vendor/jpeg-decoder-0.3.2" }
 pdfium-render = { path = "vendor/pdfium-render-0.9.4" }
+ttf-parser = { path = "vendor/ttf-parser-0.25.1" }
 
 [[test]]
 name = "shaping"
@@ -70,6 +71,7 @@ crc32fast = "=1.5.1"
 flate2 = "=1.1.10"
 getrandom = "=0.3.4"
 stringprep = "=0.1.5"
+unicode-normalization = "=0.1.25"
 jpeg-decoder = { version = "=0.3.2", default-features = false }
 moxcms = "=0.8.1"
 harfrust = {version = "=0.13.3", optional = true}

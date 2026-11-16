@@ -7,6 +7,7 @@ import { registerHighlightLayer } from "../editor/annotation-selection";
 import { selectableTextSpans, selectedScalarText } from "../editor/selectable-text";
 import {rectVisibleOnPage} from "../editor/geometry";
 
+import { readPageReadingText } from "../editor/page-reading-text";
 import { clearSearchTextCache, readSearchPageText } from "../editor/search";
 export const clearPageTextCache = clearSearchTextCache;
 
@@ -14,34 +15,53 @@ export const clearPageTextCache = clearSearchTextCache;
 // their measured geometry disappear when that cache/source is released.
 const measuredScales = new WeakMap<PageText, Float64Array>();
 
-function usePageText(adapter: FolioAdapter, page: PagePlan) {
-  const canCopy=page.protection?.permissions.copyContent!==false;
-  const key = `${adapter.kind}:${page.sourceId}:${page.pageIndex}`;
-  const [state, setState] = useState<{ key: string; text?: PageText }>({ key });
+function usePageText(adapter: FolioAdapter, page: PagePlan, needsGeometry: boolean) {
+  const canCopy = page.protection?.permissions.copyContent !== false;
+  const key = JSON.stringify([page.sourceId, page.pageIndex]);
+  const compact = !needsGeometry && !!adapter.getPageReadingText;
+  const richProvider = adapter.getPageText, readingProvider = adapter.getPageReadingText;
+  type State = {adapter: FolioAdapter; key: string; richProvider: typeof richProvider;
+    readingProvider: typeof readingProvider; text?: PageText; reading?: string};
+  const [state, setState] = useState<State>({adapter, key, richProvider, readingProvider});
+  const owned = state.adapter === adapter && state.key === key &&
+    state.richProvider === richProvider && state.readingProvider === readingProvider;
   useEffect(() => {
     let active = true;
-    setState({ key });
-    if (!adapter.getPageText||!canCopy) return;
-    readSearchPageText(adapter, page.sourceId, page.pageIndex).then((text) => {
-      if (active) setState({ key, text });
+    setState(previous => ({adapter, key, richProvider, readingProvider,
+      reading: canCopy && !page.crop && previous.adapter === adapter && previous.key === key &&
+        previous.richProvider === richProvider && previous.readingProvider === readingProvider ? previous.reading : undefined}));
+    if (!canCopy || (!compact && !richProvider)) return;
+    const request = compact
+      ? readPageReadingText(adapter, page.sourceId, page.pageIndex).then(reading => ({reading}))
+      : readSearchPageText(adapter, page.sourceId, page.pageIndex).then(text =>
+          ({text, reading: text.characters.map(character => character.text).join("")}));
+    request.then(result => {
+      if (active) setState({adapter, key, richProvider, readingProvider, ...result});
     }).catch(() => {
-      // A scanned page or an unavailable text API must not interrupt viewing.
+      // Unavailable text must not interrupt viewing or fall back around permissions.
     });
     return () => { active = false; };
-  }, [adapter, key, page.sourceId, page.pageIndex,canCopy]);
-  return canCopy&&state.key === key ? state.text : undefined;
+  }, [adapter, key, page.sourceId, page.pageIndex, canCopy, compact, richProvider, readingProvider]);
+  return {
+    text: canCopy && owned && !compact ? state.text : undefined,
+    reading: canCopy && owned && !page.crop ? state.reading : undefined,
+  };
 }
 
-export function PdfTextLayer({ adapter, page, pageNumber, selectable, highlighting = false, onHighlight }: {
+export function PdfTextLayer({ adapter, page, pageNumber, selectable: requestedSelectable, highlighting = false, onHighlight }: {
   adapter: FolioAdapter; page: PagePlan; pageNumber: number; selectable: boolean; highlighting?: boolean; onHighlight?(rects: AnnotationRect[]): void;
 }) {
-  const text = usePageText(adapter, page);
+  const {text, reading} = usePageText(adapter, page, requestedSelectable || !!page.crop);
+  const selectable = requestedSelectable && !!text;
   const intrinsicRotation = text?.intrinsicRotation ?? 0;
   const sideways = intrinsicRotation === 90 || intrinsicRotation === 270;
-  const characters = text ? selectableTextSpans(text) : [];
+  // Uncropped logical reading needs no hit targets or duplicated glyph boxes.
+  const characters = useMemo(() => text && (selectable || page.crop) ? selectableTextSpans(text) : [], [text, selectable, page.crop]);
   const scales = text&&!page.crop ? measuredScales.get(text) : undefined;
   const logicalRuns = useMemo(() => {
     if (selectable) return [];
+    if (!page.crop) return reading ? [{ start: 0, text: reading, hidden: false }] : [];
+    if (!text) return [];
     const runs: Array<{ start: number; text: string; hidden: boolean }> = [];
     for (const character of characters) {
       const hidden = !!page.crop && !rectVisibleOnPage({ ...character, width: Math.max(.001, character.width), height: Math.max(.001, character.height) }, page);
@@ -50,7 +70,7 @@ export function PdfTextLayer({ adapter, page, pageNumber, selectable, highlighti
       else runs.push({ start: character.start, text: character.text, hidden });
     }
     return runs;
-  }, [characters, selectable, page.crop]);
+  }, [characters, text, reading, selectable, page.crop]);
   const layerRef = useRef<HTMLDivElement>(null);
   const highlightCallback = useRef(onHighlight);
   highlightCallback.current = onHighlight;
@@ -80,7 +100,7 @@ export function PdfTextLayer({ adapter, page, pageNumber, selectable, highlighti
     spans.forEach((span, index) => { span.style.transform = `rotate(${intrinsicRotation}deg) scaleX(${measured![index]})`; });
   }, [selectable, text, intrinsicRotation, sideways, scales, characters,page.crop]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!selectable) return;
     const copy = (event: ClipboardEvent) => {
       const selection = window.getSelection();
@@ -90,21 +110,32 @@ export function PdfTextLayer({ adapter, page, pageNumber, selectable, highlighti
       if (target?.closest("input, textarea, [contenteditable=true]")) return;
       // Browser layout inserts separators between positioned spans. Extract the
       // selected character nodes instead, retaining PDFium's exact whitespace.
-      const pieces: string[] = [];
-      for (let index = 0; index < selection.rangeCount; index++) {
-        const range = selection.getRangeAt(index);
-        const scope = layer.closest(".document-viewport") ?? layer;
-        scope.querySelectorAll('[data-selectable="true"] [data-pdf-character]').forEach((span) => {
-          if((span as HTMLElement).hidden)return;
-          const node = span.firstChild;
-          if (!node || !range.intersectsNode(node)) return;
-          const value = node.textContent ?? "";
-          const start = range.startContainer === node ? range.startOffset : 0;
-          const end = range.endContainer === node ? range.endOffset : value.length;
-          pieces.push(selectedScalarText(value, start, end));
-        });
+      const scope = layer.closest(".document-viewport");
+      const layers = scope ? scope.querySelectorAll('.pdf-text-layer[data-selectable="true"]') : [layer];
+      const fragments: string[] = [];
+      for (const selectedLayer of layers) {
+        const pieces: string[] = [];
+        for (let index = 0; index < selection.rangeCount; index++) {
+          const range = selection.getRangeAt(index);
+          selectedLayer.querySelectorAll('[data-pdf-character]').forEach((span) => {
+            if((span as HTMLElement).hidden)return;
+            const node = span.firstChild;
+            if (!node || !range.intersectsNode(node)) return;
+            const value = node.textContent ?? "";
+            const start = range.startContainer === node ? range.startOffset : 0;
+            const end = range.endContainer === node ? range.endOffset : value.length;
+            pieces.push(selectedScalarText(value, start, end));
+          });
+        }
+        const fragment = pieces.join("");
+        if (fragment) fragments.push(fragment);
       }
-      event.clipboardData.setData("text/plain", pieces.join(""));
+      let copied = "";
+      for (const fragment of fragments) {
+        if (copied && !/[\r\n]$/.test(copied) && !/^[\r\n]/.test(fragment)) copied += "\n";
+        copied += fragment;
+      }
+      event.clipboardData.setData("text/plain", copied);
       event.preventDefault();
     };
     document.addEventListener("copy", copy);

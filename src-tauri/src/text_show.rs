@@ -43,6 +43,112 @@ fn validate_boundaries(boundaries: &[usize], length: usize) -> EngineResult<()> 
     Ok(())
 }
 
+pub(super) fn rewrite_clusters(
+    values: &[Object],
+    source: &[u8],
+    changed: &[u8],
+    before: &[usize],
+    after: &[usize],
+    logical_before: &[usize],
+    logical_after: &[usize],
+    same_text: bool,
+) -> EngineResult<Vec<Object>> {
+    let bad = || invalid("Invalid positioned glyph-cluster mapping.");
+    if values.len() > 16384
+        || source.is_empty()
+        || changed.is_empty()
+        || source.len() > 8192
+        || changed.len() > 8192
+    {
+        return Err(bad());
+    }
+    validate_segments(values, source, before)?;
+    validate_boundaries(after, changed.len())?;
+    for (bytes, logical) in [(before, logical_before), (after, logical_after)] {
+        if bytes.len() != logical.len()
+            || logical.first() != Some(&0)
+            || logical.last().is_none_or(|last| *last > 4096)
+            || logical.windows(2).any(|p| p[0] >= p[1])
+        {
+            return Err(bad());
+        }
+    }
+    if same_text && logical_before.last() != logical_after.last() {
+        return Err(bad());
+    }
+    if source == changed && before == after && logical_before == logical_after {
+        return Ok(values.to_vec());
+    }
+    // String boundaries have no spacing effect. Only a nonzero numeric group
+    // needs an anchor in the replacement. Validate the original segments above,
+    // then coalesce contiguous strings across absent/zero-effect adjustments.
+    let mut contiguous: Vec<Object> = Vec::with_capacity(values.len());
+    let mut index = 0;
+    while index < values.len() {
+        if let Object::String(bytes, _) = &values[index] {
+            if let Some(Object::String(previous, _)) = contiguous.last_mut() {
+                previous.extend_from_slice(bytes);
+            } else {
+                contiguous.push(Object::String(bytes.clone(), StringFormat::Hexadecimal));
+            }
+            index += 1;
+        } else {
+            let start = index;
+            let mut sum = 0f64;
+            while index < values.len() && values[index].as_str().is_err() {
+                // validate_segments already checked every finite bounded value.
+                sum += f64::from(values[index].as_float().map_err(|_| bad())?);
+                index += 1;
+            }
+            if sum != 0. {
+                contiguous.extend_from_slice(&values[start..index]);
+            }
+        }
+    }
+    let mut old_offset = 0;
+    let mut new_offset = 0;
+    let mut result = Vec::with_capacity(values.len() + 1);
+    let last = *logical_after.last().ok_or_else(bad)?;
+    for (ordinal, value) in contiguous.iter().enumerate() {
+        if let Ok(bytes) = value.as_str() {
+            old_offset += bytes.len(); // validate_segments proved this exact bounded sum.
+            let slot = before.binary_search(&old_offset).map_err(|_| bad())?;
+            // With no trailing adjustment there is no cut at the end either:
+            // the final string can consume all remaining replacement atoms.
+            let logical = if ordinal + 1 == contiguous.len() {
+                last
+            } else {
+                logical_before[slot].min(last)
+            };
+            let target = logical_after
+                .binary_search(&logical)
+                .map_err(|_| invalid("A TJ adjustment would split a replacement glyph."))?;
+            let end = after[target];
+            if end < new_offset {
+                return Err(bad());
+            }
+            result.push(Object::String(
+                changed[new_offset..end].to_vec(),
+                StringFormat::Hexadecimal,
+            ));
+            new_offset = end;
+        } else if new_offset < changed.len() || same_text {
+            result.push(value.clone());
+        }
+    }
+    if new_offset < changed.len() {
+        result.push(Object::String(
+            changed[new_offset..].to_vec(),
+            StringFormat::Hexadecimal,
+        ));
+    }
+    Ok(result)
+}
+
+#[cfg(test)]
+#[path = "source_clusters_tests.rs"]
+mod cluster_tests;
+
 pub(super) fn validate_segments(
     values: &[Object],
     expected: &[u8],

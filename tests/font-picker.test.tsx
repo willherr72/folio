@@ -1,4 +1,4 @@
-import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { FontPicker } from "../src/components/FontPicker";
 import { drainFontAcquisitions, fontApi, fontFamily, retainCustomFonts, releaseUnownedFont } from "../src/editor/custom-fonts";
@@ -58,6 +58,37 @@ it("loads no font bytes just to show the installed catalog",async()=>{
   await screen.findByRole("button",{name:"Local Serif"});
   expect(fontApi.bytes).not.toHaveBeenCalled();
   expect(fontApi.loadInstalled).not.toHaveBeenCalled();
+});
+it("shows the source face and promotes exact name matches without loading or applying one",async()=>{
+  vi.mocked(fontApi.listInstalled).mockResolvedValue([
+    {id:"other",name:"Aardvark Sans",supported:true},
+    {id:"bold",name:"Local Serif Bold",supported:true},
+    {id:"regular",name:"Local Serif",supported:true},
+    {id:"bold-copy",name:"Local-Serif_Bold",supported:true},
+  ]);
+  const choose=vi.fn();render(<FontPicker sourceFontName="ABCDEF+LocalSerif-Bold" text="Hello" onChoose={choose} onClose={vi.fn()}/>);
+  const list=screen.getByRole("list",{name:"Installed fonts"});
+  await screen.findByRole("button",{name:"Local Serif Bold"});
+  expect(within(list).getAllByRole("button").map(button=>button.textContent)).toEqual(["Local Serif Bold","Local-Serif_Bold","Aardvark Sans","Local Serif"]);
+  expect(screen.getByText("ABCDEF+LocalSerif-Bold")).toBeVisible();
+  expect(screen.getAllByText("Source name match")).toHaveLength(2);
+  expect(screen.getByRole("button",{name:"Local Serif Bold"})).toHaveAccessibleDescription("Source name match");
+  expect(screen.getByRole("button",{name:"Local Serif Bold"})).toHaveAttribute("tabindex","0");
+  expect(fontApi.loadInstalled).not.toHaveBeenCalled();expect(fontApi.bytes).not.toHaveBeenCalled();expect(choose).not.toHaveBeenCalled();
+  expect(screen.getByRole("button",{name:"Apply font"})).toBeDisabled();
+  screen.getByRole("button",{name:"Local Serif Bold"}).focus();
+  fireEvent.keyDown(list,{key:"ArrowDown"});expect(screen.getByRole("button",{name:"Local-Serif_Bold"})).toHaveFocus();
+  fireEvent.keyDown(list,{key:"End"});expect(screen.getByRole("button",{name:"Local Serif"})).toHaveFocus();
+  fireEvent.change(screen.getByRole("searchbox",{name:"Search fonts"}),{target:{value:"Aardvark"}});
+  expect(within(list).getAllByRole("button").map(button=>button.textContent)).toEqual(["Aardvark Sans"]);
+  expect(screen.queryByText("Source name match")).toBeNull();
+});
+it("keeps unsupported name matches disabled and in catalog order",async()=>{
+  vi.mocked(fontApi.listInstalled).mockResolvedValue([{id:"other",name:"Aardvark",supported:true},{id:"blocked",name:"Local Serif",supported:false,reason:"Embedding is restricted"}]);
+  render(<FontPicker sourceFontName="LocalSerif" text="Hello" onChoose={vi.fn()} onClose={vi.fn()}/>);
+  await screen.findByRole("button",{name:"Local Serif"});
+  expect(within(screen.getByRole("list",{name:"Installed fonts"})).getAllByRole("button").map(button=>button.textContent)).toEqual(["Aardvark","Local Serif"]);
+  expect(screen.getByRole("button",{name:"Local Serif"})).toBeDisabled();expect(screen.queryByText("Source name match")).toBeNull();
 });
 it("releases the previous preview when switching and the last preview when canceled",async()=>{
   vi.mocked(fontApi.loadInstalled).mockImplementation(async value=>value==="second"?secondInfo:info);

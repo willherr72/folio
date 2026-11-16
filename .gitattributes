@@ -23,3 +23,9 @@ tests/fixtures/shaped-text/exhaustion/*.ttf binary
 tests/fixtures/shaped-text/exhaustion/*.txt -text -whitespace
 # Upstream inventory and patched-source hashes are checked without EOL conversion.
 src-tauri/vendor/** -text -whitespace
+
+# Preserve hash-checked source-font/Unicode fixtures and renderer patch inputs.
+patches/pdfium/*.patch -text -whitespace
+tests/fixtures/search/unicode/** -text -whitespace
+tests/fixtures/source-cff/** -text -whitespace
+tests/fixtures/source-accent-clusters/** -text -whitespace

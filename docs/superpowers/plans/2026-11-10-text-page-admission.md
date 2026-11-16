@@ -1,5 +1,7 @@
 # Text page admission implementation plan
 
+**Status2026-11-10: DEFERRED, NOT ACCEPTED.** All four full comparison workflows/audits/cleanup and both candidate resource samples passed, but actual unchanged-control repeatability exceeded1.10. The experiment is archived in `artifacts/text-page-admission-20261110/deferred-experiment.json`; only its five exact source changes were restored to accepted039. Task3latency and Task4acceptance seal remain unfulfilled. Broad development continues independently; this is not a speed claim.
+
 > **For agentic workers:** Use superpowers:executing-plans inline, meaningful RED/GREEN, one fresh final review. Standing user autonomy replaces approval questions.
 
 **Goal:** Remove unnecessary native page-content loading after supported text publications while preserving all source, annotation, security and history behavior.
@@ -24,7 +26,7 @@ Preserve039CP24eb14/launcher and all originals/failed attempts. Proof eligibilit
 **Files:** Create src-tauri/src/page_admission.rs and page_admission_tests.rs; declare module in engine.rs; artifacts/text-page-admission-20261110 baseline/RED/GREEN records.
 **Interfaces:** Publication::save(&mut lopdf::Document, bool)->EngineResult<Publication>; into_bytes and into_parts; private Proof::matches(&[u8],usize); native_size(&PdfDocument, PdfPageIndex)->Option<PageInfo>. Private fields, no Serialize/Deserialize or public input authority.
 
-- [ ] Preserve current source/test inputs and all modified existing files,039authority and diagnostic baseline. Verify existing isolated worktree. Record preflight Task1proof→Task2opener→Task3actual outputs→Task4seal interfaces.
+- [ ] Preserve current source/test inputs and all modified existing files,039authority and diagnostic baseline. Verify existing isolated worktree. Record preflight Task1proofâ†’Task2openerâ†’Task3actual outputsâ†’Task4seal interfaces.
 - [ ] Write failing tests for eligible output, byte/count/tamper binding, small/oversized/encrypted cases, Annots in trailer/direct/nested/stream/null/indirect locations, limits, native crop/origin/rotation/inheritance/UserUnit equality and invalid-index fallback. Use a compilable no-proof/no-size stub; observe functional RED.
 - [ ] Implement bounded census, opaque output proof and native size query. Run full page_admission tests GREEN using release dependencies/Folioopt0 library correctness; retain output and exact source/input fingerprints. Expected: all new tests pass without relaxing any input or budget.
 

@@ -13,6 +13,9 @@ mod import;
 mod transplant;
 #[path = "form_answer_compound.rs"]
 mod compound;
+#[path = "form_list_source.rs"]
+mod list_source;
+pub(crate) use list_source::{CapturedListSources, prepare_list_source};
 pub(crate) use import::NormalAppearanceAdmission;
 pub(crate) use transplant::{
     retained_resources_are_local, transplant_answer_with_resources, FillAppearanceBudget,

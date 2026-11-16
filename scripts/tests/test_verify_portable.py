@@ -72,6 +72,39 @@ class PortableVerificationTests(unittest.TestCase):
     def test_changed_renderer(self):
         (self.root/'resources/pdfium/pdfium.dll').write_bytes(b'wrong renderer');self.pack();self.refuses('pdfium.dll hash')
 
+    def selection_renderer(self):
+        patch=b'index-based appearance correction'
+        source_name='patches/pdfium/list-selection-state.patch'
+        self.write_json('resources/pdfium/source-lock.json',{'variant':'selection-v8',
+            'listSelectionPatchSha256':digest(patch)})
+        (self.root/'resources/pdfium/list-selection-state.patch').write_bytes(patch)
+        lock_hash=digest((self.root/'resources/pdfium/source-lock.json').read_bytes())
+        info=json.loads((self.root/'build-info.json').read_text())
+        self.write_json('resources/pdfium/provenance.json',{'variant':'selection-v8',
+            'dllSha256':info['pdfiumSha256'],'sourceLockSha256':lock_hash,
+            'listSelectionPatchSha256':digest(patch)})
+        manifest=json.loads((self.root/'build-source-fingerprint.json').read_text())
+        manifest['files'].update({source_name:digest(patch),'scripts/pdfium-source-lock.json':lock_hash,
+            'src-tauri/resources/pdfium/provenance.json':digest((self.root/'resources/pdfium/provenance.json').read_bytes())})
+        manifest['fingerprint']=digest(json.dumps(manifest['files'],sort_keys=True,separators=(',',':')).encode())
+        info.update(sourceFingerprint=manifest['fingerprint'],pdfiumVariant='selection-v8',pdfiumListSelectionPatchSha256=digest(patch))
+        self.write_json('build-source-fingerprint.json',manifest);self.write_json('build-info.json',info);self.pack()
+
+    def test_selection_renderer_is_bound_to_packaged_recipe(self):
+        self.selection_renderer();result=self.run_verifier();self.assertEqual(result.returncode,0,result.stderr)
+
+    def test_changed_selection_patch_rejected_even_when_zip_matches(self):
+        self.selection_renderer();(self.root/'resources/pdfium/list-selection-state.patch').write_bytes(b'wrong patch')
+        self.pack();self.refuses('Renderer recipe differs')
+
+    def test_missing_selection_recipe_rejected_even_when_zip_matches(self):
+        self.selection_renderer();(self.root/'resources/pdfium/source-lock.json').unlink()
+        self.pack();self.refuses('Renderer recipe missing')
+
+    def test_changed_selection_provenance_rejected_even_when_zip_matches(self):
+        self.selection_renderer();self.write_json('resources/pdfium/provenance.json',{'variant':'different'})
+        self.pack();self.refuses('Renderer recipe differs')
+
     def test_archive_duplicate(self):
         self.pack(duplicate=True);self.refuses('Duplicate archive')
 

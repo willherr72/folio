@@ -1,4 +1,4 @@
-import {useState,type ComponentProps} from "react";
+import {useRef,useState,type ComponentProps} from "react";
 import {flushSync} from "react-dom";
 
 type Props=Omit<ComponentProps<"input">,"type"|"value">&{value:string};
@@ -16,12 +16,26 @@ function idleValue(value:string,min:Props["min"],max:Props["max"],step:Props["st
 
 /** Compact idle presentation only. The owner retains the exact numeric draft;
  * focus reveals it, and focus/blur never synthesize an edit. */
-export function PreciseNumberInput({value,min,max,step="any",onFocus,onBlur,...props}:Props){
+export function PreciseNumberInput({value,min,max,step="any",onFocus,onBlur,onPointerDown,onPointerUp,onPointerCancel,...props}:Props){
  const [focused,setFocused]=useState(false);
+ const pointerFocus=useRef<PointerEvent|null>(null);
  return <input {...props} type="number" min={min} max={max} step={step}
   value={focused?value:idleValue(value,min,max,step)}
-  // Native focus/select/replace can happen in one task. Expand before focus
-  // returns, so a deferred value update cannot reset the browser's selection.
-  onFocus={event=>{flushSync(()=>setFocused(true));onFocus?.(event);}}
-  onBlur={event=>{setFocused(false);onBlur?.(event);}}/>;
+  onPointerDown={event=>{
+   pointerFocus.current=event.currentTarget.ownerDocument.activeElement!==event.currentTarget?event.nativeEvent:null;
+   onPointerDown?.(event);
+   if(event.defaultPrevented)pointerFocus.current=null;
+  }}
+  onPointerUp={event=>{pointerFocus.current=null;onPointerUp?.(event);}}
+  onPointerCancel={event=>{pointerFocus.current=null;onPointerCancel?.(event);}}
+  onFocus={event=>{
+   // Ancestors can prevent default after our pointer handler has returned.
+   const fromPointer=pointerFocus.current!==null&&!pointerFocus.current.defaultPrevented;pointerFocus.current=null;
+   // Expanding input.value collapses native Tab selection. Restore it after
+   // the exact draft is visible; pointer focus keeps the browser's caret.
+   flushSync(()=>setFocused(true));
+   if(!fromPointer)event.currentTarget.select();
+   onFocus?.(event);
+  }}
+  onBlur={event=>{pointerFocus.current=null;setFocused(false);onBlur?.(event);}}/>;
 }

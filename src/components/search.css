@@ -4,6 +4,9 @@
 .search-controls input { min-width: 80px; width: 210px; flex: 1; height: 32px; padding: 5px 9px; border: 1px solid var(--line); border-radius: 6px; color: var(--ink); background: var(--control); font-size: 12px; }
 .search-count { color: var(--muted); font-size: 11px; white-space: nowrap; min-width: 52px; text-align: center; padding-inline: 5px; }
 .search-controls .icon-button { flex-shrink: 0; width: 28px; }
+.search-options { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 18px; margin: 6px 0 0 22px; font-size: 12px; }
+.search-options label { display: inline-flex; align-items: center; gap: 5px; min-height: 24px; cursor: pointer; }
+.search-options input { margin: 0; accent-color: var(--accent); }
 .search-error { color: var(--error); font-size: 11px; margin: 7px 0 0; max-height: 48px; overflow: auto; }
 .search-highlights { pointer-events: none; }
 .search-highlight { fill: #f3d33b; fill-opacity: .34; }

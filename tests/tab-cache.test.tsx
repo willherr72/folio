@@ -7,24 +7,27 @@ const sources=["tab-cache","cache-budget","pending-close"];
 afterEach(()=>{cleanup();clearRenderCache(sources);vi.restoreAllMocks();});
 function page(sourceId:string,pageIndex:number):PagePlan{return {id:sourceId+pageIndex,sourceId,pageIndex,width:1200,height:1600,rotation:0,overlays:[]};}
 function adapter(renderPage:FolioAdapter["renderPage"]):FolioAdapter{return {kind:"native",renderPage,openPdf:async()=>null,exportPdf:async()=>null,closeDocument:async()=>{},engineStatus:async()=>""};}
-function Surface({source,index,engine}:{source:string;index:number;engine:FolioAdapter}){return <PageView adapter={engine} page={page(source,index)} pageNumber={index+1} zoom={200} tool="select" selectedOverlayId={null} pendingSignature={null} onSelectOverlay={()=>{}} onAddText={()=>{}} onPlaceSignature={()=>{}} onMoveOverlay={()=>{}}/>;}
+function Surface({source,index,engine,zoom=200}:{source:string;index:number;engine:FolioAdapter;zoom?:number}){return <PageView adapter={engine} page={page(source,index)} pageNumber={index+1} zoom={zoom} tool="select" selectedOverlayId={null} pendingSignature={null} onSelectOverlay={()=>{}} onAddText={()=>{}} onPlaceSignature={()=>{}} onMoveOverlay={()=>{}}/>;}
 it("reuses a full-size render after leaving and returning to a tab",async()=>{
  const revoke=vi.fn();Object.defineProperty(URL,"revokeObjectURL",{configurable:true,value:revoke});
  const renderPage=vi.fn(async(_source:string,index:number)=>"blob:tab-"+index);
  const engine=adapter(renderPage);
- const view=render(<Surface key="a" source="tab-cache" index={0} engine={engine}/>);
+ // Two full-size1200x1600 renders use15.36MB, within the retained allowance.
+ const view=render(<Surface key="a" source="tab-cache" index={0} engine={engine} zoom={100}/>);
  await waitFor(()=>expect(view.container.querySelector('image[href="blob:tab-0"]')).not.toBeNull());
- view.rerender(<Surface key="b" source="tab-cache" index={1} engine={engine}/>);
+ view.rerender(<Surface key="b" source="tab-cache" index={1} engine={engine} zoom={100}/>);
  await waitFor(()=>expect(view.container.querySelector('image[href="blob:tab-1"]')).not.toBeNull());
- view.rerender(<Surface key="a" source="tab-cache" index={0} engine={engine}/>);
+ view.rerender(<Surface key="a" source="tab-cache" index={0} engine={engine} zoom={100}/>);
  await waitFor(()=>expect(view.container.querySelector('image[href="blob:tab-0"]')).not.toBeNull());
  expect(renderPage).toHaveBeenCalledTimes(2);
+ expect(renderPage).toHaveBeenCalledWith("tab-cache",0,1200);
  expect(revoke).not.toHaveBeenCalled();
 });
 it("evicts old large images under the memory budget while protecting mounted pages",async()=>{
  const revoke=vi.fn();Object.defineProperty(URL,"revokeObjectURL",{configurable:true,value:revoke});
  const engine=adapter(vi.fn(async(_source:string,index:number)=>"blob:budget-"+index));
- const surfaces=(index:number)=><><Surface key="anchor" source="cache-budget" index={0} engine={engine}/><Surface key={index} source="cache-budget" index={index} engine={engine}/></>;
+ // Three1320x1760 decoded images fit32MiB; the fourth forces idle eviction.
+ const surfaces=(index:number)=><><Surface key="anchor" source="cache-budget" index={0} engine={engine} zoom={110}/><Surface key={index} source="cache-budget" index={index} engine={engine} zoom={110}/></>;
  const view=render(surfaces(1));
  await waitFor(()=>expect(view.container.querySelectorAll("image")).toHaveLength(2));
  view.rerender(surfaces(2));

@@ -14,6 +14,7 @@ use tempfile::TempDir;
 const MAX_PREVIEWS: usize = 8;
 const TTL: Duration = Duration::from_secs(15 * 60);
 pub(super) struct Preview {
+    pub credential:super::config::Credential,
     _directory: TempDir,
     pub bundle: PathBuf,
     pub manifest_hash: String,
@@ -62,6 +63,9 @@ impl PreviewStore {
         Ok(json!({"discarded":true}))
     }
     pub fn adopt(&mut self, directory: TempDir, result: Value) -> Result<Value, &'static str> {
+        self.adopt_authenticated(directory,result,None)
+    }
+    pub fn adopt_authenticated(&mut self,directory:TempDir,result:Value,credential:super::config::Credential)->Result<Value,&'static str>{
         let bad = "The worker did not produce a valid owned preview bundle.";
         if !self.has_room() {
             return Err("Preview storage is full. Discard a preview before creating another.");
@@ -84,13 +88,9 @@ impl PreviewStore {
         // Only small manifest/metadata reads occur on the supervisor. Native worker
         // produced the files; Save rehashes their actual bytes in its bounded worker.
         let manifest = read_manifest(&bundle, &expected).map_err(|_| bad)?;
-        for (name, size) in [
-            ("candidate.pdf", manifest.candidate.bytes),
-            ("before.png", manifest.before.bytes),
-            ("after.png", manifest.after.bytes),
-        ] {
+        for (name, proof, _) in manifest.file_proofs() {
             let meta = fs::symlink_metadata(bundle.join(name)).map_err(|_| bad)?;
-            if !meta.is_file() || meta.file_type().is_symlink() || meta.len() != size {
+            if !meta.is_file() || meta.file_type().is_symlink() || meta.len() != proof.bytes {
                 return Err(bad);
             }
         }
@@ -116,9 +116,11 @@ impl PreviewStore {
         if let Some(form)=&manifest.form {response.as_object_mut().unwrap().remove("oldText");response.as_object_mut().unwrap().remove("replacement");response["fieldId"]=json!(manifest.selection_id);response["form"]=json!(form);}
         response = path_result(response, "before", &bundle.join("before.png"));
         response = path_result(response, "after", &bundle.join("after.png"));
+        if let Some(batch)=&manifest.batch{response=crate::automation::text_batch_preview::add_response(response,batch,manifest.page,&manifest.selection_id,&bundle).map_err(|_|bad)?;}
         self.items.insert(
             id,
             Preview {
+                credential,
                 candidate: manifest.candidate,
                 _directory: directory,
                 bundle,
@@ -141,6 +143,7 @@ mod tests {
         fs::create_dir(&bundle).unwrap();
         fs::write(bundle.join("private.pdf"), b"owned").unwrap();
         Preview {
+            credential:None,
             candidate: FileProof {
                 bytes: 1,
                 sha256: "a".repeat(64),

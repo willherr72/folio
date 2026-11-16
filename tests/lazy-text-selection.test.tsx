@@ -25,6 +25,35 @@ it('retains exact accessible reading text without glyph nodes or layout reads wh
  expect(reads).not.toHaveBeenCalled();expect(adapter.getPageText).toHaveBeenCalledTimes(1);
 });
 
+it('does not inspect or clone glyph geometry for uncropped logical text, then activates exact selection on demand',async()=>{
+ let geometryReads=0;
+ const tracked:PageText={...text,characters:text.characters.map(character=>new Proxy(character,{
+  get(target,key,receiver){if(['x','y','width','height'].includes(String(key)))geometryReads++;return Reflect.get(target,key,receiver);},
+ }))};
+ const adapter={...createDemoAdapter(),getPageText:vi.fn(async()=>tracked)};
+ const surface=(selectable:boolean)=><svg><PdfTextLayer adapter={adapter} page={plan} pageNumber={1} selectable={selectable}/></svg>;
+ const view=render(surface(false));
+ await waitFor(()=>expect(view.getByLabelText('Page 1 text').textContent).toBe(logical));
+ expect(geometryReads).toBe(0);
+ expect(view.container.querySelectorAll('[data-pdf-character]')).toHaveLength(0);
+ view.rerender(surface(true));
+ expect(geometryReads).toBeGreaterThan(0);
+ expect(Array.from(view.container.querySelectorAll('[data-pdf-character]'),span=>span.textContent)).toEqual(['ff','i',' \r\n𝑴q\u0307\u0323']);
+ expect(adapter.getPageText).toHaveBeenCalledTimes(1);
+});
+
+it('preserves coincident-cluster crop visibility while logical text is inactive',async()=>{
+ const adapter={...createDemoAdapter(),getPageText:vi.fn(async()=>({characters:[
+  {text:'f',x:20,y:30,width:12,height:8},
+  {text:'f',x:20.005,y:30,width:12,height:8},
+  {text:'i',x:40,y:30,width:5,height:8},
+ ]}))};
+ const cropped={...plan,crop:{x:32.002,y:30,width:.01,height:8}};
+ const view=render(<svg><PdfTextLayer adapter={adapter} page={cropped} pageNumber={1} selectable={false}/></svg>);
+ await waitFor(()=>expect(view.getByLabelText('Page 1 text').textContent).toBe('ffi'));
+ expect(Array.from(view.container.querySelectorAll<HTMLElement>('.pdf-logical-text'),span=>[span.textContent,span.hidden])).toEqual([['ff',false],['i',true]]);
+});
+
 it('activates exact rotated selection and copy, then drops glyphs and reuses geometry on reactivation',async()=>{
  const reads=vi.spyOn(HTMLElement.prototype,'offsetWidth','get').mockReturnValue(10);
  const adapter=engine();const surface=(selectable:boolean)=><svg><PdfTextLayer adapter={adapter} page={plan} pageNumber={1} selectable={selectable}/></svg>;

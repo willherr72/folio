@@ -1,6 +1,6 @@
 /** Immutable editing transactions. Native inspection/publication remains the
  * authority for fonts, geometry, source identity and PDF admission. */
-import {createStyledParagraph,replaceStyledRange,snapStyledCaret,styledRangeStyle,styledText,type StyledParagraph,type StyledRun} from "./styled-paragraph";
+import {createStyledParagraph,replaceStyledRange,replaceStyledRanges,snapStyledCaret,styledRangeStyle,styledText,type StyledParagraph,type StyledRun} from "./styled-paragraph";
 import type {AnnotationRect,ParagraphBaselineAnchor,ParagraphAlignment,StyledParagraphLayoutRequest,StyledParagraphSelection,StyledParagraphStyleChange} from "./types";
 
 export interface StyledEditorRange {readonly start:number;readonly end:number;readonly direction:"forward"|"backward"}
@@ -22,6 +22,7 @@ export interface StyledEditorFormat {fontSize?:number|null;color?:string|null;fo
 export type StyledEditorTransaction=
  | {type:"select";start:number;end:number;direction?:"forward"|"backward"}
  | {type:"replace";text:string;start?:number;end?:number;styleId?:number;historyGroup?:string}
+ | {type:"replace-many";expectedText:string;ranges:readonly {start:number;end:number}[];text:string}
  | {type:"format";patch:StyledEditorFormat}
  | {type:"area";bounds:AnnotationRect;intent?:"fit"|"move"|"resize"}
  | {type:"reset-position"}
@@ -105,6 +106,13 @@ export function editStyledEditor(state:StyledEditorState,transaction:StyledEdito
   const draft=replaceStyledRange(current.draft,start,end,transaction.text,transaction.styleId??typing??undefined);
   const offset=snapStyledCaret(draft,start+transaction.text.replace(/\r\n?/g,"\n").length);
   return commit(state,snapshot({...current,selection:{start:offset,end:offset,direction:"forward"},typingStyleId:typing},draft.runs,current.styles),state.nextStyleId,transaction.historyGroup??null);
+ }
+ if(transaction.type==="replace-many"){
+  if(transaction.expectedText!==styledText(current.draft))fail("The paragraph changed. Find the text again.");
+  const draft=replaceStyledRanges(current.draft,transaction.ranges,transaction.text);if(draft===current.draft)return state;
+  const text=transaction.text.replace(/\r\n?/g,"\n");const last=transaction.ranges.at(-1)!;
+  const offset=snapStyledCaret(draft,last.end+transaction.ranges.reduce((sum,item)=>sum+text.length-(item.end-item.start),0));
+  return commit(state,snapshot({...current,selection:{start:offset,end:offset,direction:"forward"},typingStyleId:null},draft.runs,current.styles));
  }
  if(transaction.type==="reset-position"){
   const original=state.original.baselineAnchor,anchor=current.baselineAnchor;

@@ -1,18 +1,19 @@
 import {clearExistingTextCache} from "./existing-text-cache";
 import {nativeTextRemovalAdapter,type TextRemovalAdapter,type ContentRemovalAdapter} from './text-removal';
+import {nativeWorkspaceReplacementAdapter,type WorkspaceReplacementAdapter} from './workspace-replacement-transport';
 import { cloneOverlay } from "./model";
 import {startPdfSave,type PdfSaveOptions,type PdfSaveProgress,type PdfSaveTask} from './pdf-save';
 import type {ExistingImages,ImageFitMode,ExistingImageEdit} from "./types";
 import { invoke } from "@tauri-apps/api/core";
 import {openProtectedPdf,type OpenPdfOptions} from "./password-native";
-import type {SourceReplacement,PageSearchResult,PageContentReplacement} from "./types";
+import type {SourceReplacement,PageSearchResult,PageSearchOptions,PageContentReplacement} from "./types";
 import type {StyledParagraphSelection,StyledParagraphLayoutRequest,FormParagraphRuns} from "./types";
 import type {FormField,FillFormFieldRequest} from "./types";
 import type {NativeComment,EditNativeCommentRequest,DeleteNativeCommentRequest} from "./types";
 import type {OcrPreparedPage,OcrUpdate} from "./ocr/types";
 import type { DocumentInfo, PagePlan, PageText, TextRuns, TextGroupPreview, TextParagraphSelection, AnnotationRect, FormTextRuns, ImagePageOptions, DocumentBookmark } from "./types";
 
-export interface FolioAdapter extends Partial<TextRemovalAdapter>,Partial<ContentRemovalAdapter> {
+export interface FolioAdapter extends Partial<TextRemovalAdapter>,Partial<ContentRemovalAdapter>,Partial<WorkspaceReplacementAdapter> {
   mapParagraphDraft?(sourceId:string,pageIndex:number,objectIndices:number[],expectedParagraphText:string,anchorIndex:number,expectedSourceText:string,kind:"uniform"|"styled"):Promise<import('./paragraph-draft').ParagraphDraftMapping>;
   mapFormParagraphDraft?(sourceId:string,pageIndex:number,objectPath:number[],objectIndices:number[],expectedParagraphText:string,anchorIndex:number,expectedSourceText:string):Promise<import('./paragraph-draft').ParagraphDraftMapping>;
   inspectDocumentProperties?(sourceId:string):Promise<import('./document-properties').DocumentProperties>;
@@ -54,7 +55,8 @@ export interface FolioAdapter extends Partial<TextRemovalAdapter>,Partial<Conten
   renderPage(sourceId: string, pageIndex: number, width: number): Promise<string>;
   renderPagePlan?(plan:PagePlan,width:number):Promise<string>;
   getPageText?(sourceId: string, pageIndex: number): Promise<PageText>;
-  searchPage?(sourceId:string,pageIndex:number,query:string):Promise<PageSearchResult>;
+  getPageReadingText?(sourceId: string, pageIndex: number): Promise<string>;
+  searchPage?(sourceId:string,pageIndex:number,query:string,options?:PageSearchOptions):Promise<PageSearchResult>;
   listFormTextRuns?(sourceId: string, pageIndex: number): Promise<FormTextRuns>;
   listOccurrenceFormTextRuns?(sourceId:string,pageIndex:number):Promise<FormTextRuns>;
   replaceFormTextOccurrence?(sourceId:string,occurrences:number[],selectedOccurrence:number,objectPath:number[],expectedText:string,replacement:string,fontId?:string):Promise<PageContentReplacement>;
@@ -99,6 +101,7 @@ function bytesToUrl(value: ArrayBuffer | Uint8Array | number[]): string {
 export const nativeAdapter: FolioAdapter = {
   inspectDocumentProperties:sourceId=>invoke('inspect_document_properties',{sourceId}),
   ...nativeTextRemovalAdapter,
+  ...nativeWorkspaceReplacementAdapter,
   startPdfSave,
   listExistingImages:(sourceId,pageIndex)=>invoke("list_existing_images",{sourceId,pageIndex}),
   previewImageReplacementOccurrence:(sourceId,occurrences,selectedOccurrence,objectPath,selectionId,assetId,fitMode)=>invoke("preview_image_replacement_occurrence",{sourceId,occurrences,selectedOccurrence,objectPath,selectionId,assetId,fitMode}),
@@ -117,7 +120,7 @@ export const nativeAdapter: FolioAdapter = {
   openPdf: options => options?openProtectedPdf(options):invoke<DocumentInfo | null>("open_pdf"),
   unlockSources:(sourceIds,password)=>invoke<SourceReplacement[]|null>("unlock_sources",{sourceIds,password}),
   checkSourceCombination:sourceIds=>invoke<void>("check_source_combination",{sourceIds}),
-  searchPage:(sourceId,pageIndex,query)=>invoke<PageSearchResult>("search_page",{sourceId,pageIndex,query}),
+  searchPage:(sourceId,pageIndex,query,options)=>invoke<PageSearchResult>("search_page",{sourceId,pageIndex,query,...(options===undefined?{}:{options})}),
   listFormFields:(sourceId,pageIndex)=>invoke<FormField[]>("list_form_fields",{sourceId,pageIndex}),
   createFormField:(sourceId,occurrences,selected,request)=>invoke<PageContentReplacement>("create_form_field_occurrence",{sourceId,occurrences,selected,request}),
   positionFormField:(sourceId,occurrences,selected,request)=>invoke<PageContentReplacement>("position_form_field_occurrence",{sourceId,occurrences,selected,request}),
@@ -153,6 +156,7 @@ export const nativeAdapter: FolioAdapter = {
     return bytesToUrl(bytes);
   },
   getPageText: (sourceId, pageIndex) => invoke<PageText>("page_text", { sourceId, pageIndex }),
+  getPageReadingText: (sourceId, pageIndex) => invoke<string>("page_reading_text", { sourceId, pageIndex }),
   listFormTextRuns: (sourceId, pageIndex) => invoke<FormTextRuns>("list_form_text_runs", {sourceId,pageIndex}),
   listOccurrenceFormTextRuns: (sourceId,pageIndex) => invoke<FormTextRuns>("list_occurrence_form_text_runs",{sourceId,pageIndex}),
   replaceFormTextOccurrence: (sourceId,occurrences,selectedOccurrence,objectPath,expectedText,replacement,fontId) => invoke<PageContentReplacement>("replace_form_text_occurrence",{sourceId,occurrences,selectedOccurrence,objectPath,expectedText,replacement,...(fontId?{fontId}:{})}),

@@ -11,13 +11,20 @@ const MAX_BYTES:usize=4*1024*1024;
 pub(super) struct Style {resource:Vec<u8>,sample:Vec<u8>,size:f32,color:[u8;4],#[serde(default,skip_serializing_if="Option::is_none")]background_id:Option<usize>}
 impl Style {
     pub(super) fn source(style:&ResolvedStyle)->EngineResult<Self>{
+        if let Some(bound)=&style.source.source_encoding{
+            let encoded=bound.encoded();
+            let index=encoded.atoms().iter().position(|a|!encoded.text()[a.unicode.clone()].trim().is_empty())
+                .ok_or_else(||invalid("The source style has no visible verified glyph sample."))?;
+            let boundaries=encoded.byte_boundaries();
+            return Ok(Self{resource:style.resource_name.clone(),sample:encoded.bytes()[boundaries[index]..boundaries[index+1]].to_vec(),size:style.size,color:style.color,background_id:style.background_id});
+        }
         let ch=style.source.proof.as_ref().and_then(|p|p.sample()).unwrap_or('A');
         Ok(Self{resource:style.resource_name.clone(),sample:positioned_text::encoded(&style.source,&ch.to_string())?,size:style.size,color:style.color,background_id:style.background_id})
     }
     fn published(style:&ResolvedStyle)->EngineResult<Self>{
         if let Some(asset)=&style.substitute{
             let ch=asset.info.coverage.iter().flat_map(|r|r[0]..=r[1].min(0xffff)).filter_map(char::from_u32)
-                .find(|c|embedded_font::latin(&c.to_string())&&asset.glyph_id(*c).is_ok()).ok_or_else(||invalid("The saved font has no verified Latin sample."))?;
+                .find(|c|embedded_font::unshaped(&c.to_string())&&asset.glyph_id(*c).is_ok()).ok_or_else(||invalid("The saved font has no verified unshaped sample."))?;
             Ok(Self{resource:style.resource_name.clone(),sample:paragraph_font::encode(&ch.to_string()),size:style.size,color:style.color,background_id:style.background_id})
         }else{Self::source(style)}
     }
@@ -29,14 +36,14 @@ impl Style {
 struct Fragment {font:String,program:Option<String>,size:f32,color:[u8;4],origin:[f32;2],digest:String}
 #[derive(Clone,Serialize,Deserialize)]
 #[serde(deny_unknown_fields)]
-struct Record {#[serde(default,deserialize_with="present_baseline",skip_serializing_if="Option::is_none")]first_baseline:Option<f32>,bounds:[f32;4],alignment:ParagraphAlignment,spacing:f32,runs:Vec<StyledParagraphRun>,styles:Vec<Style>,fragments:Vec<Fragment>,#[serde(default,skip_serializing_if="Vec::is_empty")]backgrounds:Vec<paragraph_highlight_geometry::Background>,#[serde(default,skip_serializing_if="is_false")]native_ink:bool,#[serde(default,skip_serializing_if="is_false")]text_alignment:bool,#[serde(default,skip_serializing_if="zero_insets")]text_insets:[f32;2],#[serde(default,deserialize_with="present_bool",skip_serializing_if="Option::is_none")]ink_vertical:Option<bool>,#[serde(default,skip_serializing_if="Option::is_none")]context:Option<String>}
+struct Record {#[serde(default,deserialize_with="present_bool",skip_serializing_if="Option::is_none")]occurrence_metrics:Option<bool>,#[serde(default,deserialize_with="present_baseline",skip_serializing_if="Option::is_none")]first_baseline:Option<f32>,bounds:[f32;4],alignment:ParagraphAlignment,spacing:f32,runs:Vec<StyledParagraphRun>,styles:Vec<Style>,fragments:Vec<Fragment>,#[serde(default,skip_serializing_if="Vec::is_empty")]backgrounds:Vec<paragraph_highlight_geometry::Background>,#[serde(default,skip_serializing_if="is_false")]native_ink:bool,#[serde(default,skip_serializing_if="is_false")]text_alignment:bool,#[serde(default,skip_serializing_if="zero_insets")]text_insets:[f32;2],#[serde(default,deserialize_with="present_bool",skip_serializing_if="Option::is_none")]ink_vertical:Option<bool>,#[serde(default,skip_serializing_if="Option::is_none")]context:Option<String>}
 // A supported flag may be absent or explicitly false. Keep that distinction
 // until the envelope version is checked; null and non-booleans are invalid.
 fn present_bool<'de,D:serde::Deserializer<'de>>(deserializer:D)->Result<Option<bool>,D::Error>{bool::deserialize(deserializer).map(Some)}
 fn present_baseline<'de,D:serde::Deserializer<'de>>(deserializer:D)->Result<Option<f32>,D::Error>{f32::deserialize(deserializer).map(Some)}
 fn is_false(value:&bool)->bool{!*value}
 fn zero_insets(value:&[f32;2])->bool{*value==[0.;2]}
-fn version(records:&[Record])->u32{if records.iter().any(|r|r.backgrounds.iter().any(|b|b.cell.is_some())){8}else if records.iter().any(|r|r.first_baseline.is_some()){7}else if records.iter().any(|r|r.context.is_some()){6}else if records.iter().any(|r|r.ink_vertical.is_some()){5}else if records.iter().any(|r|r.text_alignment){4}else if records.iter().any(|r|r.native_ink){3}else if records.iter().any(|r|!r.backgrounds.is_empty()){2}else{1}}
+fn version(records:&[Record])->u32{if records.iter().any(|r|r.occurrence_metrics==Some(true)){9}else if records.iter().any(|r|r.backgrounds.iter().any(|b|b.cell.is_some())){8}else if records.iter().any(|r|r.first_baseline.is_some()){7}else if records.iter().any(|r|r.context.is_some()){6}else if records.iter().any(|r|r.ink_vertical.is_some()){5}else if records.iter().any(|r|r.text_alignment){4}else if records.iter().any(|r|r.native_ink){3}else if records.iter().any(|r|!r.backgrounds.is_empty()){2}else{1}}
 #[derive(Serialize,Deserialize)]
 #[serde(deny_unknown_fields)]
 struct Records {version:u32,paragraphs:Vec<Record>}
@@ -45,7 +52,9 @@ fn read(pdf:&Document,page:lopdf::ObjectId)->Vec<Record>{
     let Some(bytes)=pdf.get_dictionary(page).ok().and_then(|d|d.get(KEY).ok()).and_then(|v|v.as_str().ok())else{return vec![];};
     if bytes.len()>MAX_BYTES{return vec![];}
     let Ok(records)=serde_json::from_slice::<Records>(bytes)else{return vec![];};
-    if !matches!(records.version,1|2|3|4|5|6|7|8)||records.paragraphs.len()>64||records.paragraphs.iter().map(|r|r.fragments.len()).sum::<usize>()>4096
+    if !matches!(records.version,1|2|3|4|5|6|7|8|9)||records.paragraphs.len()>64||records.paragraphs.iter().map(|r|r.fragments.len()).sum::<usize>()>4096
+        ||(records.version<9&&records.paragraphs.iter().any(|r|r.occurrence_metrics.is_some()))
+        ||records.paragraphs.iter().any(|r|r.occurrence_metrics==Some(false))
         ||(records.version<8&&records.paragraphs.iter().any(|r|r.backgrounds.iter().any(|b|b.cell.is_some())))
         ||(records.version<7&&records.paragraphs.iter().any(|r|r.first_baseline.is_some()))
         ||(records.version<6&&records.paragraphs.iter().any(|r|r.context.is_some()))
@@ -153,7 +162,8 @@ impl WorkerRuntime {
         if document.pages().len() as usize!=definitions.len(){return Err(invalid("The saved style pages cannot be mapped uniquely."));}
         let mut styles=Vec::new();
         for (index,id) in ids.into_iter().enumerate(){
-            let page=document.pages().get(index as i32)?;let before=snapshot(&page,Some(&proofs))?;
+            let page=document.pages().get(index as i32)?;let mut before=snapshot(&page,Some(&proofs))?;
+            source_text::bind_standard_on_page(&pdf,id,&mut before)?;
             if before.len()!=1||before[0].index!=0{return Err(invalid("The saved style resources cannot be mapped uniquely."));}
             let checked=prepare_page(pdf.clone(),id,before,&[0],page_geometry(&page)?,true)?;
             if checked.styles.len()!=1{return Err(invalid("Missing saved style resource."));}
@@ -175,21 +185,40 @@ impl WorkerRuntime {
         }
         let (probes,mut bindings)=self.styled_font_probes(&p.pdf,p.page_id,&record.styles)?;
         for (binding,style) in bindings.iter_mut().zip(&record.styles){binding.background_id=style.background_id;}
-        let styles=bindings.iter().map(ResolvedStyle::original).collect::<Vec<_>>();
-        let mut metrics=styled_paragraph_plan::measure(&probes,&record.runs,&styles)?;
-        if record.native_ink{self.native_highlight_metrics(p,&record.runs,&styles,&mut metrics,record.ink_vertical.unwrap_or(false))?;}
+        let mut styles=bindings.iter().map(ResolvedStyle::original).collect::<Vec<_>>();
+        if record.occurrence_metrics==Some(true)||p.before.iter().any(|r|p.selection.object_indices.contains(&r.index)&&r.source_encoding.as_ref().is_some_and(|b|b.encoded().uses_sequences())) {
+            if paragraph_occurrence_plan::restore_rgb(p,&record.runs,&mut styles,&mut bindings).is_err(){return Ok(false);}
+        }
+        let occurrence=paragraph_occurrence_plan::measure(p,&probes,&record.runs,&styles,record.occurrence_metrics==Some(true))?;
+        let (mut metrics,mut atoms)=if let Some(measured)=occurrence{(measured.metrics,Some(measured.atoms))}else{(styled_paragraph_plan::measure(&probes,&record.runs,&styles)?,None)};
+        if record.native_ink&&atoms.is_none(){self.native_highlight_metrics(p,&record.runs,&styles,&mut metrics,record.ink_vertical.unwrap_or(false))?;}
+        if let Some(atoms)=&mut atoms {
+            if !record.backgrounds.is_empty()||record.ink_vertical.unwrap_or(false){self.native_occurrence_ink(p,&styles,atoms,record.ink_vertical.unwrap_or(false))?;}
+            paragraph_occurrence_ink::reserve(atoms,&styles,&record.backgrounds)?;
+        }
         let ids=styles.iter().map(|s|s.background_id).collect::<Vec<_>>();
         let padded=if record.backgrounds.is_empty(){None}else{Some(paragraph_highlight_geometry::padded_metrics_in_units(&metrics,&ids,&record.backgrounds,p.unit)?)};
-        let layout=paragraph_highlight_geometry::layout_with_baseline(&record.runs,&metrics,padded.as_deref(),record.bounds,record.alignment,record.spacing,p.unit,record.text_insets,record.text_alignment,record.ink_vertical.unwrap_or(false),record.first_baseline)?;
+        let layout=if let Some(atoms)=&atoms{
+            let result=paragraph_occurrence_plan::layout(atoms,&metrics,record.bounds,record.alignment,record.spacing,p.unit,record.text_insets,record.text_alignment,record.ink_vertical.unwrap_or(false),record.first_baseline)?;
+            paragraph_occurrence_ink::validate_layout(&result,atoms,&styles,&record.backgrounds)?;
+            paragraph_occurrence_plan::bind_fragments(&mut styles,atoms,&result)?;result.layout
+        }else{paragraph_highlight_geometry::layout_with_baseline(&record.runs,&metrics,padded.as_deref(),record.bounds,record.alignment,record.spacing,p.unit,record.text_insets,record.text_alignment,record.ink_vertical.unwrap_or(false),record.first_baseline)?};
         let fragments=layout.lines.iter().flat_map(|line|&line.runs).collect::<Vec<_>>();
         if fragments.len()!=p.removals.len(){return Ok(false);}
         for ((fragment,(op_index,_)),id) in fragments.iter().zip(&p.removals).zip(&p.selection.object_indices){
-            if show_bytes(&p.content.operations[*op_index])!=Some(styles[fragment.style_id].encode(&fragment.text)?.as_slice()){return Ok(false);}
+            if show_bytes(&p.content.operations[*op_index])!=Some(styles[fragment.style_id].encode_at(&fragment.text,fragment.origin)?.as_slice()){return Ok(false);}
             let actual=p.before.iter().find(|r|r.index==*id).unwrap();
             // These are writer-owned identity matrices with persisted f32
             // origins. Even a subpixel shift that happens to rasterize equally
             // at one zoom must not authorize a different default placement.
             if actual.matrix[4..]!=fragment.origin||actual.matrix[..4]!=[1.,0.,0.,1.]||actual.font_size!=styles[fragment.style_id].size{return Ok(false);}
+            // RGB precision comes from the actual current operators, never
+            // from hints or the 8-bit scratch palette. A hint cannot authorize
+            // a different decimal paint value that happens to rasterize alike.
+            let Some(source)=p.styles.iter().find(|style|style.object_indices.contains(id))else{return Ok(false);};
+            let binding=&mut bindings[fragment.style_id];
+            if !binding.object_indices.is_empty()&&binding.original_rgb!=source.original_rgb{return Ok(false);}
+            binding.original_rgb=source.original_rgb;styles[fragment.style_id].original_rgb=source.original_rgb;
             bindings[fragment.style_id].object_indices.push(*id);
         }
         let actual=p.selection.object_indices.iter().map(|id|p.before.iter().find(|r|r.index==*id).unwrap()).collect::<Vec<_>>();
@@ -209,7 +238,7 @@ impl WorkerRuntime {
         p.runs=record.runs.clone();p.styles=bindings;p.selection.text=p.runs.iter().map(|r|r.text.as_str()).collect();
         p.selection.bounds=displayed_bounds(g,record.bounds);p.selection.alignment=Some(record.alignment);p.selection.line_spacing=Some(record.spacing);
         p.first_baseline=layout.lines.first().map(|line|line.baseline);
-        p.remembered=true;p.native_ink=record.native_ink;p.text_alignment=record.text_alignment;p.text_insets=record.text_insets;p.ink_vertical=record.ink_vertical.unwrap_or(false);
+        p.occurrence_metrics=record.occurrence_metrics==Some(true);p.remembered=true;p.native_ink=record.native_ink;p.text_alignment=record.text_alignment;p.text_insets=record.text_insets;p.ink_vertical=record.ink_vertical.unwrap_or(false);
         p.backgrounds=record.backgrounds.clone();p.highlight_sources=bound_highlights;
         Ok(true)
     }
@@ -221,9 +250,9 @@ pub(super) fn write(runtime:&WorkerRuntime,bytes:&[u8],prepared:&Prepared,layout
     let mut records=read(&pdf,page).into_iter().filter(|r|indices(r,&prepared.before).is_some_and(|ids|!ids.iter().any(|id|prepared.selection.object_indices.contains(id)))).collect::<Vec<_>>();
     let fragments=layout.lines.iter().flat_map(|line|&line.runs).map(|fragment|{
         let s=&styles[fragment.style_id];Ok(Fragment{font:s.substitute.as_ref().map_or_else(||s.source.font.clone(),|a|format!("Folio{}Paragraph",a.info.id)),
-            program:s.substitute.as_ref().map(|a|a.info.id.clone()).or_else(||s.source.program.clone()),size:s.size,color:s.color,origin:fragment.origin,digest:digest(&s.encode(&fragment.text)?)})
+            program:s.substitute.as_ref().map(|a|a.info.id.clone()).or_else(||s.source.program.clone()),size:s.size,color:s.color,origin:fragment.origin,digest:digest(&s.encode_at(&fragment.text,fragment.origin)?)})
     }).collect::<EngineResult<Vec<_>>>()?;
-    records.push(Record{first_baseline:request.baseline_anchor.and_then(|_|layout.lines.first().map(|line|line.baseline)),bounds:layout.pdf_bounds,alignment:request.alignment,spacing:request.line_spacing,runs:request.runs.clone(),styles:styles.iter().map(Style::published).collect::<EngineResult<_>>()?,fragments,backgrounds:prepared.backgrounds.clone(),native_ink:prepared.native_ink,text_alignment:prepared.text_alignment,text_insets:prepared.text_insets,ink_vertical:prepared.ink_vertical.then_some(true),context:prepared.context_binding()?});
+    records.push(Record{occurrence_metrics:styles.iter().any(|s|s.fragments.is_some()).then_some(true),first_baseline:request.baseline_anchor.and_then(|_|layout.lines.first().map(|line|line.baseline)),bounds:layout.pdf_bounds,alignment:request.alignment,spacing:request.line_spacing,runs:request.runs.clone(),styles:styles.iter().map(Style::published).collect::<EngineResult<_>>()?,fragments,backgrounds:prepared.backgrounds.clone(),native_ink:prepared.native_ink,text_alignment:prepared.text_alignment,text_insets:prepared.text_insets,ink_vertical:prepared.ink_vertical.then_some(true),context:prepared.context_binding()?});
     let encode=|records:&Vec<Record>|serde_json::to_vec(&Records{version:version(records),paragraphs:records.clone()}).map_err(|_|invalid("The paragraph settings could not be encoded."));
     let mut data=encode(&records)?;
     if records.len()>64||records.iter().map(|r|r.fragments.len()).sum::<usize>()>4096||data.len()>MAX_BYTES{
@@ -258,6 +287,31 @@ pub(super) fn write(runtime:&WorkerRuntime,bytes:&[u8],prepared:&Prepared,layout
 #[cfg(test)]
 mod probe_tests {
     use super::*;
+#[test]
+fn occurrence_metric_hint_requires_v9_true_and_never_accepts_legacy_presence() {
+    let original=Document::load_mem(include_bytes!("../../tests/fixtures/paragraphs/legacy-tight-v4.pdf")).unwrap();
+    let page=*original.get_pages().get(&1).unwrap();
+    let saved:serde_json::Value=serde_json::from_slice(original.get_dictionary(page).unwrap().get(KEY).unwrap().as_str().unwrap()).unwrap();
+    for v in 1..=9 {
+        let mut clean=saved.clone();clean["version"]=serde_json::json!(v);
+        if v<4 {clean["paragraphs"][0].as_object_mut().unwrap().remove("text_alignment");}
+        let mut pdf=original.clone();
+        pdf.get_dictionary_mut(page).unwrap().set(KEY,Object::string_literal(serde_json::to_vec(&clean).unwrap()));
+        assert_eq!(read(&pdf,page).len(),1,"valid existing envelope v{v}");
+        for flag in [serde_json::json!(true),serde_json::json!(false),serde_json::Value::Null,serde_json::json!("true"),serde_json::json!(1)] {
+            let mut changed=clean.clone();changed["paragraphs"][0]["occurrence_metrics"]=flag.clone();
+            pdf.get_dictionary_mut(page).unwrap().set(KEY,Object::string_literal(serde_json::to_vec(&changed).unwrap()));
+            let records=read(&pdf,page);
+            if v==9&&flag==serde_json::json!(true) {
+                assert_eq!(records.len(),1);assert_eq!(version(&records),9);
+                // Parsing accepts only a candidate. It does not establish font,
+                // operator, geometry, raster or paragraph ownership authority.
+                assert_eq!(records[0].occurrence_metrics,Some(true));
+            }else{assert!(records.is_empty(),"v{v} accepted occurrence_metrics={flag}");}
+        }
+    }
+}
+
 #[test]
 fn cell_policy_requires_version_eight_and_single_geometry_policy(){
  let original=Document::load_mem(include_bytes!("../../tests/fixtures/paragraphs/legacy-tight-v4.pdf")).unwrap();

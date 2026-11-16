@@ -1,10 +1,13 @@
+import {clearPageReadingTextCache} from "./page-reading-text";
 import {rectVisibleOnPage} from "./geometry";
 import { acquireShapedText } from "./shaped-text";
 import { fontRevision, subscribeFonts } from "./custom-fonts";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import type { FolioAdapter } from "./adapter";
 import { textOverlayCharacters, rotateTextRect } from "./text-overlay-geometry";
-import type { PagePlan, PageText, PdfTextCharacter,PageSearchResult } from "./types";
+import type { PagePlan, PageText, PdfTextCharacter,PageSearchResult,PageSearchOptions } from "./types";
+import {DEFAULT_SEARCH_OPTIONS,normalizeSearchQuery,searchCharacterRanges} from "./search-matching";
+export {normalizeSearchQuery} from "./search-matching";
 
 /** Coordinates are page units, after source rotation and before editor rotation. */
 export interface SearchRect { x: number; y: number; width: number; height: number }
@@ -39,6 +42,7 @@ function pruneTextCache() {
 }
 
 export function clearSearchTextCache(sourceIds: string[]) {
+  clearPageReadingTextCache(sourceIds);
   const sources = new Set(sourceIds);
   for (const [key, entry] of textCache) if (sources.has(entry.sourceId)) textCache.delete(key);
 }
@@ -67,26 +71,6 @@ export function readSearchPageText(adapter: FolioAdapter, sourceId: string, page
   return entry.request;
 }
 
-export function normalizeSearchQuery(query: string): string { return query.replace(/\s+/gu, " ").trim().toLowerCase(); }
-
-function normalizeCharacters(characters: PdfTextCharacter[]) {
-  const letters: string[] = [];
-  const glyphs: number[] = [];
-  for (let index = 0; index < characters.length; index++) {
-    for (const character of characters[index].text) {
-      if (/\s/u.test(character)) {
-        if (letters.length && letters[letters.length - 1] !== " ") { letters.push(" "); glyphs.push(index); }
-      } else {
-        // String search offsets use UTF-16 units, including case expansions.
-        const lower = character.toLowerCase();
-        for (let unit = 0; unit < lower.length; unit++) { letters.push(lower[unit]); glyphs.push(index); }
-      }
-    }
-  }
-  if (letters[letters.length - 1] === " ") { letters.pop(); glyphs.pop(); }
-  return { value: letters.join(""), glyphs };
-}
-
 function mergeRects(characters: PdfTextCharacter[], vertical: boolean): SearchRect[] {
   const rects: SearchRect[] = [];
   for (const character of characters) {
@@ -110,39 +94,38 @@ function mergeRects(characters: PdfTextCharacter[], vertical: boolean): SearchRe
   return rects;
 }
 
-function findTextMatches(pageId: string, scope: string, text: PageText, query: string): SearchMatch[] {
-  const normalized = normalizeCharacters(text.characters);
+function findTextMatches(pageId: string, scope: string, text: PageText, query: string,options:PageSearchOptions=DEFAULT_SEARCH_OPTIONS): SearchMatch[] {
   const matches: SearchMatch[] = [];
   const vertical = text.intrinsicRotation === 90 || text.intrinsicRotation === 270;
-  let offset = normalized.value.indexOf(query);
-  while (offset !== -1) {
-    const start = normalized.glyphs[offset], end = normalized.glyphs[offset + query.length - 1];
-    const rects = mergeRects(text.characters.slice(start, end + 1), vertical);
+  for(const {start,end,offset}of searchCharacterRanges(text.characters.map(character=>character.text),query,options)){
+    const rects = mergeRects(text.characters.slice(start, end), vertical);
     matches.push({ id: `${pageId}:${scope}:${offset}`, pageId, rects });
-    offset = normalized.value.indexOf(query, offset + query.length);
   }
   return matches;
 }
 
-export function findPageMatches(page: PagePlan, text: PageText, query: string): SearchMatch[] {
-  const needle = normalizeSearchQuery(query);
+export function findPageMatches(page: PagePlan, text: PageText, query: string,options:PageSearchOptions=DEFAULT_SEARCH_OPTIONS): SearchMatch[] {
+  const needle = normalizeSearchQuery(query,options);
   if (!needle) return [];
-  const matches = findTextMatches(page.id, "source", text, needle);
+  const matches = findTextMatches(page.id, "source", text, query,options);
   for (const overlay of page.overlays) {
-    if (overlay.type === "text") matches.push(...findTextMatches(page.id, `overlay:${overlay.id}`, textOverlayCharacters(overlay), needle));
+    if (overlay.type === "text") matches.push(...findTextMatches(page.id, `overlay:${overlay.id}`, textOverlayCharacters(overlay), query,options));
   }
   return page.crop?matches.filter(match=>match.rects.some(rect=>rectVisibleOnPage(rect,page))):matches;
 }
 
 interface SearchResult { matches: SearchMatch[]; searching: boolean; error: string | null; hasText: boolean }
-interface SearchState extends SearchResult { adapter: FolioAdapter; pages: PagePlan[]; query: string }
+interface SearchState extends SearchResult { adapter: FolioAdapter; pages: PagePlan[]; query: string; matchCase:boolean;wholeWords:boolean }
 
-export function useDocumentSearch(adapter: FolioAdapter, pages: PagePlan[], query: string, enabled: boolean): SearchResult {
+export function useDocumentSearch(adapter: FolioAdapter, pages: PagePlan[], query: string, enabled: boolean,options:PageSearchOptions=DEFAULT_SEARCH_OPTIONS): SearchResult {
   const fonts = useSyncExternalStore(subscribeFonts, fontRevision);
-  const needle = normalizeSearchQuery(query);
+  const matchCase=options.matchCase,wholeWords=options.wholeWords;
+  let needle="",queryError:string|null=null;
+  try{needle=normalizeSearchQuery(query,{matchCase,wholeWords});}catch(error){queryError=error instanceof Error?error.message:String(error);}
   const [state, setState] = useState<SearchState | null>(null);
   useEffect(() => {
-    if (!enabled || !needle) return;
+    if (!enabled || !needle || queryError) return;
+    const flags={matchCase,wholeWords};
     let cancelled = false;
     let activePreparation: ReturnType<typeof acquireShapedText> | undefined;
     const timer = setTimeout(() => {
@@ -160,7 +143,7 @@ export function useDocumentSearch(adapter: FolioAdapter, pages: PagePlan[], quer
               if(!adapter.searchPage)throw new Error("Search for this protected PDF requires the desktop search service.");
               const key=JSON.stringify([page.sourceId,page.pageIndex]);
               let request=restricted.get(key);
-              if(!request){request=adapter.searchPage(page.sourceId,page.pageIndex,needle);restricted.set(key,request);}
+              if(!request){request=adapter.searchPage(page.sourceId,page.pageIndex,query,flags);restricted.set(key,request);}
               const found=await request;if(cancelled)return;
               matches.push(...found.matches.map((rects,index)=>({id:`${page.id}:source:${index}`,pageId:page.id,rects})));
               hasText ||= found.hasText;
@@ -169,7 +152,7 @@ export function useDocumentSearch(adapter: FolioAdapter, pages: PagePlan[], quer
           }
           catch (error) { errors.push(`Page ${index + 1}: ${error instanceof Error ? error.message : String(error)}`); }
           if (cancelled) return;
-          matches.push(...findTextMatches(page.id, "source", text, needle));
+          matches.push(...findTextMatches(page.id, "source", text, query,flags));
           for (const overlay of page.overlays) {
             if (overlay.type !== "text") continue;
             if (overlay.shaping) {
@@ -179,24 +162,26 @@ export function useDocumentSearch(adapter: FolioAdapter, pages: PagePlan[], quer
                 const prepared = await lease.promise;
                 if (cancelled) return;
                 const text = {intrinsicRotation: overlay.rotation ?? 0, characters: prepared.characters.map(character=>({text:character.text,...rotateTextRect(overlay,character)}))};
-                matches.push(...findTextMatches(page.id, `overlay:${overlay.id}`, text, needle));
+                matches.push(...findTextMatches(page.id, `overlay:${overlay.id}`, text, query,flags));
               } catch (error) { errors.push(`Page ${index+1}: ${String(error)}`); }
               finally { lease.release(); if(activePreparation === lease) activePreparation=undefined; }
-            } else matches.push(...findTextMatches(page.id, `overlay:${overlay.id}`, textOverlayCharacters(overlay), needle));
+            } else matches.push(...findTextMatches(page.id, `overlay:${overlay.id}`, textOverlayCharacters(overlay), query,flags));
             if (cancelled) return;
           }
           hasText ||= text.characters.some((character) => !!character.text.trim()) || page.overlays.some((overlay) => overlay.type === "text" && !!overlay.text.trim());
-          setState({ adapter, pages, query: needle, matches: matches.filter(match=>{const owner=pages.find(page=>page.id===match.pageId);return !owner?.crop||match.rects.some(rect=>rectVisibleOnPage(rect,owner));}), hasText, error: errors.length ? `Some pages could not be searched. ${errors[0]}` : null, searching: index < pages.length - 1 });
+          setState({ adapter, pages, query: needle,matchCase,wholeWords, matches: matches.filter(match=>{const owner=pages.find(page=>page.id===match.pageId);return !owner?.crop||match.rects.some(rect=>rectVisibleOnPage(rect,owner));}), hasText, error: errors.length ? `Some pages could not be searched. ${errors[0]}` : null, searching: index < pages.length - 1 });
           // Let rendering and input run even when every extraction is cached.
           if (index < pages.length - 1) await new Promise<void>((resolve) => setTimeout(resolve, 0));
         }
-        if (!pages.length && !cancelled) setState({ adapter, pages, query: needle, matches: [], hasText: false, error: null, searching: false });
+        if (!pages.length && !cancelled) setState({ adapter, pages, query: needle,matchCase,wholeWords, matches: [], hasText: false, error: null, searching: false });
       })();
     }, 120);
     return () => { cancelled = true; clearTimeout(timer); activePreparation?.release(); };
-  }, [adapter, pages, needle, enabled, fonts]);
+  }, [adapter, pages, needle, matchCase,wholeWords,queryError,enabled, fonts]);
 
-  if (!enabled || !needle) return { matches: [], searching: false, error: null, hasText: false };
-  if (!state || state.adapter !== adapter || state.pages !== pages || state.query !== needle) return { matches: [], searching: true, error: null, hasText: false };
+  if(!enabled)return {matches:[],searching:false,error:null,hasText:false};
+  if(queryError)return {matches:[],searching:false,error:queryError,hasText:false};
+  if (!needle) return { matches: [], searching: false, error: null, hasText: false };
+  if (!state || state.adapter !== adapter || state.pages !== pages || state.query !== needle||state.matchCase!==matchCase||state.wholeWords!==wholeWords) return { matches: [], searching: true, error: null, hasText: false };
   return state;
 }

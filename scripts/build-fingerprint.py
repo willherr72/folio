@@ -16,13 +16,16 @@ paths += [p for p in (root / 'src-tauri/vendor/pdfium-render-0.9.4').rglob('*')
 # Parsing and writing patches are part of the executable's behavior too.
 paths += [p for p in (root / 'src-tauri/vendor/lopdf-0.45.0').rglob('*')
           if p.is_file() and p.suffix in ('.rs', '.toml')]
+# The source-font verifier compiles this locally patched parser too.
+paths += [p for p in (root / 'src-tauri/vendor/ttf-parser-0.25.1').rglob('*')
+          if p.is_file() and p.suffix in ('.rs', '.toml')]
 paths += [root / name for name in ['package.json', 'package-lock.json', 'src-tauri/Cargo.toml',
           'src-tauri/Cargo.lock', 'src-tauri/tauri.conf.json',
           'src-tauri/resources/pdfium/pdfium.dll', 'src-tauri/resources/pdfium/provenance.json',
           'scripts/pdfium-source-lock.json', 'patches/pdfium/form-text-state-inheritance.patch',
           'patches/pdfium/fractional-horizontal-advances.patch', 'patches/pdfium/ordered-default-colors.patch',
           'patches/pdfium/embedded-form-font-preference.patch', 'patches/pdfium/fractional-form-borders.patch',
-          'patches/pdfium/form-separator-coordinates.patch']]
+          'patches/pdfium/form-separator-coordinates.patch', 'patches/pdfium/list-selection-state.patch']]
 files = {p.relative_to(root).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted(paths)}
 fingerprint = hashlib.sha256(json.dumps(files, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
 if sys.argv[1] == 'write':

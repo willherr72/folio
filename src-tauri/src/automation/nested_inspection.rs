@@ -48,7 +48,7 @@ fn authorize(info: &DocumentInfo, page: u32) -> EngineResult<()> {
     Ok(())
 }
 
-fn selection(source_hash: &[u8], page: u32, run: &FormTextRun) -> EngineResult<(String, Value)> {
+pub(super) fn selection(source_hash: &[u8], page: u32, run: &FormTextRun) -> EngineResult<(String, Value)> {
     let bytes = bounded_json(run, MAX_RUN)?;
     let mut digest = Sha256::new();
     digest.update(b"folio-nested-text-selection-v1\0");

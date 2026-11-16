@@ -195,8 +195,13 @@ pub use fonts::{FontAsset, FontInfo, FontRegistry, InstalledFont};
 
 pub use engine::native_comments::{NativeComment,EditNativeCommentRequest,DeleteNativeCommentRequest};
 pub use engine::{EngineError, EngineResult, PdfEngine};
+pub use engine::text_batch::TextBatchEdit;
+pub use engine::workspace_text_batch::{WorkspaceTextBatchEdit,WorkspaceTextBatchResult,WorkspaceSourceReplacement};
+pub use engine::workspace_replacement::{WorkspaceReplacementIntent,WorkspaceReplacementSelection,WorkspaceReplacementMatch,WorkspaceReplacementPage,WorkspaceReplacementPlan,WorkspaceOverlayReplacement,WorkspaceReplacementResult};
+pub use engine::replacement_plan::{TextReplacementPagePlan,TextReplacementMatch,TextReplacementSourceRange,TextReplacementBlocker};
+pub use engine::document_replacement_plan::{TextReplacementSelection,TextReplacementDocumentPlan,DocumentReplacementBlocker,ReplacementPlanningControl,ReplacementPlanningProgress};
 pub use types::{
-    AnnotationRect, CommentOverlay, ImageOverlay, DocumentInfo, ProtectionInfo, OpenOutcome, SourceReplacement, PageContentReplacement, PageSearchResult, EditableTextRun, ExportRequest, FormTextRun, ImagePageOptions,
+    AnnotationRect, CommentOverlay, ImageOverlay, DocumentInfo, ProtectionInfo, OpenOutcome, SourceReplacement, PageContentReplacement, PageSearchResult, PageSearchOptions, EditableTextRun, ExportRequest, FormTextRun, ImagePageOptions,
     FormTextRuns, FormParagraphRuns, HighlightOverlay, InkOverlay, Overlay, PageInfo, PagePlan, PageText,
     PdfTextCharacter, Point, ShapingDirection, TextAreaAlignment, TextAreaSettings, TextFont,
     TextGroupPreview, TextOverlay, TextParagraphSelection, ParagraphFormatting, ParagraphAlignment, TextRuns, TextShaping,
@@ -211,3 +216,6 @@ pub use recovery::RecoveryStore;
 pub mod printing;
 
 mod form_graph;
+
+mod workspace_replacement_host;
+mod workspace_replacement_commands;

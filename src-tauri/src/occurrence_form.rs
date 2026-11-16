@@ -22,22 +22,26 @@ impl PdfEngine {
 }
 
 impl WorkerRuntime {
+    pub(super) fn list_complete_form_text_runs(&mut self,source:&str,page:usize)->EngineResult<FormTextRuns>{
+        let result=self.form_source_admission(source,true).and_then(|()| {
+            if !self.text_page_has_form_objects(source,page)? {return Ok(FormTextRuns{runs:vec![],reason:None});}
+            self.with_text_projection(source,page,|rt,id|rt.list_transaction_form_text_runs(id,0,true))
+        });
+        match result {Err(EngineError::InvalidRequest(reason))=>Ok(FormTextRuns{runs:vec![],reason:Some(reason)}),other=>other}
+    }
+    pub(super) fn replace_complete_form_text_occurrence(&mut self,source:&str,occurrences:&[usize],selected:usize,path:&[usize],expected:&str,replacement:&str,font:Option<&str>)->EngineResult<PageContentReplacement>{
+        self.form_source_admission(source,true).and_then(|()|
+            self.publish_text_occurrence(source,occurrences,selected,|rt,page|
+                rt.with_text_projection(source,page,|rt,id|rt.replace_transaction_form_text(id,0,path,expected,replacement,font,true))))
+    }
     pub(super) fn handle_occurrence_form(&mut self,request:Request){
         match request {
             Request::List{source,page,reply}=>{
-                let result=self.form_source_admission(&source,true).and_then(|()| {
-                    if !self.text_page_has_form_objects(&source,page)? {
-                        return Ok(FormTextRuns{runs:vec![],reason:None});
-                    }
-                    self.with_text_projection(&source,page,|rt,id|rt.list_transaction_form_text_runs(id,0,true))
-                });
-                let result=match result {Err(EngineError::InvalidRequest(reason))=>Ok(FormTextRuns{runs:vec![],reason:Some(reason)}),other=>other};
+                let result=self.list_complete_form_text_runs(&source,page);
                 let _=reply.send(result);
             }
             Request::Replace{source,occurrences,selected,path,expected,replacement,font,reply}=>{
-                let result=self.form_source_admission(&source,true).and_then(|()|
-                    self.publish_text_occurrence(&source,&occurrences,selected,|rt,page|
-                        rt.with_text_projection(&source,page,|rt,id|rt.replace_transaction_form_text(id,0,&path,&expected,&replacement,font.as_deref(),true))));
+                let result=self.replace_complete_form_text_occurrence(&source,&occurrences,selected,&path,&expected,&replacement,font.as_deref());
                 if let Err(mpsc::SendError(Ok(result)))=reply.send(result){self.discard_unpublished_source(&result.document.id);}
             }
         }

@@ -56,6 +56,7 @@ mod text_edit;
 mod text_context_group;
 pub(crate) use text_edit::{choice_font_codes,redaction_font_codes};
 pub(crate) use text_edit::nominal_standard_ascii_metrics;
+pub(crate) use text_edit::list_source_glyphs;
 #[path = "image_pages.rs"]
 mod image_pages;
 #[path = "redaction_selection.rs"]
@@ -82,12 +83,12 @@ pub(crate) fn source_unit_from_pdf(document: &lopdf::Document, page: lopdf::Obje
 pub(crate) mod page_crop;
 #[path = "page_content_replace.rs"]
 mod page_content_replace;
-#[path = "page_admission.rs"]
-mod page_admission;
 #[path = "page_occurrence_replace.rs"]
 mod page_occurrence_replace;
 #[path = "occurrence_text_edit.rs"]
 mod occurrence_text_edit;
+#[path = "text_batch.rs"]
+pub mod text_batch;
 #[path = "occurrence_paragraph.rs"]
 mod occurrence_paragraph;
 #[path = "occurrence_group.rs"]
@@ -102,6 +103,18 @@ mod existing_image_edit;
 pub(crate) mod native_comments;
 #[path = "page_search.rs"]
 mod page_search;
+#[path = "search_matching.rs"]
+mod search_matching;
+#[path = "replacement_plan.rs"]
+pub mod replacement_plan;
+#[path = "document_replacement_plan.rs"]
+pub mod document_replacement_plan;
+#[path = "workspace_text_batch.rs"]
+pub mod workspace_text_batch;
+#[path = "workspace_replacement.rs"]
+pub mod workspace_replacement;
+#[path = "reading_characters.rs"]
+mod reading_characters;
 #[path="page_image_render.rs"]
 mod page_image_render;
 #[path="pdf_split_render.rs"]
@@ -707,6 +720,15 @@ impl PdfEngine {
         self.in_points(source_id,page_index,receive.recv().map_err(|_| EngineError::WorkerStopped)?)
     }
 
+    /// Exact logical reading text, without transporting glyph geometry to the UI.
+    pub fn page_reading_text(&self, source_id: &str, page_index: usize) -> EngineResult<String> {
+        let (reply, receive) = mpsc::channel();
+        self.send(WorkerRequest::PageReadingText {
+            source_id: source_id.to_owned(), page_index, reply,
+        })?;
+        receive.recv().map_err(|_| EngineError::WorkerStopped)?
+    }
+
     pub fn status(&self) -> EngineResult<String> {
         let (reply, receive) = mpsc::channel();
         self.send(WorkerRequest::Status { reply })?;
@@ -759,6 +781,11 @@ enum WorkerRequest {
     OccurrenceParagraph(occurrence_paragraph::Request),
     OccurrenceGroup(occurrence_group::Request),
     OccurrenceForm(occurrence_form::Request),
+    TextBatch(text_batch::Request),
+    ReplacementPlan(replacement_plan::Request),
+    DocumentReplacementPlan(document_replacement_plan::Request),
+    WorkspaceTextBatch(workspace_text_batch::Request),
+    WorkspaceReplacement(workspace_replacement::Request),
     FormParagraph(form_paragraph::Request),
     ExistingImage(existing_image_edit::Request),
     ListOccurrenceTextRuns {source_id:String,page_index:usize,reply:mpsc::Sender<EngineResult<TextRuns>>},
@@ -772,7 +799,7 @@ enum WorkerRequest {
     #[cfg(feature="shaped-text")]
     ApplyOcr {source_id:String,updates:Vec<crate::OcrUpdate>,reply:mpsc::Sender<EngineResult<DocumentInfo>>},
     CheckSourceCombination {source_ids:Vec<String>,reply:mpsc::Sender<EngineResult<()>>},
-    SearchPage {source_id:String,page_index:usize,query:String,reply:mpsc::Sender<EngineResult<PageSearchResult>>},
+    SearchPage {source_id:String,page_index:usize,query:String,options:PageSearchOptions,reply:mpsc::Sender<EngineResult<PageSearchResult>>},
     BeginOpen {path:PathBuf,reply:mpsc::Sender<EngineResult<OpenOutcome>>},
     SubmitOpenPassword {challenge_id:String,password:crate::private_storage::Sensitive,reply:mpsc::Sender<EngineResult<OpenOutcome>>},
     CancelOpen {challenge_id:String,reply:mpsc::Sender<EngineResult<()>>},
@@ -973,6 +1000,11 @@ enum WorkerRequest {
         page_index: usize,
         reply: mpsc::Sender<EngineResult<String>>,
     },
+    PageReadingText {
+        source_id: String,
+        page_index: usize,
+        reply: mpsc::Sender<EngineResult<String>>,
+    },
     PageText {
         source_id: String,
         page_index: usize,
@@ -1157,8 +1189,8 @@ impl WorkerRuntime {
                 WorkerRequest::CheckSourceCombination {source_ids,reply} => {
                     let _=reply.send(self.check_source_combination(&source_ids));
                 }
-                WorkerRequest::SearchPage {source_id,page_index,query,reply}=>{
-                    let _=reply.send(self.search_page(&source_id,page_index,&query));
+                WorkerRequest::SearchPage {source_id,page_index,query,options,reply}=>{
+                    let _=reply.send(self.search_page(&source_id,page_index,&query,options));
                 }
                 WorkerRequest::BeginOpen {path,reply}=>{
                     let result=self.begin_open_document(path);self.reply_open(reply,result);
@@ -1252,6 +1284,11 @@ impl WorkerRuntime {
                 WorkerRequest::OccurrenceParagraph(request) => self.handle_occurrence_paragraph(request),
                 WorkerRequest::OccurrenceGroup(request) => self.handle_occurrence_group(request),
                 WorkerRequest::OccurrenceForm(request) => self.handle_occurrence_form(request),
+                WorkerRequest::TextBatch(request) => self.handle_text_batch(request),
+                WorkerRequest::ReplacementPlan(request) => self.handle_replacement_plan(request),
+                WorkerRequest::DocumentReplacementPlan(request) => self.handle_document_replacement_plan(request),
+                WorkerRequest::WorkspaceTextBatch(request) => self.handle_workspace_text_batch(request),
+                WorkerRequest::WorkspaceReplacement(request) => self.handle_workspace_replacement(request),
                 WorkerRequest::FormParagraph(request) => self.handle_form_paragraph(request),
                 WorkerRequest::ExistingImage(request) => self.handle_existing_image(request),
                 WorkerRequest::ReplaceTextOccurrence {source_id,occurrences,selected_occurrence,object_index,expected_text,replacement,font_id,reply} => {
@@ -1532,6 +1569,10 @@ impl WorkerRuntime {
                 } => {
                     let _ = reply.send(self.extract_text(&source_id, page_index));
                 }
+                WorkerRequest::PageReadingText { source_id, page_index, reply } => {
+                    let _ = reply.send(self.page_text(&source_id, page_index)
+                        .map(|text| text.characters.into_iter().map(|character| character.text).collect()));
+                }
                 WorkerRequest::PageText {
                     source_id,
                     page_index,
@@ -1734,35 +1775,6 @@ impl WorkerRuntime {
         security: OpenSecurity,
         font_imports: Option<&crate::fonts::FontImportScope>,
     ) -> EngineResult<DocumentInfo> {
-        self.open_bytes_admitted(bytes, canonical, original_path, editable_annotations,
-            register_fonts, legacy_comment_import, security, font_imports, None)
-    }
-
-    fn open_text_publication(
-        &mut self,
-        publication: page_admission::Publication,
-        canonical: PathBuf,
-        original_path: PathBuf,
-        legacy_comment_import: bool,
-        security: OpenSecurity,
-    ) -> EngineResult<DocumentInfo> {
-        let (bytes, proof) = publication.into_parts();
-        self.open_bytes_admitted(bytes, canonical, original_path, true, true,
-            legacy_comment_import, security, None, proof)
-    }
-
-    fn open_bytes_admitted(
-        &mut self,
-        bytes: Vec<u8>,
-        canonical: PathBuf,
-        original_path: PathBuf,
-        editable_annotations: bool,
-        register_fonts: bool,
-        legacy_comment_import: bool,
-        security: OpenSecurity,
-        font_imports: Option<&crate::fonts::FontImportScope>,
-        admission: Option<page_admission::Proof>,
-    ) -> EngineResult<DocumentInfo> {
         let _phase=crate::native_phase!("open.total");
         if bytes.is_empty() || bytes.len() as u64 > MAX_SOURCE_BYTES {
             return Err(EngineError::InvalidRequest("source PDF is empty or exceeds 512 MiB".into()));
@@ -1777,8 +1789,6 @@ impl WorkerRuntime {
         let document = {let _phase=crate::native_phase!("open.renderer_load");self
             .pdfium
             .load_pdf_from_reader(Cursor::new(source_bytes.clone()), None)?};
-        let size_only = admission.as_ref().is_some_and(|proof|
-            proof.matches(&source_bytes, document.pages().len() as usize));
         let mut pages = Vec::with_capacity(document.pages().len() as usize);
         let mut imported_annotations=HashMap::new();
         let mut imported_overlay_sources=imported_overlay_sources::Index::capturing(retained.identity().clone());
@@ -1787,12 +1797,6 @@ impl WorkerRuntime {
         let mut imported_images = Vec::new();
         {let _phase=crate::native_phase!("open.page_admission");
         for index in 0..document.pages().len() {
-            if size_only {
-                if let Some(info) = page_admission::native_size(&document,index) {
-                    pages.push(info);
-                    continue;
-                }
-            }
             let mut page = document.pages().get(index)?;
             let geometry = page_geometry(&page)?;
             let mut info = geometry.displayed_size();
@@ -1945,7 +1949,7 @@ impl WorkerRuntime {
         let page = document.pages().get(page_index_i32(page_index)?)?;
         let geometry = page_geometry(&page)?;
         let source_text = page.text()?;
-        if character_limit.is_some_and(|limit|source_text.chars().len() as usize>limit){
+        if character_limit.is_some_and(|limit|source_text.len().max(0) as usize>limit){
             return Err(EngineError::InvalidRequest("This page exceeds the 250,000-character reading limit.".into()));
         }
         // PDFium sorts separate text-show objects by rotated display X, which
@@ -1975,82 +1979,7 @@ impl WorkerRuntime {
         } else {
             source_text
         };
-        let chars = text.chars();
-        if character_limit.is_some_and(|limit|chars.len() as usize>limit) {
-            return Err(EngineError::InvalidRequest("This page exceeds the 250,000-character search limit.".into()));
-        }
-        let mut characters: Vec<PdfTextCharacter> = Vec::with_capacity(chars.len() as usize);
-        let mut pending_high_surrogate: Option<u32> = None;
-        let mut last_position = Point { x: 0.0, y: 0.0 };
-        for character in chars.iter() {
-            let unicode = character.unicode_value();
-            let value = char::from_u32(unicode).unwrap_or(char::REPLACEMENT_CHARACTER);
-            // Generated whitespace can lack glyph bounds. Keep it in reading order
-            // so browser range copying retains word and line separators.
-            let bounds = if value.is_whitespace() {
-                character
-                    .loose_bounds()
-                    .or_else(|_| character.tight_bounds())
-            } else {
-                character
-                    .tight_bounds()
-                    .or_else(|_| character.loose_bounds())
-            };
-            let (position, width, height) = match bounds {
-                Ok(bounds) => {
-                    let a = geometry.pdf_to_displayed(bounds.left().value, bounds.bottom().value);
-                    let b = geometry.pdf_to_displayed(bounds.right().value, bounds.top().value);
-                    (
-                        Point {
-                            x: a.x.min(b.x),
-                            y: a.y.min(b.y),
-                        },
-                        (a.x - b.x).abs(),
-                        (a.y - b.y).abs(),
-                    )
-                }
-                Err(_) => {
-                    let position = character
-                        .origin()
-                        .map(|(x, y)| geometry.pdf_to_displayed(x.value, y.value))
-                        .unwrap_or(last_position);
-                    (position, 0.0, 0.0)
-                }
-            };
-            last_position = position;
-            // PDFium can expose a ToUnicode/ActualText supplementary scalar as
-            // two UTF-16 entries. Selection must carry the same Unicode as
-            // extract_text(), with one box covering both entries. An isolated
-            // surrogate retains the replacement character; never skip a unit.
-            if let Some(high) = pending_high_surrogate.take() {
-                if (0xdc00..=0xdfff).contains(&unicode) {
-                    let previous = characters
-                        .last_mut()
-                        .expect("a pending surrogate has an entry");
-                    previous.text =
-                        char::from_u32(0x10000 + ((high - 0xd800) << 10) + unicode - 0xdc00)
-                            .expect("a surrogate pair encodes a Unicode scalar")
-                            .to_string();
-                    let right = (previous.x + previous.width).max(position.x + width);
-                    let bottom = (previous.y + previous.height).max(position.y + height);
-                    previous.x = previous.x.min(position.x);
-                    previous.y = previous.y.min(position.y);
-                    previous.width = right - previous.x;
-                    previous.height = bottom - previous.y;
-                    continue;
-                }
-            }
-            if (0xd800..=0xdbff).contains(&unicode) {
-                pending_high_surrogate = Some(unicode);
-            }
-            characters.push(PdfTextCharacter {
-                text: value.to_string(),
-                x: position.x,
-                y: position.y,
-                width,
-                height,
-            });
-        }
+        let characters=reading_characters::read(&text,geometry,character_limit)?.into_iter().map(|entry|entry.character).collect();
         Ok(PageText {
             intrinsic_rotation: geometry.rotation,
             characters,
@@ -2203,11 +2132,10 @@ impl WorkerRuntime {
             form_sources[index].pages.push((plan.page_index,output_index));
         }
         if form_sources.len() == 1 { form_sources[0].enable_parse_reuse(); }
-        if intent == CompositionIntent::Save
-            && complete_source_save::requires_graph_composition(&form_sources, || {
-                monitor.map_or(Ok(()), |m| m.check_cancelled())
-            })?
-        {
+        let (graph_composition,imported_language)=if intent==CompositionIntent::Save {
+            complete_source_save::composition_route(&form_sources,||monitor.map_or(Ok(()),|m|m.check_cancelled()))?
+        }else{(false,None)};
+        if graph_composition {
             // This route returns before any PDFium import or graph repair.
             // Unsupported graph operations remain errors, never a lossy fallback.
             return self.structured_source_save(request, bookmarks, discard_bookmarks, preserve_metadata, monitor);
@@ -2316,6 +2244,12 @@ impl WorkerRuntime {
         if intent == CompositionIntent::Save && preserve_metadata {
             let leading=form_sources.first().ok_or_else(||EngineError::InvalidRequest("Missing metadata source".into()))?.document()?;
             changed |= crate::document_metadata::preserve_imported(&mut document,&leading,&mut ||monitor.map_or(Ok(()),|m|m.check_cancelled()))?;
+        }
+        if let Some(language)=imported_language {
+            check("preserving",0)?;
+            document.catalog_mut().map_err(|error|EngineError::InvalidRequest(error.to_string()))?
+                .set("Lang",lopdf::Object::string_literal(language));
+            changed=true;
         }
         drop(comment_sources);
         drop(form_sources); // Release retained source parses before serialization/protection.
@@ -3231,3 +3165,8 @@ fn rotation_from_degrees(value: u16) -> EngineResult<PdfPageRenderRotation> {
 fn normalize_path(path: &Path) -> String {
     path.to_string_lossy().to_ascii_lowercase()
 }
+
+#[cfg(test)]
+#[path = "engine_list_source_tests.rs"]
+mod list_source_native_tests;
+

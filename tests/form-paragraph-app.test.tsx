@@ -111,3 +111,14 @@ it("keeps direct nested preparation valid when the clicked page becomes selected
  expect(await screen.findByRole("textbox",{name:"Paragraph text"})).toHaveTextContent("one two");
  expect(screen.queryByRole("dialog",{name:"Edit existing text"})).toBeNull();
 });
+
+it("fits a transferred nested draft through its bound form path without changing the workspace",async()=>{
+ const baselineAnchor={x:20,y:42};vi.mocked(nativeAdapter.suggestFormStyledParagraph!).mockResolvedValue({...selection,baselineAnchor});
+ vi.spyOn(nativeAdapter as Required<typeof nativeAdapter>,"mapFormParagraphDraft").mockResolvedValue({sourceId:"source",pageIndex:0,objectIndices:[0,1],anchorIndex:0,paragraphText:"one two",sourceText:"one",sourceStart:0,sourceEnd:3,paragraphStart:0,paragraphEnd:3});
+ vi.spyOn(nativeAdapter as Required<typeof nativeAdapter>,"fitFormStyledParagraph").mockResolvedValue({...selection.bounds,width:180});
+ const isolated=vi.spyOn(nativeAdapter as Required<typeof nativeAdapter>,"fitStyledParagraph");
+ await open();const before=plans();fireEvent.click(screen.getByRole("button",{name:"Choose text"}));fireEvent.change(await screen.findByRole("textbox",{name:"Replacement text"}),{target:{value:"one this"}});fireEvent.click(screen.getByRole("button",{name:"Edit paragraph…"}));
+ expect(await screen.findByRole("textbox",{name:"Paragraph text"})).toHaveTextContent("one this two");expect(screen.getByRole("spinbutton",{name:"Area width (pt)"})).toHaveValue(180);
+ expect(nativeAdapter.fitFormStyledParagraph).toHaveBeenCalledWith("source",0,[2,0,1],expect.objectContaining({runs:[{text:"one this ",styleId:0},{text:"two",styleId:1}],baselineAnchor}));expect(isolated).not.toHaveBeenCalled();expect(plans()).toEqual(before);
+ fireEvent.click(screen.getByRole("button",{name:"Cancel"}));expect(plans()).toEqual(before);
+});

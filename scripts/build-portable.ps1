@@ -51,6 +51,7 @@ try {
     Copy-Item -LiteralPath 'patches/pdfium/embedded-form-font-preference.patch' -Destination (Join-Path $portableDir 'resources/pdfium/embedded-form-font-preference.patch')
     Copy-Item -LiteralPath 'patches/pdfium/fractional-form-borders.patch' -Destination (Join-Path $portableDir 'resources/pdfium/fractional-form-borders.patch')
     Copy-Item -LiteralPath 'patches/pdfium/form-separator-coordinates.patch' -Destination (Join-Path $portableDir 'resources/pdfium/form-separator-coordinates.patch')
+    Copy-Item -LiteralPath 'patches/pdfium/list-selection-state.patch' -Destination (Join-Path $portableDir 'resources/pdfium/list-selection-state.patch')
     Copy-Item -LiteralPath 'scripts/pdfium-source-lock.json' -Destination (Join-Path $portableDir 'resources/pdfium/source-lock.json')
     $dependencySnapshot = (Get-Content (Join-Path $portableDir 'build-source-fingerprint.json') -Raw | ConvertFrom-Json).files
     $packagedDependencies = @{
@@ -62,6 +63,7 @@ try {
         'embedded-form-font-preference.patch' = 'patches/pdfium/embedded-form-font-preference.patch'
         'fractional-form-borders.patch' = 'patches/pdfium/fractional-form-borders.patch'
         'form-separator-coordinates.patch' = 'patches/pdfium/form-separator-coordinates.patch'
+        'list-selection-state.patch' = 'patches/pdfium/list-selection-state.patch'
         'source-lock.json' = 'scripts/pdfium-source-lock.json'
     }
     foreach ($entry in $packagedDependencies.GetEnumerator()) {
@@ -89,6 +91,7 @@ try {
         pdfiumFormFontPatchSha256 = (Get-Content 'src-tauri/resources/pdfium/provenance.json' -Raw | ConvertFrom-Json).formFontPatchSha256
         pdfiumBorderPatchSha256 = (Get-Content 'src-tauri/resources/pdfium/provenance.json' -Raw | ConvertFrom-Json).borderPatchSha256
         pdfiumSeparatorPatchSha256 = (Get-Content 'src-tauri/resources/pdfium/provenance.json' -Raw | ConvertFrom-Json).separatorPatchSha256
+        pdfiumListSelectionPatchSha256 = (Get-Content 'src-tauri/resources/pdfium/provenance.json' -Raw | ConvertFrom-Json).listSelectionPatchSha256
         sourceFingerprint = (Get-Content (Join-Path $portableDir 'build-source-fingerprint.json') -Raw | ConvertFrom-Json).fingerprint
     } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $portableDir 'build-info.json') -Encoding utf8
     # Some upstream license files carry 1970 timestamps, outside ZIP's range.

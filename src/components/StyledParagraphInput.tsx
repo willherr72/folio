@@ -5,13 +5,13 @@ import {restoreStyledDomSelection,styledDomOffset,styledDomSelection} from "../e
 import {fontFamily} from "../editor/custom-fonts";
 import "./styled-paragraph-input.css";
 
-interface Props {value:StyledEditorState;onChange(state:StyledEditorState):void;onError(message:string):void;disabled?:boolean}
+interface Props {value:StyledEditorState;onChange(state:StyledEditorState):void;onError(message:string):void;onPendingInput?(pending:boolean):void;disabled?:boolean}
 type Composition={source:StyledEditorState;base:StyledEditorState;range:StyledEditorRange};
 /** Native beforeinput gives explicit ranges; browser HTML is never our model.
  * Composition's uncancelable DOM edits remain provisional until compositionend.
  * See https://www.w3.org/TR/input-events-2/#input-event-order-during-composition */
-export function StyledParagraphInput({value,onChange,onError,disabled=false}:Props){
- const element=useRef<HTMLDivElement>(null);const state=useRef(value);const callbacks=useRef({onChange,onError,disabled});
+export function StyledParagraphInput({value,onChange,onError,onPendingInput,disabled=false}:Props){
+ const element=useRef<HTMLDivElement>(null);const state=useRef(value);const callbacks=useRef({onChange,onError,onPendingInput,disabled});
  const painted=useRef(false);
  const composition=useRef<Composition|null>(null);const discardedComposition=useRef(false);
  const pending=useRef<{base:StyledEditorState;transaction:StyledEditorTransaction}|null>(null);
@@ -33,17 +33,19 @@ export function StyledParagraphInput({value,onChange,onError,disabled=false}:Pro
   if(doc.activeElement===root)restoreStyledDomSelection(root,current.present.selection);
  };
  const publish=(next:StyledEditorState)=>{if(next!==state.current){callbacks.current.onChange(next);state.current=next;}paint();};
- const reject=(error:unknown)=>{pending.current=null;paint();callbacks.current.onError(error instanceof Error?error.message:String(error));};
+ const reject=(error:unknown)=>{const wasPending=!!pending.current;pending.current=null;if(wasPending)callbacks.current.onPendingInput?.(false);paint();callbacks.current.onError(error instanceof Error?error.message:String(error));};
  useLayoutEffect(()=>{
-  callbacks.current={onChange,onError,disabled};
+  callbacks.current={onChange,onError,onPendingInput,disabled};
   // Native selectionchange is queued after the browser moves its caret. A
   // callback-only parent render must not repaint that selection from old state,
   // or discard a beforeinput transaction awaiting its native input event.
   if(painted.current&&value===state.current&&!disabled)return;
+  const wasPending=!!composition.current||!!pending.current;
   if((value!==state.current||disabled)&&composition.current){composition.current=null;discardedComposition.current=true;}
   if(value!==state.current||disabled)typing.current=null;
   state.current=value;pending.current=null;if(!composition.current)paint();
- },[value,onChange,onError,disabled]);
+  if(wasPending)callbacks.current.onPendingInput?.(false);
+ },[value,onChange,onError,onPendingInput,disabled]);
  useLayoutEffect(()=>{
   const root=element.current!;const doc=root.ownerDocument;
   const perform=(transaction:StyledEditorTransaction,base=state.current)=>{try{publish(editStyledEditor(base,transaction));}catch(error){reject(error);}};
@@ -82,19 +84,21 @@ export function StyledParagraphInput({value,onChange,onError,disabled=false}:Pro
     }else typing.current=null;
     const transaction:StyledEditorTransaction={type:"replace",start,end,text,...(historyGroup?{historyGroup}:{})};
     if(event.cancelable){event.preventDefault();perform(transaction);}
-    else pending.current={base:state.current,transaction};
+    else {pending.current={base:state.current,transaction};callbacks.current.onPendingInput?.(true);}
    }catch(error){event.preventDefault();reject(error);}
   };
   const input=()=>{
    if(composition.current)return;
    if(discardedComposition.current){paint();return;}
    const captured=pending.current;pending.current=null;
-   if(captured&&captured.base===state.current){perform(captured.transaction,captured.base);return;}
-   if(root.textContent!==styledText(state.current.present.draft))reject(new Error("This browser edit could not be mapped to the paragraph. The draft was kept."));
-   else paint(); // Text equality does not authorize browser-created HTML/styles.
+   try{
+    if(captured&&captured.base===state.current){perform(captured.transaction,captured.base);return;}
+    if(root.textContent!==styledText(state.current.present.draft))reject(new Error("This browser edit could not be mapped to the paragraph. The draft was kept."));
+    else paint(); // Text equality does not authorize browser-created HTML/styles.
+   }finally{if(captured)callbacks.current.onPendingInput?.(false);}
   };
   const selectionChange=()=>{
-   if(callbacks.current.disabled||composition.current||discardedComposition.current||doc.activeElement!==root)return;
+   if(callbacks.current.disabled||composition.current||pending.current||discardedComposition.current||doc.activeElement!==root)return;
    const next=styledDomSelection(root);if(!next)return;
    try{const changed=editStyledEditor(state.current,{type:"select",...next});if(changed!==state.current){callbacks.current.onChange(changed);state.current=changed;}}
    catch{/* A transient browser selection inside a cluster is validated on edit. */}
@@ -120,14 +124,16 @@ export function StyledParagraphInput({value,onChange,onError,disabled=false}:Pro
   };
   const compositionStart=()=>{
    if(callbacks.current.disabled)return;
-   try{const range=selected(),source=state.current,base=editStyledEditor(source,{type:"select",...range});composition.current={source,base,range};discardedComposition.current=false;pending.current=null;typing.current=null;}
+   try{const range=selected(),source=state.current,base=editStyledEditor(source,{type:"select",...range});composition.current={source,base,range};discardedComposition.current=false;pending.current=null;typing.current=null;callbacks.current.onPendingInput?.(true);}
    catch(error){discardedComposition.current=true;reject(error);}
   };
   const compositionEnd=(event:CompositionEvent)=>{
    const captured=composition.current;composition.current=null;discardedComposition.current=false;
-   if(!captured||captured.source!==state.current||callbacks.current.disabled){paint();return;}
-   if(!event.data){publish(captured.base);return;}
-   perform({type:"replace",start:captured.range.start,end:captured.range.end,text:event.data},captured.base);
+   try{
+    if(!captured||captured.source!==state.current||callbacks.current.disabled){paint();return;}
+    if(!event.data){publish(captured.base);return;}
+    perform({type:"replace",start:captured.range.start,end:captured.range.end,text:event.data},captured.base);
+   }finally{callbacks.current.onPendingInput?.(false);}
   };
   const drop=(event:DragEvent)=>{event.preventDefault();if(!composition.current&&!callbacks.current.disabled)reject(new Error("Paste text to insert it into the paragraph."));};
   root.addEventListener("beforeinput",before);root.addEventListener("input",input);root.addEventListener("paste",paste);root.addEventListener("cut",cut);root.addEventListener("keydown",keydown);

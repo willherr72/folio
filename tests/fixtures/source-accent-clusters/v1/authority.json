@@ -1,0 +1,3553 @@
+{
+  "generatorSha256": "9115f1ef1d07419cda8d9f735116fa4a8ee8cf5312650f74201086cff05e82ec",
+  "sourceFont": "tests\\fixtures\\shaped-text\\DejaVuSans.ttf",
+  "sourceFontSha256": "3fdf69cabf06049ea70a00b5919340e2ce1e6d02b0cc3c4b44fb6801bd1e0d22",
+  "outlineConversion": "fontTools Qu2CuPen max_err0.01 source units, renamed CFF1 fixtures",
+  "fonts": [
+    {
+      "label": "sid",
+      "rawSha256": "df56bb2dc195bda68f65f4334da15158831cef3e04bec28192b3321c063a0d53",
+      "wrappedSha256": "e6420e6bbdc0fd6ba2c1d70f4171635323e7df417e5ef3687cbaa1c7e5f665a1",
+      "glyphs": [
+        {
+          "gid": 0,
+          "name": ".notdef",
+          "cid": null,
+          "width": 600.09765625,
+          "bounds": [
+            102,
+            -362,
+            1126,
+            1444
+          ]
+        },
+        {
+          "gid": 1,
+          "name": "space",
+          "cid": null,
+          "width": 317.87109375,
+          "bounds": null
+        },
+        {
+          "gid": 2,
+          "name": "C",
+          "cid": null,
+          "width": 698.2421875,
+          "bounds": [
+            115.0,
+            -29.000015258789062,
+            1319,
+            1519.9999694824219
+          ]
+        },
+        {
+          "gid": 3,
+          "name": "N",
+          "cid": null,
+          "width": 748.046875,
+          "bounds": [
+            201,
+            0,
+            1331,
+            1493
+          ]
+        },
+        {
+          "gid": 4,
+          "name": "a",
+          "cid": null,
+          "width": 612.79296875,
+          "bounds": [
+            122.99996948242188,
+            -28.999984741210938,
+            1069.0,
+            1147.000015258789
+          ]
+        },
+        {
+          "gid": 5,
+          "name": "e",
+          "cid": null,
+          "width": 615.234375,
+          "bounds": [
+            113.0,
+            -29.0,
+            1151.000015258789,
+            1147.0
+          ]
+        },
+        {
+          "gid": 6,
+          "name": "f",
+          "cid": null,
+          "width": 352.05078125,
+          "bounds": [
+            47.0,
+            0.0,
+            760,
+            1556
+          ]
+        },
+        {
+          "gid": 7,
+          "name": "h",
+          "cid": null,
+          "width": 633.7890625,
+          "bounds": [
+            186.00001525878906,
+            0,
+            1124.000015258789,
+            1556.000015258789
+          ]
+        },
+        {
+          "gid": 8,
+          "name": "i",
+          "cid": null,
+          "width": 277.83203125,
+          "bounds": [
+            193,
+            0,
+            377,
+            1556
+          ]
+        },
+        {
+          "gid": 9,
+          "name": "s",
+          "cid": null,
+          "width": 520.99609375,
+          "bounds": [
+            111.00001525878906,
+            -29.0,
+            967.0000152587891,
+            1147.000015258789
+          ]
+        },
+        {
+          "gid": 10,
+          "name": "t",
+          "cid": null,
+          "width": 392.08984375,
+          "bounds": [
+            55.0,
+            0.0,
+            754,
+            1438
+          ]
+        },
+        {
+          "gid": 11,
+          "name": "w",
+          "cid": null,
+          "width": 817.87109375,
+          "bounds": [
+            86,
+            0,
+            1589,
+            1120
+          ]
+        },
+        {
+          "gid": 12,
+          "name": "alpha",
+          "cid": null,
+          "width": 659.1796875,
+          "bounds": [
+            113.00001525878906,
+            -25.0,
+            1252.0,
+            1145.0
+          ]
+        },
+        {
+          "gid": 13,
+          "name": "uni0438",
+          "cid": null,
+          "width": 649.90234375,
+          "bounds": [
+            186,
+            0,
+            1145,
+            1120
+          ]
+        },
+        {
+          "gid": 14,
+          "name": "eacute",
+          "cid": null,
+          "width": 615.234375,
+          "bounds": [
+            113.0,
+            -29.0,
+            1151.000015258789,
+            1638.0
+          ]
+        },
+        {
+          "gid": 15,
+          "name": "alphatonos",
+          "cid": null,
+          "width": 659.1796875,
+          "bounds": [
+            113.00001525878906,
+            -25.0,
+            1252.0,
+            1638.0
+          ]
+        },
+        {
+          "gid": 16,
+          "name": "uni0439",
+          "cid": null,
+          "width": 649.90234375,
+          "bounds": [
+            186,
+            0,
+            1145,
+            1556.000015258789
+          ]
+        },
+        {
+          "gid": 17,
+          "name": "uni1EBF",
+          "cid": null,
+          "width": 615.234375,
+          "bounds": [
+            113.0,
+            -29.0,
+            1256,
+            1733
+          ]
+        }
+      ]
+    },
+    {
+      "label": "cid",
+      "rawSha256": "70c5c180027c09a3400b544e9fdc63e66c588faa04a4477e94eef79e3e85162b",
+      "wrappedSha256": "f4e2699baa578fac62fc35c1f86513c907e99120e98897c9c53fe870f8dd12c3",
+      "glyphs": [
+        {
+          "gid": 0,
+          "name": ".notdef",
+          "cid": 0,
+          "width": 600.09765625,
+          "bounds": [
+            102,
+            -362,
+            1126,
+            1444
+          ]
+        },
+        {
+          "gid": 1,
+          "name": "cid00001",
+          "cid": 1,
+          "width": 317.87109375,
+          "bounds": null
+        },
+        {
+          "gid": 2,
+          "name": "cid00002",
+          "cid": 2,
+          "width": 698.2421875,
+          "bounds": [
+            115.0,
+            -29.000015258789062,
+            1319,
+            1519.9999694824219
+          ]
+        },
+        {
+          "gid": 3,
+          "name": "cid00003",
+          "cid": 3,
+          "width": 748.046875,
+          "bounds": [
+            201,
+            0,
+            1331,
+            1493
+          ]
+        },
+        {
+          "gid": 4,
+          "name": "cid00004",
+          "cid": 4,
+          "width": 612.79296875,
+          "bounds": [
+            122.99996948242188,
+            -28.999984741210938,
+            1069.0,
+            1147.000015258789
+          ]
+        },
+        {
+          "gid": 5,
+          "name": "cid00005",
+          "cid": 5,
+          "width": 615.234375,
+          "bounds": [
+            113.0,
+            -29.0,
+            1151.000015258789,
+            1147.0
+          ]
+        },
+        {
+          "gid": 6,
+          "name": "cid00006",
+          "cid": 6,
+          "width": 352.05078125,
+          "bounds": [
+            47.0,
+            0.0,
+            760,
+            1556
+          ]
+        },
+        {
+          "gid": 7,
+          "name": "cid00007",
+          "cid": 7,
+          "width": 633.7890625,
+          "bounds": [
+            186.00001525878906,
+            0,
+            1124.000015258789,
+            1556.000015258789
+          ]
+        },
+        {
+          "gid": 8,
+          "name": "cid00008",
+          "cid": 8,
+          "width": 277.83203125,
+          "bounds": [
+            193,
+            0,
+            377,
+            1556
+          ]
+        },
+        {
+          "gid": 9,
+          "name": "cid00009",
+          "cid": 9,
+          "width": 520.99609375,
+          "bounds": [
+            111.00001525878906,
+            -29.0,
+            967.0000152587891,
+            1147.000015258789
+          ]
+        },
+        {
+          "gid": 10,
+          "name": "cid00010",
+          "cid": 10,
+          "width": 392.08984375,
+          "bounds": [
+            55.0,
+            0.0,
+            754,
+            1438
+          ]
+        },
+        {
+          "gid": 11,
+          "name": "cid00011",
+          "cid": 11,
+          "width": 817.87109375,
+          "bounds": [
+            86,
+            0,
+            1589,
+            1120
+          ]
+        },
+        {
+          "gid": 12,
+          "name": "cid00012",
+          "cid": 12,
+          "width": 659.1796875,
+          "bounds": [
+            113.00001525878906,
+            -25.0,
+            1252.0,
+            1145.0
+          ]
+        },
+        {
+          "gid": 13,
+          "name": "cid00013",
+          "cid": 13,
+          "width": 649.90234375,
+          "bounds": [
+            186,
+            0,
+            1145,
+            1120
+          ]
+        },
+        {
+          "gid": 14,
+          "name": "cid00014",
+          "cid": 14,
+          "width": 615.234375,
+          "bounds": [
+            113.0,
+            -29.0,
+            1151.000015258789,
+            1638.0
+          ]
+        },
+        {
+          "gid": 15,
+          "name": "cid00015",
+          "cid": 15,
+          "width": 659.1796875,
+          "bounds": [
+            113.00001525878906,
+            -25.0,
+            1252.0,
+            1638.0
+          ]
+        },
+        {
+          "gid": 16,
+          "name": "cid00016",
+          "cid": 16,
+          "width": 649.90234375,
+          "bounds": [
+            186,
+            0,
+            1145,
+            1556.000015258789
+          ]
+        },
+        {
+          "gid": 17,
+          "name": "cid00017",
+          "cid": 17,
+          "width": 615.234375,
+          "bounds": [
+            113.0,
+            -29.0,
+            1256,
+            1733
+          ]
+        }
+      ]
+    },
+    {
+      "label": "ttf",
+      "wrappedSha256": "ff1151010d07413d479a2fede96618afb936abfc82f4eff591c1c58e127fcff9",
+      "glyphs": [
+        {
+          "gid": 0,
+          "name": ".notdef",
+          "width": 600.09765625,
+          "bounds": null
+        },
+        {
+          "gid": 1,
+          "name": "space",
+          "width": 317.87109375,
+          "bounds": null
+        },
+        {
+          "gid": 2,
+          "name": "C",
+          "width": 698.2421875,
+          "bounds": [
+            115,
+            -29,
+            1319,
+            1520
+          ]
+        },
+        {
+          "gid": 3,
+          "name": "N",
+          "width": 748.046875,
+          "bounds": [
+            201,
+            0,
+            1331,
+            1493
+          ]
+        },
+        {
+          "gid": 4,
+          "name": "a",
+          "width": 612.79296875,
+          "bounds": [
+            123,
+            -29,
+            1069,
+            1147
+          ]
+        },
+        {
+          "gid": 5,
+          "name": "e",
+          "width": 615.234375,
+          "bounds": [
+            113,
+            -29,
+            1151,
+            1147
+          ]
+        },
+        {
+          "gid": 6,
+          "name": "f",
+          "width": 352.05078125,
+          "bounds": [
+            47,
+            0,
+            760,
+            1556
+          ]
+        },
+        {
+          "gid": 7,
+          "name": "h",
+          "width": 633.7890625,
+          "bounds": [
+            186,
+            0,
+            1124,
+            1556
+          ]
+        },
+        {
+          "gid": 8,
+          "name": "i",
+          "width": 277.83203125,
+          "bounds": [
+            193,
+            0,
+            377,
+            1556
+          ]
+        },
+        {
+          "gid": 9,
+          "name": "s",
+          "width": 520.99609375,
+          "bounds": [
+            111,
+            -29,
+            967,
+            1147
+          ]
+        },
+        {
+          "gid": 10,
+          "name": "t",
+          "width": 392.08984375,
+          "bounds": [
+            55,
+            0,
+            754,
+            1438
+          ]
+        },
+        {
+          "gid": 11,
+          "name": "w",
+          "width": 817.87109375,
+          "bounds": [
+            86,
+            0,
+            1589,
+            1120
+          ]
+        },
+        {
+          "gid": 12,
+          "name": "acute",
+          "width": 500.0,
+          "bounds": [
+            371,
+            1262,
+            850,
+            1638
+          ]
+        },
+        {
+          "gid": 13,
+          "name": "eacute",
+          "width": 615.234375,
+          "bounds": [
+            113,
+            -29,
+            1151,
+            1638
+          ]
+        },
+        {
+          "gid": 14,
+          "name": "breve",
+          "width": 500.0,
+          "bounds": [
+            199,
+            1321,
+            825,
+            1608
+          ]
+        },
+        {
+          "gid": 15,
+          "name": "tonos",
+          "width": 500.0,
+          "bounds": [
+            371,
+            1262,
+            850,
+            1638
+          ]
+        },
+        {
+          "gid": 16,
+          "name": "alphatonos",
+          "width": 659.1796875,
+          "bounds": [
+            113,
+            -25,
+            1252,
+            1638
+          ]
+        },
+        {
+          "gid": 17,
+          "name": "alpha",
+          "width": 659.1796875,
+          "bounds": [
+            113,
+            -25,
+            1252,
+            1145
+          ]
+        },
+        {
+          "gid": 18,
+          "name": "uni0438",
+          "width": 649.90234375,
+          "bounds": [
+            186,
+            0,
+            1145,
+            1120
+          ]
+        },
+        {
+          "gid": 19,
+          "name": "uni0439",
+          "width": 649.90234375,
+          "bounds": [
+            186,
+            0,
+            1145,
+            1556
+          ]
+        },
+        {
+          "gid": 20,
+          "name": "uni1EBF",
+          "width": 615.234375,
+          "bounds": [
+            113,
+            -29,
+            1256,
+            1733
+          ]
+        },
+        {
+          "gid": 21,
+          "name": "uniFB00",
+          "width": 688.96484375,
+          "bounds": [
+            47,
+            0,
+            1450,
+            1556
+          ]
+        },
+        {
+          "gid": 22,
+          "name": "fi",
+          "width": 629.8828125,
+          "bounds": [
+            47,
+            0,
+            1098,
+            1556
+          ]
+        },
+        {
+          "gid": 23,
+          "name": "uniFB03",
+          "width": 966.796875,
+          "bounds": [
+            47,
+            0,
+            1788,
+            1556
+          ]
+        },
+        {
+          "gid": 24,
+          "name": "Acute",
+          "width": 0.0,
+          "bounds": [
+            -653,
+            1262,
+            -272,
+            1526
+          ]
+        },
+        {
+          "gid": 25,
+          "name": "Circumflex",
+          "width": 0.0,
+          "bounds": [
+            -817,
+            1262,
+            -207,
+            1528
+          ]
+        },
+        {
+          "gid": 26,
+          "name": "uni03020301",
+          "width": 683.59375,
+          "bounds": [
+            395,
+            1635,
+            1304,
+            2106
+          ]
+        }
+      ]
+    }
+  ],
+  "cases": [
+    {
+      "name": "sid-raw-simple-accents-single",
+      "path": "sid-raw-simple-accents-single.pdf",
+      "label": "sid",
+      "wrapped": false,
+      "composite": false,
+      "sequence": "accents",
+      "layout": "single",
+      "codeLength": 1,
+      "sourceHex": "436166c820c920ca20cb",
+      "sourceText": "Cafe\u0301 \u03b1\u0301 \u0438\u0306 e\u0302\u0301",
+      "sha256": "78a6247d806ca9d2a880b79153f973e40e4e82f86a8db54fbe80f5d0b61141f5",
+      "symbols": [
+        {
+          "text": " ",
+          "gid": 1,
+          "code": 32,
+          "width": 317.87109375,
+          "name": "space"
+        },
+        {
+          "text": "C",
+          "gid": 2,
+          "code": 67,
+          "width": 698.2421875,
+          "name": "C"
+        },
+        {
+          "text": "N",
+          "gid": 3,
+          "code": 78,
+          "width": 748.046875,
+          "name": "N"
+        },
+        {
+          "text": "a",
+          "gid": 4,
+          "code": 97,
+          "width": 612.79296875,
+          "name": "a"
+        },
+        {
+          "text": "e",
+          "gid": 5,
+          "code": 101,
+          "width": 615.234375,
+          "name": "e"
+        },
+        {
+          "text": "f",
+          "gid": 6,
+          "code": 102,
+          "width": 352.05078125,
+          "name": "f"
+        },
+        {
+          "text": "h",
+          "gid": 7,
+          "code": 104,
+          "width": 633.7890625,
+          "name": "h"
+        },
+        {
+          "text": "i",
+          "gid": 8,
+          "code": 105,
+          "width": 277.83203125,
+          "name": "i"
+        },
+        {
+          "text": "s",
+          "gid": 9,
+          "code": 115,
+          "width": 520.99609375,
+          "name": "s"
+        },
+        {
+          "text": "t",
+          "gid": 10,
+          "code": 116,
+          "width": 392.08984375,
+          "name": "t"
+        },
+        {
+          "text": "w",
+          "gid": 11,
+          "code": 119,
+          "width": 817.87109375,
+          "name": "w"
+        },
+        {
+          "text": "\u03b1",
+          "gid": 12,
+          "code": 181,
+          "width": 659.1796875,
+          "name": "alpha"
+        },
+        {
+          "text": "\u0438",
+          "gid": 13,
+          "code": 182,
+          "width": 649.90234375,
+          "name": "uni0438"
+        },
+        {
+          "text": "e\u0301",
+          "gid": 14,
+          "code": 200,
+          "width": 615.234375,
+          "name": "eacute"
+        },
+        {
+          "text": "\u03b1\u0301",
+          "gid": 15,
+          "code": 201,
+          "width": 659.1796875,
+          "name": "alphatonos"
+        },
+        {
+          "text": "\u0438\u0306",
+          "gid": 16,
+          "code": 202,
+          "width": 649.90234375,
+          "name": "uni0439"
+        },
+        {
+          "text": "e\u0302\u0301",
+          "gid": 17,
+          "code": 203,
+          "width": 615.234375,
+          "name": "uni1EBF"
+        }
+      ]
+    },
+    {
+      "name": "sid-raw-simple-accents-group",
+      "path": "sid-raw-simple-accents-group.pdf",
+      "label": "sid",
+      "wrapped": false,
+      "composite": false,
+      "sequence": "accents",
+      "layout": "group",
+      "codeLength": 1,
+      "sourceHex": "436166c820c920ca20cb",
+      "sourceText": "Cafe\u0301 \u03b1\u0301 \u0438\u0306 e\u0302\u0301",
+      "sha256": "8a3f81a3ca0d9a2ec1d1596bdf0fa7ff86406ee7d7021e8d83e1362704dbaf7f",
+      "symbols": [
+        {
+          "text": " ",
+          "gid": 1,
+          "code": 32,
+          "width": 317.87109375,
+          "name": "space"
+        },
+        {
+          "text": "C",
+          "gid": 2,
+          "code": 67,
+          "width": 698.2421875,
+          "name": "C"
+        },
+        {
+          "text": "N",
+          "gid": 3,
+          "code": 78,
+          "width": 748.046875,
+          "name": "N"
+        },
+        {
+          "text": "a",
+          "gid": 4,
+          "code": 97,
+          "width": 612.79296875,
+          "name": "a"
+        },
+        {
+          "text": "e",
+          "gid": 5,
+          "code": 101,
+          "width": 615.234375,
+          "name": "e"
+        },
+        {
+          "text": "f",
+          "gid": 6,
+          "code": 102,
+          "width": 352.05078125,
+          "name": "f"
+        },
+        {
+          "text": "h",
+          "gid": 7,
+          "code": 104,
+          "width": 633.7890625,
+          "name": "h"
+        },
+        {
+          "text": "i",
+          "gid": 8,
+          "code": 105,
+          "width": 277.83203125,
+          "name": "i"
+        },
+        {
+          "text": "s",
+          "gid": 9,
+          "code": 115,
+          "width": 520.99609375,
+          "name": "s"
+        },
+        {
+          "text": "t",
+          "gid": 10,
+          "code": 116,
+          "width": 392.08984375,
+          "name": "t"
+        },
+        {
+          "text": "w",
+          "gid": 11,
+          "code": 119,
+          "width": 817.87109375,
+          "name": "w"
+        },
+        {
+          "text": "\u03b1",
+          "gid": 12,
+          "code": 181,
+          "width": 659.1796875,
+          "name": "alpha"
+        },
+        {
+          "text": "\u0438",
+          "gid": 13,
+          "code": 182,
+          "width": 649.90234375,
+          "name": "uni0438"
+        },
+        {
+          "text": "e\u0301",
+          "gid": 14,
+          "code": 200,
+          "width": 615.234375,
+          "name": "eacute"
+        },
+        {
+          "text": "\u03b1\u0301",
+          "gid": 15,
+          "code": 201,
+          "width": 659.1796875,
+          "name": "alphatonos"
+        },
+        {
+          "text": "\u0438\u0306",
+          "gid": 16,
+          "code": 202,
+          "width": 649.90234375,
+          "name": "uni0439"
+        },
+        {
+          "text": "e\u0302\u0301",
+          "gid": 17,
+          "code": 203,
+          "width": 615.234375,
+          "name": "uni1EBF"
+        }
+      ]
+    },
+    {
+      "name": "sid-raw-simple-accents-shared",
+      "path": "sid-raw-simple-accents-shared.pdf",
+      "label": "sid",
+      "wrapped": false,
+      "composite": false,
+      "sequence": "accents",
+      "layout": "shared",
+      "codeLength": 1,
+      "sourceHex": "436166c820c920ca20cb",
+      "sourceText": "Cafe\u0301 \u03b1\u0301 \u0438\u0306 e\u0302\u0301",
+      "sha256": "3b61b7ad057401b5a9c9654f4b19d24d94cd129839114a223bf359cd2b291fea",
+      "symbols": [
+        {
+          "text": " ",
+          "gid": 1,
+          "code": 32,
+          "width": 317.87109375,
+          "name": "space"
+        },
+        {
+          "text": "C",
+          "gid": 2,
+          "code": 67,
+          "width": 698.2421875,
+          "name": "C"
+        },
+        {
+          "text": "N",
+          "gid": 3,
+          "code": 78,
+          "width": 748.046875,
+          "name": "N"
+        },
+        {
+          "text": "a",
+          "gid": 4,
+          "code": 97,
+          "width": 612.79296875,
+          "name": "a"
+        },
+        {
+          "text": "e",
+          "gid": 5,
+          "code": 101,
+          "width": 615.234375,
+          "name": "e"
+        },
+        {
+          "text": "f",
+          "gid": 6,
+          "code": 102,
+          "width": 352.05078125,
+          "name": "f"
+        },
+        {
+          "text": "h",
+          "gid": 7,
+          "code": 104,
+          "width": 633.7890625,
+          "name": "h"
+        },
+        {
+          "text": "i",
+          "gid": 8,
+          "code": 105,
+          "width": 277.83203125,
+          "name": "i"
+        },
+        {
+          "text": "s",
+          "gid": 9,
+          "code": 115,
+          "width": 520.99609375,
+          "name": "s"
+        },
+        {
+          "text": "t",
+          "gid": 10,
+          "code": 116,
+          "width": 392.08984375,
+          "name": "t"
+        },
+        {
+          "text": "w",
+          "gid": 11,
+          "code": 119,
+          "width": 817.87109375,
+          "name": "w"
+        },
+        {
+          "text": "\u03b1",
+          "gid": 12,
+          "code": 181,
+          "width": 659.1796875,
+          "name": "alpha"
+        },
+        {
+          "text": "\u0438",
+          "gid": 13,
+          "code": 182,
+          "width": 649.90234375,
+          "name": "uni0438"
+        },
+        {
+          "text": "e\u0301",
+          "gid": 14,
+          "code": 200,
+          "width": 615.234375,
+          "name": "eacute"
+        },
+        {
+          "text": "\u03b1\u0301",
+          "gid": 15,
+          "code": 201,
+          "width": 659.1796875,
+          "name": "alphatonos"
+        },
+        {
+          "text": "\u0438\u0306",
+          "gid": 16,
+          "code": 202,
+          "width": 649.90234375,
+          "name": "uni0439"
+        },
+        {
+          "text": "e\u0302\u0301",
+          "gid": 17,
+          "code": 203,
+          "width": 615.234375,
+          "name": "uni1EBF"
+        }
+      ]
+    },
+    {
+      "name": "sid-otf-simple-accents-single",
+      "path": "sid-otf-simple-accents-single.pdf",
+      "label": "sid",
+      "wrapped": true,
+      "composite": false,
+      "sequence": "accents",
+      "layout": "single",
+      "codeLength": 1,
+      "sourceHex": "436166c820c920ca20cb",
+      "sourceText": "Cafe\u0301 \u03b1\u0301 \u0438\u0306 e\u0302\u0301",
+      "sha256": "9793d1d64cbba33c3df60248aa9544aa0d36496ab4cd139b1528f753fd3182e0",
+      "symbols": [
+        {
+          "text": " ",
+          "gid": 1,
+          "code": 32,
+          "width": 317.87109375,
+          "name": "space"
+        },
+        {
+          "text": "C",
+          "gid": 2,
+          "code": 67,
+          "width": 698.2421875,
+          "name": "C"
+        },
+        {
+          "text": "N",
+          "gid": 3,
+          "code": 78,
+          "width": 748.046875,
+          "name": "N"
+        },
+        {
+          "text": "a",
+          "gid": 4,
+          "code": 97,
+          "width": 612.79296875,
+          "name": "a"
+        },
+        {
+          "text": "e",
+          "gid": 5,
+          "code": 101,
+          "width": 615.234375,
+          "name": "e"
+        },
+        {
+          "text": "f",
+          "gid": 6,
+          "code": 102,
+          "width": 352.05078125,
+          "name": "f"
+        },
+        {
+          "text": "h",
+          "gid": 7,
+          "code": 104,
+          "width": 633.7890625,
+          "name": "h"
+        },
+        {
+          "text": "i",
+          "gid": 8,
+          "code": 105,
+          "width": 277.83203125,
+          "name": "i"
+        },
+        {
+          "text": "s",
+          "gid": 9,
+          "code": 115,
+          "width": 520.99609375,
+          "name": "s"
+        },
+        {
+          "text": "t",
+          "gid": 10,
+          "code": 116,
+          "width": 392.08984375,
+          "name": "t"
+        },
+        {
+          "text": "w",
+          "gid": 11,
+          "code": 119,
+          "width": 817.87109375,
+          "name": "w"
+        },
+        {
+          "text": "\u03b1",
+          "gid": 12,
+          "code": 181,
+          "width": 659.1796875,
+          "name": "alpha"
+        },
+        {
+          "text": "\u0438",
+          "gid": 13,
+          "code": 182,
+          "width": 649.90234375,
+          "name": "uni0438"
+        },
+        {
+          "text": "e\u0301",
+          "gid": 14,
+          "code": 200,
+          "width": 615.234375,
+          "name": "eacute"
+        },
+        {
+          "text": "\u03b1\u0301",
+          "gid": 15,
+          "code": 201,
+          "width": 659.1796875,
+          "name": "alphatonos"
+        },
+        {
+          "text": "\u0438\u0306",
+          "gid": 16,
+          "code": 202,
+          "width": 649.90234375,
+          "name": "uni0439"
+        },
+        {
+          "text": "e\u0302\u0301",
+          "gid": 17,
+          "code": 203,
+          "width": 615.234375,
+          "name": "uni1EBF"
+        }
+      ]
+    },
+    {
+      "name": "sid-otf-simple-accents-group",
+      "path": "sid-otf-simple-accents-group.pdf",
+      "label": "sid",
+      "wrapped": true,
+      "composite": false,
+      "sequence": "accents",
+      "layout": "group",
+      "codeLength": 1,
+      "sourceHex": "436166c820c920ca20cb",
+      "sourceText": "Cafe\u0301 \u03b1\u0301 \u0438\u0306 e\u0302\u0301",
+      "sha256": "b1209263de13867d4c82945be3f8c350ef5c48442fa6a43b366cf289699a3f16",
+      "symbols": [
+        {
+          "text": " ",
+          "gid": 1,
+          "code": 32,
+          "width": 317.87109375,
+          "name": "space"
+        },
+        {
+          "text": "C",
+          "gid": 2,
+          "code": 67,
+          "width": 698.2421875,
+          "name": "C"
+        },
+        {
+          "text": "N",
+          "gid": 3,
+          "code": 78,
+          "width": 748.046875,
+          "name": "N"
+        },
+        {
+          "text": "a",
+          "gid": 4,
+          "code": 97,
+          "width": 612.79296875,
+          "name": "a"
+        },
+        {
+          "text": "e",
+          "gid": 5,
+          "code": 101,
+          "width": 615.234375,
+          "name": "e"
+        },
+        {
+          "text": "f",
+          "gid": 6,
+          "code": 102,
+          "width": 352.05078125,
+          "name": "f"
+        },
+        {
+          "text": "h",
+          "gid": 7,
+          "code": 104,
+          "width": 633.7890625,
+          "name": "h"
+        },
+        {
+          "text": "i",
+          "gid": 8,
+          "code": 105,
+          "width": 277.83203125,
+          "name": "i"
+        },
+        {
+          "text": "s",
+          "gid": 9,
+          "code": 115,
+          "width": 520.99609375,
+          "name": "s"
+        },
+        {
+          "text": "t",
+          "gid": 10,
+          "code": 116,
+          "width": 392.08984375,
+          "name": "t"
+        },
+        {
+          "text": "w",
+          "gid": 11,
+          "code": 119,
+          "width": 817.87109375,
+          "name": "w"
+        },
+        {
+          "text": "\u03b1",
+          "gid": 12,
+          "code": 181,
+          "width": 659.1796875,
+          "name": "alpha"
+        },
+        {
+          "text": "\u0438",
+          "gid": 13,
+          "code": 182,
+          "width": 649.90234375,
+          "name": "uni0438"
+        },
+        {
+          "text": "e\u0301",
+          "gid": 14,
+          "code": 200,
+          "width": 615.234375,
+          "name": "eacute"
+        },
+        {
+          "text": "\u03b1\u0301",
+          "gid": 15,
+          "code": 201,
+          "width": 659.1796875,
+          "name": "alphatonos"
+        },
+        {
+          "text": "\u0438\u0306",
+          "gid": 16,
+          "code": 202,
+          "width": 649.90234375,
+          "name": "uni0439"
+        },
+        {
+          "text": "e\u0302\u0301",
+          "gid": 17,
+          "code": 203,
+          "width": 615.234375,
+          "name": "uni1EBF"
+        }
+      ]
+    },
+    {
+      "name": "sid-otf-simple-accents-shared",
+      "path": "sid-otf-simple-accents-shared.pdf",
+      "label": "sid",
+      "wrapped": true,
+      "composite": false,
+      "sequence": "accents",
+      "layout": "shared",
+      "codeLength": 1,
+      "sourceHex": "436166c820c920ca20cb",
+      "sourceText": "Cafe\u0301 \u03b1\u0301 \u0438\u0306 e\u0302\u0301",
+      "sha256": "cd86c735b62762ffe7c8bdb19eaee5aaeb43db97af00066a341995d9ffcad1d8",
+      "symbols": [
+        {
+          "text": " ",
+          "gid": 1,
+          "code": 32,
+          "width": 317.87109375,
+          "name": "space"
+        },
+        {
+          "text": "C",
+          "gid": 2,
+          "code": 67,
+          "width": 698.2421875,
+          "name": "C"
+        },
+        {
+          "text": "N",
+          "gid": 3,
+          "code": 78,
+          "width": 748.046875,
+          "name": "N"
+        },
+        {
+          "text": "a",
+          "gid": 4,
+          "code": 97,
+          "width": 612.79296875,
+          "name": "a"
+        },
+        {
+          "text": "e",
+          "gid": 5,
+          "code": 101,
+          "width": 615.234375,
+          "name": "e"
+        },
+        {
+          "text": "f",
+          "gid": 6,
+          "code": 102,
+          "width": 352.05078125,
+          "name": "f"
+        },
+        {
+          "text": "h",
+          "gid": 7,
+          "code": 104,
+          "width": 633.7890625,
+          "name": "h"
+        },
+        {
+          "text": "i",
+          "gid": 8,
+          "code": 105,
+          "width": 277.83203125,
+          "name": "i"
+        },
+        {
+          "text": "s",
+          "gid": 9,
+          "code": 115,
+          "width": 520.99609375,
+          "name": "s"
+        },
+        {
+          "text": "t",
+          "gid": 10,
+          "code": 116,
+          "width": 392.08984375,
+          "name": "t"
+        },
+        {
+          "text": "w",
+          "gid": 11,
+          "code": 119,
+          "width": 817.87109375,
+          "name": "w"
+        },
+        {
+          "text": "\u03b1",
+          "gid": 12,
+          "code": 181,
+          "width": 659.1796875,
+          "name": "alpha"
+        },
+        {
+          "text": "\u0438",
+          "gid": 13,
+          "code": 182,
+          "width": 649.90234375,
+          "name": "uni0438"
+        },
+        {
+          "text": "e\u0301",
+          "gid": 14,
+          "code": 200,
+          "width": 615.234375,
+          "name": "eacute"
+        },
+        {
+          "text": "\u03b1\u0301",
+          "gid": 15,
+          "code": 201,
+          "width": 659.1796875,
+          "name": "alphatonos"
+        },
+        {
+          "text": "\u0438\u0306",
+          "gid": 16,
+          "code": 202,
+          "width": 649.90234375,
+          "name": "uni0439"
+        },
+        {
+          "text": "e\u0302\u0301",
+          "gid": 17,
+          "code": 203,
+          "width": 615.234375,
+          "name": "uni1EBF"
+        }
+      ]
+    },
+    {
+      "name": "sid-raw-cid-accents-single",
+      "path": "sid-raw-cid-accents-single.pdf",
+      "label": "sid",
+      "wrapped": false,
+      "composite": true,
+      "sequence": "accents",
+      "layout": "single",
+      "codeLength": 2,
+      "sourceHex": "000200040006000e0001000f0001001000010011",
+      "sourceText": "Cafe\u0301 \u03b1\u0301 \u0438\u0306 e\u0302\u0301",
+      "sha256": "4eac5da251e39b8b2070d399ccb62af73d2f80ec37884fa21dbe5f77fcdf4f1e",
+      "symbols": [
+        {
+          "text": " ",
+          "gid": 1,
+          "code": 1,
+          "width": 317.87109375,
+          "name": "space"
+        },
+        {
+          "text": "C",
+          "gid": 2,
+          "code": 2,
+          "width": 698.2421875,
+          "name": "C"
+        },
+        {
+          "text": "N",
+          "gid": 3,
+          "code": 3,
+          "width": 748.046875,
+          "name": "N"
+        },
+        {
+          "text": "a",
+          "gid": 4,
+          "code": 4,
+          "width": 612.79296875,
+          "name": "a"
+        },
+        {
+          "text": "e",
+          "gid": 5,
+          "code": 5,
+          "width": 615.234375,
+          "name": "e"
+        },
+        {
+          "text": "f",
+          "gid": 6,
+          "code": 6,
+          "width": 352.05078125,
+          "name": "f"
+        },
+        {
+          "text": "h",
+          "gid": 7,
+          "code": 7,
+          "width": 633.7890625,
+          "name": "h"
+        },
+        {
+          "text": "i",
+          "gid": 8,
+          "code": 8,
+          "width": 277.83203125,
+          "name": "i"
+        },
+        {
+          "text": "s",
+          "gid": 9,
+          "code": 9,
+          "width": 520.99609375,
+          "name": "s"
+        },
+        {
+          "text": "t",
+          "gid": 10,
+          "code": 10,
+          "width": 392.08984375,
+          "name": "t"
+        },
+        {
+          "text": "w",
+          "gid": 11,
+          "code": 11,
+          "width": 817.87109375,
+          "name": "w"
+        },
+        {
+          "text": "\u03b1",
+          "gid": 12,
+          "code": 12,
+          "width": 659.1796875,
+          "name": "alpha"
+        },
+        {
+          "text": "\u0438",
+          "gid": 13,
+          "code": 13,
+          "width": 649.90234375,
+          "name": "uni0438"
+        },
+        {
+          "text": "e\u0301",
+          "gid": 14,
+          "code": 14,
+          "width": 615.234375,
+          "name": "eacute"
+        },
+        {
+          "text": "\u03b1\u0301",
+          "gid": 15,
+          "code": 15,
+          "width": 659.1796875,
+          "name": "alphatonos"
+        },
+        {
+          "text": "\u0438\u0306",
+          "gid": 16,
+          "code": 16,
+          "width": 649.90234375,
+          "name": "uni0439"
+        },
+        {
+          "text": "e\u0302\u0301",
+          "gid": 17,
+          "code": 17,
+          "width": 615.234375,
+          "name": "uni1EBF"
+        }
+      ]
+    },
+    {
+      "name": "sid-raw-cid-accents-group",
+      "path": "sid-raw-cid-accents-group.pdf",
+      "label": "sid",
+      "wrapped": false,
+      "composite": true,
+      "sequence": "accents",
+      "layout": "group",
+      "codeLength": 2,
+      "sourceHex": "000200040006000e0001000f0001001000010011",
+      "sourceText": "Cafe\u0301 \u03b1\u0301 \u0438\u0306 e\u0302\u0301",
+      "sha256": "3c48e95b71d0395af72c1696f8db30034b9f17838330b968e24ea966bca492ca",
+      "symbols": [
+        {
+          "text": " ",
+          "gid": 1,
+          "code": 1,
+          "width": 317.87109375,
+          "name": "space"
+        },
+        {
+          "text": "C",
+          "gid": 2,
+          "code": 2,
+          "width": 698.2421875,
+          "name": "C"
+        },
+        {
+          "text": "N",
+          "gid": 3,
+          "code": 3,
+          "width": 748.046875,
+          "name": "N"
+        },
+        {
+          "text": "a",
+          "gid": 4,
+          "code": 4,
+          "width": 612.79296875,
+          "name": "a"
+        },
+        {
+          "text": "e",
+          "gid": 5,
+          "code": 5,
+          "width": 615.234375,
+          "name": "e"
+        },
+        {
+          "text": "f",
+          "gid": 6,
+          "code": 6,
+          "width": 352.05078125,
+          "name": "f"
+        },
+        {
+          "text": "h",
+          "gid": 7,
+          "code": 7,
+          "width": 633.7890625,
+          "name": "h"
+        },
+        {
+          "text": "i",
+          "gid": 8,
+          "code": 8,
+          "width": 277.83203125,
+          "name": "i"
+        },
+        {
+          "text": "s",
+          "gid": 9,
+          "code": 9,
+          "width": 520.99609375,
+          "name": "s"
+        },
+        {
+          "text": "t",
+          "gid": 10,
+          "code": 10,
+          "width": 392.08984375,
+          "name": "t"
+        },
+        {
+          "text": "w",
+          "gid": 11,
+          "code": 11,
+          "width": 817.87109375,
+          "name": "w"
+        },
+        {
+          "text": "\u03b1",
+          "gid": 12,
+          "code": 12,
+          "width": 659.1796875,
+          "name": "alpha"
+        },
+        {
+          "text": "\u0438",
+          "gid": 13,
+          "code": 13,
+          "width": 649.90234375,
+          "name": "uni0438"
+        },
+        {
+          "text": "e\u0301",
+          "gid": 14,
+          "code": 14,
+          "width": 615.234375,
+          "name": "eacute"
+        },
+        {
+          "text": "\u03b1\u0301",
+          "gid": 15,
+          "code": 15,
+          "width": 659.1796875,
+          "name": "alphatonos"
+        },
+        {
+          "text": "\u0438\u0306",
+          "gid": 16,
+          "code": 16,
+          "width": 649.90234375,
+          "name": "uni0439"
+        },
+        {
+          "text": "e\u0302\u0301",
+          "gid": 17,
+          "code": 17,
+          "width": 615.234375,
+          "name": "uni1EBF"
+        }
+      ]
+    },
+    {
+      "name": "sid-raw-cid-accents-shared",
+      "path": "sid-raw-cid-accents-shared.pdf",
+      "label": "sid",
+      "wrapped": false,
+      "composite": true,
+      "sequence": "accents",
+      "layout": "shared",
+      "codeLength": 2,
+      "sourceHex": "000200040006000e0001000f0001001000010011",
+      "sourceText": "Cafe\u0301 \u03b1\u0301 \u0438\u0306 e\u0302\u0301",
+      "sha256": "308b189f5a73dc62311aa0d1653db225b65308c1454cdb5ca2f7ecd3eb0c55b9",
+      "symbols": [
+        {
+          "text": " ",
+          "gid": 1,
+          "code": 1,
+          "width": 317.87109375,
+          "name": "space"
+        },
+        {
+          "text": "C",
+          "gid": 2,
+          "code": 2,
+          "width": 698.2421875,
+          "name": "C"
+        },
+        {
+          "text": "N",
+          "gid": 3,
+          "code": 3,
+          "width": 748.046875,
+          "name": "N"
+        },
+        {
+          "text": "a",
+          "gid": 4,
+          "code": 4,
+          "width": 612.79296875,
+          "name": "a"
+        },
+        {
+          "text": "e",
+          "gid": 5,
+          "code": 5,
+          "width": 615.234375,
+          "name": "e"
+        },
+        {
+          "text": "f",
+          "gid": 6,
+          "code": 6,
+          "width": 352.05078125,
+          "name": "f"
+        },
+        {
+          "text": "h",
+          "gid": 7,
+          "code": 7,
+          "width": 633.7890625,
+          "name": "h"
+        },
+        {
+          "text": "i",
+          "gid": 8,
+          "code": 8,
+          "width": 277.83203125,
+          "name": "i"
+        },
+        {
+          "text": "s",
+          "gid": 9,
+          "code": 9,
+          "width": 520.99609375,
+          "name": "s"
+        },
+        {
+          "text": "t",
+          "gid": 10,
+          "code": 10,
+          "width": 392.08984375,
+          "name": "t"
+        },
+        {
+          "text": "w",
+          "gid": 11,
+          "code": 11,
+          "width": 817.87109375,
+          "name": "w"
+        },
+        {
+          "text": "\u03b1",
+          "gid": 12,
+          "code": 12,
+          "width": 659.1796875,
+          "name": "alpha"
+        },
+        {
+          "text": "\u0438",
+          "gid": 13,
+          "code": 13,
+          "width": 649.90234375,
+          "name": "uni0438"
+        },
+        {
+          "text": "e\u0301",
+          "gid": 14,
+          "code": 14,
+          "width": 615.234375,
+          "name": "eacute"
+        },
+        {
+          "text": "\u03b1\u0301",
+          "gid": 15,
+          "code": 15,
+          "width": 659.1796875,
+          "name": "alphatonos"
+        },
+        {
+          "text": "\u0438\u0306",
+          "gid": 16,
+          "code": 16,
+          "width": 649.90234375,
+          "name": "uni0439"
+        },
+        {
+          "text": "e\u0302\u0301",
+          "gid": 17,
+          "code": 17,
+          "width": 615.234375,
+          "name": "uni1EBF"
+        }
+      ]
+    },
+    {
+      "name": "sid-otf-cid-accents-single",
+      "path": "sid-otf-cid-accents-single.pdf",
+      "label": "sid",
+      "wrapped": true,
+      "composite": true,
+      "sequence": "accents",
+      "layout": "single",
+      "codeLength": 2,
+      "sourceHex": "000200040006000e0001000f0001001000010011",
+      "sourceText": "Cafe\u0301 \u03b1\u0301 \u0438\u0306 e\u0302\u0301",
+      "sha256": "c2f8770d990a2ab95674a605b779654755b3a15b1fd5e00f7a6fef939b5695c0",
+      "symbols": [
+        {
+          "text": " ",
+          "gid": 1,
+          "code": 1,
+          "width": 317.87109375,
+          "name": "space"
+        },
+        {
+          "text": "C",
+          "gid": 2,
+          "code": 2,
+          "width": 698.2421875,
+          "name": "C"
+        },
+        {
+          "text": "N",
+          "gid": 3,
+          "code": 3,
+          "width": 748.046875,
+          "name": "N"
+        },
+        {
+          "text": "a",
+          "gid": 4,
+          "code": 4,
+          "width": 612.79296875,
+          "name": "a"
+        },
+        {
+          "text": "e",
+          "gid": 5,
+          "code": 5,
+          "width": 615.234375,
+          "name": "e"
+        },
+        {
+          "text": "f",
+          "gid": 6,
+          "code": 6,
+          "width": 352.05078125,
+          "name": "f"
+        },
+        {
+          "text": "h",
+          "gid": 7,
+          "code": 7,
+          "width": 633.7890625,
+          "name": "h"
+        },
+        {
+          "text": "i",
+          "gid": 8,
+          "code": 8,
+          "width": 277.83203125,
+          "name": "i"
+        },
+        {
+          "text": "s",
+          "gid": 9,
+          "code": 9,
+          "width": 520.99609375,
+          "name": "s"
+        },
+        {
+          "text": "t",
+          "gid": 10,
+          "code": 10,
+          "width": 392.08984375,
+          "name": "t"
+        },
+        {
+          "text": "w",
+          "gid": 11,
+          "code": 11,
+          "width": 817.87109375,
+          "name": "w"
+        },
+        {
+          "text": "\u03b1",
+          "gid": 12,
+          "code": 12,
+          "width": 659.1796875,
+          "name": "alpha"
+        },
+        {
+          "text": "\u0438",
+          "gid": 13,
+          "code": 13,
+          "width": 649.90234375,
+          "name": "uni0438"
+        },
+        {
+          "text": "e\u0301",
+          "gid": 14,
+          "code": 14,
+          "width": 615.234375,
+          "name": "eacute"
+        },
+        {
+          "text": "\u03b1\u0301",
+          "gid": 15,
+          "code": 15,
+          "width": 659.1796875,
+          "name": "alphatonos"
+        },
+        {
+          "text": "\u0438\u0306",
+          "gid": 16,
+          "code": 16,
+          "width": 649.90234375,
+          "name": "uni0439"
+        },
+        {
+          "text": "e\u0302\u0301",
+          "gid": 17,
+          "code": 17,
+          "width": 615.234375,
+          "name": "uni1EBF"
+        }
+      ]
+    },
+    {
+      "name": "sid-otf-cid-accents-group",
+      "path": "sid-otf-cid-accents-group.pdf",
+      "label": "sid",
+      "wrapped": true,
+      "composite": true,
+      "sequence": "accents",
+      "layout": "group",
+      "codeLength": 2,
+      "sourceHex": "000200040006000e0001000f0001001000010011",
+      "sourceText": "Cafe\u0301 \u03b1\u0301 \u0438\u0306 e\u0302\u0301",
+      "sha256": "a6b8c85c74e3f6d31c568984ac58ed2d77e5cb17c24a4f3607c0b4c352628cb9",
+      "symbols": [
+        {
+          "text": " ",
+          "gid": 1,
+          "code": 1,
+          "width": 317.87109375,
+          "name": "space"
+        },
+        {
+          "text": "C",
+          "gid": 2,
+          "code": 2,
+          "width": 698.2421875,
+          "name": "C"
+        },
+        {
+          "text": "N",
+          "gid": 3,
+          "code": 3,
+          "width": 748.046875,
+          "name": "N"
+        },
+        {
+          "text": "a",
+          "gid": 4,
+          "code": 4,
+          "width": 612.79296875,
+          "name": "a"
+        },
+        {
+          "text": "e",
+          "gid": 5,
+          "code": 5,
+          "width": 615.234375,
+          "name": "e"
+        },
+        {
+          "text": "f",
+          "gid": 6,
+          "code": 6,
+          "width": 352.05078125,
+          "name": "f"
+        },
+        {
+          "text": "h",
+          "gid": 7,
+          "code": 7,
+          "width": 633.7890625,
+          "name": "h"
+        },
+        {
+          "text": "i",
+          "gid": 8,
+          "code": 8,
+          "width": 277.83203125,
+          "name": "i"
+        },
+        {
+          "text": "s",
+          "gid": 9,
+          "code": 9,
+          "width": 520.99609375,
+          "name": "s"
+        },
+        {
+          "text": "t",
+          "gid": 10,
+          "code": 10,
+          "width": 392.08984375,
+          "name": "t"
+        },
+        {
+          "text": "w",
+          "gid": 11,
+          "code": 11,
+          "width": 817.87109375,
+          "name": "w"
+        },
+        {
+          "text": "\u03b1",
+          "gid": 12,
+          "code": 12,
+          "width": 659.1796875,
+          "name": "alpha"
+        },
+        {
+          "text": "\u0438",
+          "gid": 13,
+          "code": 13,
+          "width": 649.90234375,
+          "name": "uni0438"
+        },
+        {
+          "text": "e\u0301",
+          "gid": 14,
+          "code": 14,
+          "width": 615.234375,
+          "name": "eacute"
+        },
+        {
+          "text": "\u03b1\u0301",
+          "gid": 15,
+          "code": 15,
+          "width": 659.1796875,
+          "name": "alphatonos"
+        },
+        {
+          "text": "\u0438\u0306",
+          "gid": 16,
+          "code": 16,
+          "width": 649.90234375,
+          "name": "uni0439"
+        },
+        {
+          "text": "e\u0302\u0301",
+          "gid": 17,
+          "code": 17,
+          "width": 615.234375,
+          "name": "uni1EBF"
+        }
+      ]
+    },
+    {
+      "name": "sid-otf-cid-accents-shared",
+      "path": "sid-otf-cid-accents-shared.pdf",
+      "label": "sid",
+      "wrapped": true,
+      "composite": true,
+      "sequence": "accents",
+      "layout": "shared",
+      "codeLength": 2,
+      "sourceHex": "000200040006000e0001000f0001001000010011",
+      "sourceText": "Cafe\u0301 \u03b1\u0301 \u0438\u0306 e\u0302\u0301",
+      "sha256": "e129573918aad5b94309ea46ed701f2bb8d6614368fd3025ed03e6b4f2f434d4",
+      "symbols": [
+        {
+          "text": " ",
+          "gid": 1,
+          "code": 1,
+          "width": 317.87109375,
+          "name": "space"
+        },
+        {
+          "text": "C",
+          "gid": 2,
+          "code": 2,
+          "width": 698.2421875,
+          "name": "C"
+        },
+        {
+          "text": "N",
+          "gid": 3,
+          "code": 3,
+          "width": 748.046875,
+          "name": "N"
+        },
+        {
+          "text": "a",
+          "gid": 4,
+          "code": 4,
+          "width": 612.79296875,
+          "name": "a"
+        },
+        {
+          "text": "e",
+          "gid": 5,
+          "code": 5,
+          "width": 615.234375,
+          "name": "e"
+        },
+        {
+          "text": "f",
+          "gid": 6,
+          "code": 6,
+          "width": 352.05078125,
+          "name": "f"
+        },
+        {
+          "text": "h",
+          "gid": 7,
+          "code": 7,
+          "width": 633.7890625,
+          "name": "h"
+        },
+        {
+          "text": "i",
+          "gid": 8,
+          "code": 8,
+          "width": 277.83203125,
+          "name": "i"
+        },
+        {
+          "text": "s",
+          "gid": 9,
+          "code": 9,
+          "width": 520.99609375,
+          "name": "s"
+        },
+        {
+          "text": "t",
+          "gid": 10,
+          "code": 10,
+          "width": 392.08984375,
+          "name": "t"
+        },
+        {
+          "text": "w",
+          "gid": 11,
+          "code": 11,
+          "width": 817.87109375,
+          "name": "w"
+        },
+        {
+          "text": "\u03b1",
+          "gid": 12,
+          "code": 12,
+          "width": 659.1796875,
+          "name": "alpha"
+        },
+        {
+          "text": "\u0438",
+          "gid": 13,
+          "code": 13,
+          "width": 649.90234375,
+          "name": "uni0438"
+        },
+        {
+          "text": "e\u0301",
+          "gid": 14,
+          "code": 14,
+          "width": 615.234375,
+          "name": "eacute"
+        },
+        {
+          "text": "\u03b1\u0301",
+          "gid": 15,
+          "code": 15,
+          "width": 659.1796875,
+          "name": "alphatonos"
+        },
+        {
+          "text": "\u0438\u0306",
+          "gid": 16,
+          "code": 16,
+          "width": 649.90234375,
+          "name": "uni0439"
+        },
+        {
+          "text": "e\u0302\u0301",
+          "gid": 17,
+          "code": 17,
+          "width": 615.234375,
+          "name": "uni1EBF"
+        }
+      ]
+    },
+    {
+      "name": "cid-raw-cid-accents-single",
+      "path": "cid-raw-cid-accents-single.pdf",
+      "label": "cid",
+      "wrapped": false,
+      "composite": true,
+      "sequence": "accents",
+      "layout": "single",
+      "codeLength": 2,
+      "sourceHex": "000200040006000e0001000f0001001000010011",
+      "sourceText": "Cafe\u0301 \u03b1\u0301 \u0438\u0306 e\u0302\u0301",
+      "sha256": "fe356a63b0d4721acf8f7cf2cf31072721a2d25d5b3a05d235a98f199500604b",
+      "symbols": [
+        {
+          "text": " ",
+          "gid": 1,
+          "code": 1,
+          "width": 317.87109375,
+          "name": "cid00001"
+        },
+        {
+          "text": "C",
+          "gid": 2,
+          "code": 2,
+          "width": 698.2421875,
+          "name": "cid00002"
+        },
+        {
+          "text": "N",
+          "gid": 3,
+          "code": 3,
+          "width": 748.046875,
+          "name": "cid00003"
+        },
+        {
+          "text": "a",
+          "gid": 4,
+          "code": 4,
+          "width": 612.79296875,
+          "name": "cid00004"
+        },
+        {
+          "text": "e",
+          "gid": 5,
+          "code": 5,
+          "width": 615.234375,
+          "name": "cid00005"
+        },
+        {
+          "text": "f",
+          "gid": 6,
+          "code": 6,
+          "width": 352.05078125,
+          "name": "cid00006"
+        },
+        {
+          "text": "h",
+          "gid": 7,
+          "code": 7,
+          "width": 633.7890625,
+          "name": "cid00007"
+        },
+        {
+          "text": "i",
+          "gid": 8,
+          "code": 8,
+          "width": 277.83203125,
+          "name": "cid00008"
+        },
+        {
+          "text": "s",
+          "gid": 9,
+          "code": 9,
+          "width": 520.99609375,
+          "name": "cid00009"
+        },
+        {
+          "text": "t",
+          "gid": 10,
+          "code": 10,
+          "width": 392.08984375,
+          "name": "cid00010"
+        },
+        {
+          "text": "w",
+          "gid": 11,
+          "code": 11,
+          "width": 817.87109375,
+          "name": "cid00011"
+        },
+        {
+          "text": "\u03b1",
+          "gid": 12,
+          "code": 12,
+          "width": 659.1796875,
+          "name": "cid00012"
+        },
+        {
+          "text": "\u0438",
+          "gid": 13,
+          "code": 13,
+          "width": 649.90234375,
+          "name": "cid00013"
+        },
+        {
+          "text": "e\u0301",
+          "gid": 14,
+          "code": 14,
+          "width": 615.234375,
+          "name": "cid00014"
+        },
+        {
+          "text": "\u03b1\u0301",
+          "gid": 15,
+          "code": 15,
+          "width": 659.1796875,
+          "name": "cid00015"
+        },
+        {
+          "text": "\u0438\u0306",
+          "gid": 16,
+          "code": 16,
+          "width": 649.90234375,
+          "name": "cid00016"
+        },
+        {
+          "text": "e\u0302\u0301",
+          "gid": 17,
+          "code": 17,
+          "width": 615.234375,
+          "name": "cid00017"
+        }
+      ]
+    },
+    {
+      "name": "cid-raw-cid-accents-group",
+      "path": "cid-raw-cid-accents-group.pdf",
+      "label": "cid",
+      "wrapped": false,
+      "composite": true,
+      "sequence": "accents",
+      "layout": "group",
+      "codeLength": 2,
+      "sourceHex": "000200040006000e0001000f0001001000010011",
+      "sourceText": "Cafe\u0301 \u03b1\u0301 \u0438\u0306 e\u0302\u0301",
+      "sha256": "e79aafc49df113af7974ae7d0392db31af2a8d772aae62f53dd33ff14c5f52dd",
+      "symbols": [
+        {
+          "text": " ",
+          "gid": 1,
+          "code": 1,
+          "width": 317.87109375,
+          "name": "cid00001"
+        },
+        {
+          "text": "C",
+          "gid": 2,
+          "code": 2,
+          "width": 698.2421875,
+          "name": "cid00002"
+        },
+        {
+          "text": "N",
+          "gid": 3,
+          "code": 3,
+          "width": 748.046875,
+          "name": "cid00003"
+        },
+        {
+          "text": "a",
+          "gid": 4,
+          "code": 4,
+          "width": 612.79296875,
+          "name": "cid00004"
+        },
+        {
+          "text": "e",
+          "gid": 5,
+          "code": 5,
+          "width": 615.234375,
+          "name": "cid00005"
+        },
+        {
+          "text": "f",
+          "gid": 6,
+          "code": 6,
+          "width": 352.05078125,
+          "name": "cid00006"
+        },
+        {
+          "text": "h",
+          "gid": 7,
+          "code": 7,
+          "width": 633.7890625,
+          "name": "cid00007"
+        },
+        {
+          "text": "i",
+          "gid": 8,
+          "code": 8,
+          "width": 277.83203125,
+          "name": "cid00008"
+        },
+        {
+          "text": "s",
+          "gid": 9,
+          "code": 9,
+          "width": 520.99609375,
+          "name": "cid00009"
+        },
+        {
+          "text": "t",
+          "gid": 10,
+          "code": 10,
+          "width": 392.08984375,
+          "name": "cid00010"
+        },
+        {
+          "text": "w",
+          "gid": 11,
+          "code": 11,
+          "width": 817.87109375,
+          "name": "cid00011"
+        },
+        {
+          "text": "\u03b1",
+          "gid": 12,
+          "code": 12,
+          "width": 659.1796875,
+          "name": "cid00012"
+        },
+        {
+          "text": "\u0438",
+          "gid": 13,
+          "code": 13,
+          "width": 649.90234375,
+          "name": "cid00013"
+        },
+        {
+          "text": "e\u0301",
+          "gid": 14,
+          "code": 14,
+          "width": 615.234375,
+          "name": "cid00014"
+        },
+        {
+          "text": "\u03b1\u0301",
+          "gid": 15,
+          "code": 15,
+          "width": 659.1796875,
+          "name": "cid00015"
+        },
+        {
+          "text": "\u0438\u0306",
+          "gid": 16,
+          "code": 16,
+          "width": 649.90234375,
+          "name": "cid00016"
+        },
+        {
+          "text": "e\u0302\u0301",
+          "gid": 17,
+          "code": 17,
+          "width": 615.234375,
+          "name": "cid00017"
+        }
+      ]
+    },
+    {
+      "name": "cid-raw-cid-accents-shared",
+      "path": "cid-raw-cid-accents-shared.pdf",
+      "label": "cid",
+      "wrapped": false,
+      "composite": true,
+      "sequence": "accents",
+      "layout": "shared",
+      "codeLength": 2,
+      "sourceHex": "000200040006000e0001000f0001001000010011",
+      "sourceText": "Cafe\u0301 \u03b1\u0301 \u0438\u0306 e\u0302\u0301",
+      "sha256": "4df4bf3b294ce4827181f44cbb7f95705f398fa06bd1786f51efdb70bbd29a08",
+      "symbols": [
+        {
+          "text": " ",
+          "gid": 1,
+          "code": 1,
+          "width": 317.87109375,
+          "name": "cid00001"
+        },
+        {
+          "text": "C",
+          "gid": 2,
+          "code": 2,
+          "width": 698.2421875,
+          "name": "cid00002"
+        },
+        {
+          "text": "N",
+          "gid": 3,
+          "code": 3,
+          "width": 748.046875,
+          "name": "cid00003"
+        },
+        {
+          "text": "a",
+          "gid": 4,
+          "code": 4,
+          "width": 612.79296875,
+          "name": "cid00004"
+        },
+        {
+          "text": "e",
+          "gid": 5,
+          "code": 5,
+          "width": 615.234375,
+          "name": "cid00005"
+        },
+        {
+          "text": "f",
+          "gid": 6,
+          "code": 6,
+          "width": 352.05078125,
+          "name": "cid00006"
+        },
+        {
+          "text": "h",
+          "gid": 7,
+          "code": 7,
+          "width": 633.7890625,
+          "name": "cid00007"
+        },
+        {
+          "text": "i",
+          "gid": 8,
+          "code": 8,
+          "width": 277.83203125,
+          "name": "cid00008"
+        },
+        {
+          "text": "s",
+          "gid": 9,
+          "code": 9,
+          "width": 520.99609375,
+          "name": "cid00009"
+        },
+        {
+          "text": "t",
+          "gid": 10,
+          "code": 10,
+          "width": 392.08984375,
+          "name": "cid00010"
+        },
+        {
+          "text": "w",
+          "gid": 11,
+          "code": 11,
+          "width": 817.87109375,
+          "name": "cid00011"
+        },
+        {
+          "text": "\u03b1",
+          "gid": 12,
+          "code": 12,
+          "width": 659.1796875,
+          "name": "cid00012"
+        },
+        {
+          "text": "\u0438",
+          "gid": 13,
+          "code": 13,
+          "width": 649.90234375,
+          "name": "cid00013"
+        },
+        {
+          "text": "e\u0301",
+          "gid": 14,
+          "code": 14,
+          "width": 615.234375,
+          "name": "cid00014"
+        },
+        {
+          "text": "\u03b1\u0301",
+          "gid": 15,
+          "code": 15,
+          "width": 659.1796875,
+          "name": "cid00015"
+        },
+        {
+          "text": "\u0438\u0306",
+          "gid": 16,
+          "code": 16,
+          "width": 649.90234375,
+          "name": "cid00016"
+        },
+        {
+          "text": "e\u0302\u0301",
+          "gid": 17,
+          "code": 17,
+          "width": 615.234375,
+          "name": "cid00017"
+        }
+      ]
+    },
+    {
+      "name": "cid-otf-cid-accents-single",
+      "path": "cid-otf-cid-accents-single.pdf",
+      "label": "cid",
+      "wrapped": true,
+      "composite": true,
+      "sequence": "accents",
+      "layout": "single",
+      "codeLength": 2,
+      "sourceHex": "000200040006000e0001000f0001001000010011",
+      "sourceText": "Cafe\u0301 \u03b1\u0301 \u0438\u0306 e\u0302\u0301",
+      "sha256": "504735e5f13c3134e4f806536ef79defed5e7c4e9c452bdfa77670e95392a4d0",
+      "symbols": [
+        {
+          "text": " ",
+          "gid": 1,
+          "code": 1,
+          "width": 317.87109375,
+          "name": "cid00001"
+        },
+        {
+          "text": "C",
+          "gid": 2,
+          "code": 2,
+          "width": 698.2421875,
+          "name": "cid00002"
+        },
+        {
+          "text": "N",
+          "gid": 3,
+          "code": 3,
+          "width": 748.046875,
+          "name": "cid00003"
+        },
+        {
+          "text": "a",
+          "gid": 4,
+          "code": 4,
+          "width": 612.79296875,
+          "name": "cid00004"
+        },
+        {
+          "text": "e",
+          "gid": 5,
+          "code": 5,
+          "width": 615.234375,
+          "name": "cid00005"
+        },
+        {
+          "text": "f",
+          "gid": 6,
+          "code": 6,
+          "width": 352.05078125,
+          "name": "cid00006"
+        },
+        {
+          "text": "h",
+          "gid": 7,
+          "code": 7,
+          "width": 633.7890625,
+          "name": "cid00007"
+        },
+        {
+          "text": "i",
+          "gid": 8,
+          "code": 8,
+          "width": 277.83203125,
+          "name": "cid00008"
+        },
+        {
+          "text": "s",
+          "gid": 9,
+          "code": 9,
+          "width": 520.99609375,
+          "name": "cid00009"
+        },
+        {
+          "text": "t",
+          "gid": 10,
+          "code": 10,
+          "width": 392.08984375,
+          "name": "cid00010"
+        },
+        {
+          "text": "w",
+          "gid": 11,
+          "code": 11,
+          "width": 817.87109375,
+          "name": "cid00011"
+        },
+        {
+          "text": "\u03b1",
+          "gid": 12,
+          "code": 12,
+          "width": 659.1796875,
+          "name": "cid00012"
+        },
+        {
+          "text": "\u0438",
+          "gid": 13,
+          "code": 13,
+          "width": 649.90234375,
+          "name": "cid00013"
+        },
+        {
+          "text": "e\u0301",
+          "gid": 14,
+          "code": 14,
+          "width": 615.234375,
+          "name": "cid00014"
+        },
+        {
+          "text": "\u03b1\u0301",
+          "gid": 15,
+          "code": 15,
+          "width": 659.1796875,
+          "name": "cid00015"
+        },
+        {
+          "text": "\u0438\u0306",
+          "gid": 16,
+          "code": 16,
+          "width": 649.90234375,
+          "name": "cid00016"
+        },
+        {
+          "text": "e\u0302\u0301",
+          "gid": 17,
+          "code": 17,
+          "width": 615.234375,
+          "name": "cid00017"
+        }
+      ]
+    },
+    {
+      "name": "cid-otf-cid-accents-group",
+      "path": "cid-otf-cid-accents-group.pdf",
+      "label": "cid",
+      "wrapped": true,
+      "composite": true,
+      "sequence": "accents",
+      "layout": "group",
+      "codeLength": 2,
+      "sourceHex": "000200040006000e0001000f0001001000010011",
+      "sourceText": "Cafe\u0301 \u03b1\u0301 \u0438\u0306 e\u0302\u0301",
+      "sha256": "731a01e47481a6be234f748da93530a87b23ecde3d9754b039d618604d6f9259",
+      "symbols": [
+        {
+          "text": " ",
+          "gid": 1,
+          "code": 1,
+          "width": 317.87109375,
+          "name": "cid00001"
+        },
+        {
+          "text": "C",
+          "gid": 2,
+          "code": 2,
+          "width": 698.2421875,
+          "name": "cid00002"
+        },
+        {
+          "text": "N",
+          "gid": 3,
+          "code": 3,
+          "width": 748.046875,
+          "name": "cid00003"
+        },
+        {
+          "text": "a",
+          "gid": 4,
+          "code": 4,
+          "width": 612.79296875,
+          "name": "cid00004"
+        },
+        {
+          "text": "e",
+          "gid": 5,
+          "code": 5,
+          "width": 615.234375,
+          "name": "cid00005"
+        },
+        {
+          "text": "f",
+          "gid": 6,
+          "code": 6,
+          "width": 352.05078125,
+          "name": "cid00006"
+        },
+        {
+          "text": "h",
+          "gid": 7,
+          "code": 7,
+          "width": 633.7890625,
+          "name": "cid00007"
+        },
+        {
+          "text": "i",
+          "gid": 8,
+          "code": 8,
+          "width": 277.83203125,
+          "name": "cid00008"
+        },
+        {
+          "text": "s",
+          "gid": 9,
+          "code": 9,
+          "width": 520.99609375,
+          "name": "cid00009"
+        },
+        {
+          "text": "t",
+          "gid": 10,
+          "code": 10,
+          "width": 392.08984375,
+          "name": "cid00010"
+        },
+        {
+          "text": "w",
+          "gid": 11,
+          "code": 11,
+          "width": 817.87109375,
+          "name": "cid00011"
+        },
+        {
+          "text": "\u03b1",
+          "gid": 12,
+          "code": 12,
+          "width": 659.1796875,
+          "name": "cid00012"
+        },
+        {
+          "text": "\u0438",
+          "gid": 13,
+          "code": 13,
+          "width": 649.90234375,
+          "name": "cid00013"
+        },
+        {
+          "text": "e\u0301",
+          "gid": 14,
+          "code": 14,
+          "width": 615.234375,
+          "name": "cid00014"
+        },
+        {
+          "text": "\u03b1\u0301",
+          "gid": 15,
+          "code": 15,
+          "width": 659.1796875,
+          "name": "cid00015"
+        },
+        {
+          "text": "\u0438\u0306",
+          "gid": 16,
+          "code": 16,
+          "width": 649.90234375,
+          "name": "cid00016"
+        },
+        {
+          "text": "e\u0302\u0301",
+          "gid": 17,
+          "code": 17,
+          "width": 615.234375,
+          "name": "cid00017"
+        }
+      ]
+    },
+    {
+      "name": "cid-otf-cid-accents-shared",
+      "path": "cid-otf-cid-accents-shared.pdf",
+      "label": "cid",
+      "wrapped": true,
+      "composite": true,
+      "sequence": "accents",
+      "layout": "shared",
+      "codeLength": 2,
+      "sourceHex": "000200040006000e0001000f0001001000010011",
+      "sourceText": "Cafe\u0301 \u03b1\u0301 \u0438\u0306 e\u0302\u0301",
+      "sha256": "ba85d2b95b6a7422d2bae32bf4a6ff70cc0da980e4af90ecfc97edfa64b17fd3",
+      "symbols": [
+        {
+          "text": " ",
+          "gid": 1,
+          "code": 1,
+          "width": 317.87109375,
+          "name": "cid00001"
+        },
+        {
+          "text": "C",
+          "gid": 2,
+          "code": 2,
+          "width": 698.2421875,
+          "name": "cid00002"
+        },
+        {
+          "text": "N",
+          "gid": 3,
+          "code": 3,
+          "width": 748.046875,
+          "name": "cid00003"
+        },
+        {
+          "text": "a",
+          "gid": 4,
+          "code": 4,
+          "width": 612.79296875,
+          "name": "cid00004"
+        },
+        {
+          "text": "e",
+          "gid": 5,
+          "code": 5,
+          "width": 615.234375,
+          "name": "cid00005"
+        },
+        {
+          "text": "f",
+          "gid": 6,
+          "code": 6,
+          "width": 352.05078125,
+          "name": "cid00006"
+        },
+        {
+          "text": "h",
+          "gid": 7,
+          "code": 7,
+          "width": 633.7890625,
+          "name": "cid00007"
+        },
+        {
+          "text": "i",
+          "gid": 8,
+          "code": 8,
+          "width": 277.83203125,
+          "name": "cid00008"
+        },
+        {
+          "text": "s",
+          "gid": 9,
+          "code": 9,
+          "width": 520.99609375,
+          "name": "cid00009"
+        },
+        {
+          "text": "t",
+          "gid": 10,
+          "code": 10,
+          "width": 392.08984375,
+          "name": "cid00010"
+        },
+        {
+          "text": "w",
+          "gid": 11,
+          "code": 11,
+          "width": 817.87109375,
+          "name": "cid00011"
+        },
+        {
+          "text": "\u03b1",
+          "gid": 12,
+          "code": 12,
+          "width": 659.1796875,
+          "name": "cid00012"
+        },
+        {
+          "text": "\u0438",
+          "gid": 13,
+          "code": 13,
+          "width": 649.90234375,
+          "name": "cid00013"
+        },
+        {
+          "text": "e\u0301",
+          "gid": 14,
+          "code": 14,
+          "width": 615.234375,
+          "name": "cid00014"
+        },
+        {
+          "text": "\u03b1\u0301",
+          "gid": 15,
+          "code": 15,
+          "width": 659.1796875,
+          "name": "cid00015"
+        },
+        {
+          "text": "\u0438\u0306",
+          "gid": 16,
+          "code": 16,
+          "width": 649.90234375,
+          "name": "cid00016"
+        },
+        {
+          "text": "e\u0302\u0301",
+          "gid": 17,
+          "code": 17,
+          "width": 615.234375,
+          "name": "cid00017"
+        }
+      ]
+    },
+    {
+      "name": "ttf-otf-cid-accents-single",
+      "path": "ttf-otf-cid-accents-single.pdf",
+      "label": "ttf",
+      "wrapped": true,
+      "composite": true,
+      "sequence": "accents",
+      "layout": "single",
+      "codeLength": 2,
+      "sourceHex": "000200040006000d000100100001001300010014",
+      "sourceText": "Cafe\u0301 \u03b1\u0301 \u0438\u0306 e\u0302\u0301",
+      "sha256": "7d764fc80d8746ed8cdadb15853058b42ffc8f254fe2bdd2818d58ca2f979a8b",
+      "symbols": [
+        {
+          "text": " ",
+          "gid": 1,
+          "code": 1,
+          "width": 317.87109375,
+          "name": "space"
+        },
+        {
+          "text": "C",
+          "gid": 2,
+          "code": 2,
+          "width": 698.2421875,
+          "name": "C"
+        },
+        {
+          "text": "N",
+          "gid": 3,
+          "code": 3,
+          "width": 748.046875,
+          "name": "N"
+        },
+        {
+          "text": "a",
+          "gid": 4,
+          "code": 4,
+          "width": 612.79296875,
+          "name": "a"
+        },
+        {
+          "text": "e",
+          "gid": 5,
+          "code": 5,
+          "width": 615.234375,
+          "name": "e"
+        },
+        {
+          "text": "f",
+          "gid": 6,
+          "code": 6,
+          "width": 352.05078125,
+          "name": "f"
+        },
+        {
+          "text": "h",
+          "gid": 7,
+          "code": 7,
+          "width": 633.7890625,
+          "name": "h"
+        },
+        {
+          "text": "i",
+          "gid": 8,
+          "code": 8,
+          "width": 277.83203125,
+          "name": "i"
+        },
+        {
+          "text": "s",
+          "gid": 9,
+          "code": 9,
+          "width": 520.99609375,
+          "name": "s"
+        },
+        {
+          "text": "t",
+          "gid": 10,
+          "code": 10,
+          "width": 392.08984375,
+          "name": "t"
+        },
+        {
+          "text": "w",
+          "gid": 11,
+          "code": 11,
+          "width": 817.87109375,
+          "name": "w"
+        },
+        {
+          "text": "\u03b1",
+          "gid": 17,
+          "code": 17,
+          "width": 659.1796875,
+          "name": "alpha"
+        },
+        {
+          "text": "\u0438",
+          "gid": 18,
+          "code": 18,
+          "width": 649.90234375,
+          "name": "uni0438"
+        },
+        {
+          "text": "e\u0301",
+          "gid": 13,
+          "code": 13,
+          "width": 615.234375,
+          "name": "eacute"
+        },
+        {
+          "text": "\u03b1\u0301",
+          "gid": 16,
+          "code": 16,
+          "width": 659.1796875,
+          "name": "alphatonos"
+        },
+        {
+          "text": "\u0438\u0306",
+          "gid": 19,
+          "code": 19,
+          "width": 649.90234375,
+          "name": "uni0439"
+        },
+        {
+          "text": "e\u0302\u0301",
+          "gid": 20,
+          "code": 20,
+          "width": 615.234375,
+          "name": "uni1EBF"
+        }
+      ]
+    },
+    {
+      "name": "ttf-otf-cid-accents-group",
+      "path": "ttf-otf-cid-accents-group.pdf",
+      "label": "ttf",
+      "wrapped": true,
+      "composite": true,
+      "sequence": "accents",
+      "layout": "group",
+      "codeLength": 2,
+      "sourceHex": "000200040006000d000100100001001300010014",
+      "sourceText": "Cafe\u0301 \u03b1\u0301 \u0438\u0306 e\u0302\u0301",
+      "sha256": "7fd854f76beeb6b9a2e03c2f534582fbcccdfceec1b53c8f4199a9ab7a5f7ad4",
+      "symbols": [
+        {
+          "text": " ",
+          "gid": 1,
+          "code": 1,
+          "width": 317.87109375,
+          "name": "space"
+        },
+        {
+          "text": "C",
+          "gid": 2,
+          "code": 2,
+          "width": 698.2421875,
+          "name": "C"
+        },
+        {
+          "text": "N",
+          "gid": 3,
+          "code": 3,
+          "width": 748.046875,
+          "name": "N"
+        },
+        {
+          "text": "a",
+          "gid": 4,
+          "code": 4,
+          "width": 612.79296875,
+          "name": "a"
+        },
+        {
+          "text": "e",
+          "gid": 5,
+          "code": 5,
+          "width": 615.234375,
+          "name": "e"
+        },
+        {
+          "text": "f",
+          "gid": 6,
+          "code": 6,
+          "width": 352.05078125,
+          "name": "f"
+        },
+        {
+          "text": "h",
+          "gid": 7,
+          "code": 7,
+          "width": 633.7890625,
+          "name": "h"
+        },
+        {
+          "text": "i",
+          "gid": 8,
+          "code": 8,
+          "width": 277.83203125,
+          "name": "i"
+        },
+        {
+          "text": "s",
+          "gid": 9,
+          "code": 9,
+          "width": 520.99609375,
+          "name": "s"
+        },
+        {
+          "text": "t",
+          "gid": 10,
+          "code": 10,
+          "width": 392.08984375,
+          "name": "t"
+        },
+        {
+          "text": "w",
+          "gid": 11,
+          "code": 11,
+          "width": 817.87109375,
+          "name": "w"
+        },
+        {
+          "text": "\u03b1",
+          "gid": 17,
+          "code": 17,
+          "width": 659.1796875,
+          "name": "alpha"
+        },
+        {
+          "text": "\u0438",
+          "gid": 18,
+          "code": 18,
+          "width": 649.90234375,
+          "name": "uni0438"
+        },
+        {
+          "text": "e\u0301",
+          "gid": 13,
+          "code": 13,
+          "width": 615.234375,
+          "name": "eacute"
+        },
+        {
+          "text": "\u03b1\u0301",
+          "gid": 16,
+          "code": 16,
+          "width": 659.1796875,
+          "name": "alphatonos"
+        },
+        {
+          "text": "\u0438\u0306",
+          "gid": 19,
+          "code": 19,
+          "width": 649.90234375,
+          "name": "uni0439"
+        },
+        {
+          "text": "e\u0302\u0301",
+          "gid": 20,
+          "code": 20,
+          "width": 615.234375,
+          "name": "uni1EBF"
+        }
+      ]
+    },
+    {
+      "name": "ttf-otf-cid-accents-shared",
+      "path": "ttf-otf-cid-accents-shared.pdf",
+      "label": "ttf",
+      "wrapped": true,
+      "composite": true,
+      "sequence": "accents",
+      "layout": "shared",
+      "codeLength": 2,
+      "sourceHex": "000200040006000d000100100001001300010014",
+      "sourceText": "Cafe\u0301 \u03b1\u0301 \u0438\u0306 e\u0302\u0301",
+      "sha256": "f8155cdc2af5458f2a905f146cf7e51a42dbdd200bfe0faa1a97ea504ab85947",
+      "symbols": [
+        {
+          "text": " ",
+          "gid": 1,
+          "code": 1,
+          "width": 317.87109375,
+          "name": "space"
+        },
+        {
+          "text": "C",
+          "gid": 2,
+          "code": 2,
+          "width": 698.2421875,
+          "name": "C"
+        },
+        {
+          "text": "N",
+          "gid": 3,
+          "code": 3,
+          "width": 748.046875,
+          "name": "N"
+        },
+        {
+          "text": "a",
+          "gid": 4,
+          "code": 4,
+          "width": 612.79296875,
+          "name": "a"
+        },
+        {
+          "text": "e",
+          "gid": 5,
+          "code": 5,
+          "width": 615.234375,
+          "name": "e"
+        },
+        {
+          "text": "f",
+          "gid": 6,
+          "code": 6,
+          "width": 352.05078125,
+          "name": "f"
+        },
+        {
+          "text": "h",
+          "gid": 7,
+          "code": 7,
+          "width": 633.7890625,
+          "name": "h"
+        },
+        {
+          "text": "i",
+          "gid": 8,
+          "code": 8,
+          "width": 277.83203125,
+          "name": "i"
+        },
+        {
+          "text": "s",
+          "gid": 9,
+          "code": 9,
+          "width": 520.99609375,
+          "name": "s"
+        },
+        {
+          "text": "t",
+          "gid": 10,
+          "code": 10,
+          "width": 392.08984375,
+          "name": "t"
+        },
+        {
+          "text": "w",
+          "gid": 11,
+          "code": 11,
+          "width": 817.87109375,
+          "name": "w"
+        },
+        {
+          "text": "\u03b1",
+          "gid": 17,
+          "code": 17,
+          "width": 659.1796875,
+          "name": "alpha"
+        },
+        {
+          "text": "\u0438",
+          "gid": 18,
+          "code": 18,
+          "width": 649.90234375,
+          "name": "uni0438"
+        },
+        {
+          "text": "e\u0301",
+          "gid": 13,
+          "code": 13,
+          "width": 615.234375,
+          "name": "eacute"
+        },
+        {
+          "text": "\u03b1\u0301",
+          "gid": 16,
+          "code": 16,
+          "width": 659.1796875,
+          "name": "alphatonos"
+        },
+        {
+          "text": "\u0438\u0306",
+          "gid": 19,
+          "code": 19,
+          "width": 649.90234375,
+          "name": "uni0439"
+        },
+        {
+          "text": "e\u0302\u0301",
+          "gid": 20,
+          "code": 20,
+          "width": 615.234375,
+          "name": "uni1EBF"
+        }
+      ]
+    }
+  ]
+}

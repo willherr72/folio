@@ -149,6 +149,26 @@ pub(super) fn native_rectangles_with_styles(layout:&StyledParagraphLayout,glyphs
   // edge. The caller has already checked encoded bytes, native text/font/state
   // and every visible glyph origin. Spaces carry no painted ink here.
   if extracted.chars().filter(|c|*c!=' ').ne(run.text.chars().filter(|c|*c!=' ')){return Err(invalid("Saved highlighted glyphs do not match their fragment."));}
+  let id=*ids.get(run.style_id).ok_or_else(||invalid("Missing saved highlight style."))?;
+  let cell=id.map(|id|backgrounds.get(id).ok_or_else(||invalid("Missing saved highlight background."))).transpose()?.and_then(|b|b.cell);
+  if let (Some(style),Some(cell))=(styles.and_then(|s|s.get(run.style_id)),cell){
+   if let Some(plan)=style.fragment(&run.text,run.origin)?{
+    // PDFium expands a physical ligature into several Unicode records at one
+    // origin. Consume those records together and paint its advance exactly once.
+    let mut native=glyphs.iter().filter(|g|!g.text.trim().is_empty());let mut ink=Vec::new();
+    for (text,origin,advance) in &plan.glyphs {
+     let mut bounds=None;
+     for ch in text.chars().filter(|c|!c.is_whitespace()){
+      let glyph=native.next().ok_or_else(||invalid("Missing character-cell occurrence glyph."))?;let p=glyph.position;
+      if glyph.text!=ch.to_string()||!close_values(&p[..2],origin)||p.iter().any(|v|!v.is_finite())||p[4]<p[2]||p[5]<p[3]{return Err(invalid("Character-cell occurrence differs from its physical source."));}
+      if visible(glyph){union(&mut bounds,[p[2],p[3],p[4],p[5]]);}
+     }
+     if let Some(bounds)=bounds{ink.push((bounds,cell.paint(origin[0],*advance,bounds,style.size)?));}
+    }
+    if native.next().is_some(){return Err(invalid("Unexpected character-cell occurrence glyphs."));}
+    fragments.push(ink);continue;
+   }
+  }
   let mut ink=Vec::new();
   for glyph in glyphs {
    let p=glyph.position;if p.iter().any(|v|!v.is_finite())||p[4]<p[2]||p[5]<p[3]{return Err(invalid("Invalid saved highlighted glyph geometry."));}
@@ -179,7 +199,7 @@ fn validate_layout(layout:&StyledParagraphLayout)->EngineResult<()>{
  Ok(())
 }
 
-fn rectangles_from_ink(layout:&StyledParagraphLayout,fragments:&[Vec<([f32;4],[f32;4])>],ids:&[Option<usize>],backgrounds:&[Background])->EngineResult<Vec<PlacedBackground>>{
+pub(super) fn rectangles_from_ink(layout:&StyledParagraphLayout,fragments:&[Vec<([f32;4],[f32;4])>],ids:&[Option<usize>],backgrounds:&[Background])->EngineResult<Vec<PlacedBackground>>{
  if ids.is_empty()||ids.len()>64||!valid_backgrounds(backgrounds)||ids.iter().flatten().any(|id|*id>=backgrounds.len()){return Err(invalid("Invalid highlight layout styles."));}
  let mut result=Vec::new();let mut all_ink=Vec::new();let mut fragments=fragments.iter();
  let flush=|id:Option<usize>,ink:Option<[f32;4]>,result:&mut Vec<PlacedBackground>|->EngineResult<()>{

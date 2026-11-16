@@ -74,7 +74,7 @@ impl SourcePage {
         let first=ordinals[0];
         Ok(PublicationProof {page:self.page,operations:self.operations.clone(),runs:self.runs.clone(),ordinal:first,
             show:self.context.shows[first].0,context:contexts.remove(0),group:self.group.clone(),tagged:self.ownership.tagged(),
-            substitution:None,paragraph:Some(ParagraphProof{source:self.context.clone(),ordinals,at_source:mixed})})
+            substitution:None,paragraph:Some(ParagraphProof{source:self.context.clone(),ordinals})})
     }
     pub(super) fn proof(&self,index:usize)->EngineResult<PublicationProof> {
         let ordinal=self.runs.iter().position(|r|r.index==index).ok_or_else(bad)?;
@@ -105,7 +105,7 @@ fn check_ink(context:&ShowContext,run:&RunSnapshot,glyphs:&[Glyph],source:Option
 
 // The fields and constructor stay private to this module. Neither an incoming
 // PDF nor a client can supply a trusted context to bypass publication guards.
-struct ParagraphProof {source:Arc<PageContext>,ordinals:Vec<usize>,at_source:bool}
+struct ParagraphProof {source:Arc<PageContext>,ordinals:Vec<usize>}
 pub(in crate::engine) struct PublicationProof {
     page:ObjectId,
     operations:Arc<Vec<Operation>>,
@@ -148,7 +148,9 @@ impl PublicationProof {
         let p=self.paragraph.as_ref().ok_or_else(bad)?;
         let remaining=self.runs.len()-p.ordinals.len();
         let count=total.checked_sub(remaining).filter(|n|*n>0&&*n<=4096).ok_or_else(bad)?;
-        let start=if p.at_source {p.ordinals[0]} else {remaining};
+        // Both uniform and styled publication splice at the first selected
+        // source show. Keep the exact ownership checks on that emitted span.
+        let start=p.ordinals[0];
         let end=start.checked_add(count).filter(|end|*end<=total).ok_or_else(bad)?;Ok(start..end)
     }
     fn paragraph_context(&self,ops:&[Operation])->EngineResult<()> {

@@ -45,6 +45,13 @@ pub(super) fn paragraph_font(asset:&FontAsset)->EngineResult<Dictionary> {
     font_with_width_policy(asset,true)
 }
 
+// Keep exact writer arithmetic shared with dependent-cursor planning. The two
+// policies intentionally produce different resources and historical bytes.
+pub(super) fn glyph_width(advance:u16,units_per_em:u16,integral:bool)->f32 {
+    if integral {(advance as f32/units_per_em as f32*1000.).round()}
+    else{advance as f32*(1000./units_per_em as f32)}
+}
+
 fn font_with_width_policy(asset:&FontAsset,integral:bool)->EngineResult<Dictionary> {
     let face = asset.face()?;
     let scale = 1000.0 / face.units_per_em() as f32;
@@ -66,8 +73,8 @@ fn font_with_width_policy(asset:&FontAsset,integral:bool)->EngineResult<Dictiona
             mapping[code as usize * 2..code as usize * 2 + 2]
                 .copy_from_slice(&glyph.0.to_be_bytes());
             widths.push(Object::Integer(code as i64));
-            let width=if integral {Object::Integer((advance as f32/face.units_per_em() as f32*1000.).round() as i64)}
-                else {Object::Real(advance as f32 * scale)};
+            let value=glyph_width(advance,face.units_per_em(),integral);
+            let width=if integral {Object::Integer(value as i64)}else{Object::Real(value)};
             widths.push(Object::Array(vec![width]));
         }
     }

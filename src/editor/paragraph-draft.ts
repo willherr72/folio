@@ -1,10 +1,11 @@
 /** Source-bound transfer into an uncommitted paragraph editor. */
 import type {FontInfo} from "./custom-fonts";
+import {fitTransferredParagraphDraft,ownParagraphFitContext,type ParagraphDraftFitContext,type ParagraphDraftFitFeedback} from "./paragraph-draft-fit";
 import type {EditableTextRun,StyledParagraphSelection} from "./types";
 import type {FolioAdapter} from "./adapter";
 import {paragraphEditorKind} from "./paragraph-transaction";
 import {createStyledEditor,editStyledEditor,type StyledEditorRange,type StyledEditorState} from "./styled-paragraph-editor";
-import {snapStyledCaret,styledRangeStyle} from "./styled-paragraph";
+import {snapStyledCaret,styledRangeStyle,type StyledRun} from "./styled-paragraph";
 export interface ExistingTextDraft {
  readonly originalText:string;readonly replacement:string;
  readonly selection:StyledEditorRange;readonly font:FontInfo|null;
@@ -14,7 +15,7 @@ export interface ParagraphDraftMapping {
  paragraphText:string;sourceText:string;
  sourceStart:number;sourceEnd:number;paragraphStart:number;paragraphEnd:number;
 }
-export interface PreparedParagraphDraft {readonly kind:"styled";readonly editor:StyledEditorState;readonly font:FontInfo|null}
+export interface PreparedParagraphDraft {readonly kind:"styled";readonly editor:StyledEditorState;readonly font:FontInfo|null;readonly fitFeedback?:ParagraphDraftFitFeedback}
 type MappingOwner=Pick<ParagraphDraftMapping,"sourceId"|"pageIndex"|"objectIndices"|"anchorIndex"|"paragraphText"|"sourceText">;
 function fail():never{throw new Error("The paragraph draft could not be matched to the selected source text. Your replacement is still available.");}
 const utf8=new TextEncoder(),segmenter=new Intl.Segmenter(undefined,{granularity:"grapheme"});
@@ -55,7 +56,7 @@ function difference(source:string,replacement:string){
 }
 export function transferStyledDraft(selection:StyledParagraphSelection,mapping:ParagraphDraftMapping,draft:ExistingTextDraft):StyledEditorState {
  const map=validateParagraphMapping(mapping,{...mapping,objectIndices:selection.objectIndices,paragraphText:selection.text,sourceText:draft.originalText});
- if(!bounded(draft.originalText)||typeof draft.replacement!=="string"||draft.replacement.length>1000||/[\u0000-\u001f\u007f-\u009f]/.test(draft.replacement)||!draft.replacement.trim())fail();
+ if(!bounded(draft.originalText)||!bounded(draft.replacement)||/[\u0000-\u0009\u000b-\u001f\u007f-\u009f]/.test(draft.replacement)||!draft.replacement.trim())fail();
  for(const c of draft.replacement){const cp=c.codePointAt(0)!;if(cp>=0xd800&&cp<=0xdfff)fail();}
  const input=draft.selection;
  if(!input||!Number.isSafeInteger(input.start)||!Number.isSafeInteger(input.end)||input.start<0||input.end<input.start||input.end>draft.replacement.length||!["forward","backward"].includes(input.direction))fail();
@@ -70,20 +71,35 @@ export function transferStyledDraft(selection:StyledParagraphSelection,mapping:P
  const replacement=draft.replacement.slice(leading,draft.replacement.length-trailing);
  const {changes}=difference(draft.originalText.slice(map.sourceStart,map.sourceEnd),replacement);
  const project=(at:number)=>map.paragraphStart+at;
- for(const change of [...changes].reverse()){
-  const start=project(change.start),end=project(change.end);
+ // Compose against the original runs and validate only the final draft.
+ // Sequential edits can temporarily exceed the byte limit, or create a
+ // temporary grapheme boundary that disappears in the final replacement.
+ const original=initial.present.draft,runs:StyledRun[]=[];
+ const appendOriginal=(from:number,to:number)=>{
+  let offset=0;
+  for(const run of original.runs){const end=offset+run.text.length,start=Math.max(from,offset),limit=Math.min(to,end);if(start<limit)runs.push({text:run.text.slice(start-offset,limit-offset),styleId:run.styleId});offset=end;}
+ };
+ let consumed=0;
+ for(const change of changes){
+  const start=project(change.start),end=project(change.end);appendOriginal(consumed,start);
   const hint=start===map.paragraphStart&&start===end
-   ?styledRangeStyle(editor.present.draft,start,snapStyledCaret(editor.present.draft,start+1))
-   :styledRangeStyle(editor.present.draft,start,end===start?start:snapStyledCaret(editor.present.draft,start+1));
-  editor=editStyledEditor(editor,{type:"replace",start,end,text:change.text,...(hint!==null?{styleId:hint}:{})});
+   ?styledRangeStyle(original,start,snapStyledCaret(original,start+1))
+   :styledRangeStyle(original,start,end===start?start:snapStyledCaret(original,start+1));
+  if(change.text)runs.push({text:change.text,styleId:hint??styledRangeStyle(original,start,start)??original.styleIds[0]});
+  consumed=end;
  }
+ appendOriginal(consumed,selection.text.length);
+ const composed=createStyledEditor({...initial.original,text:runs.map(run=>run.text).join(""),runs});
+ editor=Object.freeze({...composed,original:initial.original});
  const targetOffset=(at:number)=>Math.max(0,Math.min(replacement.length,at-leading));
  const pieceLength=replacement.length;
  if(draft.font){editor=editStyledEditor(editor,{type:"select",start:map.paragraphStart,end:map.paragraphStart+pieceLength});editor=editStyledEditor(editor,{type:"format",patch:{fontId:draft.font.id}});}
- editor=editStyledEditor(editor,{type:"select",start:snapStyledCaret(editor.present.draft,map.paragraphStart+targetOffset(input.start),"backward"),end:snapStyledCaret(editor.present.draft,map.paragraphStart+targetOffset(input.end)),direction:input.direction});
+ const caret=input.start===input.end?snapStyledCaret(editor.present.draft,map.paragraphStart+targetOffset(input.start)):null;
+ editor=editStyledEditor(editor,{type:"select",start:caret??snapStyledCaret(editor.present.draft,map.paragraphStart+targetOffset(input.start),"backward"),end:caret??snapStyledCaret(editor.present.draft,map.paragraphStart+targetOffset(input.end)),direction:input.direction});
  return Object.freeze({...editor,past:Object.freeze(changes.length||draft.font?[initial.present]:[]),future:Object.freeze([]),historyGroup:null});
 }
-export async function prepareParagraphDraft(adapter:FolioAdapter,sourceId:string,pageIndex:number,anchor:EditableTextRun,draft:ExistingTextDraft):Promise<PreparedParagraphDraft>{
+export async function prepareParagraphDraft(adapter:FolioAdapter,sourceId:string,pageIndex:number,anchor:EditableTextRun,draft:ExistingTextDraft,fitContext?:ParagraphDraftFitContext):Promise<PreparedParagraphDraft>{
+ const ownedFitContext=fitContext?ownParagraphFitContext(fitContext):undefined;
  if(draft.originalText!==(anchor.sourceText??anchor.text))fail();
  const kind=paragraphEditorKind(adapter);
  if(kind!=="styled")throw new Error("Keeping a replacement requires the styled paragraph editor. Your replacement is still available.");
@@ -105,5 +121,6 @@ export async function prepareParagraphDraft(adapter:FolioAdapter,sourceId:string
  }
  map=validateParagraphMapping(map,{sourceId,pageIndex,objectIndices:selection.objectIndices,anchorIndex:anchor.objectIndex,paragraphText:selection.text,sourceText:draft.originalText});
  const editor=transferStyledDraft(selection,map,draft);
- return Object.freeze({kind,editor,font:draft.font});
+ const fitted=ownedFitContext?await fitTransferredParagraphDraft(adapter,sourceId,pageIndex,editor,ownedFitContext):{editor};
+ return Object.freeze({kind,...fitted,font:draft.font});
 }

@@ -2,11 +2,12 @@
 use crate::private_storage::{self, Purpose};
 use flate2::{bufread::ZlibDecoder, write::ZlibEncoder, Compression};
 use sha2::{Digest, Sha256};
-use std::{cell::{Cell, RefCell}, fs::File, io::{self, Read, Seek, SeekFrom, Write},
+use std::{cell::{Cell, RefCell}, collections::{HashMap, HashSet}, fs::File, io::{self, Read, Seek, SeekFrom, Write},
           rc::{Rc, Weak}, sync::Arc, time::Instant};
 
-const BLOCK_SIZE: usize = 1024 * 1024;
-const MAX_SOURCE: usize = 512 * BLOCK_SIZE;
+const MIB: usize = 1024 * 1024;
+const BLOCK_SIZE: usize = 64 * 1024;
+const MAX_SOURCE: usize = 512 * MIB;
 const FRAME_HEADER: usize = 33;
 const FRAME_MAGIC: &[u8; 8] = b"FLSRC001";
 
@@ -28,9 +29,10 @@ impl SourceIdentity {
     pub(crate) fn sha256(&self) -> &[u8; 32] { &self.0.hash }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 enum Codec { Raw = 0, Zlib = 1 }
-enum Payload { Memory(Box<[u8]>), Spill { offset: u64, length: u32 } }
+enum Payload { Memory(Arc<[u8]>), Spill { offset: u64, length: u32 } }
+type MemoryBlocks = HashMap<(Codec, usize, [u8; 32]), Vec<Arc<[u8]>>>;
 struct Block { decoded_len: usize, hash: [u8; 32], codec: Codec, payload_len: usize, payload: Payload }
 struct Entry {
     identity: SourceIdentity,
@@ -59,7 +61,7 @@ pub(crate) struct SourceStore {
 }
 impl SourceStore {
     // Decoded bytes are hot duplicates; backing retains every history source.
-    pub(crate) fn new() -> Self { Self::with_limits(64 * BLOCK_SIZE, 64 * BLOCK_SIZE) }
+    pub(crate) fn new() -> Self { Self::with_limits(64 * MIB, 64 * MIB) }
     #[cfg(test)]
     pub(crate) fn with_test_limits(encoded_limit: usize, raw_limit: usize) -> Self {
         Self::with_limits(encoded_limit, raw_limit)
@@ -88,14 +90,35 @@ impl SourceStore {
     }
     pub(crate) fn usage(&self) -> StorageUsage {
         let entries = self.live();
+        let mut allocations = HashSet::new();
+        let mut encoded_resident_bytes = 0;
+        for entry in &entries {
+            for block in &entry.blocks {
+                if let Payload::Memory(bytes) = &block.payload {
+                    if allocations.insert(bytes.as_ptr()) { encoded_resident_bytes += bytes.len(); }
+                }
+            }
+        }
         StorageUsage {
             sources: entries.len(),
             spilled_sources: entries.iter().filter(|entry| entry.file.is_some()).count(),
             raw_cached_bytes: entries.iter().map(|entry| entry.cache.borrow().as_ref().map_or(0, |bytes| bytes.len())).sum(),
-            encoded_resident_bytes: entries.iter().flat_map(|entry| &entry.blocks).map(|block| match &block.payload {
-                Payload::Memory(bytes) => bytes.len(), Payload::Spill { .. } => 0,
-            }).sum(),
+            encoded_resident_bytes,
         }
+    }
+    fn memory_blocks(&self) -> MemoryBlocks {
+        // Request-local references only: closing the last source releases its
+        // backing without a separate pool retaining any source or payload.
+        let mut index = MemoryBlocks::new();
+        for entry in self.live() {
+            for block in &entry.blocks {
+                if let Payload::Memory(bytes) = &block.payload {
+                    let candidates = index.entry((block.codec, block.decoded_len, block.hash)).or_default();
+                    if !candidates.iter().any(|prior| Arc::ptr_eq(prior, bytes)) { candidates.push(bytes.clone()); }
+                }
+            }
+        }
+        index
     }
     fn spill_file(&self) -> io::Result<File> {
         #[cfg(test)]
@@ -106,6 +129,7 @@ impl SourceStore {
         validate_length(bytes.len())?;
         let identity = SourceIdentity(Arc::new(Identity { length: bytes.len(), hash: digest(&bytes), nonce: *uuid::Uuid::new_v4().as_bytes() }));
         let available = self.encoded_limit.saturating_sub(self.usage().encoded_resident_bytes);
+        let mut reusable = self.memory_blocks();
         let mut blocks: Vec<Block> = Vec::with_capacity(bytes.len().div_ceil(BLOCK_SIZE));
         let mut resident = 0usize;
         let mut file: Option<File> = None;
@@ -116,19 +140,34 @@ impl SourceStore {
             let (codec, payload) = if encoded.len().checked_add(256).is_some_and(|n| n < raw.len()) {
                 (Codec::Zlib, encoded.into_boxed_slice())
             } else { (Codec::Raw, raw.to_vec().into_boxed_slice()) };
-            if file.is_none() && payload.len() > available.saturating_sub(resident) {
+            let key = (codec, raw.len(), digest(raw));
+            let shared = if file.is_none() {
+                reusable.get(&key).and_then(|candidates| candidates.iter()
+                    .find(|prior| prior.as_ref() == payload.as_ref())).cloned()
+            } else { None };
+            let additional = if shared.is_some() { 0 } else { payload.len() };
+            if file.is_none() && additional > available.saturating_sub(resident) {
                 let mut spill = self.spill_file()?;
                 for (index, block) in blocks.iter_mut().enumerate() {
                     let Payload::Memory(prior) = &block.payload else { return Err(invalid("Retained source backing is inconsistent")); };
                     block.payload = spill_block(&mut spill, &identity, index, block, prior)?;
                 }
                 file = Some(spill);
+                // Every frame remains bound to this source's own nonce/ordinal.
+                // No shared encrypted spill or temporary payload pool survives.
+                reusable.clear();
             }
-            let mut block = Block { decoded_len: raw.len(), hash: digest(raw), codec,
-                                    payload_len: payload.len(), payload: Payload::Memory(Box::new([])) };
+            let mut block = Block { decoded_len: raw.len(), hash: key.2, codec,
+                                    payload_len: payload.len(), payload: Payload::Memory(Arc::from([])) };
             block.payload = if let Some(spill) = &mut file {
                 spill_block(spill, &identity, blocks.len(), &block, &payload)?
-            } else { resident += payload.len(); Payload::Memory(payload) };
+            } else if let Some(shared) = shared { Payload::Memory(shared) }
+            else {
+                resident += payload.len();
+                let owned: Arc<[u8]> = payload.into();
+                reusable.entry(key).or_default().push(owned.clone());
+                Payload::Memory(owned)
+            };
             blocks.push(block);
         }
         let file_len = if let Some(spill) = &mut file { spill.flush()?; spill.metadata()?.len() } else { 0 };

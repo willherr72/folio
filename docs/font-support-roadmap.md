@@ -18,9 +18,20 @@ The same chooser provides an explicit substitute for eligible existing text. Sel
 
 ## Existing embedded and subset fonts — v0.9.0
 
-Horizontal Latin runs with reliable Unicode mappings can reuse verified embedded TrueType programs. Folio inspects PDF character encoding, glyph IDs and widths, then proves the requested replacement can use the existing font. Supported simple subsets and Type0 Identity-H CIDFontType2 resources retain their original size, color and baseline. Save/reopen geometry and pixel checks protect the surrounding content.
+Current development source extends verified embedded-font editing from Latin to the same covered unshaped BMP Greek, Cyrillic, punctuation and symbols used by imported fonts. This applies to single runs, groups, paragraphs and reusable objects, including saved re-editing. The qualified local 0.45 portable package includes this support. Native component validation and fresh extracted desktop/CLI/MCP acceptance passed on authored fixtures; broader producer and commercial-parity acceptance remains open. Reliable Unicode mappings remain mandatory. Folio inspects PDF character encoding, glyph IDs and widths, then proves the requested replacement can use the existing font. Supported simple subsets and Type0 Identity-H CIDFontType2 resources retain their original size, color and baseline. Save/reopen geometry and pixel checks protect the surrounding content.
 
-A subset may omit needed letters. The editor identifies the missing character and keeps your draft. Choose **Choose substitute font…**, preview an installed or imported full font, choose **Apply font**, then **Apply changes**. The new source embeds that font and its Unicode mapping. There is no silent fallback. Missing or ambiguous mappings, multi-character ligatures, unsupported font programs and unsafe layouts remain rejected; a font chooser cannot reconstruct absent source meaning.
+A subset may omit needed letters. The editor identifies the missing character and keeps your draft. Choose **Choose substitute font…**, preview an installed or imported full font, choose **Apply font**, then **Apply changes**. The new source embeds that font and its Unicode mapping. There is no silent fallback. Current development source supports bounded source-bound ligatures in eligible CID TrueType fonts when their physical glyph and Unicode mappings are proved; see the [source-font editing status](source-font-editing-status.md). Missing or ambiguous mappings, unsupported font programs and unsafe layouts remain rejected; a font chooser cannot reconstruct absent source meaning.
+
+## Existing CFF source fonts — included in the qualified local package
+
+The 0.46 development source adds existing CFF source-font editing. It reuses
+verified original Type1C/CIDFontType0C and static OpenType CFF1 programs through
+the existing text, paragraph and reusable-object transactions. Corrected source
+and candidate build/runtime acceptance passed. Portable integration was qualified
+in 0.46 and remains included in selected 0.50 and the separate reviewed 0.52 package.
+The 0.45 portable package predates this addition. This does not enable CFF
+font import into the separate installed/imported-font registry. See the
+[CFF development status](source-cff-status.md) for scope and remaining gates.
 
 ## Complex scripts and positioned text
 

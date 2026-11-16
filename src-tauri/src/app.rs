@@ -237,9 +237,10 @@ async fn open_pdf(engine: State<'_, PdfEngine>) -> Result<Option<DocumentInfo>, 
 }
 
 #[tauri::command]
-async fn begin_open_pdf(engine:State<'_,PdfEngine>)->Result<Option<crate::OpenOutcome>,String> {
+async fn begin_open_pdf(window:tauri::Window,engine:State<'_,PdfEngine>)->Result<Option<crate::OpenOutcome>,String> {
     let engine=engine.inner().clone();
-    on_worker(move||rfd::FileDialog::new().set_title("Open a PDF").add_filter("PDF documents",&["pdf"]).pick_file()
+    let dialog=rfd::FileDialog::new().set_parent(&window).set_title("Open a PDF").add_filter("PDF documents",&["pdf"]);
+    on_worker(move||dialog.pick_file()
         .map(|path|engine.begin_open_document(path)).transpose()).await
 }
 #[tauri::command]
@@ -301,6 +302,16 @@ async fn render_page(
 }
 
 #[tauri::command]
+async fn page_reading_text(
+    engine: State<'_, PdfEngine>,
+    source_id: String,
+    page_index: usize,
+) -> Result<String, String> {
+    let engine = engine.inner().clone();
+    on_worker(move || engine.page_reading_text(&source_id, page_index)).await
+}
+
+#[tauri::command]
 async fn page_text(
     engine: State<'_, PdfEngine>,
     source_id: String,
@@ -311,8 +322,8 @@ async fn page_text(
 }
 
 #[tauri::command]
-async fn search_page(engine:State<'_,PdfEngine>,source_id:String,page_index:usize,query:String)->Result<crate::PageSearchResult,String> {
-    let engine=engine.inner().clone();on_worker(move||engine.search_page(&source_id,page_index,&query)).await
+async fn search_page(engine:State<'_,PdfEngine>,source_id:String,page_index:usize,query:String,options:Option<crate::PageSearchOptions>)->Result<crate::PageSearchResult,String> {
+    let engine=engine.inner().clone();on_worker(move||engine.search_page_with_options(&source_id,page_index,&query,options.unwrap_or_default())).await
 }
 
 #[tauri::command]
@@ -614,9 +625,10 @@ async fn print_pdf(
         .map_err(|e| format!("Print task failed: {e}"))?
 }
 #[tauri::command]
-async fn close_document(host: State<'_, crate::redaction_host::RedactionHost>, source_id: String) -> Result<(), String> {
+async fn close_document(host: State<'_, crate::redaction_host::RedactionHost>,replacement:State<'_,crate::workspace_replacement_host::WorkspaceReplacementHost>, source_id: String) -> Result<(), String> {
     let host = host.inner().clone();
-    tauri::async_runtime::spawn_blocking(move || host.close_document(&source_id))
+    let replacement=replacement.inner().clone();
+    tauri::async_runtime::spawn_blocking(move || {host.close_document(&source_id)?;replacement.forget_document(&source_id);Ok(())})
         .await.map_err(|error| format!("Background PDF task failed: {error}"))?
 }
 
@@ -651,7 +663,7 @@ fn engine_path(app: &tauri::App) -> Result<PathBuf, Box<dyn std::error::Error>> 
     })
 }
 
-pub fn run() {
+pub fn run(context: tauri::Context<tauri::Wry>) {
     let result = tauri::Builder::default()
         .setup(|app| {
             let engine = PdfEngine::start(engine_path(app)?)?;
@@ -661,6 +673,9 @@ pub fn run() {
                 text_removal.register_window(label).map_err(std::io::Error::other)?;
             }
             app.manage(text_removal);
+            let replacement=crate::workspace_replacement_host::WorkspaceReplacementHost::new(engine.clone());
+            for label in app.webview_windows().keys(){replacement.register_window(label).map_err(std::io::Error::other)?;}
+            app.manage(replacement);
             app.manage(crate::image_export_commands::ImageExportJobs::default());
             app.manage(crate::pdf_split_commands::PdfSplitJobs::default());
             app.manage(crate::text_export_commands::TextExportJobs::default());
@@ -676,6 +691,7 @@ pub fn run() {
             Ok(())
         })
         .on_window_event(|window,event|{
+            if matches!(event,tauri::WindowEvent::Destroyed){if let Some(host)=window.try_state::<crate::workspace_replacement_host::WorkspaceReplacementHost>(){if let Some(owned)=host.detach(window.label()){tauri::async_runtime::spawn_blocking(move||owned.cleanup());}}}
             if matches!(event,tauri::WindowEvent::Destroyed) {
                 if let Some(host)=window.try_state::<crate::redaction_host::RedactionHost>() {
                     if let Some(owned)=host.detach(window.label()) {
@@ -687,6 +703,12 @@ pub fn run() {
             if matches!(event,tauri::WindowEvent::Destroyed){if let Some(jobs)=window.try_state::<crate::pdf_split_commands::PdfSplitJobs>(){jobs.abandon(window.label());}if let Some(jobs)=window.try_state::<crate::text_export_commands::TextExportJobs>(){jobs.abandon(window.label());}if let Some(jobs)=window.try_state::<crate::image_export_commands::ImageExportJobs>(){jobs.abandon(window.label());}}
         })
         .invoke_handler(tauri::generate_handler![
+            crate::workspace_replacement_commands::begin_workspace_replacement,
+            crate::workspace_replacement_commands::plan_workspace_replacement,
+            crate::workspace_replacement_commands::preview_workspace_replacement,
+            crate::workspace_replacement_commands::apply_workspace_replacement,
+            crate::workspace_replacement_commands::cancel_workspace_replacement,
+            crate::workspace_replacement_commands::release_workspace_replacement,
             inspect_document_properties,
             crate::redaction_commands::begin_text_removal_session,
             crate::redaction_commands::prepare_text_removal_source,
@@ -733,6 +755,7 @@ pub fn run() {
             release_font,
             render_page,
             page_text,
+            page_reading_text,
             list_text_runs,
             list_occurrence_text_runs,
             inspect_occurrence_text_paragraph,
@@ -797,7 +820,7 @@ pub fn run() {
             clear_recovery,
             print_pdf
         ])
-        .run(tauri::generate_context!());
+        .run(context);
     if let Err(error) = result {
         eprintln!("Folio could not start: {error}");
         rfd::MessageDialog::new()

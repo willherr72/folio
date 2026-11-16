@@ -2,22 +2,15 @@
 //! Unicode equivalence is insufficient: alternate glyph names can paint differently.
 use lopdf::{Document, Object};
 
-fn ascii_glyph(code: usize) -> Option<&'static [u8]> {
-    const NAMES: [&[u8]; 95] = [
-        b"space", b"exclam", b"quotedbl", b"numbersign", b"dollar", b"percent",
-        b"ampersand", b"quotesingle", b"parenleft", b"parenright", b"asterisk",
-        b"plus", b"comma", b"hyphen", b"period", b"slash", b"zero", b"one",
-        b"two", b"three", b"four", b"five", b"six", b"seven", b"eight", b"nine",
-        b"colon", b"semicolon", b"less", b"equal", b"greater", b"question", b"at",
-        b"A", b"B", b"C", b"D", b"E", b"F", b"G", b"H", b"I", b"J", b"K", b"L",
-        b"M", b"N", b"O", b"P", b"Q", b"R", b"S", b"T", b"U", b"V", b"W", b"X",
-        b"Y", b"Z", b"bracketleft", b"backslash", b"bracketright", b"asciicircum",
-        b"underscore", b"grave", b"a", b"b", b"c", b"d", b"e", b"f", b"g", b"h",
-        b"i", b"j", b"k", b"l", b"m", b"n", b"o", b"p", b"q", b"r", b"s", b"t",
-        b"u", b"v", b"w", b"x", b"y", b"z", b"braceleft", b"bar", b"braceright",
-        b"asciitilde",
-    ];
-    NAMES.get(code.checked_sub(32)?).copied()
+fn nominal_glyph(base: &[u8], code: usize) -> Option<&'static [u8]> {
+    // Literal resource equivalence is separate from per-run source-byte proof.
+    if !(32..=255).contains(&code) { return None; }
+    let table = match base {
+        b"WinAnsiEncoding" => &super::encoding_names::WIN_ANSI_ENCODING,
+        b"MacRomanEncoding" => &super::encoding_names::MAC_ROMAN_ENCODING,
+        _ => return None,
+    };
+    table[code].map(str::as_bytes)
 }
 
 /// A dictionary is accepted only with an explicit supported base and no effective
@@ -52,7 +45,7 @@ pub(super) fn name<'a>(pdf: &'a Document, value: &'a Object) -> Option<&'a [u8]>
                 }
                 Object::Name(glyph) => {
                     let code = cursor?;
-                    if ascii_glyph(code)? != glyph || *assigned.get(code)? { return None; }
+                    if nominal_glyph(base, code)? != glyph || *assigned.get(code)? { return None; }
                     assigned[code] = true;
                     cursor = Some(code + 1);
                     awaiting_glyph = false;
@@ -77,7 +70,7 @@ mod tests {
         let pdf = Document::new();
         for base in ["WinAnsiEncoding", "MacRomanEncoding"] {
             let mut differences = vec![32.into()];
-            differences.extend((32..=126).map(|code| Object::Name(ascii_glyph(code).unwrap().to_vec())));
+            differences.extend((32..=126).map(|code| Object::Name(nominal_glyph(base.as_bytes(), code).unwrap().to_vec())));
             let value = encoding(base, differences);
             assert_eq!(name(&pdf, &value), Some(base.as_bytes()));
             assert_eq!(name(&pdf, &encoding(base, vec![])), Some(base.as_bytes()));
@@ -92,7 +85,7 @@ mod tests {
             vec![65.into(), Object::Name(b"Z".to_vec())],
             vec![65.into(), Object::Name(b"uni0041".to_vec())],
             vec![32.into(), Object::Name(b"nbspace".to_vec())],
-            vec![127.into(), Object::Name(b"bullet".to_vec())],
+            vec![127.into(), Object::Name(b"Euro".to_vec())],
             vec![65.into()], vec![65.into(), 66.into(), Object::Name(b"B".to_vec())],
             vec![Object::Name(b"A".to_vec())], vec![(-1).into()], vec![256.into()],
             vec![Object::Real(65.), Object::Name(b"A".to_vec())],
@@ -106,6 +99,34 @@ mod tests {
             dictionary! {"BaseEncoding"=>"WinAnsiEncoding","Differences"=>Object::Null}.into(),
             dictionary! {"BaseEncoding"=>"WinAnsiEncoding","Type"=>"Font"}.into(),
         ] { assert!(name(&pdf, &value).is_none()); }
+    }
+    #[test]
+    fn literal_accented_names_retain_each_explicit_base() {
+        let pdf = Document::new();
+        for (base, code, glyph) in [
+            ("WinAnsiEncoding", 233, "eacute"),
+            ("WinAnsiEncoding", 127, "bullet"),
+            ("WinAnsiEncoding", 128, "Euro"),
+            ("WinAnsiEncoding", 201, "Eacute"),
+            ("MacRomanEncoding", 142, "eacute"),
+            ("MacRomanEncoding", 128, "Adieresis"),
+            ("MacRomanEncoding", 174, "AE"),
+        ] {
+            let value = encoding(base, vec![code.into(), Object::Name(glyph.as_bytes().to_vec())]);
+            assert_eq!(name(&pdf, &value), Some(base.as_bytes()), "{base}/{code}/{glyph}");
+        }
+    }
+    #[test]
+    fn accented_names_do_not_authorize_wrong_base_unicode_aliases_or_duplicates() {
+        let pdf = Document::new();
+        for (base, values) in [
+            ("WinAnsiEncoding", vec![142.into(), Object::Name(b"eacute".to_vec())]),
+            ("MacRomanEncoding", vec![233.into(), Object::Name(b"eacute".to_vec())]),
+            ("WinAnsiEncoding", vec![233.into(), Object::Name(b"uni00E9".to_vec())]),
+            ("WinAnsiEncoding", vec![233.into(), Object::Name(b"egrave".to_vec())]),
+            ("WinAnsiEncoding", vec![233.into(), Object::Name(b"eacute".to_vec()), 233.into(), Object::Name(b"eacute".to_vec())]),
+            ("MacRomanEncoding", vec![240.into(), Object::Name(b"uniF8FF".to_vec())]),
+        ] { assert!(name(&pdf, &encoding(base, values)).is_none(), "{base}"); }
     }
     #[test]
     fn indirect_members_are_bounded_and_source_objects_are_unchanged() {

@@ -1,3 +1,475 @@
+Reviewed Folio 0.56 development integration - 2026-11-16: compact reading and commit-ready Copy passed 23 actual extracted editing/automation/forms/OCR/page/composition stages plus eight alias calls. Original full105-edit/100Undo/100Redo/save/reopen workload passed all300glyph pages/600RGB comparisons/eightcorruptioncontrols. Lifetime job commitment1010.6796875MiB<unchanged1024MiB, original8GiBoperationalcap, finaljobempty; finite host commitment, not leak/resident/physical8GB acceptance. Freshfrontend1805/252; native3073/32 retains opt0library reuse and pre-version optimized integration/bin/doc qualifications. Solefreshreview approves developmentmerge, one width-QA validation minor deferred. Targeted Git attributes preserve all288pinned members on Windows checkout. [Completion and dispositions](../artifacts/portable-056-20261116/completion.json). Selected0.50/olderpackages/workspace preserved; broad goal active.
+
+Reviewed compact reading source milestone — 2026-11-16: exact string-only inactive reading and commit-ready Copy passed fresh 1,805/252 frontend verification and the normal optimized GUI/full 105-edit/100-Undo/100-Redo/save/reopen workload. All 300 saved pages, 600 independent rasters and eight corruption controls passed; output PDF bytes equal the prior audited output. The exact original light observer recorded 996.5390625 MiB lifetime job commitment, below the unchanged 1,024 MiB target. This finite workload now passes; broader resource/producer/physical-input/printing/accessibility/parity gates remain open. Native component results 1,759/11 library opt0 correctness plus 82/0 affected optimized integration are exactly qualified after a single frontend Copy layout-effect correction. First runtime failure and runner-abort evidence are preserved; no workload weakening. Fresh review accepted the scoped implementation and evidence, deferring one inherited rich-provider cache edge case. [Completion and dispositions](../artifacts/compact-reading-data-20261115/completion.json). Broad goal active; separate GUI, preserved packages/selected launcher.
+
+Earlier reviewed source allocation improvement — 2026-11-15: inactive uncropped reading text now defers selection-geometry allocation until needed. The regression first observed 54 unnecessary coordinate reads and now observes zero; cropped coincident visibility and selection/copy stay intact. Fresh frontend passed 1,795 tests/249 files. A normal optimized separate GUI completed the unchanged 105-edit/100-Undo/100-Redo workload with all 300 saved pages and 600 independent raster checks passing. Saved PDF bytes match the baseline exactly. Its original-observer peak was **1,025.34765625 MiB**, an observed 19.08984375 MiB reduction from the original 0.55 run, but **still 1.34765625 MiB above the unchanged 1,024 MiB target**. Source improvement is verified; full resource acceptance remains open. [Completion](../artifacts/editing-memory-attribution-20261115/completion.json) retains profile/reuse meanings, finite comparison limits and the deferred diagnostic exit-check minor. No portable or launcher promotion; the broad goal continues.
+
+Earlier resource finding — 2026-11-15: unchanged packaged **Folio 0.55** completed 105 text edits, 100 Undo, 100 Redo, save/reopen, and exact independent glyph and 72/144-dpi checks on all 300 saved pages. Validated Windows job accounting retained a **1,044.4375 MiB** tree commitment peak, exceeding the fixed 1,024 MiB lifetime target by 20.4375 MiB. The older after-edit samples passed, but do not qualify this peak. Observation and fidelity passed; **memory quality remains failed/open**. The workload and target remain intact. No allocation root cause or product correction is established. The fresh review found no blocking observation issue; one accounting-validator hardening minor is deferred. [Observation and limits](../artifacts/packaged-memory-highwater-20261115/completion.json). The explicit 8 GiB job cap, pre-association setup, resident peaks, leak freedom, physical 8 GB hardware, broader compatibility/input/printing/accessibility and parity remain bounded or unqualified. The broad goal continues.
+
+Completed development integration — 2026-11-15: **Folio 0.55.0-dev.1** packages the reviewed source-font and paragraph improvements with complete OCR, automation, examples and licenses. Normal GUI/default CLI, 1,754 package files, 26 renderer resources, 12 offline OCR assets and 567 dependency records passed verified ZIP/outside extraction. Fresh frontend passed 1,793 tests/249 files; all 20 declared extracted runtime stages and eight mixed-alias calls passed. Native 3,071/32 is composed pre-version library opt0 correctness (1,759/11), fresh full optimized integration/bin coverage (1,312/21), and corrected documentation (0/0), not fresh 0.55 native tests. The review's Important auditor-preservation finding was corrected with six exact recorded modules and 15 passing component controls. The live 0.54 checkpoint link was fixed. Finite historical integrity, relocation and archive-only checks passed. [Completion](../artifacts/portable-055-20261115/completion.json) and [review dispositions](../artifacts/portable-055-20261115/review/dispositions.json) retain failures, profiles, scope and limits. Historical resource/long-history workloads were not freshly rerun. Physical input/clipboard/IME, printing, accessibility, broad compatibility, continuous memory/leaks, 8 GB hardware and commercial parity remain open. The broad goal continues; selected 0.50 and older packages are preserved.
+
+Current completed milestone — 2026-11-15: source-bound accent clusters. Original-font single/group/shared text and styled paragraphs now preserve exact decomposed Unicode over one proved glyph. Corrected mixed intrinsic-alias rejection and desktop fixture validation. Fresh checks: 1,759 library tests passed (11 ignored; Folio opt0 correctness), 341 tests across 35 ordinary optimized integration targets passed (3 ignored), and 1,793 frontend tests across 249 files passed. The normal optimized GUI/CLI build, four MCP sessions and four Windows workflows passed, with 100 independently audited saved PDFs and eight actual corruption controls. Source `1df5fdb303f78978325620a1d66c4c7ffde3216628468de5f74c0dc84dd8ad82`. [Completion](../artifacts/source-accent-clusters-20261115/completion.json). General shaping/imported-font combining, legacy scalar paragraph support, physical keyboard/IME, printing, broad producer/performance/resource acceptance and commercial parity remain open. Existing portable packages/selected launcher unchanged.
+
+Completed source milestone — 2026-11-15: **direct paragraph Preview now fits
+edited text automatically** by default, preserving fonts and source baseline,
+with explicit fixed-area opt-out. Fitted geometry belongs to the content edit
+across caret-only formatting, Undo/Redo and saved re-editing. Provisional browser
+input invalidates stale geometry without losing entered text.
+
+The sole fresh review found two Important interleavings; both were reproduced
+and corrected in one pass. Current verification passed 1,793 frontend tests/249
+files, production typecheck and normal optimized build. Six actual Windows
+workflows and 12 saved PDFs passed source-authored full-page 144-dpi, text/order,
+font/program/width and glyph-code checks; three real corruptions were rejected.
+Three actual native fit replies were delayed without altering response bytes to
+check composition, noncancelable replacement and future-typing history. Native
+checks are qualified reuse by exact backend/shared equality, retaining the CFF
+component's recorded profiles rather than fresh native execution.
+
+[Completion and limits](../artifacts/paragraph-preview-fit-20261115/completion.json)
+and [review](../artifacts/paragraph-preview-fit-20261115/review/review.md) retain
+failed harness attempts, correction evidence and scope. This source includes the
+reviewed [CFF ligature milestone](../artifacts/cff-source-ligatures-20261115/completion.json).
+Prior packages and the selected launcher remain unchanged. Physical input/IME,
+clipboard, printing, wider compatibility and sustained resources remain open;
+the broad Adobe/Foxit usefulness and quality goal continues.
+
+Completed source compatibility component — 2026-11-15: exact redundant
+WinAnsi/MacRoman glyph assignments now retain named-base eligibility, including
+accented names and unused nominal bullet mappings. Actual glyph names are checked
+against the existing pinned tables; source font, Unicode, width, placement and
+appearance proofs remain. No font substitution or source-encoding rewrite is
+introduced. Dictionary source-byte behavior matches its equivalent named base.
+
+The complete library passed 1,749 tests with 11 recorded skips under the Folio
+opt0 correctness profile. Ten ordinary optimized integration targets passed all
+73 tests; fresh frontend passed 1,747 tests/246 files. Forty-five native saved
+pairs matched exact source-authored text/font/encoding/pixel references; seven
+actual corruptions were rejected. The compiled CLI passed 38 calls across seven
+positive and five refused-font cases.
+
+A normal optimized Windows candidate passed seven real desktop workflows and
+14 independently audited saved PDFs, covering direct and shared text, typed
+paragraph transfer, fitting, Preview/Apply, Undo/Redo, save/reopen and restoration.
+Its bundled renderer load was verified and its owned process stopped. The sole
+fresh final review approved with no findings. [Completion](../artifacts/accented-equivalent-encoding-20261115/completion.json),
+[review](../artifacts/accented-equivalent-encoding-20261115/review/review.md), and
+[desktop candidate](../artifacts/accented-encoding-desktop-20261115/build-1/candidate/Folio.exe)
+record the exact scope. Existing portable packages and the selected launcher are
+unchanged. Broad producer/reader coverage, physical input, printing, accessibility,
+continuous memory and commercial parity remain open; the broad goal continues.
+
+Verified finite diagnostic — 2026-11-15: repeated original-font CID edits
+passed 70 saved-file edits and 70 edits in one persistent MCP session, with 20
+exact whole-pixel restorations in each chain. The saved-file resource counts
+stayed fixed after the first selected-resource adaptation. The MCP run completed
+565 requests, explicitly discarded used previews and closed old document IDs,
+retaining two live documents and no previews after each edit. The automation
+guide now includes that cleanup sequence so repeat clients avoid the intended
+eight-preview limit.
+
+The strengthened edge-by-edge auditor rechecked 142 saved steps and rejected
+five actual metric/content/geometry corruptions; two positive clones passed.
+A separate 70-edit last-piece run retains its narrower scope. Two tested editing
+histories produced different private font identities; no collision or product
+failure was demonstrated. One fresh final review found no Important defects.
+[Qualification](../artifacts/cid-edit-lifetimes-20261115/qualification.json) and
+[review](../artifacts/cid-edit-lifetimes-20261115/review/review.md) record scope,
+failed harness attempts and exact evidence. Supervisor samples between requests
+do not qualify worker peaks, GUI memory or leak freedom. This diagnostic changed
+no production behavior or package; completed 0.54 and the selected launcher remain
+unchanged. The broad editing compatibility and quality goal continues.
+
+Completed separate development portable — 2026-11-15: **Folio 0.54.0-dev.1**
+integrates the two reviewed CID/reader source fixes. Normal optimized builds,
+verified ZIP/outside extraction and all 1,742 package files passed. Fresh frontend
+passed 1,747 tests/246 files. The actual extracted matrix passed 13 CLI calls,
+17 MCP requests and four Windows workflows, including older saved-CID re-edit,
+shared-text preservation, detached reader-copy data, tagged paragraph/font edits
+and offline OCR. Independent checks covered actual outputs and a nonempty tag
+graph; all GUI renderer modules came from the extracted package, and owned
+processes stopped. The final fresh integration review found no findings.
+
+[Completion](../artifacts/portable-054-20261115/completion.json) and
+[review/dispositions](../artifacts/portable-054-20261115/review/disposition.json)
+retain native composite/profile/32-ignore meanings and representative runtime
+limits. No fresh 0.54 native or full historical 0.53 matrix run, physical clipboard,
+printing/accessibility or continuous memory qualification is claimed. Archive
+build-time documentation is preserved; live status records terminal acceptance.
+Selected launcher and older packages remain unchanged. The broad quality goal
+continues beyond this local development integration.
+
+Verified source component — 2026-11-15: **copied page boundaries** no longer
+merge adjacent words from selected mounted PDF pages. Exact per-page whitespace
+and scalar selection remain; duplicate occurrences count as separate pages,
+empty/hidden-only fragments add no separator, and permission/viewport ownership
+is preserved. Focused RED9failed/9passed became GREEN18passed; the full frontend
+passed1,747tests/246files. The normal optimized Windows candidate passed eight
+exact detached-copy assertions and one restricted-source assertion, using only
+new authored public PDFs and actual DOM selection. Originals are unchanged and
+the owned app stopped; no system clipboard operation was performed.
+
+The sole final review found no findings. Native/shared inputs exactly match the
+completed CID qualification and retain its composite/profile/32-ignore meanings;
+there is no fresh reader-copy native suite or physical/virtualized-page guarantee.
+[Completion](../artifacts/reader-copy-pages-20261115/completion.json),
+[review](../artifacts/reader-copy-pages-20261115/review/review.md), and
+[dispositions](../artifacts/reader-copy-pages-20261115/review/disposition.json)
+record exact scope. No package/version/launcher promotion. Next reconcile the
+reviewed CID and reader source fixes for a separate development integration;
+the broad quality goal remains active. Earlier records below retain their scope.
+
+Verified source component — 2026-11-15: **CID original-font deletion and re-edit**
+now preserve dependent/shared text through a selected private font resource.
+The current optimized Windows/CLI candidate passed edit, Undo/Redo, Save, reopen,
+restore and retained-invalid-draft checks. Three desktop outputs and 15 native
+saved pairs have independent font/text/paint/pixel checks. A final review found
+no blocking product defect; its selected-spacing audit gap was reproduced with
+an actual balanced TJ corruption, then corrected for the newly admitted root
+witness. A stale module comment remains a deferred minor.
+
+Fresh frontend passed 1,735 tests/245 files. The native qualification combines
+complete 1,747/11 library correctness with 1,296/21 optimized integration results
+across 150 targets after rerunning the sole corrected 38-case test target. The
+raw full run retains its old-refusal failure; this is explicitly a same-production
+composite rather than a fresh monolithic all-green run. [Completion](../artifacts/cid-dependent-cursor-20261115/completion.json),
+[review and limits](../artifacts/cid-dependent-cursor-20261115/review/review.md),
+and [dispositions](../artifacts/cid-dependent-cursor-20261115/review/disposition.json)
+record exact scope, skipped cases and one evidence correction. No portable,
+version, selected launcher or clipboard changes. Next: page boundaries in reader
+copy; the broad quality goal remains active. Earlier package records below retain
+their original scope.
+
+Completed separate development portable — 2026-11-15: **Folio 0.53.0-dev.1**
+includes the reviewed workspace Find/Replace and atomic CLI/MCP replacement.
+The actual extracted binaries passed retained editing/forms/OCR/page-composition
+coverage and the new replacement workflows. Independent saved-output checks cover
+13 replacement PDFs/28 pages; Cancel, exact Undo/Redo and native reply cancellation
+were checked on the compiled desktop app. The history workload passed 105 edits,
+100 Undo/100 Redo and 300 saved-page checks under the original sampled memory limits.
+
+Fresh frontend evidence is 1,735 tests/245 files. Native package evidence retains
+193/1 current ordinary optimized integration and 1,745/11 prior library correctness
+as distinct scopes; the latter predates the two-file Save correction. The reviewed
+8,534-member seal passed 58 final rejection controls plus relocated and archive-only
+verification. One post-review archive-representation correction passed 61 focused
+and seven standalone tests, preserving original review pins and failed attempts.
+[Completion and limits](../artifacts/portable-053-20261115/completion.json) and
+[final controls](../artifacts/portable-053-20261115/final-controls-1/result.json)
+bind the exact package. Selected 0.50, separate 0.51/0.52 and the launcher are
+unchanged. Physical clipboard/IME, broader compatibility/performance and commercial
+parity remain open; the broad goal remains active. Earlier entries below retain
+their historical scope and build-time status.
+
+Verified development component — 2026-11-14: document Find now supports
+**Match case** and **Whole words**, shared Unicode folding, per-tab options and
+wrapped keyboard navigation. A final review identified an inherited partial-result
+tab-return jump. Two delayed protected-search regressions reproduced the wrong
+scroll and passed after one fix; the complete frontend passed 1,704 tests/240
+files. The corrected normal optimized Windows candidate passed 38 observations
+and 24 real native search replies, including a held second-page response with
+unchanged saved/partial/final scroll. The App regressions also assert that no
+reading-history records are added. Original PDFs are unchanged and
+the owned app stopped. [Completion](../artifacts/document-search-options-20261114/completion.json),
+[review](../artifacts/document-search-options-20261114/review/review.md),
+[checkpoint](../artifacts/document-search-options-20261114/checkpoint.json).
+Native results retain their narrower recorded profiles and qualified reuse after
+the frontend-only fix. This Find component is separate from the completed 0.52
+portable and selected 0.50; physical input and broader compatibility/performance
+remain open. [Find policy](document-find.md).
+
+Documentation reconciliation — 2026-11-14: the separate 0.52 package completed
+reviewed extracted acceptance, 50 final negative controls and standalone
+relocation/archive-only checks. Earlier entries below are historical stage
+records. [Current build status](development-build-status.md) distinguishes the
+selected 0.50, preserved 0.51, completed 0.52 and later source Find candidate.
+The earlier clipboard observation is historical; physical-input acceptance is
+still open, with no new clipboard probe or operation.
+
+Verified development component — 2026-11-13: **Find and Replace in the current
+paragraph** now supports literal text, Match case, Whole words, wrapped
+Next/Previous navigation, and Replace/Replace all with one local Undo. It
+preserves surrounding styles and the original source-bound Preview/Apply route.
+Ctrl+F/Ctrl+H open the local panel from text; F3/Shift+F3 navigate while open.
+First Escape closes Find from paragraph controls; the next retains normal
+paragraph cancellation. Nested font dialogs retain their own Escape ownership.
+
+The single final review found two Important defects: rejected word/grapheme
+candidates hid later valid matches, and Escape from sibling controls could
+discard the paragraph draft. Both were reproduced and fixed in one TDD pass.
+Fresh corrected checks pass: 1,630 frontend tests / 234 files, 148 focused tests,
+normal optimized GUI with 26 exact resources, and a compiled Windows workflow
+covering both findings, mixed fonts/colors, local/document Undo/Redo, Cancel,
+760px controls and Preview/Apply/save/reopen. Independent text/style/line-baseline,
+footer-glyph and outside-fixed-mask pixel checks pass, with three actual
+corruptions rejected. The owned app was stopped. The maximum-size 4,096-match
+model case takes about 9ms in the retained single-host Node observation; this
+does not qualify general GUI latency or sustained resources.
+
+[Completion, scope decisions and costs](../artifacts/paragraph-find-20261113/component-completion.json),
+[final review](../artifacts/paragraph-find-20261113/review/review.md),
+[corrected source/evidence checkpoint](../artifacts/paragraph-find-20261113/post-review/checkpoint.json).
+This scope is the current styled paragraph, not whole-document replacement or
+universal language/producer/IME/accessibility certification. Native/shared inputs
+remain unchanged; no fresh native suite, CLI or portable is claimed. Selected
+0.50 remains unchanged, and the earlier real system Ctrl+V gate remains open.
+Next reconcile accepted frontend improvements for a separate development
+integration, then continue broader existing-text and sustained-resource quality.
+
+In-progress development component — 2026-11-13: multiline paste in existing-text
+editing now offers **Paste as paragraph**, preserving surrounding draft text,
+hard/blank lines, the captured caret, chosen font, and Undo. Single-line Apply
+is blocked while a paste is staged; Discard restores the original input selection.
+The final review's two Important findings were corrected in one TDD pass:
+font coverage uses the pasted replacement, and atomic styled transfer accepts
+valid final-size replacements without an oversized intermediate state.
+
+Fresh post-fix checks pass: 1,601 frontend tests across 232 files, 119 focused
+tests, a normal optimized GUI with all 26 unchanged resources, three authored
+saved/reopened PDF witnesses, and a 4096-byte transfer/refusal witness. Independent
+MuPDF/pypdf checks verify complete text, blank-line geometry, embedded font bytes,
+footer glyphs and unchanged pixels outside the fixed paragraph area; three actual
+corruption controls are rejected. The isolated owned app was stopped.
+
+**Acceptance remains incomplete:** system clipboard access returned error 5.
+Compiled WebView2 tests used constructed paste events and CDP keys; they do not
+prove real Ctrl+V or IME behavior. No clipboard contents were changed. The new
+paste code is not in the selected 0.50 portable. Native/shared inputs remain
+identical; no fresh native, CLI, portable, printing, security or sustained-resource
+qualification is claimed. The historical build2 source-summary discrepancy is
+deferred with an additive correction; the current build4 metadata is correct.
+[Post-fix qualification and open gate](../artifacts/paragraph-paste-20261113/post-review/qualification.json),
+[final review](../artifacts/paragraph-paste-20261113/review/review.md),
+[rulings and evidence](../.superpowers/sdd/2026-11-13-paragraph-paste/progress.md).
+
+Selected development portable — 2026-11-13: **Folio 0.50.0-dev.1** now
+includes the accepted desktop build-boundary improvement, CLI/MCP page
+organization, and editable multi-document composition. Protected-source launch
+credentials, close/Apply/re-edit workflows and native Windows output paths were
+checked on the actual extracted GUI/CLI binaries. The local launcher resolves to
+0.50 under PowerShell 5 and 7; selected 0.49's executable/checkpoint remain intact.
+No normal user app session was opened for this promotion.
+
+Fresh qualification includes 1,554 frontend tests across 230 files, the normal optimized
+GUI/default CLI build with 26 renderer resources, all 28 retained acceptance stages
+and 8 additional checks. The full 105-edit/100-Undo/100-Redo and 300 independent saved-page
+checks pass under unchanged 512 MiB native / 1 GiB tree sample limits. Native 1,596 passed / 11 ignored
+library correctness plus 120 ordinary optimized integration results are qualified
+prior current-component evidence through exact source and six version tokens;
+this is not a fresh 0.50 or all-project native run or a peak/leak guarantee.
+
+The one final packaging review identified two Important evidence defects:
+missing page-MCP export/witness bytes, and a missing join to accepted native-log
+pins. Both were reproduced and fixed in one pass; 67 helper tests pass. The 7,018
+indexed-file reviewed seal passes 33 corruption/omission checks, relocated-directory
+and archive-only verification. The initial incomplete candidate and failed tests
+are preserved. Build-time distribution documents retain their explicitly labeled
+status snapshot; this live record supplies the final selection state.
+
+[Reviewed checkpoint](../artifacts/portable-050-20261113/sealed/checkpoint.json),
+[review and fixes](../artifacts/portable-050-20261113/review/dispositions.json),
+[final controls](../artifacts/portable-050-20261113/final-controls-1/result.json),
+[local selection](../artifacts/portable-050-20261113/promotion-1/result.json).
+The broad goal stays active. Continue existing-text/paragraph usability and
+sustained-editing resource work. Broader producer/platform coverage, printing,
+signatures/accessibility, and the historical 0.46 OCR reopen timeout remain open;
+this development integration grants no public-release/commercial-parity approval.
+
+Verified development component — 2026-11-13: CLI/MCP now composes multiple PDFs
+into an editable private document or exclusive new export. Source identities
+preserve repeated-field sharing while independent files retain separate answers.
+Per-source launch credentials survive preview Apply and later edits after the
+original document closes; passwords stay out of tool arguments and result data.
+
+The single final review's two Important findings were reproduced and corrected
+in one TDD pass: owned plaintext parsing buffers now clear on every exit, and
+capture rejects observed source growth/truncation below the aggregate limit.
+Fresh corrected checks: 1,596 library passed / 11 ignored (Folio opt0, release
+dependencies), 120 tests across eleven ordinary optimized integration targets,
+normal optimized default CLI/custom-protocol GUI with 26 exact resources, 15
+independent saved-PDF witnesses, and 16 actual corruption controls. Exact-binary
+protected composition/chained editing, a valid 512KiB MCP frame, native Windows
+paths, and actual GUI fill/text-edit/save/reopen pass. Original failures and all
+review evidence are preserved; no second review was requested.
+
+[Completion and rulings](../artifacts/multi-document-automation-20261113/component-completion.json),
+[final review](../artifacts/multi-document-automation-20261113/review/review.md).
+One Minor guide contradiction is deferred to distribution-document reconciliation.
+This is authored Windows qualification, not every producer/platform, a fresh full
+frontend/all-integration run, process-wide secrecy, atomic filesystem capture,
+portable promotion or commercial parity. Native mixed-form-language/unsupported
+semantics/encryption refusals remain. Selected 0.49 and the broad goal stay active.
+Next reconcile distribution guidance and qualify the accumulated development
+components in a separate portable batch, then continue editor usability work.
+
+Verified development component — 2026-11-13: CLI/MCP page organization now
+selects, reorders, duplicates and rotates pages through the desktop native export
+engine. Private organized document IDs support continued text/form editing;
+exports create exclusive new PDFs. Exact-copy requests retain original bytes,
+while changed plans enforce native permissions and preserve supported PDF graphs.
+
+Complete library correctness: 1,576 passed / 11 ignored (Folio opt0 with release
+dependencies). Nine ordinary optimized integration targets: 99 passed. Normal
+optimized GUI/default CLI and 26 resources are bound to 12 independently checked
+saved PDFs and nine corruption controls. Actual Windows GUI edit/save/reopen and
+exact-candidate protected CLI/native-path MCP workflows pass. The original GUI
+harness failure is preserved; its corrected sequence reused the same binary.
+
+One final review found no blocking defect. Deferred evidence: independent link
+hitbox/destination coordinates and valid near-maximum-frame request IDs. This is
+local Windows qualification, not a fresh full frontend/all-integration run or a
+portable release. Selected0.49 remains unchanged; the broad goal stays active.
+[Completion](../artifacts/page-organization-automation-20261113/component-completion.json),
+[review and limits](../artifacts/page-organization-automation-20261113/review/review.md).
+Next design multi-input automation composition, including per-source passwords
+and cross-document field naming, before a separate portable qualification.
+
+Verified development component — 2026-11-13: desktop frontend assets now belong
+to the small GUI binary instead of the PDF engine library. The exact same
+generated-CSS change took 730.157 seconds before and 27.928 seconds afterward,
+with Cargo confirming exact engine-library reuse (hash, size and timestamp).
+The changed CSS rendered in the real app. Restoring the original assets took
+30.394 seconds; all original generated bytes are restored.
+
+Normal optimized GUI/default CLI builds, actual Windows text/paragraph/offline
+OCR workflows, seven independently checked saved PDFs and default CLI inspection
+of the GUI output pass. The single scoped review found no actionable defects;
+all 202 review pins matched. [Completion](../artifacts/desktop-build-boundary-20261113/component-completion.json),
+[review](../artifacts/desktop-build-boundary-20261113/review/review.md).
+Only two startup files changed. No new whole frontend/native suite is claimed.
+These are one-host warm-cache build measurements, not general application-speed,
+memory, other-platform or release/parity certification. Selected 0.49 remains
+unchanged. Next use the improved iteration loop for user-facing work, beginning
+with design of CLI/MCP page organization through the shared native export engine.
+
+OCR reopen investigation — 2026-11-13: the historical 0.46 thirty-second
+timeout remains unresolved. One retained optimized native engine completed 26
+opens; five fresh GUI profiles completed 31 native open calls, including three
+byte-identical original workflow replays on 0.46. None reproduced the timeout.
+The original failed evidence is preserved. Passive native timing, public response
+identity and owned-window capture are ready for a recurrence. These bounded
+single-host observations justify no product fix or universal reliability claim.
+[Evidence and limitations](../artifacts/ocr-reopen-phase-20261112/summary.json).
+Next measure and address the observed frontend/native build dependency coupling.
+
+Qualified local development package — 2026-11-12: **0.49.0-dev.1 is selected**.
+It delivers the precise numeric keyboard correction: Tab, Shift+Tab and
+programmatic focus replace the full exact draft, while pointer clicks preserve
+native caret placement. Fresh 1,554 frontend tests / 230 files, normal optimized
+GUI/default CLI, ZIP/outside-checkout extraction and all 28 runtime stages pass.
+Existing Unicode/CFF, forms, OCR and navigation audits pass, along with numeric
+keyboard, pointer, precision and minimum validation on the extracted app.
+
+The full 105-edit / 100-Undo / 100-Redo workflow and independent glyph/RGB checks
+of all 300 saved pages pass. After 105 edits, the recorded sample is 274,968,576
+native / 984,072,192 tree bytes, meeting unchanged 512 MiB / 1 GiB targets at the
+recorded natural scaling. These are selected single-host samples, not peaks,
+leak freedom or speed proof. Native 2,784/32 remains qualified prior evidence
+under its original profiles.
+
+The one final review found a mandatory nested-evidence gap. Five failing
+regressions reproduced it; 42 helper tests pass after correction, with original
+reviewed inputs and exact correction provenance retained. The 8,260-file seal,
+33 negative controls, relocation/archive-only checks and atomic local selection
+with PowerShell 5/7 resolution pass. Earlier 0.48 is preserved; the normal app
+was not automatically opened. [Completion](../artifacts/portable-049-20261112/component-completion.json),
+[review](../artifacts/portable-049-20261112/review/review.md),
+[checkpoint](../artifacts/portable-049-20261112/sealed/checkpoint.json).
+No public release, commit, merge or parity certification. The broad goal stays
+active: next investigate the earlier OCR reopen timeout with phase evidence and
+assess build turnaround through controlled measurement. Packaged docs remain
+snapshots from the build.
+
+Historical verified component — 2026-11-12: precise numeric fields restore full-value selection after keyboard focus expands the exact draft. Actual Windows Tab, Shift+Tab and bare programmatic focus replace rather than append digits; pointer clicks preserve native caret placement, focus/blur retains precision, and native minimum validation still disables invalid previews. The one review finding has RED/GREEN coverage;1,554frontend tests/230files, a normal optimized GUI and13actual Windows observations pass. [Component evidence](../artifacts/numeric-focus-20261112/component-completion.json) records the reporting-label reconciliation and scope. This component was subsequently integrated and qualified in portable049above.
+
+Historical qualified local development package — 2026-11-12: **0.48.0-dev.1 is preserved**.
+It delivers cancellation and native file-picker ownership, reduces retained decoded
+page images from 96 MiB to 32 MiB and removes only modal backdrop blur. Full render
+resolution, mounted/shared leases, two rendering slots, 60 entries, dimming, focus
+and all 100 history states remain intact. Cold revisits can render again.
+
+Fresh acceptance: **1,548 frontend tests / 230 files**, normal optimized GUI/CLI,
+and **27 actual extracted-package stages**. The 105-edit/100-Undo/100-Redo,
+save/reopen and independent 300-page RGB/glyph audit pass. The selected after105
+sample is 270,020,608 native / 965,029,888 tree bytes at natural DPR 1.5, below the
+unchanged 512 MiB / 1 GiB targets. This is not peak/leak/low-memory or speed proof.
+Native 2,784/32 is qualified prior reuse with original profiles; the accepted
+cancellation component's four optimized tests are separate evidence.
+
+One combined review found no demonstrated defects. The **8,193-member checkpoint**,
+**29 negative controls**, relocation and archive-only checks pass. Atomic local
+selection and PowerShell 5/7 ResolveOnly pass; earlier packages/failures remain.
+[Completion and decisions](../artifacts/portable-048-20261112/component-completion.json),
+[review](../artifacts/portable-048-20261112/review/review.md),
+[checkpoint](../artifacts/portable-048-20261112/sealed/checkpoint.json).
+The earlier OCR reopen timeout remains unresolved. Broader producer/display,
+printing, signatures, accessibility and Adobe/Foxit parity work remains active.
+No public release, commit, merge or push. Packaged docs are build-time snapshots;
+the current repository status is recorded here after qualification.
+
+---
+
+Historical component record — 2026-11-12: **cached-page render scheduling** is implemented and verified in a normal optimized GUI candidate. The shared cache starts at most two adapter renders, cancels queued work after its last viewer leaves, keeps shared/mounted images valid, preserves the60entry/96MiBidle LRU policy and isolates adapter namespaces. Native PNGs/SVG geometry and exports are unchanged. This limit does not cover standalone/composed preview APIs.
+
+Qualified combined local development package — 2026-11-12: **0.45.0-dev.1** is selected locally. It delivers the reviewed cached-page render queue through desktop, CLI and MCP: at most two cache requests in progress, with abandoned queued work cancelled. The preserved 0.44 package remains intact.
+
+Fresh acceptance passes **1,528 frontend tests / 228 files**, normal optimized GUI/CLI builds and all **19 extracted-package stages**. The original **2,747 native passes / 32 skips** remain qualified reuse with their original Folio-opt0 library correctness and optimized integration/bin profiles. Separate native/version/shared equality and reviewed-parent authority checks precede the exact five-file/six-token metadata transition.
+
+Actual extracted navigation stays within two outstanding renders and passes eight exact native/screen comparisons and three measurement/pixel corruption controls at natural DPR 1. The new package also passes 52 CLI calls, four MCP sessions, 28 independently audited Unicode saves, seven core text/paragraph/OCR saves, 82 saved form states, and all 300 saved pages after 105 edits / 100 Undo / 100 Redo. Eight history controls and owned-process/profile cleanup pass. The selected after105 sample is 240,766,976 native / 861,224,960 process-tree bytes, below the original 512 MiB / 1 GiB targets; these are discrete observations, not peak/leak or comparative-speed certification.
+
+The single final scoped review found no concrete findings or deferred minors. The **6,950-file checkpoint** passes **15 negative controls**, relocated verification and archive-only verification. Native Windows path-alias behavior has observed RED/GREEN regression evidence. PowerShell 5/7 selects the verified 0.45 executable without starting the normal app. No commit, merge, push or public release occurred.
+
+[Executable](../artifacts/Folio-v0.45.0-dev.1/Folio.exe), [ZIP](../artifacts/Folio-v0.45.0-dev.1-windows-x64.zip), [checkpoint](../artifacts/portable-045-20261112/sealed/checkpoint.json), [review](../artifacts/portable-045-20261112/review/review.md), [completion and rulings](../artifacts/portable-045-20261112/historical-completion.md). Checkpoint SHA-256 `61e574e6060752ce18c52f2d514919ad10624d46e91a40f4714b6d6aa2d7c3bd`; completion `f8a2e12255766fcc5483ad54fa7ad191d623c34dc654dfbd1255d520c7082dc4`. Packaged documents retain their integration-time snapshots; these repository status notes were updated after qualification.
+
+The concurrency guarantee covers the shared page-image cache. Other preview APIs, broader display/producer/font compatibility, sustained/peak and low-memory behavior, private-source resource workloads, physical printing, signatures, accessibility/clipboard and Adobe/Foxit parity remain open. Evidence verification retains third-party audit results rather than rerunning those auditors; independent MCP temporary-preview PNG fidelity is not certified. The broad goal remains active.
+
+---
+
+Integration-start record — 2026-11-12: **0.45.0-dev.1** combines the reviewed cached-page render queue with the existing desktop/CLI/MCP package. The accepted **0.44** launcher remains selected until fresh frontend, normal build, extracted navigation/editing/OCR/forms/history acceptance, final review and standalone evidence checks pass. Native results remain explicitly qualified reuse with original profiles. This is an integration record, not package acceptance.
+
+
+The observed hook baseline started80requests before any completed; corrected regression starts2anddispatchesonlyretainedpage79afterabandonment. Final fresh frontend1528/228/default5000ms/twoworkers passes after fixing the preserved close-source timing regression. Actual Windows/public300page/48trustedwheel navigation records213requests/peak7forreleased044and206/peak2forcandidate; all8native/screenRGBAcomparisons are exact,3measurement/pixel corruptions reject, and5text/paragraph PDFs pass independent/structure/history/reopen checks. No synthetic delays/forcedGC/DPR emulation; actualDPR1. Request totals are not a latency or percentage-speedup claim.
+
+One final scoped review found no actionable defects. [Completion and rulings](../artifacts/page-render-scheduling-20261111/historical-completion.md), [checkpoint](../artifacts/page-render-scheduling-20261111/checkpoint.json), [review](../artifacts/page-render-scheduling-20261111/review/review.md). CP56cf6483dee272ea0faa775363d4457603d87f51f73dc8fac70ce6bedeb5d0b7; completioneea0ba23361ec51e3e58b0dfaa1a1dc9d63f57a73cf61f195177995b2bed42cc. Native2747/32is qualified unchanged-native/shared reuse with original profiles; not fresh execution. The234file local component index references the preserved044authority; it does not claim archive-only reproduction or a new portable/CLI. **At this component’s completion, 044 remained selected; package integration followed in 0.45 above.**
+
+Broader sustained/peak memory, permanent-backend-stall recovery, fractional/alltransform/focus coverage, other rendering APIs/producers/hosts and commercial parity remain open. Earlier canvas display failures remain blocked; no display tolerance or memory budget was loosened. The broad goal remains active.
+
+---
+
+Qualified combined local development package — 2026-11-11: **0.44.0-dev.1** is selected locally. It delivers the reviewed Greek/Cyrillic existing-text component through desktop, CLI and MCP. Fresh 1,517 frontend tests / 226 files, normal optimized GUI/CLI builds and all 17 extracted acceptance stages pass. The 2,747 native passes / 32 skips are exact version-only qualified reuse: 1,556 Folio-opt0 library correctness and 1,191 optimized integration/bin passes across 139 targets.
+
+Actual extracted acceptance covers 52 CLI calls, four MCP sessions, 28 independently audited Unicode saved PDFs, three complete-page Undo comparisons, seven core text/paragraph/OCR saved PDFs, 82 saved form states, and all 300 saved pages after 105 edits / 100 Undo / 100 Redo. Eight history negative controls and owned cleanup pass. The selected after105 sample is 298,684,416 native / 787,931,136 process-tree bytes, below the original 512 MiB / 1 GiB targets; these are discrete samples, not peaks/leak/low-memory or general speed certification.
+
+One final scoped review approved the frozen integration. The 6,899-file checkpoint passes 13 negative controls, relocation and archive-only verification. The initial omission test targeted an unused duplicate preview instead of its required bound copy; the failed attempt is preserved, the corrected full control suite passes, and the original checkpoint/application bytes were unchanged. PowerShell 5/7 resolves the new target without launching the app; 0.43 remains preserved.
+
+[Executable](../artifacts/Folio-v0.44.0-dev.1/Folio.exe), [ZIP](../artifacts/Folio-v0.44.0-dev.1-windows-x64.zip), [checkpoint](../artifacts/portable-044-20261111/sealed/checkpoint.json), [review](../artifacts/portable-044-20261111/review/review.md), [completion and rulings](../artifacts/portable-044-20261111/historical-completion.md). CP a426ddefb2e5ed235f94f4cc7cca8819ea9941e24b89a2f55c82f4db9407e8e8; completion 8289ceeefd2e6c797d60cf5727f722502774881700b51cce8593d0ae181744e6. These repository notes were updated after qualification; packaged documents remain their integration-time snapshots.
+
+Broader producer/complex-script compatibility, sustained/peak resource behavior, private-source resource workloads, physical printing, signatures, installed clipboard/IME/accessibility and commercial parity remain open. MCP temporary preview PNG fidelity and reproducible external auditor execution from the evidence archive alone are not certified. The broader goal remains active.
+
+---
+
+Reviewed local component — 2026-11-11: **source-painted/scrolled List filling** is complete in the [development candidate](../artifacts/list-selection-proof-20261111/build-2/candidate/Folio.exe). It can fill, clear, save and re-edit proved selection backgrounds, including linked widgets, while keeping source frames. Ambiguous mixed paths, paint over text and unproved oversized row backgrounds refuse atomically. A lone visible row without observed band authority remains outside optional repair; legacy-supported paths stay unchanged. The qualified **0.41 portable and launcher remain unchanged**; combined package integration is separate.
+
+The single fresh source review found three consequential defects. All were reproduced on the normal CLI, covered by six observed failing regressions and corrected in one inline pass, with no re-review. Corrected evidence: **2,729 fresh native passes / 32 explicit skips** (1,556 library correctness tests with Folio at opt-level 0 and 1,173 optimized integration passes over 136 targets, plus docs), fresh normal GUI/CLI/frontend builds, exactly 25 resources and qualified reuse of 1,517 unchanged frontend tests / 226 files. The 36 CLI saves and 12 desktop saves/reopens pass independent checks on **60 widget appearances** at 72/144 dpi; four MCP discards and seven atomic refusals (custom artwork, precision boundaries and four review triggers) pass. Owned process/port and two QA profiles are cleaned.
+
+[Completion, scope decisions and costs](../artifacts/list-selection-proof-20261111/historical-completion.md), [original review and final disposition](../artifacts/list-selection-proof-20261111/review/dispositions.json), [checkpoint](../artifacts/list-selection-proof-20261111/checkpoint.json). The accepted component binds **7,601 pins / 2,199 current input files**; six corrupted-byte controls reject and the relocated archive verifies with outside file reads denied. CP SHA-256 `9fdfe515847638056fa02e8cbdbb6d938ce9733d3704549868ef762842a42488`, completion `e0b13b9268aa6309d183837a4c56b43ad3a6bda3c3e0e8c080ff76dc3a204ff7`. The first self-changing-log seal and all earlier application failures remain preserved. Broader producer/transform, peak-resource/latency, printing/signature/accessibility and commercial-parity work remains open; the broad goal stays active.
+
+Qualified combined local development package — 2026-11-11: **0.41.0-dev.1** now delivers the reviewed bordered-dropdown/plain-List filling support and shared retained-source backing through the combined desktop and CLI/MCP package. The local launcher selects verified0.41;0.39and failed0.40remain preserved.
+
+Fresh acceptance passes **1,517frontend tests /226files**, normal optimized GUI/CLI builds, all**37CLI/MCPworkflows**, desktop text/paragraph/OCR, selection, combined removal/missing-original recovery and**144independently bound baseline saved outputs**. Native evidence is explicitly qualified reuse of the exact reviewed520f/version040implementation through five metadata-token substitutions:**1,168optimized integration/bin +1,526Folio-opt0 library passes /32ignores**, not a fresh041native run.
+
+The extracted package passes**189Preview/Cancelcycles**, original-quiz and separate300-page**105edit/100Undo/100Redo**histories, independent glyph/page/RGB checks on all300savedpages, eight corrupted-evidence controls and three draft-to-paragraph handoffs. The original first-after105sample passes at**283,955,200native /981,282,816process-tree bytes**, below512MiB/1GiB. These are single-host discrete observations, not peak/leak/low-memory or general speed certification. New form acceptance adds**82actualsaves /164RGBchecks /five typed refusals**, including desktop Undo/Redo and exact owned cleanup.
+
+One final scoped review found no consequential defects or deferred minors. The initial test-runner absolute-path failure and its3-case RED/GREEN correction remain preserved; it occurred before runtime and did not replace a resource sample. Historical corruption/independence controls, all**12,473checkpoint pins**, local promotion and both PowerShell resolve-only hosts pass. No app was automatically opened; no commit, merge, push or public release occurred.
+
+[Executable](../artifacts/Folio-v0.41.0-dev.1/Folio.exe), [ZIP](../artifacts/Folio-v0.41.0-dev.1-windows-x64.zip), [checkpoint](../artifacts/portable-041-20261111/checkpoint.json), [review](../artifacts/portable-041-20261111/review/review.md), [completion and rulings](../artifacts/portable-041-20261111/historical-completion.md). These repository status notes were updated after sealing; packaged documentation remains its integration-time snapshot. Source-painted/scrolled Lists, broad producer/font/complex-script compatibility, direct spill/write/flush faults, full512MiBcapture/worst-case costs, printing, installed IME/clipboard/accessibility, signatures, power-loss/fullUndo recovery, other hosts and commercial parity remain open. The broad quality goal stays active.
+
+Integration-start record — 2026-11-11: **0.41.0-dev.1** integrates the reviewed compound-dropdown/plain-List support and shared retained-source backing. Accepted **0.39 remains the launcher**; failed 0.40 and the insufficient standalone idle-reader experiment retain their original results.
+
+The [reviewed storage component](../artifacts/shared-source-blocks-20261111/historical-completion.md) binds 2,694 native passes /32 ignores under explicit optimized-integration and Folio-opt0 library correctness profiles, 101 distinct retained versions with exact cold reload/reopen, and a normal optimized GUI105edit/100Undo/100Redo/all300savedpage glyph/RGB check. Its first matching-natural-display after105sample passes the original targets at232,988,672native /961,728,512tree bytes. This is selected evidence, not peak/leak/low-memory or general speed certification. The shared-prefix spill-error direct test and full512MiBcapture remain coverage gaps.
+
+The new package must run fresh frontend/build/extracted CLI/MCP, desktop, recovery, selection/output, full resource/history and82form-save checks. Native evidence may be reused only under the exact five-file040to041metadata transition and unchanged implementation/renderer/shared input maps; no fresh041native run is claimed. Printing, accessibility, signatures, complex scripts, wider producer/device compatibility and Adobe/Foxit parity remain active work.
+
 Qualified combined local development package — 2026-11-10: **0.39.0-dev.1** now combines the reviewed 64 MiB decoded-source cache and the OCR readiness correction. OCR review fields remain disabled until the initial preview is ready, preventing silently ignored corrections; Cancel stays available. All 100 Undo/Redo states and original source bytes remain preserved.
 
 Fresh evidence passes **1,517 frontend tests /226 files**, optimized desktop and CLI builds, all **37 CLI/MCP workflows**, desktop text/paragraph/OCR, combined removal and missing-original recovery, and **144 independently bound saved outputs**. Native correctness is explicitly qualified reuse of the actual caf/version-37 suite: **1,159 optimized integration/bin +1,521 Folio-opt0 library passes, with 32 skips**. Exact native/shared input equality and only permitted metadata transformations connect that suite to the new package; it is not a fresh 0.39 native run.
@@ -7446,3 +7918,12 @@ renderer, tests and saved-output evidence. Original PDFs, old executables/apps,
 failed harness runs and review snapshots are retained. No commit, release or
 Adobe/Foxit parity claim. Continue with broader producer compatibility and an
 integrated usability/resource audit; the overarching goal remains active.
+
+
+## 2026-11-11 — verified existing unshaped Unicode editing
+
+Development source after portable0.43 now shares the imported-font character policy across verified existing single/grouped text, uniform/styled paragraphs, explicit substitutes and reusable-object text. Greek, Cyrillic and covered symbols retain exact font/code/glyph/width and source/context checks; standard-font encoding admission is unchanged. A Greek-only font without Latin glyphs survives saved re-editing and fresh CLI/MCP processes.
+
+Fresh validation:2,747native passes/32explicit skips (1,556Folio-opt0library correctness and1,191optimized integration/bin passes across139targets),1,517frontend passes, normal optimized GUI/CLI,52CLI calls/fourMCP sessions andthreeWindows desktop workflows. Independent MuPDF/pypdf checks cover150optimized native saves and28runtime PDFs, including complete-page Undo equality. The one final scoped review passed without consequential findings; the3,548-file local evidence checkpoint passes12corruption/required-membership controls plusrelocated andarchive-only verification. The first two runtime-auditor failures andfirst seal-control oracle mismatch remain preserved; corrected receipts identify the accepted evidence.
+
+[Final component contract](../artifacts/existing-unshaped-unicode-20261111/final-contract.json) and[review](../artifacts/existing-unshaped-unicode-20261111/review/review.md) record hashes, matrices andlimits. This is authored-fixture/localWindows acceptance, not universal producer, complex-script/CFF/variable/color-font, performance/memory/printing or commercial-parity certification. No new portable promotion: the selected0.43 launcher remains unchanged.

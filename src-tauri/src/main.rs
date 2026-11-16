@@ -1,5 +1,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    folio_engine::run()
+    folio_engine::run(tauri::generate_context!())
 }

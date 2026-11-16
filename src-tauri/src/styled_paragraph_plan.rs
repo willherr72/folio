@@ -29,6 +29,8 @@ impl Prepared {
 
 #[derive(Clone)]
 pub(super) struct ResolvedStyle {
+    pub fragments:Option<Arc<paragraph_occurrence_plan::Fragments>>,
+    pub original_rgb:Option<[f32;3]>,
     pub source:RunSnapshot,
     pub resource_name:Vec<u8>,
     pub size:f32,
@@ -38,11 +40,22 @@ pub(super) struct ResolvedStyle {
 }
 impl ResolvedStyle {
     pub(super) fn original(style:&BoundStyle)->Self {
-        Self{source:style.run.clone(),resource_name:style.resource_name.clone(),size:style.run.font_size*style.run.matrix[0],color:style.run.color,substitute:None,background_id:style.background_id}
+        Self{fragments:None,original_rgb:style.original_rgb,source:style.run.clone(),resource_name:style.resource_name.clone(),size:style.run.font_size*style.run.matrix[0],color:style.run.color,substitute:None,background_id:style.background_id}
+    }
+    pub(super) fn rgb(&self)->[f32;3] {
+        if self.color==self.source.color {if let Some(rgb)=self.original_rgb {return rgb;}}
+        [self.color[0]as f32/255.,self.color[1]as f32/255.,self.color[2]as f32/255.]
     }
     pub fn encode(&self,text:&str)->EngineResult<Vec<u8>> {
         if let Some(asset)=&self.substitute {asset.validate_text(text)?;Ok(paragraph_font::encode(text))}
         else {positioned_text::encoded(&self.source,text)}
+    }
+    pub(super) fn fragment(&self,text:&str,origin:[f32;2])->EngineResult<Option<&paragraph_occurrence_plan::FragmentPlan>>{
+        self.fragments.as_ref().map(|map|map.get(&paragraph_occurrence_plan::origin_key(origin))
+            .filter(|f|f.text==text).ok_or_else(||invalid("The exact paragraph glyph placement changed."))).transpose()
+    }
+    pub(super) fn encode_at(&self,text:&str,origin:[f32;2])->EngineResult<Vec<u8>>{
+        if let Some(fragment)=self.fragment(text,origin)?{Ok(fragment.bytes.clone())}else{self.encode(text)}
     }
     pub fn advance(&self,ch:char)->EngineResult<f32> {
         Ok(if let Some(asset)=&self.substitute {paragraph_font::integral_advance(asset,ch)?}else{advance(&self.source,&ch.to_string())?}*self.size)
@@ -56,6 +69,7 @@ pub(super) struct ResolvedPlan {
 }
 
 pub(super) struct MeasuredPlan {
+    occurrences:Option<Vec<styled_paragraph_layout::MeasuredOccurrence>>,
     pub prepared:Prepared,
     pub original:image::RgbaImage,
     pub styles:Vec<ResolvedStyle>,
@@ -68,7 +82,9 @@ impl MeasuredPlan {
             let reservation=self.padded.as_deref().unwrap_or(&self.metrics);
             let text=if self.prepared.text_alignment{self.metrics.as_slice()}else{reservation};
             let inner=paragraph_highlight_geometry::text_bounds(bounds,self.prepared.text_insets,self.prepared.text_alignment);
-            let ascent=styled_paragraph_layout::first_line_ascent_with_text_metrics(&request.runs,reservation,text,inner[2]-inner[0],self.prepared.unit,self.prepared.ink_vertical)?;
+            let ascent=if let Some(atoms)=&self.occurrences {
+                styled_paragraph_layout::first_line_ascent_occurrences(atoms,&self.metrics,inner[2]-inner[0],self.prepared.unit,self.prepared.ink_vertical)?
+            }else{styled_paragraph_layout::first_line_ascent_with_text_metrics(&request.runs,reservation,text,inner[2]-inner[0],self.prepared.unit,self.prepared.ink_vertical)?};
             bounds[3]=bounds[3].max(baseline+ascent);
         }
         Ok(bounds)
@@ -76,6 +92,9 @@ impl MeasuredPlan {
     pub(super) fn layout(&self,request:&StyledParagraphLayoutRequest,bounds:[f32;4])->EngineResult<StyledParagraphLayout>{
         self.prepared.check_context_area(bounds)?;
         let baseline=self.prepared.requested_baseline(request.baseline_anchor)?;
+        if let Some(atoms)=&self.occurrences {
+            return paragraph_occurrence_plan::layout(atoms,&self.metrics,bounds,request.alignment,request.line_spacing,self.prepared.unit,self.prepared.text_insets,self.prepared.text_alignment,self.prepared.ink_vertical,baseline).and_then(|r|{paragraph_occurrence_ink::validate_layout(&r,atoms,&self.styles,&self.prepared.backgrounds)?;Ok(r.layout)});
+        }
         let layout=paragraph_highlight_geometry::layout_with_baseline(&request.runs,&self.metrics,self.padded.as_deref(),bounds,request.alignment,request.line_spacing,self.prepared.unit,self.prepared.text_insets,self.prepared.text_alignment,self.prepared.ink_vertical,baseline)?;
         if !self.prepared.backgrounds.is_empty(){let ids=self.styles.iter().map(|s|s.background_id).collect::<Vec<_>>();paragraph_highlight_geometry::rectangles_in_units(&layout,&self.metrics,&ids,&self.prepared.backgrounds,self.prepared.unit)?;}
         Ok(layout)
@@ -85,7 +104,7 @@ impl MeasuredPlan {
 /// Compare attributed characters, not wire run segmentation or dense style IDs.
 /// Both palettes already resolve through this page's independently checked font
 /// resources. An explicit substitution is an edit; display names are no authority.
-fn same_attribution(prepared:&Prepared,runs:&[StyledParagraphRun],styles:&[ResolvedStyle])->bool{
+pub(super) fn same_attribution(prepared:&Prepared,runs:&[StyledParagraphRun],styles:&[ResolvedStyle])->bool{
     let equivalent=styles.iter().map(|style|prepared.styles.iter().map(|source|
         style.substitute.is_none()&&style.resource_name==source.resource_name
         &&style.source.program==source.run.program&&style.source.font==source.run.font
@@ -100,13 +119,31 @@ fn same_attribution(prepared:&Prepared,runs:&[StyledParagraphRun],styles:&[Resol
     original.next().is_none()
 }
 
+/// The source-identity route must also preserve independently checked PDF paint.
+/// Distinct original float colors can have the same8-bit display label.
+pub(super) fn same_exact_attribution(prepared:&Prepared,runs:&[StyledParagraphRun],styles:&[ResolvedStyle])->bool{
+    if !same_attribution(prepared,runs,styles){return false;}
+    let colors=prepared.styles.iter().map(|s|ResolvedStyle::original(s).rgb()).collect::<Vec<_>>();
+    let original=prepared.runs.iter().flat_map(|r|std::iter::repeat_n(r.style_id,r.text.chars().count()));
+    let requested=runs.iter().flat_map(|r|std::iter::repeat_n(r.style_id,r.text.chars().count()));
+    requested.zip(original).all(|(id,source)|styles[id].rgb()==colors[source])
+}
+
 impl WorkerRuntime {
     pub(in crate::engine) fn layout_styled_paragraph(&self,source_id:&str,page_index:usize,request:&StyledParagraphLayoutRequest)->EngineResult<StyledParagraphLayout> {
         self.prepare_styled_paragraph(source_id,page_index,request).map(|plan|plan.layout)
     }
     pub(super) fn prepare_styled_paragraph(&self,source_id:&str,page_index:usize,request:&StyledParagraphLayoutRequest)->EngineResult<ResolvedPlan> {
-        let measured=self.measure_styled_paragraph(source_id,page_index,request)?;
-        let layout=measured.layout(request,pdf_bounds(measured.prepared.geometry,&request.bounds))?;
+        let mut measured=self.measure_styled_paragraph(source_id,page_index,request)?;
+        let bounds=pdf_bounds(measured.prepared.geometry,&request.bounds);
+        let layout=if let Some(atoms)=&measured.occurrences {
+            measured.prepared.check_context_area(bounds)?;
+            let baseline=measured.prepared.requested_baseline(request.baseline_anchor)?;
+            let result=paragraph_occurrence_plan::layout(atoms,&measured.metrics,bounds,request.alignment,request.line_spacing,measured.prepared.unit,measured.prepared.text_insets,measured.prepared.text_alignment,measured.prepared.ink_vertical,baseline)?;
+            paragraph_occurrence_ink::validate_layout(&result,atoms,&measured.styles,&measured.prepared.backgrounds)?;
+            paragraph_occurrence_plan::bind_fragments(&mut measured.styles,atoms,&result)?;
+            result.layout
+        }else{measured.layout(request,bounds)?};
         Ok(ResolvedPlan{prepared:measured.prepared,original:measured.original,layout,styles:measured.styles})
     }
     pub(super) fn measure_styled_paragraph(&self,source_id:&str,page_index:usize,request:&StyledParagraphLayoutRequest)->EngineResult<MeasuredPlan> {
@@ -143,18 +180,23 @@ impl WorkerRuntime {
         let definitions=styles.iter().map(styled_paragraph_memory::Style::source).collect::<EngineResult<Vec<_>>>()?;
         let (probes,_)=self.styled_font_probes(&prepared.pdf,prepared.page_id,&definitions)?;
         
-        let mut metrics=measure(&probes,&request.runs,&styles)?;
+        let occurrence=paragraph_occurrence_plan::measure(&prepared,&probes,&request.runs,&styles,prepared.occurrence_metrics)?;
+        let (mut metrics,mut occurrences)=if let Some(measured)=occurrence{(measured.metrics,Some(measured.atoms))}else{(measure(&probes,&request.runs,&styles)?,None)};
         // Legacy no-op drafts retain their exact measurement policy. New or
         // explicitly changed marked full-font drafts use independently measured ink.
         prepared.native_ink|=styles.iter().any(|s|(prepared.ink_vertical||s.background_id.is_some())&&styled_paragraph_native_metrics::full_font(s))
             &&(prepared.ink_vertical||!prepared.remembered||!same_attribution(&prepared,&request.runs,&styles));
-        if prepared.native_ink{self.native_highlight_metrics(&prepared,&request.runs,&styles,&mut metrics,prepared.ink_vertical)?;}
+        if prepared.native_ink&&occurrences.is_none(){self.native_highlight_metrics(&prepared,&request.runs,&styles,&mut metrics,prepared.ink_vertical)?;}
+        if let Some(atoms)=&mut occurrences {
+            if !prepared.backgrounds.is_empty()||prepared.ink_vertical {self.native_occurrence_ink(&prepared,&styles,atoms,prepared.ink_vertical)?;}
+            paragraph_occurrence_ink::reserve(atoms,&styles,&prepared.backgrounds)?;
+        }
         let ids=styles.iter().map(|s|s.background_id).collect::<Vec<_>>();
         if prepared.text_alignment&&prepared.backgrounds.iter().any(|b|b.cell.is_some()){
             prepared.text_insets=paragraph_highlight_geometry::style_insets(&prepared.backgrounds,styles.iter().map(|s|(s.background_id,s.size)))?;
         }
         let padded=if prepared.backgrounds.is_empty(){None}else{Some(paragraph_highlight_geometry::padded_metrics_in_units(&metrics,&ids,&prepared.backgrounds,prepared.unit)?)};
-        Ok(MeasuredPlan{prepared,original,styles,metrics,padded})
+        Ok(MeasuredPlan{prepared,original,styles,metrics,padded,occurrences})
     }
 }
 
@@ -170,7 +212,7 @@ pub(super) fn measure(document:&PdfDocument<'_>,runs:&[StyledParagraphRun],style
                 let mut glyphs=HashMap::new();
                 for ch in runs.iter().filter(|r|r.style_id==style_id).flat_map(|r|r.text.chars()).filter(|c|*c!='\n') {
                     if glyphs.contains_key(&ch){continue;}
-                    if !embedded_font::latin(&format!("a{ch}")){return Err(invalid("This paragraph supports unshaped Latin text only."));}
+                    if !embedded_font::unshaped(&format!("a{ch}")){return Err(invalid("This paragraph supports bounded unshaped text only."));}
                     let glyph=asset.glyph_id(ch)?;let bbox=face.glyph_bounding_box(ttf_parser::GlyphId(glyph));
                     let ink=if ch==' ' {[0.;4]}else{bbox.map_or([0.;4],|b|[b.x_min as f32*scale,b.y_min as f32*scale,b.x_max as f32*scale,b.y_max as f32*scale])};
                     glyphs.insert(ch,GlyphMetric{advance:style.advance(ch)?,ink});
@@ -187,7 +229,11 @@ pub(super) fn measure(document:&PdfDocument<'_>,runs:&[StyledParagraphRun],style
             // TrueType extents. Reuse those verified program metrics on re-edit,
             // rather than PDFium's integer-rounded descriptor/glyph metrics.
             if run.program.as_ref().is_some_and(|id|run.font==format!("Folio{id}Paragraph"))&&run.proof.is_some(){
-                let bytes=font.data()?;let face=ttf_parser::Face::parse(&bytes,0).map_err(|_|invalid("Invalid saved paragraph font."))?;
+                let bytes=font.data()?;
+                // A source font can legitimately use this PDF resource name.
+                // Only actual TrueType outlines may use the TrueType shortcut;
+                // CFF programs still need the ordinary native ink measurement.
+                if let Some(face)=ttf_parser::Face::parse(&bytes,0).ok().filter(|face|face.tables().glyf.is_some() && face.tables().hmtx.is_some() && face.tables().cff.is_none()) {
                 let scale=size/face.units_per_em() as f32;let proof=run.proof.as_ref().unwrap();let mut glyphs=HashMap::new();
                 for ch in runs.iter().filter(|r|r.style_id==style_id).flat_map(|r|r.text.chars()).filter(|c|*c!='\n'){
                     if glyphs.contains_key(&ch){continue;}let glyph=proof.glyph(ch).ok_or_else(||invalid("Missing saved paragraph glyph."))?;
@@ -195,6 +241,7 @@ pub(super) fn measure(document:&PdfDocument<'_>,runs:&[StyledParagraphRun],style
                     glyphs.insert(ch,GlyphMetric{advance:style.advance(ch)?,ink});
                 }
                 metrics.push(StyleMetrics{em:size,ascent:face.ascender() as f32*scale,descent:-(face.descender() as f32)*scale,glyphs});continue;
+                }
             }
             let ascent=font.ascent(PdfPoints::new(size))?.value;
             let descent=-font.descent(PdfPoints::new(size))?.value;

@@ -138,6 +138,7 @@ export interface ProtectionInfo {
 export interface SourceReplacement {sourceId:string;document:DocumentInfo}
 export interface PageContentReplacement {document:DocumentInfo;pageIndices:number[]}
 export interface PageSearchResult {matches:AnnotationRect[][];hasText:boolean;truncated:boolean}
+export interface PageSearchOptions {matchCase:boolean;wholeWords:boolean}
 
 export interface EditorDocument {
   metadata?:import('./document-properties').DocumentMetadataEdit;

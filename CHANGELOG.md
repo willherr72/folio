@@ -1,5 +1,339 @@
 # Changelog
 
+## 0.56.0-dev.1 — development integration candidate (2026-11-16)
+
+- Integrate reviewed compact logical reading and immediate exact Copy when
+  selection geometry becomes ready, alongside the existing text, paragraph,
+  fonts, forms, page, automation and offline OCR workflows.
+- Reviewed extracted package: 23 editing/automation/forms/OCR stages and eight
+  alias checks passed, plus full 105-edit/100-Undo/100-Redo/save/reopen acceptance.
+  All 300 glyph pages, 600 rasters and eight corruption controls passed.
+  Measured lifetime job commitment: 1,010.68 MiB against the fixed 1,024 MiB target.
+- Fresh frontend: 1,805 tests/252 files. Native 3,073 passed/32 ignored retains
+  explicit opt0-library reuse and pre-version optimized integration/bin/doc
+  qualifications. Broader gates remain open. [Completion and limits](artifacts/portable-056-20261116/completion.json).
+  The archive retains its earlier build-time documentation snapshot.
+
+## Unreleased — compact reading data (2026-11-16)
+
+- Send exact logical reading strings for inactive uncropped pages, retaining
+  rich geometry for Select, Highlight and crops. Preserve Unicode, permissions,
+  source/provider ownership and bounded cache retention.
+- Install exact Copy handling in the commit that exposes asynchronously loaded
+  selection glyphs. A real Windows failure and a commit-time regression both
+  preceded the verified correction.
+- Fresh corrected frontend: 1,805 tests/252 files. Normal GUI and unchanged
+  105-edit/100-Undo/100-Redo/save/reopen workflow passed; all 300 saved pages,
+  600 independent raster checks and eight corruption controls passed.
+- Lifetime job commitment was 996.54 MiB against the fixed 1,024 MiB target.
+  This finite workload passed; broader resource and compatibility gates remain
+  open. Native 1,759/11 library correctness plus 82/0 affected optimized results
+  retain exact-byte qualification after the frontend-only correction.
+  [Completion and limits](artifacts/compact-reading-data-20261115/completion.json).
+
+## Unreleased — deferred reading geometry (2026-11-15)
+
+- Avoid building and retaining selection hit geometry for inactive, uncropped
+  logical text. Build it when Select/Highlight needs it; retain cropped
+  coincident-glyph visibility and exact Unicode/whitespace behavior.
+- Fresh frontend: 1,795 passes/249 files. Normal optimized GUI: full 105-edit,
+  100-Undo/100-Redo history and 300 saved pages/600 raster checks passed.
+- Original-observer peak improved from 1,044.44 to 1,025.35 MiB in these finite
+  runs, but the 1,024 MiB target remains failed by 1.35 MiB. No statistical,
+  leak-freedom, physical-hardware, release or parity claim.
+  [Scope and limits](artifacts/editing-memory-attribution-20261115/completion.json).
+
+## 0.55.0-dev.1 — separate development integration candidate (2026-11-15)
+
+- Integrate reviewed source-font equivalent encodings, CFF ligatures and original
+  physical accent clusters across eligible text, groups, shared objects and styled
+  paragraphs. Preserve exact Unicode, source glyphs, font programs and placement;
+  unavailable mappings and contradictory aliases remain refusals.
+- Fit transferred paragraph drafts and edited paragraph previews automatically,
+  with fixed-area opt-out, local history and provisional-input ownership fixes.
+- Current pre-version native qualification covers the exact complete library
+  correctness result (1,759 passed/11 ignored, Folio opt0 with release dependencies)
+  and fresh complete 150 optimized integration targets plus both binaries
+  (1,312 passed/21 ignored). Documentation tests passed after correcting an
+  incompatible selector combination; the failed original command is preserved.
+  This is reconciled current-source evidence, not fresh 0.55 native tests.
+- Normal optimized portable build and verified outside extraction passed for all
+  1,754 package files. Fresh frontend passed 1,793 tests/249 files. The declared
+  20-stage extracted CLI/MCP/Windows/forms/OCR matrix and eight mixed-alias calls
+  passed, with source-authored independent saved-output checks.
+- The single review's auditor-preservation gap was corrected and verified by
+  omission/mutation controls and the complete 15-test component suite.
+  [Completion and limits](artifacts/portable-055-20261115/completion.json).
+  Archive documents preserve their earlier integration-time snapshot. Existing
+  packages and launcher selection stay intact; broad quality gates remain open.
+
+## 0.54.0-dev.1 — reviewed separate development candidate (2026-11-15)
+
+- Integrate the reviewed CID original-font deletion/re-edit repair and copied
+  page boundaries. Exactly six metadata version tokens change from the reviewed
+  source baseline; dependencies and renderer are unchanged.
+- Fresh frontend passed 1,747 tests/246 files. Normal optimized GUI/default CLI,
+  12 offline OCR assets, 567 dependency records, the ZIP and its outside-checkout
+  extraction passed verification for all 1,742 package files.
+- Actual extracted checks passed 13 CLI calls, 17 MCP requests, and four Windows
+  CID, reader, paragraph/font and OCR workflows. Include re-edit of an older
+  0.53 saved PDF, independent saved-output checks, a nonempty 10-object paragraph
+  structure graph, seven OCR saved pages and packaged renderer module provenance.
+- One fresh integration review found no findings. Native evidence remains the
+  existing qualified 3,043-pass/32-skip composite with its original library
+  correctness and optimized integration meanings; no fresh 0.54 native run or
+  complete rerun of the historical 0.53 matrix is claimed.
+- Selected launcher and older packages remain unchanged. Physical clipboard/IME,
+  broader compatibility, printing/accessibility, continuous resource measurements
+  and commercial parity remain open. [Completion and limits](artifacts/portable-054-20261115/completion.json).
+
+## Unreleased — reader-copy page boundaries (2026-11-15)
+
+- Separate selected text from adjacent mounted PDF page occurrences, including
+  duplicates, without merging boundary words. Preserve existing CR/LF/CRLF,
+  spaces, partial supplementary characters, crop visibility and copy permissions.
+- Keep single-page text, input/editor copy behavior and viewport ownership.
+  Empty/hidden-only fragments add no separators; no eager extraction or PDF edit.
+- Fresh frontend passed 1,747 tests/246 files; the optimized Windows candidate
+  passed eight exact constructed-copy checks and one restricted-source check.
+  Native/shared inputs match the prior qualified CID component; no new native
+  suite or system clipboard/physical Ctrl+C qualification is claimed.
+  [Completion and limits](artifacts/reader-copy-pages-20261115/completion.json).
+
+## Unreleased — CID source-font edit repair (2026-11-15)
+
+- Restore retained-code deletions such as `Cafe old` to `Cafe` without changing
+  original/shared font resources, glyph programs/maps or surrounding text.
+  Retry only in a selected private font resource with the existing exact cursor,
+  nominal-width and shared work-budget checks.
+- Check saved re-edit, Undo/Redo, source immutability and invalid-draft retention
+  in the actual optimized CLI/Windows app. Independent checks include fixed
+  source-only pixel regions, restored whole-page pixels and an actual balanced
+  interior-spacing corruption that the strengthened root oracle rejects.
+- Fresh frontend: 1,735 tests/245 files. Qualified native composite: 3,043 passes,
+  32 explicit skips; the full run's old refusal oracle was replaced by its whole
+  corrected 38-case target with unchanged production inputs. This is not a fresh
+  monolithic rerun after the test-only change. Existing portable/launcher unchanged.
+  [Completion and limits](artifacts/cid-dependent-cursor-20261115/completion.json).
+
+## 0.53.0-dev.1 — reviewed separate development candidate (2026-11-15)
+
+- Integrate document-wide literal Unicode Find/Replace with Match case and Whole
+  words, explicit match selection/blockers, before/after preview, Cancel and one
+  Apply/Undo action across imported or duplicated pages and editable added text.
+- Preserve local crop/rotation, workspace metadata/bookmarks, original sources
+  and native protection. Verify cancellation after native Apply but before its
+  reply, without adopting or retaining the cancelled candidate.
+- Include current atomic CLI/MCP text replacement and stable document planning;
+  existing native layout/font refusals remain explicit rather than skipping
+  selected failures. Use the automation guide for supported saved-document edits.
+- Retain shared source language defaults during ordinary imported/overlay Save;
+  differing defaults use existing source-specific preservation adapters.
+- The completed source component passed 1,735 frontend tests,193 current ordinary
+  optimized integration tests and actual Windows/independent checks of3 PDFs and
+ 8 pages, with 11 actual corruption controls. Full library 1,745/11 evidence predates
+  the Save correction; these are not fresh 0.53 native or performance results.
+- Complete extracted desktop/CLI/MCP acceptance with retained editing, forms,
+  OCR and page-organization workflows. New replacement checks cover 13 saved
+  PDFs/28 pages, 37 CLI calls, 11 refusals and 18 corruption controls. The
+  105-edit/100-Undo/100-Redo history test retains its original resource limits.
+- Fresh frontend checks passed 1,735 tests/245 files. The reviewed 8,534-file
+  standalone seal passed 58 final corruption/omission checks, relocated-directory
+  and archive-only verification. Selected 0.50 and separate 0.51/0.52 remain
+  unchanged; physical clipboard/IME and commercial parity remain open.
+  [Portable completion](artifacts/portable-053-20261115/completion.json) and
+  [source evidence](artifacts/desktop-replacement-20261114/completion.json).
+
+## Unreleased — document Find source component (2026-11-14)
+
+- Add document-wide Match case and Whole words, per-tab options/results,
+  wrapped Enter/F3 navigation and Ctrl+F refocus without losing search state.
+- Share pinned Unicode case folding between frontend and protected native
+  search, retaining source glyph bounds and refusing half-character expansions.
+- Preserve a later-page saved hit and reading history while a returning tab's
+  search is incomplete; disable navigation until that hit is available.
+- Corrected checks passed 1,704 frontend tests across 240 files and the normal
+  optimized Windows workflow, including a deliberately delayed protected reply.
+  This component is a separate test candidate; it is not in the completed 0.52
+  portable or selected 0.50. [Evidence](artifacts/document-search-options-20261114/completion.json).
+
+## 0.52.0-dev.1 — reviewed separate development candidate (2026-11-14)
+
+- Edit supported source-bound ligatures such as fi and ffi in verified embedded
+  CID TrueType fonts, including eligible paragraphs and reusable form content.
+  Preserve original glyph identity and fonts when the source provides proof.
+- Keep following text unchanged in the verified native and independent-reader
+  cases, including explicit font substitution and saved re-editing. Retain exact
+  no-ops, shared-object isolation and guarded refusal when safety cannot be proved.
+- Support eligible embedded CID TrueType fonts without an intrinsic Unicode cmap
+  when the PDF's Unicode, glyph, outline and width mappings supply complete proof.
+- Show clearer source-font names and keep/substitute choices without silently
+  replacing a subset font or broadening unsupported shaping and encoding rules.
+- Complete the separate GUI/CLI package with OCR, licenses and retained
+  automation workflows. Extracted acceptance, the reviewed 7,452-file checkpoint,
+  50 final negative controls and relocation/archive-only verification passed.
+  Selected 0.50, reviewed 0.51 and the physical clipboard/IME gate remain unchanged.
+  [Package evidence](artifacts/portable-052-20261114/completion.json).
+
+## 0.51.0-dev.1 — reviewed separate development candidate (2026-11-13)
+
+- Add Find and Replace inside the current paragraph, with case/whole-word
+  options, keyboard navigation and one-step Undo for Replace all.
+- Preserve source formatting and native Preview/Apply validation. Fix skipped
+  valid matches after rejected word/grapheme candidates, and keep first Escape
+  from sibling controls from discarding an open Find session's paragraph draft.
+- Stage multiline existing-text pastes through **Paste as paragraph**, retaining
+  surrounding draft text, line breaks, caret and font choice. Validate substitute
+  fonts against the pending paste and accept valid final-size styled transfers.
+- Keep real system Ctrl+V/IME acceptance open. Compiled injected paste-event
+  checks do not close that gate. Prepare a separate combined candidate while
+  keeping selected local 0.50 and the existing native admission rules unchanged.
+
+## 0.50.0-dev.1 — local integration candidate (2026-11-13)
+
+- Add CLI/MCP page selection, reordering, duplication and rotation with editable
+  private results and exclusive new PDF exports.
+- Compose multiple PDFs through CLI or MCP, preserving supported forms, tags,
+  navigation, encryption and native permissions. Repeated source identities
+  share answers; independent documents keep independent field groups.
+- Support per-source launch credentials and protected preview/Apply/re-edit
+  after original IDs close. Keep secrets out of tool arguments and result data.
+- Correct owned credential parsing/escape buffer zeroing and refuse observed
+  source growth/truncation during capture. Preserve native unsupported-graph,
+  mixed-form-language and incompatible-encryption refusals.
+- Separate generated frontend assets from the large native engine library to
+  improve warm desktop build iteration; no general application-speed claim.
+- Begin a separately qualified normal portable build and extracted runtime
+  acceptance. Accepted current native1596/11 library and120 optimized integration
+  results are prior evidence with original profile meanings, not fresh050native
+  tests. Selected0.49 stays unchanged until qualification; no public release or
+  commercial-parity certification.
+
+## 0.49.0-dev.1 — qualified local development package (2026-11-12)
+
+- Restore full-value selection after keyboard focus expands precise numeric
+  drafts. Tab, Shift+Tab and programmatic focus replace instead of appending
+  digits; preserve native pointer caret placement and exact owner values.
+- Pass 1,554 fresh frontend tests, normal optimized GUI/default CLI builds and all 28
+  checks of the extracted package. Numeric keyboard/pointer/precision/bounds checks pass
+  on the extracted app, with existing Unicode/CFF, forms, OCR and navigation audits.
+- Pass 105 edits / 100 Undo / 100 Redo and independent checks of all 300 saved pages.
+  The sample after 105 edits is 274,968,576 native / 984,072,192 tree bytes, below the
+  unchanged 512 MiB / 1 GiB limits; no peak/leak/general speed claim.
+- Correct the final review's nested-source evidence gap with five failing
+  regressions followed by 42 passing helper tests. Retain original review inputs
+  and exact correction provenance. The 8,260-file seal, 33 negative controls and
+  relocation/archive-only checks pass. Select 0.49 locally with PowerShell 5/7 resolution;
+  preserve 0.48 without opening the normal app. Native 2,784/32 remains qualified
+  prior evidence, with original profiles. No public release/parity certification.
+
+## 0.48.0-dev.1 — qualified local development package (2026-11-12)
+
+- Reduce retained decoded page images from96MiB to32MiB. Preserve mounted leases,
+  full rendered resolution, the two-request queue and100 Undo/Redo states.
+- Remove modal backdrop blur, retaining dimming, geometry and keyboard/focus
+  behavior. Normal production styling and focus checks passed; injected diagnostic
+  measurements remain separate. Cold revisits can render again; no speed claim.
+- Deliver the cancellation component from0.47. Pass fresh1,548frontend tests,
+  normal optimized GUI/CLI builds and all27actual extracted acceptance stages.
+- Pass the full300-page105-edit/100Undo/100Redo/save/reopen and independent page
+  audit. The selected after105sample is270,020,608native/965,029,888tree bytes,
+  below unchanged512MiB/1GiB targets at naturalDPR1.5; not peak/leak acceptance.
+- Complete one combined review,8,193-member seal,29negative controls and relocated/
+  archive-only verification. Select048locally with PS5/7ResolveOnly;046preserved.
+  Native2,784/32-skips remains qualified prior reuse with original profiles. No
+  public release or Adobe/Foxit parity approval; earlier OCR timeout unresolved.
+
+## 0.47.0-dev.1 — preserved candidate, resource gate failed (2026-11-12)
+
+- Add Cancel opening and Escape recovery, prompt password-verification
+  cancellation, late source/font cleanup and native picker window ownership.
+- Verify the development candidate with 1,546 frontend tests, four fresh optimized
+  native password/open tests, seven real delayed-reply cancellation cases and five
+  overlapping-request cases. Preserve dirty work, selection, pixels and Undo/Redo.
+- Retain successful OCR save/reopen and independent saved-output checks. The
+  earlier intermittent OCR reopen timeout remains unresolved. Native parsing is
+  not forcibly terminated by cancellation.
+- Extracted editing/output checks passed, but the sustained high-DPI workload
+  exceeded the1GiB whole-process-tree target. Preserve the failed attempt and keep
+  qualified046 selected. Full native2,784/32-skips remains qualified prior reuse.
+
+## 0.46.0-dev.1 — qualified local development package (2026-11-12)
+
+- Add verified original-font CFF source editing through existing text, group,
+  paragraph and reusable-object transactions. Preserve source programs, encoding,
+  fractional metrics, surrounding content and occurrence ownership.
+- Validate complete reachable Type2 glyph programs within the existing work
+  allowance; preserve valid zero-ink spaces and reject conflicting raw outline
+  tables. Strengthen independent tag checks to ordered character/font/owner data.
+- Complete the corrected source component with 2,784 native tests, 1,528 frontend
+  tests, 80 independently checked runtime PDFs, 13 integrity controls and actual
+  standalone relocation. Fresh extracted046 acceptance passed CFF, Unicode,
+  navigation, core/OCR, 82 saved form states and the complete large-history workflow.
+  The reviewed portable was sealed and selected locally; 0.45 remains preserved.
+
+## 0.45.0-dev.1 — qualified local development package (2026-11-12)
+
+- Limit the shared page-image cache to two adapter renders in progress, cancel queued work after its last viewer leaves, preserve shared/mounted images and existing idle cache limits, isolate adapter namespaces, and handle errors/retries safely.
+- Pass 1,528 fresh frontend tests, normal optimized desktop/CLI builds and all 19 extracted acceptance stages. Cached navigation stays within two outstanding requests; eight exact native/screen image comparisons and three corruption controls pass.
+- Pass 52 CLI calls, four MCP sessions, 28 independently audited Unicode saves, seven core editing/OCR saves, 82 saved form states and the full 300-page 105-edit/100-Undo/100-Redo workflow. Native 2,747 passes / 32 skips remain explicitly qualified reuse with their original profiles.
+- Seal 6,950 indexed files. All 15 negative controls, relocated/archive-only verification and PowerShell 5/7 launcher resolution pass. Native Windows path-alias regression coverage includes an observed failing case and three corrected passing checks.
+- Select 0.45 locally and preserve 0.44 without opening the normal app. Broader memory/display/producer and commercial-quality work stays open; this is a local development qualification.
+
+## 0.44.0-dev.1 — qualified local development package (2026-11-11)
+
+- Delivers verified Greek/Cyrillic and covered-symbol existing-text editing in the desktop, CLI and MCP package, retaining source font, width, layout and nominal standard-font encoding guards.
+- Qualifies reuse of 2,747 native passes / 32 skips with original profiles; fresh 1,517 frontend tests, normal optimized desktop/CLI compilation and extracted runtime checks pass.
+- Passes 52 CLI calls, four MCP sessions, 28 independently audited Unicode saves, core text/paragraph/OCR, 82 saved form states and the full 300-page 105-edit/100-Undo/100-Redo workflow.
+- Seals 6,899 files; all 13 corrected negative controls, relocation/archive-only verification and PowerShell 5/7 launcher resolution pass. Preserves the initial duplicate-preview control-oracle failure and its correction; no product fix or engine changes were needed.
+- Selects 0.44 locally without opening the normal app. Version 0.43 remains intact. No public release or commercial-parity claim; selected resource samples do not certify peaks/leaks or arbitrary documents.
+
+## 0.43.0-dev.1 — qualified local development package (2026-11-11)
+
+- Corrects List selection highlights for options with an empty exported value,
+  including clear, refill, save and reopen. Uses the existing native selection
+  policy while preserving supported frame artwork, text and scroll state.
+- Qualifies reuse of the identical reviewed implementation's 2,731 native passes
+  and 32 explicit skips, retaining the original correctness and optimized profiles.
+  Fresh checks passed all 1,517 frontend tests, 142 CLI/desktop saved form states,
+  five MCP preview/discard cases and the full extracted editing/recovery matrix.
+- Retains the original history and resource limits, including the complete
+  300-page 105-edit/100-Undo/100-Redo workflow. The reviewed evidence archive passed
+  relocation and nine corruption or omission controls. PowerShell 5/7 resolution
+  selects 0.43 locally; 0.41 and the unqualified 0.42 candidate remain preserved.
+
+## 0.42.0-dev.1 — unqualified local candidate, retained (2026-11-11)
+
+- Integrates supported painted and scrolled single/multi-select List filling,
+  clearing and refilling while retaining verified frame artwork and scroll state.
+- Rejects ambiguous paths, paint over answer text and row backgrounds without
+  measured ownership. A lone visible row can remain ineligible.
+- Qualifies the corrected component's 2,729 native passes and 32 explicit skips
+  through exact version-only input equality, with the original test profiles.
+  Fresh frontend, combined release build and extracted acceptance are required.
+- Keeps the reviewed 0.41 package as the local launcher target until qualification.
+- Qualification was blocked by missing selection paint for an option with an
+  empty export value. The correction is being integrated separately in 0.43.
+
+## 0.41.0-dev.1 — qualified local development package (2026-11-11)
+
+- Integrates reviewed bordered-dropdown and plain single/multi-select List filling support.
+- Shares unchanged retained-source blocks while preserving independent PDF versions and all 100 Undo/Redo states. Fresh extracted acceptance passes 105 edits, all 100 Undo/Redo states, all 300 saved pages and the original selected memory limits.
+- Builds desktop and CLI/MCP automation together. The reviewed, sealed 0.41 package is now the local launcher target. Earlier 0.39 and failed 0.40 remain preserved.
+
+## 0.40.0-dev.1 (local development candidate in qualification)
+
+- Fill more bordered dropdowns, including editable choices and initially empty
+  fields, while preserving their frame and surrounding artwork.
+- Fill, clear and refill supported plain single- and multi-select lists, with
+  save/reopen and Undo/Redo. Custom row shading and ambiguous artwork remain
+  guarded where their ownership cannot be established safely.
+- Integrate the separately validated form improvements into the combined
+  desktop/CLI/MCP package. Native correctness reuses the actual source-bound
+  2,692-pass/32-ignore evidence with its original profiles and complete library
+  provenance; fresh frontend, build and extracted-runtime qualification are required.
+- Preserve accepted 0.39 and its launcher until the new package qualifies.
+
 ## 0.39.0-dev.1 (qualified local development package)
 
 - Combine the reviewed 64 MiB decoded-source cache with the OCR review fix.

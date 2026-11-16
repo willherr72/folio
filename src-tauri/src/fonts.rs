@@ -24,7 +24,7 @@ fn digest(bytes: &[u8]) -> String {
 // Deliberately unshaped BMP text. Combining marks, bidi controls, joiners,
 // variation selectors and scripts requiring shaping are excluded even when a
 // font provides their glyphs. Newlines are handled separately as line breaks.
-fn allowed_character(character: char) -> bool {
+pub(crate) fn allowed_character(character: char) -> bool {
     matches!(character as u32,
         0x20..=0x7e | 0xa0..=0xac | 0xae..=0x2ff | 0x370..=0x482 | 0x48a..=0x52f |
         0x1d00..=0x1dbf | 0x1e00..=0x1fff | 0x2000..=0x200a |

@@ -209,3 +209,21 @@ it("opens the modal paragraph route after activating text on another visible pag
  fireEvent.click(screen.getByRole("button",{name:"Edit paragraph…"}));
  expect(await screen.findByRole("textbox",{name:"Paragraph text"})).toHaveTextContent("one two");
 });
+
+it.each([false,true])("keeps multiline paste through checked paragraph transfer or mapping failure=%s",async refusal=>{
+ const checked={...selection,text:"Old content two",runs:[{text:"Old content ",styleId:0},{text:"two",styleId:1}]};
+ vi.mocked(nativeAdapter.suggestOccurrenceStyledParagraph!).mockResolvedValue(checked);
+ const previous=nativeAdapter.mapParagraphDraft;nativeAdapter.mapParagraphDraft=vi.fn().mockImplementation(async()=>{if(refusal)throw new Error("Paragraph mapping refused.");return {sourceId:"source",pageIndex:0,objectIndices:[0,1],anchorIndex:0,paragraphText:checked.text,sourceText:run.text,sourceStart:0,sourceEnd:11,paragraphStart:0,paragraphEnd:11};});
+ try{
+  await open();const before=plans();fireEvent.click(screen.getByRole("button",{name:"Choose text"}));const input=await screen.findByRole("textbox",{name:"Replacement text"}) as HTMLInputElement;
+  input.setSelectionRange(4,11);fireEvent.paste(input,{clipboardData:{getData:()=>"first\r\n\r\nsecond"}});fireEvent.click(screen.getByRole("button",{name:"Paste as paragraph"}));
+  if(refusal){expect(await screen.findByRole("alert")).toHaveTextContent("mapping refused");expect(input).toHaveValue(run.text);expect(screen.getByRole("button",{name:"Paste as paragraph"})).toBeEnabled();}
+  else{
+   expect(await screen.findByRole("textbox",{name:"Paragraph text"})).toHaveTextContent("Old first");expect(screen.getByRole("textbox",{name:"Paragraph text"})).toHaveTextContent("second two");
+   fireEvent.click(screen.getAllByRole("button",{name:"Undo"}).find(button=>!button.hasAttribute("disabled"))!);expect(screen.getByRole("textbox",{name:"Paragraph text"})).toHaveTextContent(checked.text);
+   fireEvent.click(screen.getAllByRole("button",{name:"Redo"}).find(button=>!button.hasAttribute("disabled"))!);fireEvent.click(screen.getByRole("button",{name:"Preview paragraph"}));
+   await waitFor(()=>expect(nativeAdapter.previewStyledParagraphOccurrence).toHaveBeenCalledWith("source",[0,0,1],1,expect.objectContaining({expectedText:checked.text,runs:[{text:"Old first\n\nsecond ",styleId:0},{text:"two",styleId:1}]})));
+  }
+  expect(plans()).toEqual(before);
+ }finally{if(previous===undefined)delete nativeAdapter.mapParagraphDraft;else nativeAdapter.mapParagraphDraft=previous;}
+});

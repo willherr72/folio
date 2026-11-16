@@ -4,18 +4,21 @@ import type { TextOverlay } from "../editor/types";
 import { useShapedText } from "../editor/shaped-text";
 import { PreparedOverlayInk } from "./TextOverlayPresentation";
 import { Modal } from "./Modal";
+import { sourceFontNameKey } from "../editor/source-font-name";
 import { acquireFontInOrder, customTextError, ensureCustomFont, flushFontReleases, fontApi, fontFamily, holdCustomFont, type FontInfo, type InstalledFont } from "../editor/custom-fonts";
 import "./release-dialogs.css";
 import "./font-picker.css";
 
 interface FontPickerProps {
   text: string;
+  textErrorMessage?: string;
   shaping?: TextOverlay["shaping"];
   area?: TextOverlay["area"];
   fontSize?: number;
   title?: string;
   description?: string;
   currentFontId?: string;
+  sourceFontName?: string;
   onChoose(info: FontInfo): void;
   onClose(): void;
 }
@@ -30,7 +33,7 @@ function styleName(info: FontInfo) {
   return `${weight}${info.italic ? " · Italic" : ""}`;
 }
 
-export function FontPicker({ text, shaping, area, fontSize = 24, title = "Choose a font", description = "Preview an installed font or import your own. The selected font is included when you save your PDF.", currentFontId, onChoose, onClose }: FontPickerProps) {
+export function FontPicker({ text, textErrorMessage, shaping, area, fontSize = 24, title = "Choose a font", description = "Preview an installed font or import your own. The selected font is included when you save your PDF.", currentFontId, sourceFontName, onChoose, onClose }: FontPickerProps) {
   const [fonts, setFonts] = useState<InstalledFont[] | null>(null);
   const [query, setQuery] = useState("");
   const [busy, setBusy] = useState(false);
@@ -46,6 +49,7 @@ export function FontPicker({ text, shaping, area, fontSize = 24, title = "Choose
   const searchRef = useRef<HTMLInputElement>(null), listRef = useRef<HTMLUListElement>(null);
   const latestText = useRef(text);
   latestText.current = text;
+  const latestTextError=useRef(textErrorMessage);latestTextError.current=textErrorMessage;
   const latestShaping = useRef(shaping);
   latestShaping.current = shaping;
   const latestArea = useRef(area);
@@ -89,7 +93,7 @@ export function FontPicker({ text, shaping, area, fontSize = 24, title = "Choose
             if (!isCurrent()) return;
             loadingFont.current = owned;
             const problem = customTextError(info, latestArea.current ? latestText.current.replace(/\r\n/g, "\n") : latestText.current, !!latestShaping.current);
-            if (problem) throw new Error(problem);
+            if (problem) throw new Error(latestTextError.current??problem);
             await ensureCustomFont(info.id, info);
             if (!isCurrent()) return;
             previewFont.current = owned;
@@ -143,7 +147,8 @@ export function FontPicker({ text, shaping, area, fontSize = 24, title = "Choose
     text, fontId: selected.id, shaping, area,
   } : undefined);
   const preparing = !!selected && !!shaping && (!shaped || shaped.status === "loading");
-  const problem = (selected ? customTextError(selected, area ? text.replace(/\r\n/g, "\n") : text, !!shaping) : null)
+  const textProblem=selected ? customTextError(selected, area ? text.replace(/\r\n/g, "\n") : text, !!shaping) : null;
+  const problem = (textProblem ? textErrorMessage??textProblem : null)
     ?? (shaped?.status === "error" ? shaped.error : null);
   const canPreview = selected && !problem && (!shaping || shaped?.status === "ready");
   const apply = () => {
@@ -166,7 +171,10 @@ export function FontPicker({ text, shaping, area, fontSize = 24, title = "Choose
       } else void dispose(owned);
     }
   };
-  const visible = fonts?.filter(font => font.name.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()));
+  const sourceKey = sourceFontNameKey(sourceFontName);
+  const matchesSource = (font:InstalledFont) => font.supported && !!sourceKey && sourceFontNameKey(font.name) === sourceKey;
+  const filtered = fonts?.filter(font => font.name.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()));
+  const visible = filtered && [...filtered.filter(matchesSource), ...filtered.filter(font=>!matchesSource(font))];
   const tabStop = visible?.find(font => font.supported && font.id === focusedId)?.id ?? visible?.find(font => font.supported)?.id;
   const navigateFonts = (event: KeyboardEvent<HTMLUListElement>) => {
     if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) return;
@@ -181,6 +189,7 @@ export function FontPicker({ text, shaping, area, fontSize = 24, title = "Choose
 
   return <Modal title={title} description={description} onClose={cancel} initialFocusRef={searchRef} className="release-dialog font-picker">
     <div className="font-picker-body">
+      {sourceFontName?.trim() && <p className="font-picker-source">Source PDF font: <strong>{sourceFontName}</strong>. Name matches appear first. Check the PDF preview before applying; appearance can differ.</p>}
       <label className="font-picker-search">Search fonts
         <span><Search size={16} aria-hidden="true"/><input ref={searchRef} type="search" value={query} placeholder="Search installed fonts" onChange={event => setQuery(event.target.value)}/></span>
       </label>
@@ -191,10 +200,11 @@ export function FontPicker({ text, shaping, area, fontSize = 24, title = "Choose
             {fonts === null ? <li className="font-picker-empty" role="status">Finding installed fonts…</li>
               : visible?.length ? visible.map((font, index) => <li className="font-picker-item" key={font.id}>
                 <button type="button" disabled={!font.supported || applied} aria-pressed={selectedInstalledId === font.id}
-                  aria-describedby={!font.supported ? `${labelId}-reason-${index}` : undefined} tabIndex={font.id === tabStop ? 0 : -1}
+                  aria-describedby={!font.supported ? `${labelId}-reason-${index}` : matchesSource(font) ? `${labelId}-match-${index}` : undefined} tabIndex={font.id === tabStop ? 0 : -1}
                   onFocus={() => setFocusedId(font.id)} onClick={() => choose({ kind: "installed", font })}>
                   <span>{font.name}</span>{selectedInstalledId === font.id && <Check size={15} aria-hidden="true"/>}
                 </button>
+                {matchesSource(font) && <p id={`${labelId}-match-${index}`}>Source name match</p>}
                 {!font.supported && <p id={`${labelId}-reason-${index}`}>{font.reason ?? "This font format is not supported yet."}</p>}
               </li>) : <li className="font-picker-empty">{catalogError ? "Installed fonts could not be loaded. You can still import a font file." : "No matching fonts. Try another name or import a font file."}</li>}
           </ul>

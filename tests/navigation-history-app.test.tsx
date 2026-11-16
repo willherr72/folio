@@ -4,6 +4,7 @@ import {App} from '../src/App';
 import {nativeAdapter} from '../src/editor/adapter';
 import {clearSearchTextCache} from '../src/editor/search';
 import {clearRenderCache} from '../src/components/PageView';
+import * as readingHistory from '../src/editor/navigation-history';
 const back=()=>screen.getByRole('button',{name:'Back to previous view'});
 const forward=()=>screen.getByRole('button',{name:'Forward to next view'});
 function rect(left:number,top:number,width:number,height:number):DOMRect{return {left,top,width,height,right:left+width,bottom:top+height,x:left,y:top,toJSON(){}};}
@@ -82,4 +83,35 @@ it('unavailable history shortcuts preserve Find and the active editing tool',asy
  fireEvent.keyDown(window,{key:'ArrowLeft',altKey:true});expect(screen.getByRole('searchbox')).toBeInTheDocument();
  fireEvent.click(screen.getByRole('button',{name:'Close search'}));fireEvent.click(screen.getByRole('button',{name:'Draw'}));
  fireEvent.keyDown(window,{key:'ArrowRight',altKey:true});expect(screen.getByRole('button',{name:'Draw'})).toHaveClass('active');
+});
+it.each([false,true])('retains a later protected hit and reading history during a partial tab-return search (navigation key: %s)',async pressNavigation=>{
+ const protection={documentId:'nav-protected-origin',revision:1,owner:false,permissions:{copyContent:false,editContent:false,annotate:true,fillForms:true,assemble:false,print:true,printHighQuality:false}};
+ vi.mocked(nativeAdapter.openPdf).mockResolvedValue({id:'nav-source',name:'Navigation.pdf',pages:Array.from({length:2},()=>({width:600,height:1000})),protection});
+ let delay=false,laterRequested=false,finishLater!:(value:{matches:{x:number;y:number;width:number;height:number}[][];hasText:boolean;truncated:boolean})=>void;
+ const reply={matches:[[{x:40,y:300,width:36,height:12}]],hasText:true,truncated:false};
+ const requests=vi.spyOn(nativeAdapter as Required<typeof nativeAdapter>,'searchPage').mockImplementation(async(_source,index)=>{
+  if(delay&&index===1){laterRequested=true;return new Promise(resolve=>{finishLater=resolve;});}
+  return reply;
+ });
+ const recorded=vi.spyOn(readingHistory,'recordNavigation');
+ await open();fireEvent.click(screen.getByRole('button',{name:'Find'}));
+ fireEvent.click(screen.getByRole('checkbox',{name:'Whole words'}));
+ fireEvent.change(screen.getByRole('searchbox'),{target:{value:'Needle'}});await screen.findByText('1 of 2');
+ fireEvent.keyDown(screen.getByRole('searchbox'),{key:'F3'});await screen.findByText('2 of 2');
+ const host=screen.getByRole('main',{name:'Document'});host.scrollTop=1500;fireEvent.scroll(host);
+ delay=true;
+ vi.mocked(nativeAdapter.openPdf).mockResolvedValue({id:'nav-other',name:'Other.pdf',pages:[{width:600,height:1000}]});
+ fireEvent.click(screen.getByRole('button',{name:'Open'}));await screen.findByRole('tab',{name:'Other.pdf'});
+ fireEvent.click(screen.getByRole('tab',{name:'Navigation.pdf'}));
+ const before=recorded.mock.calls.length;
+ await waitFor(()=>expect(laterRequested).toBe(true));
+ expect(screen.getByRole('main',{name:'Document'}).scrollTop).toBe(1500);
+ expect(recorded).toHaveBeenCalledTimes(before);
+ expect(screen.getByRole('button',{name:'Next match'})).toBeDisabled();
+ if(pressNavigation)fireEvent.keyDown(screen.getByRole('searchbox'),{key:'F3'});
+ await act(async()=>finishLater(reply));await screen.findByText('2 of 2');
+ expect(screen.getByRole('main',{name:'Document'}).scrollTop).toBe(1500);
+ expect(recorded).toHaveBeenCalledTimes(before);
+ expect(requests).toHaveBeenLastCalledWith('nav-source',1,'Needle',{matchCase:false,wholeWords:true});
+ expect(screen.getByRole('button',{name:'Undo'})).toBeDisabled();
 });

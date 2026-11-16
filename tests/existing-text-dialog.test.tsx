@@ -133,3 +133,50 @@ describe("existing text dialog", () => {
     } finally { opener.remove(); }
   });
 });
+
+function pasteLines(input:HTMLInputElement,value="first\r\nsecond"){return fireEvent.paste(input,{clipboardData:{getData:()=>value}});}
+it("stages a multiline paste without changing or applying the single-line draft",()=>{
+ const props=options(),onEditParagraph=vi.fn();render(<ExistingTextDialog {...props} onEditParagraph={onEditParagraph}/>);
+ const input=screen.getByRole("textbox",{name:"Replacement text"}) as HTMLInputElement;
+ fireEvent.change(input,{target:{value:"keep THIS tail"}});input.setSelectionRange(5,9,"backward");
+ expect(pasteLines(input)).toBe(false);expect(input).toHaveValue("keep THIS tail");expect(onEditParagraph).not.toHaveBeenCalled();
+ expect(screen.getByRole("button",{name:"Apply changes"})).toBeDisabled();fireEvent.submit(input.closest("form")!);expect(props.onApply).not.toHaveBeenCalled();
+ fireEvent.click(screen.getByRole("button",{name:"Paste as paragraph"}));
+ expect(onEditParagraph).toHaveBeenCalledWith({originalText:run.text,replacement:"keep first\nsecond tail",selection:{start:17,end:17,direction:"forward"},font:null});
+ expect(Object.isFrozen(onEditParagraph.mock.calls[0][0])).toBe(true);
+});
+it("discards the staged paste and restores its input selection without losing typed text",()=>{
+ const props=options();render(<ExistingTextDialog {...props} onEditParagraph={vi.fn()}/>);const input=screen.getByRole("textbox",{name:"Replacement text"}) as HTMLInputElement;
+ fireEvent.change(input,{target:{value:"keep THIS tail"}});input.setSelectionRange(5,9,"backward");pasteLines(input);
+ fireEvent.click(screen.getByRole("button",{name:"Discard paste"}));expect(input).toHaveValue("keep THIS tail");expect(input).toHaveFocus();
+ expect([input.selectionStart,input.selectionEnd,input.selectionDirection]).toEqual([5,9,"backward"]);
+ expect(screen.queryByRole("button",{name:"Paste as paragraph"})).toBeNull();expect(screen.getByRole("button",{name:"Apply changes"})).toBeEnabled();
+});
+it("clears stale staged content when the user types or pastes a new single line",()=>{
+ render(<ExistingTextDialog {...options()} onEditParagraph={vi.fn()}/>);const input=screen.getByRole("textbox",{name:"Replacement text"}) as HTMLInputElement;
+ pasteLines(input);fireEvent.change(input,{target:{value:"changed"}});expect(screen.queryByRole("button",{name:"Paste as paragraph"})).toBeNull();
+ pasteLines(input);expect(pasteLines(input,"single line")).toBe(true);expect(screen.queryByRole("button",{name:"Paste as paragraph"})).toBeNull();
+});
+it("a second paste replaces the first using the still-visible input and new selection",()=>{
+ const onEditParagraph=vi.fn();render(<ExistingTextDialog {...options()} onEditParagraph={onEditParagraph}/>);const input=screen.getByRole("textbox",{name:"Replacement text"}) as HTMLInputElement;
+ pasteLines(input);input.setSelectionRange(0,8);pasteLines(input,"new\nvalue");fireEvent.click(screen.getByRole("button",{name:"Paste as paragraph"}));
+ expect(onEditParagraph.mock.calls[0][0].replacement).toBe("new\nvalue text");
+});
+it("keeps the staged content and exposes parent preparation failures",()=>{
+ const props={...options(),onEditParagraph:vi.fn()};const view=render(<ExistingTextDialog {...props}/>);const input=screen.getByRole("textbox",{name:"Replacement text"}) as HTMLInputElement;
+ pasteLines(input);fireEvent.click(screen.getByRole("button",{name:"Paste as paragraph"}));view.rerender(<ExistingTextDialog {...props} error="This source paragraph cannot be mapped."/>);
+ expect(screen.getByRole("alert")).toHaveTextContent("cannot be mapped");expect(screen.getByRole("button",{name:"Paste as paragraph"})).toBeEnabled();expect(input).toHaveValue(run.text);
+});
+it("disables staged actions while paragraph preparation is busy",()=>{
+ const props={...options(),onEditParagraph:vi.fn()};const view=render(<ExistingTextDialog {...props}/>);const input=screen.getByRole("textbox",{name:"Replacement text"}) as HTMLInputElement;
+ pasteLines(input);view.rerender(<ExistingTextDialog {...props} busy/>);expect(screen.getByRole("button",{name:"Paste as paragraph"})).toBeDisabled();expect(screen.getByRole("button",{name:"Discard paste"})).toBeDisabled();
+ fireEvent.click(screen.getByRole("button",{name:"Paste as paragraph"}));expect(props.onEditParagraph).not.toHaveBeenCalled();
+});
+it("keeps the old single-line rejection when paragraph editing is unavailable",()=>{
+ render(<ExistingTextDialog {...options()}/>);const input=screen.getByRole("textbox",{name:"Replacement text"}) as HTMLInputElement;
+ expect(pasteLines(input)).toBe(false);expect(screen.getByRole("alert")).toHaveTextContent("single line");expect(screen.queryByRole("button",{name:"Paste as paragraph"})).toBeNull();
+});
+it("never offers a staged paste belonging to another source text owner",()=>{
+ const props={...options(),onEditParagraph:vi.fn()};const view=render(<ExistingTextDialog {...props}/>);pasteLines(screen.getByRole("textbox",{name:"Replacement text"}) as HTMLInputElement);
+ view.rerender(<ExistingTextDialog {...props} run={{...run,objectIndex:9,text:"Another source"}}/>);expect(screen.queryByRole("button",{name:"Paste as paragraph"})).toBeNull();
+});

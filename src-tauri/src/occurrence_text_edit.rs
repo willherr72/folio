@@ -165,7 +165,7 @@ impl WorkerRuntime {
                 context.verify_candidate(incoming.bytes()?.as_ref(),&page)?;
             }
             let expanded=if duplicate {self.append_page_copy(source,selected_page)?.into()}else{source.bytes()?};
-            let publication={let _phase=crate::native_phase!("publication.graph");if let Some(context)=context {
+            let bytes={let _phase=crate::native_phase!("publication.graph");if let Some(context)=context {
                 page_content_replace::replace_context_text(&expanded,replace_index,incoming.bytes()?.as_ref(),target_geometry,source_geometry,context)?
             } else {
                 page_content_replace::replace_edited_text(&expanded,replace_index,incoming.bytes()?.as_ref(),target_geometry,source_geometry)?
@@ -174,7 +174,7 @@ impl WorkerRuntime {
             let original_path=source.original_path.clone();
             let legacy=source.legacy_comment_import;
             let path=std::env::temp_dir().join(format!("folio-text-occurrence-{}.pdf",Uuid::new_v4()));
-            let mut document=self.open_text_publication(publication,path,original_path,legacy,OpenSecurity::Restored(policy))?;
+            let mut document=self.open_bytes(bytes,path,original_path,true,true,legacy,OpenSecurity::Restored(policy))?;
             if let Err(error)=self.verify_text_publication(&document.id,replace_index,&candidate.id) {
                 self.discard_unpublished_source(&document.id);
                 return Err(error);

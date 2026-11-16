@@ -297,10 +297,12 @@ fn unchanged_group_remains_editable_after_paragraph_reflow() {
             },
         )
         .unwrap();
-    let group = engine.inspect_text_group(&edited.id, 0, &[0, 1]).unwrap();
+    let runs=engine.list_text_runs(&edited.id,0).unwrap().runs;
+    assert_eq!(runs[0].text,"New words");
+    let group = engine.inspect_text_group(&edited.id, 0, &[1, 2]).unwrap();
     assert_eq!(group.text, "Invoice total");
     let grouped = engine
-        .replace_text_group(&edited.id, 0, &[0, 1], &group.text, "Invoice grand total")
+        .replace_text_group(&edited.id, 0, &[1, 2], &group.text, "Invoice grand total")
         .unwrap();
     assert!(engine
         .extract_text(&grouped.id, 0)
@@ -556,9 +558,10 @@ fn intrinsic_rotations_preserve_paragraph_layout_crop_and_reediting() {
             assert_eq!(edited.pages[0].width,source.pages[0].width);
             assert_eq!(edited.pages[0].height,source.pages[0].height);
             let after=e.list_text_runs(&edited.id,0).unwrap().runs;
-            assert_eq!(after[0].text,"Neighbor stays.");assert_eq!(after[0].bounds,before[2].bounds);
-            assert_eq!(after[1..].iter().map(|r|r.text.trim()).collect::<Vec<_>>(),vec!["Moved this paragraph with","more words.","Second line."]);
-            for run in &after[1..] {
+            assert_eq!(after.last().unwrap().text,"Neighbor stays.");assert_eq!(after.last().unwrap().bounds,before[2].bounds);
+            let paragraph=&after[..after.len()-1];
+            assert_eq!(paragraph.iter().map(|r|r.text.trim()).collect::<Vec<_>>(),vec!["Moved this paragraph with","more words.","Second line."]);
+            for run in paragraph {
                 assert!(run.bounds.x>=area.x-0.02&&run.bounds.y>=area.y-0.02);
                 assert!(run.bounds.x+run.bounds.width<=area.x+area.width+0.02);
                 assert!(run.bounds.y+run.bounds.height<=area.y+area.height+0.02);
@@ -654,9 +657,10 @@ fn numeric_advance_keeps_relative_following_text_at_the_same_position() {
         )
         .unwrap();
     let after = engine.list_text_runs(&edited.id, 0).unwrap();
-    assert_eq!(after.runs[0].text, original.runs[1].text);
-    assert!((after.runs[0].bounds.x - original.runs[1].bounds.x).abs() < 0.02);
-    assert_eq!(after.runs[0].bounds.y, original.runs[1].bounds.y);
+    let following=after.runs.last().unwrap();
+    assert_eq!(following.text, original.runs[1].text);
+    assert!((following.bounds.x - original.runs[1].bounds.x).abs() < 0.02);
+    assert_eq!(following.bounds.y, original.runs[1].bounds.y);
     engine.close_document(&edited.id).unwrap();
     engine.close_document(&source.id).unwrap();
 }

@@ -59,3 +59,29 @@ it("keeps the selected font and input when changed handoff requires an unavailab
   fireEvent.click(screen.getByRole("button",{name:"Cancel"}));await waitFor(()=>expect(fontApi.release).toHaveBeenCalledWith(info.id));
  }finally{Object.assign(nativeAdapter,previous);nativeAdapter.mapParagraphDraft=mapPrevious;}
 });
+
+it("keeps the chosen font alive through a delayed automatic fit and ignores its abandoned result",async()=>{
+ let resolve!:(value:typeof selection.bounds)=>void;
+ const previous=nativeAdapter.mapParagraphDraft;nativeAdapter.mapParagraphDraft=vi.fn().mockResolvedValue(mapping);
+ vi.spyOn(nativeAdapter as Required<typeof nativeAdapter>,"fitOccurrenceStyledParagraph").mockImplementation(()=>new Promise(done=>{resolve=done;}));
+ try{
+  await open();fireEvent.change(screen.getByRole("textbox",{name:"Replacement text"}),{target:{value:"one this"}});await choose();
+  fireEvent.click(screen.getByRole("button",{name:"Edit paragraph…"}));await waitFor(()=>expect(nativeAdapter.fitOccurrenceStyledParagraph).toHaveBeenCalledOnce());
+  const request=vi.mocked(nativeAdapter.fitOccurrenceStyledParagraph!).mock.calls[0][2];expect(request.styleChanges).toEqual([expect.objectContaining({fontId:info.id})]);
+  cleanup();await act(async()=>{await Promise.resolve();await flushFontReleases();});expect(fontApi.release).not.toHaveBeenCalledWith(info.id);
+  await act(async()=>resolve({...selection.bounds,width:180}));await waitFor(()=>expect(fontApi.release).toHaveBeenCalledWith(info.id));
+  expect(screen.queryByRole("textbox",{name:"Paragraph text"})).toBeNull();expect(nativeAdapter.previewStyledParagraphOccurrence).not.toHaveBeenCalled();
+ }finally{nativeAdapter.mapParagraphDraft=previous;}
+});
+it("adopts the fitted transferred draft and returns to the source in one local Undo",async()=>{
+ const previous=nativeAdapter.mapParagraphDraft;nativeAdapter.mapParagraphDraft=vi.fn().mockResolvedValue(mapping);
+ vi.spyOn(nativeAdapter as Required<typeof nativeAdapter>,"fitOccurrenceStyledParagraph").mockResolvedValue({...selection.bounds,width:180});
+ try{
+  await open();fireEvent.change(screen.getByRole("textbox",{name:"Replacement text"}),{target:{value:"one this"}});
+  fireEvent.click(screen.getByRole("button",{name:"Edit paragraph…"}));expect(await screen.findByRole("textbox",{name:"Paragraph text"})).toHaveTextContent("one this two");
+  expect(screen.getByRole("spinbutton",{name:"Area width (pt)"})).toHaveValue(180);expect(screen.getByRole("status")).toHaveTextContent("Area fitted to the transferred text");
+  fireEvent.click(screen.getAllByRole("button",{name:"Undo"}).find(b=>!b.hasAttribute("disabled"))!);expect(screen.getByRole("textbox",{name:"Paragraph text"})).toHaveTextContent("one two");expect(screen.getByRole("spinbutton",{name:"Area width (pt)"})).toHaveValue(selection.bounds.width);
+  fireEvent.click(screen.getAllByRole("button",{name:"Redo"}).find(b=>!b.hasAttribute("disabled"))!);expect(screen.getByRole("spinbutton",{name:"Area width (pt)"})).toHaveValue(180);
+  fireEvent.click(screen.getByRole("button",{name:"Cancel"}));
+ }finally{nativeAdapter.mapParagraphDraft=previous;}
+});

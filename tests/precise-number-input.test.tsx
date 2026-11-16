@@ -4,6 +4,41 @@ import {afterEach,expect,it,vi} from "vitest";
 import {PreciseNumberInput} from "../src/components/PreciseNumberInput";
 
 afterEach(cleanup);
+it("selects the expanded exact draft before the caller's keyboard-focus handler",()=>{
+ const values:string[]=[],changed=vi.fn();
+ render(<PreciseNumberInput aria-label="Height" value="40.487854" onChange={changed} onFocus={e=>values.push('focus:'+e.currentTarget.value)}/>);
+ const input=screen.getByRole('spinbutton') as HTMLInputElement;
+ // jsdom exposes no number-input offsets and queues its select event. Observe
+ // the synchronous native operation; actual replacement is tested in Windows.
+ vi.spyOn(input,'select').mockImplementation(()=>{values.push('select:'+input.value);HTMLInputElement.prototype.select.call(input);});
+ act(()=>input.focus());
+ expect(values).toEqual(['select:40.487854','focus:40.487854']);
+ expect(changed).not.toHaveBeenCalled();
+});
+it("preserves pointer focus and composes pointer handlers without forcing selection",()=>{
+ const down=vi.fn(),up=vi.fn(),focus=vi.fn();
+ render(<PreciseNumberInput aria-label="Height" value="40.487854" onChange={()=>{}} onFocus={focus} onPointerDown={down} onPointerUp={up}/>);
+ const input=screen.getByRole('spinbutton') as HTMLInputElement,selected=vi.spyOn(input,'select');
+ fireEvent.pointerDown(input);act(()=>input.focus());fireEvent.pointerUp(input);
+ expect(input).toHaveValue(40.487854);expect(selected).not.toHaveBeenCalled();expect(down).toHaveBeenCalledOnce();expect(up).toHaveBeenCalledOnce();expect(focus).toHaveBeenCalledOnce();
+ act(()=>input.blur());act(()=>input.focus());expect(selected).toHaveBeenCalledOnce();
+});
+it.each(['pointerUp','pointerCancel','preventDefault'] as const)("clears unused pointer intent after %s before keyboard focus",mode=>{
+ const cancel=vi.fn();
+ render(<PreciseNumberInput aria-label="Height" value="40.487854" onChange={()=>{}} onPointerDown={e=>{if(mode==='preventDefault')e.preventDefault();}} onPointerCancel={cancel}/>);
+ const input=screen.getByRole('spinbutton') as HTMLInputElement,selected=vi.spyOn(input,'select');
+ fireEvent.pointerDown(input);
+ if(mode==='pointerUp')fireEvent.pointerUp(input);
+ if(mode==='pointerCancel')fireEvent.pointerCancel(input);
+ act(()=>input.focus());expect(selected).toHaveBeenCalledOnce();
+ expect(cancel).toHaveBeenCalledTimes(mode==='pointerCancel'?1:0);
+});
+it("does not mistake ancestor-cancelled pointer focus for a later keyboard entry",()=>{
+ render(<div onPointerDown={event=>event.preventDefault()}><PreciseNumberInput aria-label="Height" value="40.487854" onChange={()=>{}}/></div>);
+ const input=screen.getByRole('spinbutton') as HTMLInputElement,selected=vi.spyOn(input,'select');
+ fireEvent.pointerDown(input);fireEvent.pointerUp(document.body);
+ act(()=>input.focus());expect(selected).toHaveBeenCalledOnce();
+});
 it("reveals the exact value before native focus returns so replacement selects the full draft",()=>{
  render(<PreciseNumberInput aria-label="Width" value="267.04565" onChange={()=>{}}/>);
  const input=screen.getByRole("spinbutton");expect(input).toHaveValue(267.046);

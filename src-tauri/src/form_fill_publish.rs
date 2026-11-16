@@ -2,7 +2,7 @@
 use crate::{
     form_answer_appearance::{
         transplant_answer_with_resources, AnswerKind, FillAppearanceBudget,
-        NormalAppearanceAdmission, StagedAnswerAppearance,
+        NormalAppearanceAdmission, StagedAnswerAppearance, CapturedListSources, prepare_list_source,
     },
     form_appearance::Copier,
     form_fill::NativeForm,
@@ -260,7 +260,7 @@ fn stage_buttons(
 }
 
 pub(crate) fn fill(
-    _pdfium: &Pdfium,
+    pdfium: &Pdfium,
     bindings: &dyn PdfiumLibraryBindings,
     source: &[u8],
     request: &FillFormFieldRequest,
@@ -292,6 +292,12 @@ pub(crate) fn fill(
     } else {
         None
     };
+    let source_lists = CapturedListSources::capture(
+        &native_form,
+        &identity.original,
+        identity.selected_widget_placements(),
+        !global && validated.field.kind == "list",
+    );
     let generated_bytes = native_form.fill(request)?;
     if before != witness(&native_form, pages, &placements, &selected, true)? {
         return Err(bad("native filling changed another field"));
@@ -358,9 +364,17 @@ pub(crate) fn fill(
                     .as_stream()
                     .map_err(bad)?;
                 let resources = contexts.bind(original, &node.placements, kind, &mut budget)?;
+                // Empty original fields retain the existing glyph-free source
+                // proof in transplant, including unmarked vector-only borders.
+                let prepared = if matches!(kind, AnswerKind::List) && !source_empty {
+                    prepare_list_source(pdfium, &identity.original, original, &resources,
+                        node.original, &source_lists, &mut budget)?
+                } else {
+                    None
+                };
                 let StagedAnswerAppearance { appearance } = transplant_answer_with_resources(
                     &identity.original,
-                    original,
+                    prepared.as_ref().unwrap_or(original),
                     &generated,
                     next,
                     kind,

@@ -1,0 +1,70 @@
+{
+  "generatorSha256": "bd9a1c8895ad8b882cfcd26c6879734ab8c8cb903e4fece385471f1bb5bc8efe",
+  "controls": [
+    {
+      "kind": "move-only",
+      "label": "sid",
+      "wrapped": false,
+      "path": "move-only-sid.cff",
+      "sha256": "beb3adfadb1bd64e37e6c28cff6193888fe8bb05205d9af3168193ea56b73f37",
+      "sourceSha256": "20576eaf44fd9fe4576312e4988897ed0b5c3ec38f73c97e047ddb72d2d55fc4"
+    },
+    {
+      "kind": "move-only",
+      "label": "sid",
+      "wrapped": true,
+      "path": "move-only-sid.otf",
+      "sha256": "1888d5fbcbcfe686bfae42dad6252978e078e2a605226c6dacbf23dd3a36fdb7",
+      "sourceSha256": "20576eaf44fd9fe4576312e4988897ed0b5c3ec38f73c97e047ddb72d2d55fc4"
+    },
+    {
+      "kind": "diagonal",
+      "label": "sid",
+      "wrapped": false,
+      "path": "diagonal-sid.cff",
+      "sha256": "6a386d96ec9cf178cb1061f060569b97153d15f170aa776c5fc98192957dcf52",
+      "sourceSha256": "20576eaf44fd9fe4576312e4988897ed0b5c3ec38f73c97e047ddb72d2d55fc4"
+    },
+    {
+      "kind": "diagonal",
+      "label": "sid",
+      "wrapped": true,
+      "path": "diagonal-sid.otf",
+      "sha256": "660bb0a99e462b88b191e8f5b4a3595a535b838cb85e9fb3d40856d61e5bc6b3",
+      "sourceSha256": "20576eaf44fd9fe4576312e4988897ed0b5c3ec38f73c97e047ddb72d2d55fc4"
+    },
+    {
+      "kind": "move-only",
+      "label": "cid",
+      "wrapped": false,
+      "path": "move-only-cid.cff",
+      "sha256": "7be4aa144fcc4853b574bad410a24a65387e2d258edb992e9213e28e5672b00f",
+      "sourceSha256": "8ef8e644f3ea608cdf7f137c272d7c5b125c9d9708122e76936be90f62dd2bf1"
+    },
+    {
+      "kind": "move-only",
+      "label": "cid",
+      "wrapped": true,
+      "path": "move-only-cid.otf",
+      "sha256": "5cabf05e0424ec54b8613543bbf8becc9d31134d5551c5a93da94bfadd2653d7",
+      "sourceSha256": "8ef8e644f3ea608cdf7f137c272d7c5b125c9d9708122e76936be90f62dd2bf1"
+    },
+    {
+      "kind": "diagonal",
+      "label": "cid",
+      "wrapped": false,
+      "path": "diagonal-cid.cff",
+      "sha256": "ef8d4eb919e0eebfb174713e2c6d7db31d5b4022a6a51205fce134fbbe339466",
+      "sourceSha256": "8ef8e644f3ea608cdf7f137c272d7c5b125c9d9708122e76936be90f62dd2bf1"
+    },
+    {
+      "kind": "diagonal",
+      "label": "cid",
+      "wrapped": true,
+      "path": "diagonal-cid.otf",
+      "sha256": "07d695f83be7a9336a7744f3e389f4b1fb499d9664f2bcc9986106774d8b3331",
+      "sourceSha256": "8ef8e644f3ea608cdf7f137c272d7c5b125c9d9708122e76936be90f62dd2bf1"
+    }
+  ],
+  "scope": "Valid positive-width fi/ffi programs with move-only or zero-area diagonal contours; original scalar outlines unchanged."
+}

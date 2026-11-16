@@ -1,4 +1,10 @@
 use serde_json::{json, Value};
+#[path="support/credential_mcp.rs"]
+mod credential_mcp;
+#[path="support/composition_mcp.rs"]
+mod composition_mcp;
+#[path="support/page_organization_mcp.rs"]
+mod page_organization;
 #[path="support/automation_forms.rs"]
 mod automation_forms;
 
@@ -43,8 +49,14 @@ impl Session {
         Self::start_with_fonts(sources,output,&[])
     }
     fn start_with_fonts(sources: &[&Path], output: &Path, fonts: &[&Path]) -> Self {
-        let mut child = Command::new(env!("CARGO_BIN_EXE_folio-cli"))
-            .arg("mcp")
+        Self::start_options(sources,output,fonts,None)
+    }
+    fn start_with_credentials(sources:&[&Path],output:&Path,credentials:Option<&Path>)->Self{
+        Self::start_options(sources,output,&[],credentials)
+    }
+    fn start_options(sources:&[&Path],output:&Path,fonts:&[&Path],credentials:Option<&Path>)->Self{
+        let mut command=Command::new(env!("CARGO_BIN_EXE_folio-cli"));
+        command.arg("mcp")
             .args(
                 sources
                     .iter()
@@ -57,9 +69,9 @@ impl Session {
             .arg(Path::new(env!("CARGO_MANIFEST_DIR")).join("resources/pdfium/pdfium.dll"))
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
-            .stderr(Stdio::inherit())
-            .spawn()
-            .unwrap();
+            .stderr(Stdio::inherit());
+        if let Some(file)=credentials{command.arg("--credentials").arg(file);}
+        let mut child=command.spawn().unwrap();
         let input = child.stdin.take();
         let stdout = child.stdout.take().unwrap();
         let (tx, replies) = mpsc::channel();
@@ -183,6 +195,38 @@ fn setup() -> (tempfile::TempDir, Session) {
 }
 
 #[test]
+fn batch_preview_multi_page_apply_capacity_and_discard_preserve_sources(){
+    use lopdf::{dictionary,Document,Object,Stream};
+    let dir=tempfile::tempdir().unwrap();let path=dir.path().join("Batch source.pdf");
+    let mut pdf=Document::with_version("1.7");let pages=pdf.new_object_id();let font=pdf.add_object(dictionary!{"Type"=>"Font","Subtype"=>"Type1","BaseFont"=>"Helvetica"});let mut kids=vec![];
+    for text in ["First original","Second original"]{
+        let content=pdf.add_object(Stream::new(dictionary!{},format!("BT /F1 12 Tf 30 180 Td ({text}) Tj ET").into_bytes()));
+        let page=pdf.add_object(dictionary!{"Type"=>"Page","Parent"=>pages,"MediaBox"=>vec![0.into(),0.into(),300.into(),240.into()],"Resources"=>dictionary!{"Font"=>dictionary!{"F1"=>font}},"Contents"=>content});kids.push(Object::Reference(page));
+    }
+    pdf.objects.insert(pages,dictionary!{"Type"=>"Pages","Count"=>2,"Kids"=>kids}.into());let root=pdf.add_object(dictionary!{"Type"=>"Catalog","Pages"=>pages});pdf.trailer.set("Root",root);pdf.save(&path).unwrap();
+    let original=std::fs::read(&path).unwrap();let output=dir.path().join("out");std::fs::create_dir(&output).unwrap();let mut s=Session::start(&path,&output);let mut id=1;
+    let mut edits=vec![];
+    for(page,replacement)in [(1,"First changed"),(2,"Second changed")]{
+        let inspected=success(call(&mut s,id,"folio_inspect_text",json!({"documentId":"document-1","page":page})));id+=1;
+        edits.push(json!({"page":page,"selectionId":inspected["runs"][0]["selectionId"],"replacement":replacement}));
+    }
+    let batch=success(call(&mut s,id,"folio_preview_text_batch",json!({"documentId":"document-1","version":1,"edits":edits})));id+=1;
+    assert_eq!(batch["editCount"],2);assert_eq!(batch["pages"].as_array().unwrap().len(),2);
+    let before=batch["pages"][1]["before"].as_str().unwrap().to_owned();assert!(Path::new(&before).exists());
+    let saved=success(call(&mut s,id,"folio_save_preview",json!({"previewId":batch["previewId"]})));id+=1;assert_eq!(saved["sha256"],batch["candidateSha256"]);
+    let applied=success(call(&mut s,id,"folio_apply_preview",json!({"previewId":batch["previewId"]})));id+=1;
+    let fresh=success(call(&mut s,id,"folio_inspect_text",json!({"documentId":applied["documentId"],"page":1})));id+=1;assert_eq!(fresh["runs"][0]["text"],"First changed");
+    let stale=call(&mut s,id,"folio_preview_text_batch",json!({"documentId":applied["documentId"],"version":1,"edits":edits}));id+=1;assert_eq!(stale["result"]["isError"],true);
+    for _ in 0..7{success(call(&mut s,id,"folio_preview_text_batch",json!({"documentId":"document-1","version":1,"edits":edits})));id+=1;}
+    let full=call(&mut s,id,"folio_preview_text_batch",json!({"documentId":"document-1","version":1,"edits":edits}));id+=1;
+    assert_eq!(full["result"]["structuredContent"]["error"]["code"],"preview_limit");
+    success(call(&mut s,id,"folio_discard_preview",json!({"previewId":batch["previewId"]})));id+=1;assert!(!Path::new(&before).exists());
+    let after_discard=success(call(&mut s,id,"folio_inspect_text",json!({"documentId":applied["documentId"],"page":2})));id+=1;assert_eq!(after_discard["runs"][0]["text"],"Second changed");
+    let retained=success(call(&mut s,id,"folio_preview_text_batch",json!({"documentId":"document-1","version":1,"edits":edits})));let transient=retained["pages"][1]["after"].as_str().unwrap().to_owned();s.stop();
+    assert!(!Path::new(&transient).exists());assert!(Path::new(saved["path"].as_str().unwrap()).exists());assert_eq!(std::fs::read(path).unwrap(),original);
+}
+
+#[test]
 fn mcp_help_is_available_without_renderer() {
     let out = Command::new(env!("CARGO_BIN_EXE_folio-cli"))
         .args(["mcp", "--help"])
@@ -224,7 +268,11 @@ fn current_discovery_tools_and_metadata_validation() {
         .contains(&json!("2026-07-28")));
     let v = s.request(2, "tools/list", json!({}));
     let tools = v["result"]["tools"].as_array().unwrap();
-    assert_eq!(tools.len(), 16);
+    assert_eq!(tools.len(), 23);
+    let batch=tools.iter().find(|tool|tool["name"]=="folio_preview_text_batch").unwrap();
+    assert_eq!(batch["inputSchema"]["properties"]["edits"]["maxItems"],64);
+    assert_eq!(batch["annotations"]["readOnlyHint"],false);
+    assert_eq!(batch["annotations"]["destructiveHint"],false);
     let fonts=tools.iter().find(|tool|tool["name"]=="folio_list_fonts").unwrap();
     assert_eq!(fonts["annotations"]["readOnlyHint"],true);
     assert_eq!(fonts["inputSchema"]["properties"],json!({}));
@@ -263,7 +311,8 @@ fn legacy_handshake_and_modern_requests_do_not_share_version_state() {
     s.send(json!({"jsonrpc":"2.0","method":"notifications/initialized"}));
     s.send(json!({"jsonrpc":"2.0","id":2,"method":"tools/list"}));
     let v = s.receive();
-    assert_eq!(v["result"]["tools"].as_array().unwrap().len(), 16);
+    assert_eq!(v["result"]["tools"].as_array().unwrap().len(), 23);
+    assert!(v["result"]["tools"].as_array().unwrap().iter().any(|tool|tool["name"]=="folio_preview_text_batch"));
     assert!(v["result"].get("resultType").is_none());
     let v = s.request(3, "tools/list", json!({}));
     assert_eq!(v["result"]["resultType"], "complete");

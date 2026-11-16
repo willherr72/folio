@@ -34,6 +34,37 @@ fn compound_pymupdf_frame_and_inset_answer_are_isolated_without_border_loss() {
     assert!(AnswerSlot::parse_bounds(&changed,AnswerKind::Text,Some([0.,0.,250.,30.])).is_ok());
 }
 #[test]
+fn compound_combo_frame_and_inset_answer_are_isolated_without_border_loss() {
+    let bytes=b"/Tx BMC q 1 w 0 0 0 RG .5 .5 249 29 re s 1 1 248 28 re W n BT 0 0 0 rg 2 10.799999 Td /Helv 14 Tf (Red) Tj ET Q EMC";
+    let slot=AnswerSlot::parse_bounds(bytes,AnswerKind::Combo,Some([0.,0.,250.,30.])).unwrap();
+    let changed=slot.splice(&invocation()).unwrap();
+    let ops=Content::decode_strict(&changed).unwrap().operations;
+    assert!(strings(&ops).is_empty());
+    for operator in ["BMC","s","W","Do"] {
+        assert_eq!(ops.iter().filter(|op|op.operator==operator).count(),1,"{operator}");
+    }
+    assert!(ops.iter().position(|op|op.operator=="s").unwrap()<ops.iter().position(|op|op.operator=="Do").unwrap());
+    assert!(AnswerSlot::parse_bounds(&changed,AnswerKind::Combo,Some([0.,0.,250.,30.])).is_ok());
+}
+#[test]
+fn compound_list_selection_is_not_admitted_as_a_plain_combo_frame() {
+    let bytes=b"/Tx BMC q 1 w 0 G .5 .5 249 29 re s 1 1 248 28 re W n q 0 0 1 rg 1 5 248 16 re f Q BT /Helv 14 Tf (Red) Tj ET Q EMC";
+    assert!(AnswerSlot::parse_bounds(bytes,AnswerKind::List,Some([0.,0.,250.,30.])).is_err());
+}
+#[test]
+fn compound_list_plain_rows_are_isolated_without_border_loss() {
+    let bytes=b"/Tx BMC q 1 w 0 G .5 .5 249 69 re s 1 1 248 68 re W n BT /Helv 14 Tf 2 52 Td (Red) Tj 0 -16 Td (Green) Tj 0 -16 Td (Blue) Tj ET Q EMC";
+    let slot=AnswerSlot::parse_bounds(bytes,AnswerKind::List,Some([0.,0.,250.,70.])).unwrap();
+    let changed=slot.splice(&invocation()).unwrap();
+    let ops=Content::decode_strict(&changed).unwrap().operations;
+    assert!(strings(&ops).is_empty());
+    for operator in ["BMC","s","W","Do"] {
+        assert_eq!(ops.iter().filter(|op|op.operator==operator).count(),1,"{operator}");
+    }
+    assert!(ops.iter().position(|op|op.operator=="s").unwrap()<ops.iter().position(|op|op.operator=="Do").unwrap());
+    assert!(AnswerSlot::parse_bounds(&changed,AnswerKind::List,Some([0.,0.,250.,70.])).is_ok());
+}
+#[test]
 fn compound_frame_clear_refill_keeps_one_bounded_slot_and_original_clip() {
     let source=b"/Tx BMC q .9 g 0 0 180 30 re f 0 G 1 w .5 .5 179 29 re s 1 1 178 28 re W n BT /F1 12 Tf 2 10 Td (First) Tj ET BT /F1 12 Tf 2 20 Td (Second) Tj ET Q EMC";
     let mut bytes=source.to_vec();let mut counts=None;let replacement=invocation();
@@ -51,11 +82,11 @@ fn compound_frame_clear_refill_keeps_one_bounded_slot_and_original_clip() {
 }
 #[test]
 fn compound_answer_does_not_admit_unknown_art_or_merge_separate_clips() {
-    for source in [
+    for kind in [AnswerKind::Text,AnswerKind::Combo,AnswerKind::List] {for source in [
         b"/Tx BMC q 0 G 1 w .5 .5 179 29 re s /Logo Do 1 1 178 28 re W n BT /F1 12 Tf (Old) Tj ET Q EMC".as_slice(),
         b"/Tx BMC q 0 G 1 w .5 .5 179 29 re s 1 1 178 28 re W n BT /F1 12 Tf (One) Tj ET Q q 20 5 40 10 re W n BT /F1 12 Tf (Two) Tj ET Q EMC",
         b"/Tx BMC q 0 G 1 w .5 .5 179 29 re s 1 1 178 28 re W n BT /F1 12 Tf (One) Tj ET 1 0 0 rg 20 5 40 10 re f BT /F1 12 Tf (Two) Tj ET Q EMC",
-    ] {assert!(AnswerSlot::parse_bounds(source,AnswerKind::Text,Some([0.,0.,180.,30.])).is_err());}
+    ] {assert!(AnswerSlot::parse_bounds(source,kind,Some([0.,0.,180.,30.])).is_err());}}
 }
 #[test]
 fn compound_empty_text_keeps_frame_and_replays_text_state_for_following_paint() {
@@ -76,7 +107,9 @@ fn compound_text_cannot_escape_and_reenter_an_equal_depth_graphics_frame() {
     // Net depth is zero and both branches inherit the same clip, but the text
     // interval still escapes its entry state. Canonicalization must refuse it.
     let bytes=b"/Tx BMC q 0 G 1 w .5 .5 179 29 re s 1 1 178 28 re W n q BT /F1 12 Tf (One) Tj ET Q q BT /F1 12 Tf (Two) Tj ET Q Q EMC";
-    assert!(AnswerSlot::parse_bounds(bytes,AnswerKind::Text,Some([0.,0.,180.,30.])).is_err());
+    for kind in [AnswerKind::Text,AnswerKind::Combo,AnswerKind::List] {
+        assert!(AnswerSlot::parse_bounds(bytes,kind,Some([0.,0.,180.,30.])).is_err());
+    }
 }
 #[test]
 fn marked_answer_preserves_caption_and_foreground_order() {
